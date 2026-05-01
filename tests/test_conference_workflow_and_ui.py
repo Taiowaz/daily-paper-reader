@@ -5,6 +5,15 @@ import yaml
 
 
 class ConferenceWorkflowAndUiTest(unittest.TestCase):
+    def test_daily_workflow_uses_fast_rerank_budget(self):
+        root = pathlib.Path(__file__).resolve().parents[1]
+        workflow_path = root / ".github" / "workflows" / "daily-paper-reader.yml"
+        text = workflow_path.read_text(encoding="utf-8")
+
+        self.assertIn("MKL_THREADING_LAYER: GNU", text)
+        self.assertIn("DPR_RERANK_GLOBAL_POOL_LIMIT: \"80\"", text)
+        self.assertIn("DPR_RERANK_GUARANTEED_PER_LANE: \"1\"", text)
+
     def test_conference_retrieval_workflow_dispatches_pipeline(self):
         root = pathlib.Path(__file__).resolve().parents[1]
         workflow_path = root / ".github" / "workflows" / "conference-paper-retrieval.yml"
@@ -20,6 +29,8 @@ class ConferenceWorkflowAndUiTest(unittest.TestCase):
         self.assertEqual((inputs.get("run_rerank") or {}).get("default"), "true")
         self.assertEqual((inputs.get("run_llm_refine") or {}).get("default"), "true")
         self.assertIn("MKL_THREADING_LAYER: GNU", text)
+        self.assertIn("DPR_RERANK_GLOBAL_POOL_LIMIT: \"80\"", text)
+        self.assertIn("DPR_RERANK_GUARANTEED_PER_LANE: \"1\"", text)
         self.assertIn("DEEPSEEK_API_KEY", text)
         self.assertIn("python src/conference_pipeline.py", text)
         self.assertIn("--run-llm-refine", text)

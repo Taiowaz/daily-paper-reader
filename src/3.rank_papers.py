@@ -30,6 +30,16 @@ DEFAULT_LOCAL_RERANK_MODEL = "Qwen/Qwen3-Reranker-0.6B"
 DEFAULT_LOCAL_RERANK_BATCH_SIZE = 8
 
 
+def _env_int(name: str, default: Optional[int] = None) -> Optional[int]:
+  value = str(os.getenv(name) or "").strip()
+  if not value:
+    return default
+  try:
+    return int(value)
+  except ValueError:
+    return default
+
+
 def log(message: str) -> None:
   ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
   print(f"[{ts}] {message}", flush=True)
@@ -254,6 +264,10 @@ def _clamp_int(value: float | int, min_value: int, max_value: int) -> int:
 def resolve_global_pool_budget(
   total_papers: int,
   intent_query_count: int,
+  *,
+  lane_top_k_override: Optional[int] = None,
+  guaranteed_per_lane_override: Optional[int] = None,
+  global_limit_override: Optional[int] = None,
 ) -> Tuple[int, int, int]:
   """
   统一候选池预算：
@@ -263,21 +277,29 @@ def resolve_global_pool_budget(
   """
   total = max(int(total_papers or 0), 0)
   intent_count = max(int(intent_query_count or 0), 1)
-  if total <= 0:
+  if lane_top_k_override is not None and int(lane_top_k_override) > 0:
+    lane_top_k = int(lane_top_k_override)
+  elif total <= 0:
     lane_top_k = LANE_TOP_K_BASE
   else:
     blocks = (total - 1) // 1000
     lane_top_k = min(LANE_TOP_K_BASE + LANE_TOP_K_STEP * blocks, LANE_TOP_K_MAX)
-  guaranteed_per_lane = _clamp_int(
-    round(lane_top_k * 0.25),
-    GLOBAL_POOL_GUARANTEED_MIN,
-    GLOBAL_POOL_GUARANTEED_MAX,
-  )
-  global_rrf_top = _clamp_int(
-    lane_top_k * intent_count,
-    GLOBAL_POOL_RRF_MIN,
-    GLOBAL_POOL_RRF_MAX,
-  )
+  if guaranteed_per_lane_override is not None and int(guaranteed_per_lane_override) >= 0:
+    guaranteed_per_lane = int(guaranteed_per_lane_override)
+  else:
+    guaranteed_per_lane = _clamp_int(
+      round(lane_top_k * 0.25),
+      GLOBAL_POOL_GUARANTEED_MIN,
+      GLOBAL_POOL_GUARANTEED_MAX,
+    )
+  if global_limit_override is not None and int(global_limit_override) > 0:
+    global_rrf_top = int(global_limit_override)
+  else:
+    global_rrf_top = _clamp_int(
+      lane_top_k * intent_count,
+      GLOBAL_POOL_RRF_MIN,
+      GLOBAL_POOL_RRF_MAX,
+    )
   return lane_top_k, guaranteed_per_lane, global_rrf_top
 
 
@@ -365,6 +387,9 @@ def process_file(
   output_path: str,
   top_n: Optional[int],
   rerank_model: str,
+  rerank_lane_top_k: Optional[int] = None,
+  rerank_guaranteed_per_lane: Optional[int] = None,
+  rerank_global_pool_limit: Optional[int] = None,
 ) -> None:
   data = load_json(input_path)
   papers_list = data.get("papers") or []
@@ -392,6 +417,9 @@ def process_file(
   lane_top_k, guaranteed_per_lane, global_rrf_top = resolve_global_pool_budget(
     len(papers_list),
     len(queries),
+    lane_top_k_override=rerank_lane_top_k,
+    guaranteed_per_lane_override=rerank_guaranteed_per_lane,
+    global_limit_override=rerank_global_pool_limit,
   )
   global_candidate_ids = build_global_candidate_ids(
     all_queries,
@@ -402,6 +430,7 @@ def process_file(
   data["global_pool_lane_top_k"] = lane_top_k
   data["global_pool_limit"] = global_rrf_top
   data["global_pool_guaranteed_per_lane"] = guaranteed_per_lane
+  data["global_pool_effective_size"] = len(global_candidate_ids)
   if not global_candidate_ids:
     log("[WARN] 未能从任意 query 中构建统一候选池，跳过 rerank。")
     meta_generated_at = data.get("generated_at") or ""
@@ -548,6 +577,24 @@ def main() -> None:
     default=int(os.getenv("LOCAL_RERANK_BATCH_SIZE") or DEFAULT_LOCAL_RERANK_BATCH_SIZE),
     help=f"本地 Rerank 推理 batch size（默认 {DEFAULT_LOCAL_RERANK_BATCH_SIZE}）。",
   )
+  parser.add_argument(
+    "--rerank-lane-top-k",
+    type=int,
+    default=_env_int("DPR_RERANK_LANE_TOP_K"),
+    help="覆盖候选池 lane_top_k；默认按论文总量自动估算。",
+  )
+  parser.add_argument(
+    "--rerank-guaranteed-per-lane",
+    type=int,
+    default=_env_int("DPR_RERANK_GUARANTEED_PER_LANE"),
+    help="每条召回 lane 固定保留的候选数；可设 1 加速。",
+  )
+  parser.add_argument(
+    "--rerank-global-pool-limit",
+    type=int,
+    default=_env_int("DPR_RERANK_GLOBAL_POOL_LIMIT"),
+    help="全局 RRF 候选池上限；可设 80 加速。",
+  )
 
   args = parser.parse_args()
 
@@ -565,7 +612,9 @@ def main() -> None:
 
   log(
     f"[INFO] 加载本地 reranker：model={args.rerank_model}，"
-    f"device={args.rerank_device or 'auto'}，batch_size={args.rerank_batch_size}"
+    f"device={args.rerank_device or 'auto'}，batch_size={args.rerank_batch_size}，"
+    f"global_pool_limit={args.rerank_global_pool_limit or 'auto'}，"
+    f"guaranteed_per_lane={args.rerank_guaranteed_per_lane if args.rerank_guaranteed_per_lane is not None else 'auto'}"
   )
   reranker = LocalQwenReranker(
     model_name=args.rerank_model,
@@ -578,6 +627,9 @@ def main() -> None:
     output_path=output_path,
     top_n=args.top_n,
     rerank_model=args.rerank_model,
+    rerank_lane_top_k=args.rerank_lane_top_k,
+    rerank_guaranteed_per_lane=args.rerank_guaranteed_per_lane,
+    rerank_global_pool_limit=args.rerank_global_pool_limit,
   )
 
 
