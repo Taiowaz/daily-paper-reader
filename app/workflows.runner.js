@@ -101,6 +101,15 @@ window.DPRWorkflowRunner = (function () {
       return '';
     }
   };
+  const loadRerankerProfile = () => {
+    try {
+      const secret = window.decoded_secret_private || {};
+      const reranker = secret.rerankerLLM || {};
+      return String(reranker.profile || '').trim();
+    } catch {
+      return '';
+    }
+  };
 
   const resolveRepoFromUrl = async (token) => {
     const currentUrl = window.location.href || '';
@@ -581,7 +590,12 @@ window.DPRWorkflowRunner = (function () {
       const dispatchUrl = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${encodeURIComponent(
         workflowFile,
       )}/dispatches`;
-      const dispatchInputs = combineInputs(wf.dispatchInputs, extraInputs);
+      const dynamicInputs = { ...(wf.dispatchInputs || {}) };
+      const rerankerProfile = loadRerankerProfile();
+      if (rerankerProfile && workflowFile === 'daily-paper-reader.yml') {
+        dynamicInputs.reranker_profile = rerankerProfile;
+      }
+      const dispatchInputs = combineInputs(dynamicInputs, extraInputs);
       const dispatchBody = {
         ref: String(repoContext.defaultBranch || 'main'),
       };

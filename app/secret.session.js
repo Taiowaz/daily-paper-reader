@@ -215,6 +215,59 @@
     }
     return null;
   };
+  const RERANKER_PROFILES = [
+    {
+      value: 'local-qwen3-0.6b',
+      label: '本地 Qwen3-Reranker-0.6B',
+      provider: 'local',
+      model: 'Qwen/Qwen3-Reranker-0.6B',
+      baseUrl: '',
+      note: '无需 reranker API Key，GitHub Actions 在 CPU 上加载本地模型。',
+    },
+    {
+      value: 'siliconflow-qwen3-0.6b',
+      label: '硅基流动 Qwen3-Reranker-0.6B',
+      provider: 'siliconflow',
+      model: 'Qwen/Qwen3-Reranker-0.6B',
+      baseUrl: 'https://api.siliconflow.cn/v1/rerank',
+      note: '速度快、成本低；需要硅基流动 API Key。',
+    },
+    {
+      value: 'blt-qwen3-4b',
+      label: 'BLT Qwen3-Reranker-4B',
+      provider: 'blt',
+      model: 'qwen3-reranker-4b',
+      baseUrl: '',
+      note: '可复用上方 BLT API Key；如有独立 rerank 服务，也可以单独填写。',
+    },
+  ];
+  const DEFAULT_RERANKER_PROFILE =
+    RERANKER_PROFILES.find((item) => item.value === 'blt-qwen3-4b') ||
+    RERANKER_PROFILES[0];
+  const findRerankerProfile = (value) => {
+    const normalized = normalizeText(value || '').toLowerCase().replace(/_/g, '-');
+    return (
+      RERANKER_PROFILES.find((item) => item.value === normalized) ||
+      DEFAULT_RERANKER_PROFILE
+    );
+  };
+  const resolveRerankerConfig = (secret) => {
+    const safeSecret = secret && typeof secret === 'object' ? secret : {};
+    const reranker = safeSecret.rerankerLLM || {};
+    const provider = normalizeText(reranker.provider || reranker.type || '');
+    const model = normalizeText(reranker.model || '');
+    const inferredProfile =
+      reranker.profile ||
+      (provider === 'blt' || model === 'qwen3-reranker-4b' ? 'blt-qwen3-4b' : '');
+    const profile = findRerankerProfile(inferredProfile);
+    return {
+      profile: profile.value,
+      provider: provider || profile.provider,
+      model: model || profile.model,
+      apiKey: normalizeText(reranker.apiKey || ''),
+      baseUrl: normalizeBaseUrlForStorage(reranker.baseUrl || profile.baseUrl || ''),
+    };
+  };
   const buildConnectivityTestPayload = (baseUrl, model) => {
     const utils = getLLMUtils();
     if (typeof utils.buildConnectivityTestPayload === 'function') {
@@ -468,12 +521,27 @@
       const filterModel = normalizeText(safeOptions.filterModel || summarizedModel);
       const rewriteModel = normalizeText(safeOptions.rewriteModel || summarizedModel);
       const skipRerank = !!safeOptions.skipRerank;
+      const localRerankModel = normalizeText(
+        safeOptions.localRerankModel || 'Qwen/Qwen3-Reranker-0.6B',
+      );
+      const rerankerProfile = normalizeText(
+        safeOptions.rerankerProfile || DEFAULT_RERANKER_PROFILE.value,
+      );
+      const rerankerProvider = normalizeText(
+        safeOptions.rerankerProvider || DEFAULT_RERANKER_PROFILE.provider,
+      );
+      const rerankerModel = normalizeText(
+        safeOptions.rerankerModel ||
+          (rerankerProvider === 'local' ? localRerankModel : DEFAULT_RERANKER_PROFILE.model),
+      );
       const rerankerApiKey = normalizeText(safeOptions.rerankerApiKey || '');
       const rerankerBaseUrl = normalizeBaseUrlForStorage(safeOptions.rerankerBaseUrl || '');
-      const rerankerModel = normalizeText(safeOptions.rerankerModel || '');
 
       if (!summarizedApiKey || !summarizedBaseUrl || !summarizedModel) {
         throw new Error('总结模型配置不完整，无法写入 GitHub Secrets。');
+      }
+      if (!rerankerProfile || !rerankerProvider || !rerankerModel) {
+        throw new Error('Reranker 配置不完整，无法写入 GitHub Secrets。');
       }
 
       const secretNameSummKey = 'Summarized_LLM_API_KEY';
@@ -491,7 +559,18 @@
       const secretNameSkipRerank = 'DPR_SKIP_RERANK';
       const secretNameRerankKey = 'Reranker_LLM_API_KEY';
       const secretNameRerankUrl = 'Reranker_LLM_BASE_URL';
-      const secretNameRerankModel = 'Reranker_LLM_MODEL';
+      const secretNameLegacyRerankModel = 'Reranker_LLM_MODEL';
+      const secretNameLocalRerankModel = 'LOCAL_RERANK_MODEL';
+      const secretNameRerankProfile = 'RERANK_PROFILE';
+      const secretNameRerankProvider = 'RERANK_PROVIDER';
+      const secretNameRerankModel = 'RERANK_MODEL';
+      const secretNameRerankApiKey = 'RERANK_API_KEY';
+      const secretNameRerankBaseUrl = 'RERANK_API_BASE_URL';
+      const secretNameSiliconFlowKey = 'SILICONFLOW_API_KEY';
+      const secretNameSiliconFlowUrl = 'SILICONFLOW_RERANK_URL';
+      const secretNameSiliconFlowInterval = 'SILICONFLOW_RERANK_MIN_INTERVAL_SECONDS';
+      const secretNameBltRerankKey = 'BLT_RERANK_API_KEY';
+      const secretNameBltRerankUrl = 'BLT_RERANK_BASE_URL';
 
       const putSecret = async (name, encrypted) => {
         const body = {
@@ -534,13 +613,43 @@
         { name: secretNameBltFilterModel, value: filterModel || summarizedModel },
         { name: secretNameBltRewriteModel, value: rewriteModel || summarizedModel },
         { name: secretNameSkipRerank, value: skipRerank ? 'true' : 'false' },
+        { name: secretNameLocalRerankModel, value: localRerankModel },
+        { name: secretNameRerankProfile, value: rerankerProfile },
+        { name: secretNameRerankProvider, value: rerankerProvider },
+        { name: secretNameRerankModel, value: rerankerModel },
       ];
+      if (rerankerProvider !== 'local') {
+        if (rerankerApiKey) {
+          secrets.push({ name: secretNameRerankApiKey, value: rerankerApiKey });
+        }
+        if (rerankerBaseUrl) {
+          secrets.push({ name: secretNameRerankBaseUrl, value: rerankerBaseUrl });
+        }
+      }
+      if (rerankerProvider === 'siliconflow') {
+        if (rerankerApiKey) {
+          secrets.push({ name: secretNameSiliconFlowKey, value: rerankerApiKey });
+        }
+        secrets.push({
+          name: secretNameSiliconFlowUrl,
+          value: rerankerBaseUrl || 'https://api.siliconflow.cn/v1/rerank',
+        });
+        secrets.push({ name: secretNameSiliconFlowInterval, value: '8' });
+      }
+      if (rerankerProvider === 'blt') {
+        if (rerankerApiKey) {
+          secrets.push({ name: secretNameBltRerankKey, value: rerankerApiKey });
+        }
+        if (rerankerBaseUrl) {
+          secrets.push({ name: secretNameBltRerankUrl, value: rerankerBaseUrl });
+        }
+      }
 
-      if (!skipRerank && rerankerApiKey && rerankerBaseUrl && rerankerModel) {
+      if (!skipRerank && rerankerProvider !== 'local' && rerankerApiKey && rerankerBaseUrl && rerankerModel) {
         secrets.push(
           { name: secretNameRerankKey, value: rerankerApiKey },
           { name: secretNameRerankUrl, value: rerankerBaseUrl },
-          { name: secretNameRerankModel, value: rerankerModel },
+          { name: secretNameLegacyRerankModel, value: rerankerModel },
         );
       }
 
@@ -897,6 +1006,7 @@
         Array.isArray(currentSecret.chatLLMs) && currentSecret.chatLLMs.length
           ? currentSecret.chatLLMs[0] || {}
           : {};
+      const currentReranker = resolveRerankerConfig(currentSecret);
       const defaultPlatoModels = getDefaultPlatoChatModels();
       const platoSummaryModels = [
         {
@@ -1023,6 +1133,35 @@
               </label>
             </div>
 
+            <div class="secret-setup-step2-block">
+              <div class="secret-setup-step2-title">Reranker</div>
+              <p class="secret-setup-step2-note">
+                Step 3 使用 Qwen3 reranker 对候选论文重排。请选择本地模型或远端服务。
+              </p>
+              <select id="secret-setup-reranker-profile" class="secret-setup-select" style="margin-bottom:8px;"></select>
+              <div id="secret-setup-reranker-remote-fields" style="display:none;">
+                <div class="secret-setup-input-row" style="margin-bottom:6px;">
+                  <input
+                    id="secret-setup-reranker-api-key"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="Reranker API Key"
+                    style="width:100%; box-sizing:border-box; padding:6px 8px; font-size:13px;"
+                  />
+                </div>
+                <div class="secret-setup-input-row" style="margin-bottom:6px;">
+                  <input
+                    id="secret-setup-reranker-base-url"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Rerank Base URL，例如 https://api.siliconflow.cn/v1/rerank"
+                    style="width:100%; box-sizing:border-box; padding:6px 8px; font-size:13px;"
+                  />
+                </div>
+              </div>
+              <div id="secret-setup-reranker-status" style="font-size:12px; color:#666; line-height:1.6;"></div>
+            </div>
+
             <div id="secret-setup-custom-section" class="secret-setup-step2-block">
               <div class="secret-setup-step2-title">OpenAI-compatible 聊天配置</div>
               <p class="secret-setup-step2-note">
@@ -1132,6 +1271,11 @@
       const openaiPresetBtn = document.getElementById('secret-setup-preset-openai');
       const customTestBtn = document.getElementById('secret-setup-custom-test');
       const customStatusEl = document.getElementById('secret-setup-custom-status');
+      const rerankerProfileSelect = document.getElementById('secret-setup-reranker-profile');
+      const rerankerRemoteFields = document.getElementById('secret-setup-reranker-remote-fields');
+      const rerankerApiKeyInput = document.getElementById('secret-setup-reranker-api-key');
+      const rerankerBaseUrlInput = document.getElementById('secret-setup-reranker-base-url');
+      const rerankerStatusEl = document.getElementById('secret-setup-reranker-status');
       const errorEl = document.getElementById('secret-setup-error');
       const backBtn = document.getElementById('secret-setup-back');
       const closeBtn = document.getElementById('secret-setup-close');
@@ -1162,6 +1306,11 @@
         !openaiPresetBtn ||
         !customTestBtn ||
         !customStatusEl ||
+        !rerankerProfileSelect ||
+        !rerankerRemoteFields ||
+        !rerankerApiKeyInput ||
+        !rerankerBaseUrlInput ||
+        !rerankerStatusEl ||
         !errorEl ||
         !backBtn ||
         !closeBtn ||
@@ -1193,6 +1342,18 @@
       if (!platoModelSelect.value) {
         platoModelSelect.value = 'gpt-5-chat';
       }
+      rerankerProfileSelect.innerHTML = RERANKER_PROFILES
+        .map(
+          (item) =>
+            `<option value="${item.value}">${item.label}</option>`,
+        )
+        .join('');
+      rerankerProfileSelect.value = currentReranker.profile || DEFAULT_RERANKER_PROFILE.value;
+      if (!rerankerProfileSelect.value) {
+        rerankerProfileSelect.value = DEFAULT_RERANKER_PROFILE.value;
+      }
+      rerankerApiKeyInput.value = currentReranker.apiKey || '';
+      rerankerBaseUrlInput.value = currentReranker.baseUrl || '';
 
       let githubOk = !!initialGithubToken;
       let platoOk = !!initialApiKey;
@@ -1215,6 +1376,29 @@
 
       const selectedPlatoModel = () => {
         return normalizeText(platoModelSelect.value || '');
+      };
+      const selectedRerankerProfile = () => {
+        return findRerankerProfile(rerankerProfileSelect.value);
+      };
+      const syncRerankerFields = () => {
+        const profile = selectedRerankerProfile();
+        const isRemote = profile.provider !== 'local';
+        const previousProfile = findRerankerProfile(
+          rerankerBaseUrlInput.getAttribute('data-reranker-profile') || '',
+        );
+        const currentBaseUrl = normalizeText(rerankerBaseUrlInput.value || '');
+        rerankerRemoteFields.style.display = isRemote ? 'block' : 'none';
+        if (
+          isRemote &&
+          (!currentBaseUrl || currentBaseUrl === previousProfile.baseUrl)
+        ) {
+          rerankerBaseUrlInput.value = profile.baseUrl || '';
+        }
+        if (!isRemote) {
+          rerankerBaseUrlInput.value = '';
+        }
+        rerankerBaseUrlInput.setAttribute('data-reranker-profile', profile.value);
+        rerankerStatusEl.textContent = `${profile.note} 模型：${profile.model}`;
       };
 
       const syncProviderSections = () => {
@@ -1295,6 +1479,34 @@
         };
       };
 
+      const buildRerankerDraft = (fallbackApiKey, fallbackBaseUrl) => {
+        const profile = selectedRerankerProfile();
+        const typedApiKey = normalizeText(rerankerApiKeyInput.value || '');
+        const typedBaseUrl = normalizeBaseUrlForStorage(
+          rerankerBaseUrlInput.value || profile.baseUrl || '',
+        );
+        const apiKey =
+          profile.provider === 'blt' ? (typedApiKey || fallbackApiKey) : typedApiKey;
+        const baseUrl =
+          profile.provider === 'blt' ? (typedBaseUrl || fallbackBaseUrl) : typedBaseUrl;
+
+        if (profile.provider === 'siliconflow' && !apiKey) {
+          throw new Error('选择硅基流动 reranker 时需要填写 Reranker API Key。');
+        }
+        if (profile.provider !== 'local' && !baseUrl) {
+          throw new Error(`请选择 ${profile.label} 时需要填写 Rerank Base URL。`);
+        }
+
+        return {
+          profile: profile.value,
+          type: profile.provider,
+          provider: profile.provider,
+          model: profile.model,
+          apiKey: profile.provider === 'local' ? '' : apiKey,
+          baseUrl: profile.provider === 'local' ? '' : baseUrl,
+        };
+      };
+
       const collectProviderDraft = () => {
         const provider = selectedProvider();
         const apiKey = normalizeText(platoInput.value);
@@ -1305,6 +1517,7 @@
         if (!model) {
           throw new Error('请选择用于工作流总结的大模型。');
         }
+        const reranker = buildRerankerDraft(apiKey, getDefaultPlatoBaseUrl());
         if (provider === 'plato') {
           return {
             providerType: 'plato',
@@ -1315,11 +1528,7 @@
             rewriteModel: 'gemini-3-flash-preview',
             filterModel: 'gemini-3-flash-preview-nothinking',
             skipRerank: false,
-            reranker: {
-              apiKey,
-              baseUrl: getDefaultPlatoBaseUrl(),
-              model: 'qwen3-reranker-4b',
-            },
+            reranker,
           };
         }
 
@@ -1336,9 +1545,7 @@
           filterModel: 'gemini-3-flash-preview-nothinking',
           skipRerank: false,
           reranker: {
-            apiKey,
-            baseUrl: getDefaultPlatoBaseUrl(),
-            model: 'qwen3-reranker-4b',
+            ...reranker,
           },
         };
       };
@@ -1390,6 +1597,7 @@
       }
 
       syncProviderSections();
+      syncRerankerFields();
 
       bindResetOnInput([githubInput], resetGithubStatus);
       bindResetOnInput([platoInput, platoModelSelect], resetPlatoStatus);
@@ -1397,6 +1605,7 @@
         [customApiKeyInput, customBaseUrlInput, customModel1Input, customModel2Input, customModel3Input],
         resetCustomStatus,
       );
+      rerankerProfileSelect.addEventListener('change', syncRerankerFields);
       providerInputs.forEach((input) => {
         input.addEventListener('change', () => {
           syncProviderSections();
@@ -1592,6 +1801,9 @@
           },
           rerankerLLM: providerDraft.reranker
             ? {
+                profile: providerDraft.reranker.profile || 'local-qwen3-0.6b',
+                provider: providerDraft.reranker.provider || providerDraft.reranker.type || 'local',
+                type: providerDraft.reranker.type || providerDraft.reranker.provider || 'local',
                 apiKey: providerDraft.reranker.apiKey,
                 baseUrl: providerDraft.reranker.baseUrl,
                 model: providerDraft.reranker.model,
@@ -1626,9 +1838,12 @@
               filterModel: providerDraft.filterModel,
               rewriteModel: providerDraft.rewriteModel,
               skipRerank: providerDraft.skipRerank,
+              localRerankModel: 'Qwen/Qwen3-Reranker-0.6B',
+              rerankerProfile: providerDraft.reranker && providerDraft.reranker.profile,
+              rerankerProvider: providerDraft.reranker && providerDraft.reranker.provider,
+              rerankerModel: providerDraft.reranker && providerDraft.reranker.model,
               rerankerApiKey: providerDraft.reranker && providerDraft.reranker.apiKey,
               rerankerBaseUrl: providerDraft.reranker && providerDraft.reranker.baseUrl,
-              rerankerModel: providerDraft.reranker && providerDraft.reranker.model,
             },
             (current, total, secretName) => {
               setErrorText(`(${current}/${total}) 正在上传 GitHub Secret：${secretName}...`, '#666');
