@@ -289,12 +289,67 @@ class ConferenceSidebarTest(unittest.TestCase):
             self.assertIn("ICML 2025 <!--dpr-conference:icml-2025-->", text)
             self.assertIn("ICML 2024 <!--dpr-conference:icml-2024-->", text)
             self.assertIn("ICML 2024, 2025 <!--dpr-conference:icml-2024-2025-->", text)
+            self.assertLess(
+                text.index("ICML 2025 <!--dpr-conference:icml-2025-->"),
+                text.index("ICML 2024, 2025 <!--dpr-conference:icml-2024-2025-->"),
+            )
+            self.assertLess(
+                text.index("ICML 2024, 2025 <!--dpr-conference:icml-2024-2025-->"),
+                text.index("ICML 2024 <!--dpr-conference:icml-2024-->"),
+            )
             self.assertIn("ICML 2025 Paper", text)
             self.assertIn("ICML 2024 Paper", text)
             self.assertIn("ICML Range Paper", text)
             self.assertTrue((tmp_path / "docs" / "conference" / "icml-2025" / "openreview-icml-2025-a-icml-2025-paper.md").exists())
             self.assertTrue((tmp_path / "docs" / "conference" / "icml-2024" / "openreview-icml-2024-b-icml-2024-paper.md").exists())
             self.assertTrue((tmp_path / "docs" / "conference" / "icml-2024-2025" / "openreview-icml-range-c-icml-range-paper.md").exists())
+
+    def test_conference_blocks_sort_by_name_then_year_desc(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            sidebar = tmp_path / "_sidebar.md"
+            sidebar.write_text("* Daily Papers\n", encoding="utf-8")
+
+            cases = [
+                (
+                    "conference-neurips-2024.supabase.llm.json",
+                    "openreview-neurips-2024-a",
+                    "NEURIPS 2024 Paper",
+                    "NEURIPS-2024-Accepted",
+                ),
+                (
+                    "conference-icml-2025.supabase.llm.json",
+                    "openreview-icml-2025-a",
+                    "ICML 2025 Paper",
+                    "ICML-2025-Accepted",
+                ),
+                (
+                    "conference-iclr-2025.supabase.llm.json",
+                    "openreview-iclr-2025-a",
+                    "ICLR 2025 Paper",
+                    "ICLR-2025-Accepted",
+                ),
+                (
+                    "conference-neurips-2025.supabase.llm.json",
+                    "openreview-neurips-2025-a",
+                    "NEURIPS 2025 Paper",
+                    "NEURIPS-2025-Accepted",
+                ),
+            ]
+            for filename, paper_id, title, source in cases:
+                result = tmp_path / filename
+                self.write_custom_result(result, paper_id, title, "query:rl", source)
+                self.mod.update_sidebar_with_conference(sidebar, result, docs_dir=tmp_path / "docs", deep_min_score=-1)
+
+            text = sidebar.read_text(encoding="utf-8")
+            ordered_labels = [
+                "ICLR 2025 <!--dpr-conference:iclr-2025-->",
+                "ICML 2025 <!--dpr-conference:icml-2025-->",
+                "NEURIPS 2025 <!--dpr-conference:neurips-2025-->",
+                "NEURIPS 2024 <!--dpr-conference:neurips-2024-->",
+            ]
+            positions = [text.index(label) for label in ordered_labels]
+            self.assertEqual(positions, sorted(positions))
 
     def test_conference_markdown_writes_media_json_front_matter(self):
         paper = {

@@ -840,6 +840,54 @@ def ensure_conference_heading(lines: List[str]) -> int:
     return insert_idx
 
 
+def _conference_block_sort_key(block: List[str]) -> Tuple[str, int, int, int, str]:
+    header = block[0] if block else ""
+    marker_match = re.search(r"<!--dpr-conference:([^>]+)-->", header)
+    marker = marker_match.group(1) if marker_match else ""
+    label = re.sub(r"<!--.*?-->", "", header)
+    label = re.sub(r"^\s*\*\s*", "", label).strip()
+    conf = marker.split("-")[0] if marker else label.split()[0] if label else ""
+    years = [int(item) for item in re.findall(r"(?:19|20)\d{2}", marker or label)]
+    latest_year = max(years) if years else 0
+    earliest_year = min(years) if years else 0
+    is_range = 1 if len(set(years)) > 1 else 0
+    return (conf.upper(), -latest_year, is_range, -earliest_year, marker or label)
+
+
+def sort_conference_blocks(lines: List[str]) -> None:
+    heading_idx = find_conference_heading(lines)
+    if heading_idx < 0:
+        return
+
+    block_start = heading_idx + 1
+    block_end = block_start
+    while block_end < len(lines) and not lines[block_end].startswith("* "):
+        block_end += 1
+
+    prefix: List[str] = []
+    conference_lines = lines[block_start:block_end]
+    blocks: List[List[str]] = []
+    current: List[str] = []
+    for line in conference_lines:
+        if line.startswith("  * ") and not line.startswith("    * "):
+            if current:
+                blocks.append(current)
+            current = [line]
+        elif current:
+            current.append(line)
+        else:
+            prefix.append(line)
+    if current:
+        blocks.append(current)
+    if not blocks:
+        return
+
+    sorted_lines: List[str] = []
+    for block in sorted(blocks, key=_conference_block_sort_key):
+        sorted_lines.extend(block)
+    lines[block_start:block_end] = prefix + sorted_lines
+
+
 def update_sidebar_with_conference(
     sidebar_path: Path,
     result_path: Path,
@@ -864,6 +912,7 @@ def update_sidebar_with_conference(
     heading_idx = ensure_conference_heading(lines)
     block = merge_conference_paper_lines(block, existing_paper_lines, conference, years)
     lines[heading_idx + 1:heading_idx + 1] = block
+    sort_conference_blocks(lines)
     sidebar_path.write_text("".join(lines), encoding="utf-8")
 
 

@@ -2498,17 +2498,17 @@ article.markdown-section {
 }
 
 .sidebar-conference-toggle-arrow {
-  flex: 0 0 auto;
   font-size: 12px;
   margin-left: 6px;
-  opacity: 0.7;
+  opacity: 0;        /* 与每日论文折叠保持一致：隐藏箭头但保留占位，避免布局抖动 */
+  pointer-events: none;
 }
 
 .sidebar-conference-content {
   overflow: hidden;
   max-height: none;
   opacity: 1;
-  transition: max-height 220ms ease, opacity 150ms ease;
+  transition: max-height 240ms ease, opacity 160ms ease;
   will-change: max-height, opacity;
 }
 

@@ -1824,7 +1824,7 @@ window.$docsify = {
         if (!nav) return;
 
         const STORAGE_KEY = 'dpr_sidebar_conference_state_v1';
-        const ANIM_MS = 220;
+        const ANIM_MS = 240;
 
         const readState = () => {
           try {
