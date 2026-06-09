@@ -1,0 +1,2527 @@
+Title: 3138_Compile_Scene_Graphs_with.pdf
+
+URL Source: https://openreview.net/pdf?id=Wf3EbtqGdw
+
+Number of Pages: 26
+
+Markdown Content:
+# Compile Scene Graphs with Reinforcement Learning 
+
+Anonymous Author(s) 
+
+Affiliation Address 
+
+email 
+
+## Abstract 
+
+Next token prediction is the fundamental principle for training large language 1
+
+models (LLMs), and reinforcement learning (RL) further enhances their reasoning 2
+
+performance. As an effective way to model language, image, video, and other 3
+
+modalities, the use of LLMs for end-to-end extraction of structured visual repre-4
+
+sentations, such as scene graphs, remains underexplored. It requires the model 5
+
+to accurately produce a set of objects and relationship triplets, rather than gener-6
+
+ating text token by token. To achieve this, we introduce R1-SGG , a multimodal 7
+
+LLM (M-LLM) initially trained via supervised fine-tuning (SFT) on the scene 8
+
+graph dataset and subsequently refined using reinforcement learning to enhance 9
+
+its ability to generate scene graphs in an end-to-end manner. The SFT follows a 10 
+
+conventional prompt-response paradigm, while RL requires the design of effective 11 
+
+reward signals. We design a set of graph centric rewards, including three recall 12 
+
+based variants—Hard Recall, Hard Recall+Relax, and Soft Recall—which evaluate 13 
+
+semantic and spatial alignment between predictions and ground truth at the object 14 
+
+and relation levels. A format consistency reward further ensures that outputs follow 15 
+
+the expected structural schema. Extensive experiments on the VG150 and PSG 16 
+
+benchmarks show that R1-SGG substantially reduces failure rates and achieves 17 
+
+strong performance in Recall and mean Recall, surpassing traditional SGG models 18 
+
+and existing multimodal language models. 19 
+
+## 1 Introduction 20 
+
+Scene graphs, as structured visual representations, have gained increasing attention in many vision 21 
+
+applications, such as robot manipulation [ 44 , 41 ], robot navigation [ 7 , 23 , 37 ], and medical image 22 
+
+or video analysis [ 20 , 24 ], etc . To generate scene graphs from an image, traditional Scene Graph 23 
+
+Generation (SGG) models [ 10 , 34 , 14 , 38 , 29 , 2, 15 , 11 , 5, 40 , 4] decouple the task into two subtasks, 24 
+
+i.e. , object detection and visual relationship recognition, and directly maximize the likelihood of 25 
+
+the ground-truth labels given the image. Essentially, these models tend to overfit the distribution of 26 
+
+annotated datasets; Consequently, they struggle to handle long-tail distributions and are prone to 27 
+
+generating biased scene graphs ( e.g. , all predicted relationships are head classes like “on” and “of”). 28 
+
+While traditional SGG models rely on manual annotated datasets and struggle to generalize to new 29 
+
+domains, recent advances in large languge models (LLMs) offer a new paragdim. LLM4SGG [ 12 ]30 
+
+utilizes an LLM to extract relationship triplets from captions using both original and paraphrased 31 
+
+text, while GPT4SGG [ 3] employs an LLM to synthesize scene graphs from dense region captions. 32 
+
+Additionally, Li [ 17 ] generates scene graphs via image-to-text generation using vision-language 33 
+
+models (VLMs). These weakly supervised methods demonstrate potential for generating scene graphs 34 
+
+with little or no human annotation but suffer from accuracy issues in the generated results. 35 
+
+Despite these advancements, existing methods typically employ text-only LLMs or rely on intermedi-36 
+
+ate captions as input, which do not fully leverage the rich visual context. In contrast, multimodal 37 
+
+large language models (M-LLMs) which integrate both visual and linguistic modalities offer the 38 
+
+Submitted to 39th Conference on Neural Information Processing Systems (NeurIPS 2025). Do not distribute. M-LLM    
+
+> prompt parse
+> <image, graph>
+> SFT
+> wea ring
+> person.1 horse.3
+> riding
+> helmet.2 person.4
+> near
+
+max E(I,G )∼D [
+
+P (wt | w0w1 · · · wt−1)] 
+
+(a) M-LLM with SFT is optimized token by token (here, wi refers to a token). M-LLM    
+
+> prompt parse
+> <image, graph>
+> RL
+> wea ring
+> person.1 horse.3
+> riding
+> helmet.2 person.4
+> near
+
+max E(I,G )∼D [Reward (V, ˆV )+ Reward (E, ˆE)+ · · · ]
+
+(b) M-LLM with RL is optimized using rule-based rewards. Here, G = (V, E )
+
+and ˆG = ( ˆV , ˆE) refer to the ground-truth and predicted scene graphs, respectively. 
+
+Figure 1: Comparison of multimodal LLMs (M-LLMs) fine-tuned via Supervised Fine-tuning (SFT) and Reinforcement Learning (RL) for Scene Graph Generation (SGG). potential for more direct and holistic scene understanding. By processing visual information alongside 39 
+
+natural language prompts, M-LLMs can generate scene graphs in an end-to-end manner. However, 40 
+
+in practice, M-LLMs suffer from instruction following ( e.g. , the output does not contain “objects” 41 
+
+or “relationships”), repeated response ( e.g. , {"objects":[ · · · {"id": "desk.9", "bbox": [214, 326, 499, 42 
+
+389]}, {"id": "desk.10", "bbox": [214, 326, 499, 389]}, {"id": "desk.11", "bbox": [214, 326, 499, 43 
+
+389]}, · · · ]· · · } ), inaccurate location, etc . These challenges highlight the need for better alignment 44 
+
+between visual understanding and structured representation within the M-LLM framework. 45 
+
+To improve instruction-following and structured output generation in M-LLMs, one intuitive solution 46 
+
+is to perform Supervised Fine-tuning (SFT) on scene graph datasets (see Fig. 1-(a)). In the context 47 
+
+of SGG, SFT aligns the model’s outputs with expected formats ( e.g. , structured lists of objects and 48 
+
+relationships) by training it on high-quality scene graph annotations. This process encourages the 49 
+
+model not only to recognize entities and relations from the image but also to organize them into a 50 
+
+coherent and valid graph structure. Nevertheless, SFT alone still be insufficient as all output tokens 51 
+
+are weighted equally in the loss. For example, the experimental results on the VG150 dataset [ 34 ]52 
+
+reveal that even with SFT, M-LLM still has a high failure rate to generate a valid and high-quality 53 
+
+scene graph. The drawback of SFT in SGG lies in the lack of effective signals to correct the output 54 
+
+(e.g. , the model cannot directly utilize the Intersection over Union (IoU) between the predicted box 55 
+
+and the ground truth to refine its output ). 56 
+
+To advance M-LLMs for effective Scene Graph Generation (SGG), we propose R1-SGG , a novel 57 
+
+framework leveraging visual instruction tuning enhanced by reinforcement learning (RL). The visual 58 
+
+instruction tuning stage follows a conventional supervised fine-tuning (SFT) paradigm, i.e. , fine-59 
+
+tuning the model using prompt-response pairs with a cross-entropy loss. For the RL stage, we adopt 60 
+
+GRPO, an online policy optimization algorithm introduced in DeepSeekMath [28]. 61 
+
+To enable effective reinforcement learning for Scene Graph Generation, we introduce a set of rule-62 
+
+based, graph-centric rewards that reflect the structural characteristics of scene graphs. Given an 63 
+
+image and a prompt, a multimodal large language model (M-LLM) generates a set of objects and 64 
+
+relational triplets. To evaluate and optimize these predictions, we formulate reward functions aligned 65 
+
+with standard SGDET metrics [ 34 ] and structured reasoning objectives. Specifically, we define three 66 
+
+reward variants: Hard Recall , which counts a triplet as correct only if the subject, predicate, and 67 
+
+object labels exactly match the ground truth and both bounding boxes achieve IoU > 0.5; Hard 68 
+
+Recall+Relax , which relaxes the exact match constraint by incorporating embedding similarity 69 
+
+between predicted and ground-truth labels; and Soft Recall , which further densifies reward signals 70 
+
+via bipartite matching, combining object label similarity, IoU, and bounding box distance into a 71 
+
+unified cost function. These scene graph rewards are computed over matched object and edge pairs, 72 
+
+and are complemented by a format reward that enforces structural adherence in output formatting. 73 
+
+2This reward design enables stable and fine-grained policy optimization using GRPO, guiding the 74 
+
+M-LLM toward generating accurate, complete, and structurally valid scene graphs. 75 
+
+Our contributions can be summarized as follows: 76 
+
+• We explore how to develop a multimodal LLM for Scene Graph Generation (SGG), by 77 
+
+leveraging visual instruction tuning with reinforcement learning (RL). To our knowledge, 78 
+
+this is a pioneer work that develop a multimodal LLM to generate scene graphs in an 79 
+
+end-to-end manner. 80 
+
+• Graph-centric, rule-based rewards are designed to guide policy optimization in a man-81 
+
+ner aligned with standard evaluation metrics in SGG, such as the recall of relationship 82 
+
+triplets—metrics that cannot be directly optimized through SFT. 83 
+
+• Experimental results demonstrate that the proposed framework improves the ability to 84 
+
+understand and reason about scene graphs for multimodal LLMs. 85 
+
+## 2 Related Work 86 
+
+Scene Graph Generation (SGG). Scene Graph Generation (SGG) is a foundational task in 87 
+
+structured visual understanding, where the goal is to represent an image as a graph of objects and their 88 
+
+pairwise relationships. Traditional approaches like [ 34 , 14 , 38 , 29 , 2, 15 , 11 , 5] decouple the task 89 
+
+into object detection and relationship classification stages, and are typically trained via supervised 90 
+
+learning on datasets such as Visual Genome (VG150) [ 34 ]. While effective, these models are limited 91 
+
+by their reliance on annotated data and exhibit strong bias toward head predicates such as “on” or 92 
+
+“of”, struggling on long-tail classes. 93 
+
+To overcome the closed-set limitation, recent work has explored open-vocabulary SGG. For example, 94 
+
+OvSGTR [ 4 ] extends scene graph prediction to a fully open-vocabulary setting by leveraging visual-95 
+
+concept alignment. In parallel, weakly supervised methods have been developed to reduce the 96 
+
+annotation burden. These approaches, such as those proposed by [ 43 , 16 , 40 , 4], use image-caption 97 
+
+pairs as supervision to distill relational knowledge, enabling generalization to unseen concepts. 98 
+
+LLMs for Scene Graph Generation. With the rise of LLMs, several studies have attempted to 99 
+
+synthesize scene graphs from natural language. LLM4SGG [ 12 ] extracts relational triplets from 100 
+
+both original and paraphrased captions using text-only LLMs. GPT4SGG [ 3 ] goes a step further by 101 
+
+using GPT-4 to generate scene graphs from dense region captions, improving contextual consistency 102 
+
+and coverage. Meanwhile, [ 17 ] leverage vision-language models (VLMs) to produce scene graphs 103 
+
+through image-to-text generation pipelines. 104 
+
+However, these caption-based or LLM-driven methods often exhibit limited accuracy, including 105 
+
+incomplete object sets, and inconsistent relationship descriptions. These issues arise from the lack of 106 
+
+structure in the generated outputs and the absence of mechanisms to refine the results according to 107 
+
+scene-level constraints. 108 
+
+Reinforcement Learning (RL) for LLMs. Reinforcement learning (RL) has been increasingly 109 
+
+adopted to enhance the reasoning capabilities of large models. Algorithms like Proximal Policy 110 
+
+Optimization (PPO) [ 27 ] and Group Relative Policy Optimization (GRPO) [ 28 ] guide models using 111 
+
+reward signals instead of relying solely on maximum likelihood estimation. In the context of 112 
+
+large language models, DeepSeek-R1 [ 8 ] demonstrates that RL can significantly improve structured 113 
+
+reasoning and planning. 114 
+
+In multimodal learning, however, RL remains underutilized for generating structured outputs. Our 115 
+
+work addresses this by introducing rule-based reward functions at multiple levels, including three 116 
+
+scene graph reward variants and a format consistency reward. These signals promote the generation 117 
+
+of meaningful and coherent scene graphs by explicitly evaluating alignment with ground-truth 118 
+
+annotations. 119 
+
+33 Methodology 120 
+
+3.1 Preliminary 121 
+
+Scene Graph Generation (SGG). Scene graph generation (SGG) transforms an image I into a 122 
+
+structured representation that captures both objects and their interactions. Specifically, SGG produces 123 
+
+a directed graph G = ( V, E), where each node vi ∈ V represents an object annotated with an object 124 
+
+category ci and a bounding box bi. Each relationship triplet eij ∈ E captures the relationship between 125 
+
+two nodes. The triplet is defined as eij := ⟨vi, p ij , v j ⟩, where pij encodes the visual relationship 126 
+
+between the subject vi and the object vj , such as spatial relations ( e.g. , “on”, “under”) or interactive 127 
+
+relations ( e.g. , “riding”, “holding”). Typically, SGG models decouple this task into two subtasks, 128 
+
+namely object detection and relationship recognition, both optimized by maximizing the likelihood 129 
+
+of the corresponding ground-truth labels given the image. 130 
+
+Reinforcement Learning with GRPO. Group Relative Policy Optimization (GRPO) is a online 131 
+
+reinforcement learning algorithm introduced by DeepSeekMath [ 28 ]. Unlike traditional methods such 132 
+
+as PPO [ 27 ], which require an explicit critic network, GRPO instead compares groups of candiates to 133 
+
+update the policy πθ . Specifically, for each input query q, a set of candidate outputs {oi}Gi=1 is drawn 134 
+
+from the previous policy πold (O|q), and the advantage of each candidate is computed relative to the 135 
+
+group’s average reward: 136 
+
+Ai = ri − mean( {r1, . . . , r G})std( {r1, . . . , r G}) . (1) The policy parameters θ are updated by maximizing the following GRPO objective: 137 
+
+JGRPO (θ) = Eq∼P (Q), {oi}Gi=1 ∼πold (O|q)
+
+"
+
+1
+
+G
+
+> G
+
+X
+
+> i=1
+
+min πθ (oi|q)
+
+πold (oi|q) Ai,
+
+clip 
+
+ πθ (oi|q)
+
+πold (oi|q) , 1 − ϵ, 1 + ϵ
+
+
+
+Ai
+
+!
+
+− β D KL 
+
+ πθ ∥ πref 
+
+#
+
+,
+
+(2) Here, ϵ and β are hyper-parameters. The first term uses a clipped probability ratio (as in PPO) to 138 
+
+control the update magnitude, while the KL divergence regularizer DKL (πθ ∥ πref ) constrains the new 139 
+
+policy πθ to not deviate too much from a reference policy πref . This formulation, which combines a 140 
+
+group-relative advantage, a clipping mechanism, and a KL divergence regularizer, stabilizes policy 141 
+
+updates and improves training efficiency, demonstrating remarkable potential for enhancing the 142 
+
+reasoning performance of LLMs such as DeepSeek R1 [8]. 143 
+
+3.2 Overview of R1-SGG 144 
+
+R1-SGG is a reinforcement learning framework that enhances scene graph generation (SGG) in 145 
+
+multimodal large language models (M-LLMs). It builds on a supervised fine-tuning (SFT) stage 146 
+
+using prompt-response pairs, followed by reinforcement learning (RL) with structured, graph-centric 147 
+
+rewards. 148 
+
+Given an input image and prompt, the M-LLM generates a scene graph Gpred = ( Vpred , Epred ),149 
+
+comprising objects (nodes) and their relationships (edges). We primarily optimize using Hard Recall ,150 
+
+which aligns with SGDET metrics by rewarding exact triplet matches. To study the sparsity and 151 
+
+design of the rewards, we also evaluated relaxed alternatives based on bipartite matching between 152 
+
+Gpred and the ground truth graph Ggt , allowing fine-grained node and edge rewards. Our RL pipeline 153 
+
+employs Group Relative Policy Optimization (GRPO) [ 28 ], which compares sampled outputs and 154 
+
+promotes higher-reward candidates. By integrating SFT, GRPO, and graph-aware rewards, R1-SGG 155 
+
+enables M-LLMs to generate accurate, diverse, and structurally valid scene graphs. 156 
+
+3.3 Rewards Definition 157 
+
+3.3.1 Format Reward 158 
+
+Following DeepSeek R1 [ 8 ], we employ a format reward to ensure that the model’s response adheres to 159 
+
+the expected structure, specifically <think> · · · </think><answer> · · · </answer> . A reward of 1 160 
+
+4is assigned if the response follows this format and the segment enclosed by <answer> · · · </answer> 161 
+
+contains both the keywords "object" and "relationships" ; otherwise, the reward is 0. 162 
+
+3.3.2 Scene Graph Rewards 163 
+
+Standard evaluation protocols for Scene Graph Generation (SGG), such as SGDET [ 34 ], formulate 164 
+
+the task as a recall-oriented problem, emphasizing the model’s ability to retrieve correct relationship 165 
+
+triplets from an image. To investigate the impact of different reward formulations, we introduce three 166 
+
+variants: Hard Recall , Hard Recall+Relax , and Soft Recall .167 
+
+Hard Recall. To align policy optimization with standard SGDET metrics, we define Hard Recall ,168 
+
+where a predicted triplet ⟨subject , predicate , object ⟩ is counted as a true positive when both of 169 
+
+the following hold: 1) Triplet accuracy: the subject, predicate, and object labels exactly match the 170 
+
+ground truth. 2) Localization accuracy: the IoU between predicted and ground-truth bounding boxes 171 
+
+exceeds 0.5. 172 
+
+This reward is aligned with standard metrics but suffers from sparsity due to its strict criteria. 173 
+
+Hard Recall + Relax. We relax the triplet accuracy requirement by computing cosine similarity 174 
+
+between the entity embeddings of predicted and ground-truth triplets. This softens the discrete 175 
+
+matching constraint to provide more gradient signal. 176 
+
+Soft Recall. We further propose a dense matching reward by formulating it as a bipartite matching 177 
+
+problem, similar to DETR [ 1 ], where predicted nodes {vi = ( ci, b i)}Mi=1 (each node vi is comprising 178 
+
+an object class ci and a bounding box bi) are matched to ground-truth nodes {˜vj = (˜ cj , ˜bj )}Nj=1 with 179 
+
+the following cost: 180 
+
+cost (vi, ˜vj ) = λ1 · (1 .0 − ⟨ Embedding (ci), Embedding (˜ cj )⟩)+ λ2 · (1 .0 − IoU( bi, ˜bj )) + λ3 · || bi − ˜bj || 1, (3) where ⟨· , ·⟩ denotes cosine similarity, λ1, λ2 are weight factors, and Embedding is obtained via 181 
+
+the NLP tool SpaCy. By solving the bipartite matching problem, we establish a one-to-one node 182 
+
+matching between the predicted graph Gpred and the ground-truth graph G.183 
+
+For a predicted node vi, the reward is defined as 184 
+
+Reward (vi) = 
+
+
+
+λ1 · ⟨ Embedding (ci), Embedding (˜ cj )⟩
+
++λ2 · IoU (bi, ˜bj )+λ3 · exp( −|| bi − ˜bj || 1), if vi and ˜vj are matched ,
+
+0, otherwise .
+
+(4) which is the linear combination of object category similarity and the IoU of bounding boxes. The 185 
+
+total rewards of an image’s prediction set {vi}Mi=1 is computed as 186 
+
+Reward ({vi}Mi=1 ) = 1
+
+|V gt |
+
+> M
+
+X
+
+> i=1
+
+Reward (vi). (5) For a predicted triplet eij := < v i, p ij , v j >, the reward is defined as 187 
+
+Reward (eij ) = 
+
+
+
+⟨Embedding (vi), Embedding (˜ vk)⟩· ⟨Embedding (vj ), Embedding (˜ vl)⟩· ⟨Embedding (pij ), Embedding (pkl )⟩, if vi matches ˜vk
+
+and vj matches ˜vl,
+
+0, otherwise. (6) Thereby, the reward of an image’s predicted edge set is computed as 188 
+
+Reward ({eij }) = 1
+
+|E gt |
+
+X Reward (eij ). (7) 54 Experiments 189 
+
+4.1 Dataset and Experiment Setup 190 
+
+Dataset. The widely-used scene graph dataset VG150 [ 34 ] consists of 150 object categories and 191 
+
+50 relation categories. Following prior works [ 40 , 4], the training set used in this work contains 192 
+
+56,224 image-graph pairs, while the validation set includes 5,000 pairs. To prompt the M-LLM, we 193 
+
+transform each image-graph pair using the template described in Table 6. 194 
+
+The Panoptic Scene Graph (PSG) dataset [ 36 ] is built on the COCO dataset [ 18 ], consisting of 80 195 
+
+thing object categories, 53 stuff object categories, and 56 relation categories. It contains 46,563 196 
+
+image-graph pairs for training and 2,186 pairs for testing. 197 
+
+Evaluation. Following the standard evaluation pipeline in SGG, we adopt the SGDET protocol [ 34 ,198 
+
+30 ] to measure the model’s ability to generate scene graphs. SGDET requires the model to generate 199 
+
+scene graphs directly from the image without any predefined object boxes. Performance is evaluated 200 
+
+using Recall and mean Recall (mRecall). Recall is computed for each image-graph pair, where 201 
+
+a predicted triplet is considered correct if both the subject and object bounding boxes have an 202 
+
+Intersection over Union (IoU) of at least 0.5 with the corresponding ground-truth boxes, and the 203 
+
+subject category, object category, and relationship label all match the ground truth. Mean Recall 204 
+
+(mRecall) is obtained by averaging the Recall across all relation categories. We additionally report 205 
+
+AP@50 to assess object detection performance and Failure Rate to evaluate format consistency. 206 
+
+Implementation Details. Our code is based on the trl library [ 31 ] and utilizes vLLM [ 13 ] to 207 
+
+speed up sampling during reinforcement learning. For SFT, the model is trained for 3 epochs with 208 
+
+a batch size of 128 on 4 NVIDIA A100 (80GB) GPUs, using the AdamW optimizer [ 22 ] with a 209 
+
+maximum learning rate of 1e-5. For RL, the model is trained for 1 epoch with a batch size of 32 210 
+
+and 8 generations per sample on 16 NVIDIA GH200 (120GB) GPUs, also using AdamW with a 211 
+
+maximum learning rate of 6e-7. 212 
+
+4.2 How Well Do M-LLMs Reason About Visual Relationships? 213 
+
+We evaluate the visual relationship reasoning capabilities of open-source multimodal LLMs using 214 
+
+a four-to-one Visual Question Answering (VQA) task. Each model is prompted with an image 215 
+
+and a corresponding question. The used prompt template is: Analyze the relationship 216 
+
+between the object "{sub_name}" at {sub_box} and the object "{obj_name}" at 217 
+
+{obj_box} in an image of size ({width}x{height}). The bounding boxes are in 218 
+
+[x1, y1, x2, y2] format. Choose the most appropriate relationship from the 219 
+
+following options: A) {choices[0]}; B) {choices[1]}; C) {choices[2]}; D) 220 
+
+{choices[3]}. We report Acc (accuracy over all questions) and mAcc (mean accuracy per 221 
+
+image) in Table 7. The results reveal that many multimodal LLMs struggle with visual relationship 222 
+
+reasoning. Moreover, the task exhibits a noticeable text bias, and the presence of bounding boxes can 223 
+
+sometimes mislead the model’s attention. As a simpler task compared to SGG, the poor performance 224 
+
+suggests that directly applying multimodal LLMs to SGG may yield suboptimal results. 225 
+
+4.3 How Well do M-LLMs Generate Scene Graphs? 226 
+
+4.3.1 Benchmark on VG150 227 
+
+We report the performance under various settings in Table 1, which includes: 1) Specific Models :228 
+
+Methods built on specific detectors such as Faster R-CNN [ 26 ] (e.g., IMP [ 34 ]) or DETR [ 1] (e.g., 229 
+
+OvSGTR [ 4]) for scene graph generation. 2) Commercial M-LLMs : Advanced multimodal large 230 
+
+language models such as GPT-4o [ 9] and Gemini 1.5 Flash [ 25 ]. 3) Open-source M-LLMs : Publicly 231 
+
+available models such as LLaVA v1.5 [ 21 ], Qwen2-VL [ 32 ], and our proposed R1-SGG-Zero (based 232 
+
+on Qwen2-VL-2B/7B-Instruct , trained with GRPO but without supervised fine-tuning) and R1-233 
+
+SGG (built on the same backbone, fine-tuned with GRPO and initialized from SFT checkpoints). 234 
+
+The results in Table 1 reveal several key observations. 235 
+
+Zero-shot Performance of M-LLMs. Either commercial or open-source multimodal LLMs struggle 236 
+
+to generate accurate scene graphs, and this can be attributed to several factors. First, the internal 237 
+
+processing of private models such as GPT-4o remains opaque to users, resulting in suboptimal 238 
+
+6Table 1: SGDET performance on the VG150 validation set. For M-LLMs, predefined object classes and relation categories are included in the input prompts.                                                                              
+
+> Method Params Failure Rate (%) AP@50 Recall mRecall
+> Specific Models
+> IMP [34] --20.91 17.85 2.66 MOTIFS [38] 29.56 27.21 7.84 VCTree [29] 28.13 24.87 8.47 OvSGTR [4] 33.39 26.74 5.83
+> Commercial M-LLMs
+> GPT-4o [9] -2.94 0.00 0.00 0.00 Gemini 1.5 Flash [25] -1.10 0.51 0.10 0.08 Gemini 2.0 Flash [6] -1.06 0.54 0.07 0.03
+> Open-sourced M-LLMs
+> LLaVA v1.5 [21] 7B 82.70 0.00 0.00 0.00 Qwen2-VL-2B-Instruct [32] 2B 59.96 2.18 0.07 0.18 +SFT 2B 72.42 8.10 5.47 1.46 Qwen2-VL-7B-Instruct [32] 7B 54.46 6.07 0.69 0.80 +SFT 7B 39.54 14.18 9.62 3.30 R1-SGG-Zero 2B 0.34 12.30 11.89 5.70 R1-SGG 2B 0.10 17.87 21.09 7.48 R1-SGG-Zero 7B 0.04 15.59 18.34 8.32 R1-SGG 7B 0.08 19.47 23.75 11.43
+
+object detection performance. Second, models like LLaVA v1.5 align visual and textual features 239 
+
+only at the image level, typically using a fixed resolution of 336 ×336, which restricts spatial 240 
+
+understanding. Third, although models such as Gemini 2.0 and Qwen2-VL demonstrate a degree of 241 
+
+spatial understanding, the task of scene graph generation is much complex than pure object detection 242 
+
+or visual grounding. Consequently, their zero-shot performance drops significantly. 243 
+
+SFT vs. RL. 1) RL substantially improves performance across all metrics compared to SFT alone. 244 
+
+Specifically, RL dramatically reduces the failure rate ( e.g. , from 72.42% to 0.10% for 2B models) and 245 
+
+yields significant gains in AP@50, Recall, and mRecall. This highlights the effectiveness of GRPO 246 
+
+in enhancing the model’s ability to generate accurate and complete scene graphs. 2) SFT achieves 247 
+
+moderate improvements in AP@50 and Recall over the baseline but struggles with a relatively high 248 
+
+failure rate. This suggests that SFT primarily improves relation prediction while being less effective 249 
+
+at correcting structural errors, such as missing objects, relationships, or format inconsistencies. 3) 250 
+
+applying RL on top of SFT ( i.e. , R1-SGG) further boosts performance over both SFT and R1-SGG-251 
+
+Zero in most cases. This indicates that combining SFT and RL benefits from better initialization, 252 
+
+leading to stronger relation recognition and higher recall. 4) larger models ( e.g. , 7B) consistently 253 
+
+outperform smaller models ( e.g. , 2B) across AP@50, Recall, and mRecall, demonstrating the benefits 254 
+
+of scaling model capacity for scene graph generation. 255 
+
+Compared to Specific Models. The gap between AP@50 and Recall highlights the advantage of 256 
+
+dense predictions. However, our models, such as R1-SGG , achieve a notable mean Recall (mRecall) 257 
+
+of 11.43%, suggesting that multimodal LLMs are more effective at generating less biased scene 258 
+
+graphs. Moreover, specific models are typically restricted to a limited vocabulary and struggle 259 
+
+to generalize across domains, whereas multimodal LLMs exhibit greater adaptability and broader 260 
+
+generalization capabilities. 261 
+
+Overall, the results demonstrate that reinforcement learning (RL) significantly reduces the failure rate 262 
+
+and enhances both object detection and relationship recognition. In contrast, supervised fine-tuning 263 
+
+(SFT) alone results in a relatively high failure rate and limited improvements. As shown in Fig. 2, 264 
+
+the failure rate quickly drops to near-zero with RL, whereas SFT continues to suffer from frequent 265 
+
+structural errors. 266 
+
+4.3.2 Benchmark on PSG 267 
+
+As shown in Table 2, our R1-SGG approach achieves strong performance on the PSG dataset. 268 
+
+Compared to baselines, SFT significantly improves AP@50, Recall, and mean Recall (mRecall), 269 
+
+while reinforcement learning further enhances relationship recognition, achieving the highest Recall 270 
+
+(43.48% for 7B model) and mRecall (33.71%). Notably, our method also drives the failure rate to 271 
+
+7Table 2: Performance on the PSG dataset [ 36 ]. For M-LLMs, predefined object classes and relation categories are included in the input prompts.                                                                               
+
+> Model Params Failure Rate (%) AP@50 Recall mRecall
+> Specific Models
+> IMP [34] 16.50 6.50 MOTIFS [38] 20.00 9.10 VCTree [29] ---20.60 9.70 GPSNet [19] 17.80 7.00 PSGFormer [36] 18.60 16.70
+> Open-sourced M-LLMs
+> LLaVA v1.5 [21] 7B 81.97 0.07 0.00 0.00 TextPSG [42] ---4.80 -ASMv2 [33] 13B 0.87 21.45 14.77 11.82 LLaVA-SpaceSGG [35] 13B --15.43 13.23 Qwen2-VL-2B-Instruct 2B 67.20 4.89 0.39 0.26 +SFT 2B 6.54 36.05 22.06 14.92 Qwen2-VL-7B-Instruct 7B 37.97 12.75 3.18 4.33 +SFT 7B 0.96 40.79 24.73 17.11 R1-SGG-Zero 2B 0.23 25.61 25.06 18.15 R1-SGG 2B 2.70 39.28 38.49 31.21 R1-SGG-Zero 7B 0.00 32.92 37.00 32.04 R1-SGG 7B 0.00 42.05 43.48 33.71
+
+zero, demonstrating the effectiveness of reinforcement learning in promoting structured, accurate 272 
+
+scene graph generation even without predefined object categories. 273 
+
+4.4 Qualitative Results 274 
+
+We present qualitative results in Fig. 6 and Fig. 7. As shown in Fig. 6, the ground-truth scene 275 
+
+graph (Fig. 6-(a)) captures key objects and their relationships but is biased toward the predicate 276 
+
+“has ”. Conversely, the zero-shot Qwen2-VL-7B-Instruct (Fig. 6-(b)) fails to generate a valid JSON 277 
+
+output, indicating poor instruction-following ability. With supervised fine-tuning, the model produces 278 
+
+structurally valid graphs (Fig. 6-(c)) but frequently omits important relationships, resulting in a sparse 279 
+
+scene graph. R1-SGG-Zero (7B), trained with RL only, improves relational recall and structure 280 
+
+(Fig. 6-(d)), yet still outputs inaccurate triplets such as <wheel, on, horse > and <helmet.2, on, 281 
+
+horse >. Finally, R1-SGG (7B), trained with both SFT and RL, produces a complete and consistent 282 
+
+scene graph (Fig. 6-(e)), with results that even surpass the ground truth in relational richness. 283 
+
+4.5 Discussion 284 
+
+Through the exploration of applying GRPO to the SGG task, we make several observations. 285 
+
+KL Regularization. We compare models trained with and without KL divergence regularization in 286 
+
+Fig. 5. From the result, removing KL regularization leads to improved performance, particularly with 287 
+
+a significant reduction in failure rate. 288 
+
+Sampling Length. In our experiments, the default sampling length is set to 1,024, which sufficiently 289 
+
+covers most corrected answers. As shown in Fig. 5, increasing the sampling length to 2,048 does not 290 
+
+yield further performance improvements, suggesting that longer sampling might enlarge the search 291 
+
+space and introduce additional optimization difficulties without clear benefits. This observation aligns 292 
+
+with prior findings on test-time scaling, where increasing Chain-of-Thought (CoT) length can degrade 293 
+
+performance [39]. 294 
+
+Group Size. As shown in Fig. 5, increasing the group size from 8 to 16 stabilizes training performance, 295 
+
+consistent with the intuition that more candidates reduce variance in group statistics estimation. To 296 
+
+balance computational cost and performance, we adopt a group size of 8 as the default in this work. 297 
+
+To Think or Not Think? We adopt the <think> · · · </think><answer> · · · </answer> 298 
+
+format in the system prompt, following DeepSeek R1 [ 8]. However, models such as 299 
+
+Qwen2-VL-2B/7B-Instruct often fail to produce outputs with the <think> tag after fine-tuning, 300 
+
+indicating difficulty in adhering to the intended structure. This suggests that rule-based rewards alone 301 
+
+8Table 3: Generalization across datasets using Qwen2-VL-7B-Instruct as the baseline. Columns under Pre-training indicate whether the weights were initialized from specific checkpoints, while the Training column specifies the dataset(s) used during the fine-tuning stage. “ w/o cats.” denotes prompts without predefined object classes or relation categories.                                                                                                                                                                 
+
+> Model Pre-Training Training VG150 PSG Failure Rate AP@50 Recall mRecall Failure Rate AP@50 Recall mRecall
+> baseline --54.46 6.07 0.69 0.80 37.97 12.75 3.18 4.33 baseline ( w/o cats.) --44.58 6.83 0.61 0.37 30.28 13.79 1.96 2.30 SFT -VG150 39.54 14.18 9.62 3.30 22.10 11.05 3.03 1.36 SFT ( w/o cats.) -VG150 42.98 13.03 8.94 2.47 19.81 12.15 3.87 1.81 R1-SGG-Zero -VG150 0.04 15.59 18.34 8.32 0.18 24.92 13.83 8.90
+> R1-SGG-Zero ( w/o cats.) -VG150 0.06 15.30 16.33 6.94 0.18 18.10 6.16 3.38 R1-SGG SFT VG150 0.08 19.47 23.75 11.43 0.23 18.12 9.10 5.13 R1-SGG ( w/o cats.) SFT ( w/o cats.) VG150 0.30 18.09 22.73 9.62 0.64 14.64 7.51 3.88 SFT -PSG 36.98 5.79 1.42 0.77 0.91 40.58 24.75 17.31 SFT ( w/o cats.) -PSG 2.54 7.94 1.77 1.25 1.01 39.02 23.70 17.17 R1-SGG-Zero -PSG 0.12 14.22 8.90 5.34 0.00 32.92 37.00 32.04 R1-SGG-Zero ( w/o cats.) -PSG 0.02 9.08 2.80 1.78 0.05 24.26 19.94 18.04 R1-SGG SFT PSG 0.94 10.38 4.40 2.69 0.00 42.05 43.48 33.71
+> R1-SGG ( w/o cats.) SFT ( w/o cats.) PSG 0.14 9.38 2.16 1.55 0.14 41.15 41.44 31.51
+
+Table 4: Ablation of reward formulations on VG150 validation set using R1-SGG (7B).                         
+
+> Setting Sparsity Metric Aligned Failure Rate (%) AP@50 Recall (%) mRecall (%)
+> Hard Recall sparse ✓0.08 19.47 23.75 11.43 Hard Recall + Relax medium ✗0.02 19.93 24.05 9.61 Soft Recall dense ✗0.06 18.73 21.92 5.61
+
+are insufficient to trigger abstract reasoning patterns like CoT, and highlights the need for additional 302 
+
+SFT on CoT-specific datasets to incentivize coherent intermediate reasoning. 303 
+
+Generalization Across Datasets. We report performance comparisons across datasets in Table 3. 304 
+
+The results highlight several key insights: 1) VG150 poses a significantly greater challenge than 305 
+
+PSG. For instance, SFT trained solely on PSG achieves a high AP@50 of 40.58 and Recall of 306 
+
+24.75%, with a low failure rate of 0.91%. In contrast, SFT trained only on VG150 results in a much 307 
+
+higher failure rate of 39.54%, with notably lower AP@50 (14.18) and Recall (9.62%). 2) SFT has a 308 
+
+strong domain-specific effect. SFT models trained on one dataset ( e.g. , VG150) exhibit substantial 309 
+
+performance drops when evaluated on another ( e.g. , PSG), reflecting limited transferability. For 310 
+
+example, VG150-trained SFT only achieves 3.03% Recall and 1.36% mRecall on PSG. 3) Predefined 311 
+
+categories in the prompt. Models trained and evaluated without categories (denoted as “ w/o cats.”) 312 
+
+generally exhibit a slight drop in performance, while those with category information demonstrate 313 
+
+better generalization under open-set settings. 4) Initialization of RL matters. R1-SGG initialized 314 
+
+with SFT checkpoints consistently outperforms R1-SGG-Zero. On VG150, R1-SGG (7B) achieves 315 
+
+23.75% Recall and 11.43% mRecall versus 18.34% and 8.32% for R1-SGG-Zero. A similar trend is 316 
+
+observed on PSG. This highlights the importance of using SFT as a warm-start for reinforcement 317 
+
+learning, which leads to improved sample efficiency and stronger downstream performance. 5) 318 
+
+R1-SGG-Zero exhibits stronger cross-dataset generalization. This aligns with the domain-specific 319 
+
+nature of SFT—models trained via SFT tend to overfit to the source domain, resulting in degraded 320 
+
+performance on unseen datasets. In contrast, R1-SGG-Zero, trained without SFT, generalizes more 321 
+
+robustly across domains. 322 
+
+Hard Recall vs. Soft Recall. As shown in Table 4, Hard Recall outperforms other variants despite 323 
+
+providing sparser reward signals. This highlights the importance of aligning reward functions with 324 
+
+evaluation metrics, rather than prioritizing reward smoothness alone. 325 
+
+## 5 Conclusion 326 
+
+We present a reinforcement learning framework for enhancing end-to-end Scene Graph Generation 327 
+
+(SGG) with multimodal large language models (M-LLMs). To align training with the structured 328 
+
+nature of scene graphs, we design a set of rule-based rewards, comprising three scene graph variants 329 
+
+(Hard Recall , Hard Recall+Relax , and Soft Recall ) and a format consistency reward, which enable 330 
+
+fine-grained and stable policy optimization via GRPO. Our approach significantly improves the 331 
+
+structural validity and relational accuracy of generated scene graphs. We release our code and models 332 
+
+to support future research on structured visual understanding with M-LLMs. 333 
+
+9References 334 
+
+[1] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, and 335 
+
+Sergey Zagoruyko. End-to-end object detection with transformers. In ECCV , pages 213–229, 336 
+
+2020. 337 
+
+[2] Tianshui Chen, Weihao Yu, Riquan Chen, and Liang Lin. Knowledge-embedded routing network 338 
+
+for scene graph generation. In CVPR , pages 6163–6171, 2019. 339 
+
+[3] Zuyao Chen, Jinlin Wu, Zhen Lei, Zhaoxiang Zhang, and Changwen Chen. GPT4SGG: Synthe-340 
+
+sizing scene graphs from holistic and region-specific narratives. arXiv preprint arXiv:2312.04314 ,341 
+
+2023. 342 
+
+[4] Zuyao Chen, Jinlin Wu, Zhen Lei, Zhaoxiang Zhang, and Chang Wen Chen. Expanding scene 343 
+
+graph boundaries: fully open-vocabulary scene graph generation via visual-concept alignment and 344 
+
+retention. In ECCV , pages 108–124, 2024. 345 
+
+[5] Yuren Cong, Michael Ying Yang, and Bodo Rosenhahn. Reltr: Relation transformer for scene 346 
+
+graph generation. IEEE Trans. Pattern Anal. Mach. Intell. , 45(9):11169–11183, 2023. 347 
+
+[6] Google AI for Developers. Gemini 2.0 flash. https://ai.google.dev/gemini-api/docs/ 348 
+
+models#gemini-2.0-flash , 2025. 349 
+
+[7] Qiao Gu, Ali Kuwajerwala, Sacha Morin, Krishna Murthy Jatavallabhula, Bipasha Sen, Aditya 350 
+
+Agarwal, Corban Rivera, William Paul, Kirsty Ellis, Rama Chellappa, et al. Conceptgraphs: 351 
+
+Open-vocabulary 3d scene graphs for perception and planning. In ICRA , pages 5021–5028, 2024. 352 
+
+[8] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, 353 
+
+Shirong Ma, Peiyi Wang, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms 354 
+
+via reinforcement learning. arXiv preprint arXiv:2501.12948 , 2025. 355 
+
+[9] Aaron Hurst, Adam Lerer, Adam P Goucher, Adam Perelman, Aditya Ramesh, Aidan Clark, 356 
+
+AJ Ostrow, Akila Welihinda, Alan Hayes, Alec Radford, et al. Gpt-4o system card. arXiv preprint 357 
+
+arXiv:2410.21276 , 2024. 358 
+
+[10] Justin Johnson, Ranjay Krishna, Michael Stark, Li-Jia Li, David Shamma, Michael Bernstein, 359 
+
+and Li Fei-Fei. Image retrieval using scene graphs. In CVPR , pages 3668–3678, 2015. 360 
+
+[11] Siddhesh Khandelwal and Leonid Sigal. Iterative scene graph generation. In Sanmi Koyejo, 361 
+
+S. Mohamed, A. Agarwal, Danielle Belgrave, K. Cho, and A. Oh, editors, NeurIPS , 2022. 362 
+
+[12] Kibum Kim, Kanghoon Yoon, Jaehyeong Jeon, Yeonjun In, Jinyoung Moon, Donghyun Kim, 363 
+
+and Chanyoung Park. Llm4sgg: Large language model for weakly supervised scene graph 364 
+
+generation. arXiv e-prints , pages arXiv–2310, 2023. 365 
+
+[13] Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, 366 
+
+Joseph E. Gonzalez, Hao Zhang, and Ion Stoica. Efficient memory management for large language 367 
+
+model serving with pagedattention. In Proceedings of the ACM SIGOPS 29th Symposium on 368 
+
+Operating Systems Principles , 2023. 369 
+
+[14] Yikang Li, Wanli Ouyang, Bolei Zhou, Kun Wang, and Xiaogang Wang. Scene graph generation 370 
+
+from objects, phrases and region captions. In ICCV , pages 1270–1279, 2017. 371 
+
+[15] Rongjie Li, Songyang Zhang, and Xuming He. Sgtr: End-to-end scene graph generation with 372 
+
+transformer. In CVPR , pages 19464–19474, 2022. 373 
+
+[16] Xingchen Li, Long Chen, Wenbo Ma, Yi Yang, and Jun Xiao. Integrating object-aware and 374 
+
+interaction-aware knowledge for weakly supervised scene graph generation. In ACMMM , pages 375 
+
+4204–4213, 2022. 376 
+
+[17] Rongjie Li, Songyang Zhang, Dahua Lin, Kai Chen, and Xuming He. From pixels to graphs: 377 
+
+Open-vocabulary scene graph generation with vision-language models. In CVPR , pages 28076– 378 
+
+28086, 2024. 379 
+
+10 [18] Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, 380 
+
+Piotr Dollár, and C Lawrence Zitnick. Microsoft coco: Common objects in context. In ECCV ,381 
+
+pages 740–755, 2014. 382 
+
+[19] Xin Lin, Changxing Ding, Jinquan Zeng, and Dacheng Tao. Gps-net: Graph property sensing 383 
+
+network for scene graph generation. In CVPR , pages 3746–3753, 2020. 384 
+
+[20] Chen Lin, Shuai Zheng, Zhizhe Liu, Youru Li, Zhenfeng Zhu, and Yao Zhao. Sgt: Scene 385 
+
+graph-guided transformer for surgical report generation. In MICCAI , pages 507–518, 2022. 386 
+
+[21] Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee. Improved baselines with visual 387 
+
+instruction tuning, 2023. 388 
+
+[22] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In ICLR , 2019. 389 
+
+[23] Yang Miao, Francis Engelmann, Olga Vysotska, Federico Tombari, Marc Pollefeys, and 390 
+
+Dániel Béla Baráth. SceneGraphLoc: Cross-Modal Coarse Visual Localization on 3D Scene 391 
+
+Graphs. In ECCV , 2024. 392 
+
+[24] Ege Özsoy, Evin Pınar Örnek, Ulrich Eck, Tobias Czempiel, Federico Tombari, and Nassir 393 
+
+Navab. 4d-or: Semantic scene graphs for or domain modeling. In MICCAI , pages 475–485, 2022. 394 
+
+[25] Machel Reid, Nikolay Savinov, Denis Teplyashin, Dmitry Lepikhin, Timothy Lillicrap, Jean-395 
+
+baptiste Alayrac, Radu Soricut, Angeliki Lazaridou, Orhan Firat, Julian Schrittwieser, et al. Gemini 396 
+
+1.5: Unlocking multimodal understanding across millions of tokens of context. arXiv preprint 397 
+
+arXiv:2403.05530 , 2024. 398 
+
+[26] Shaoqing Ren, Kaiming He, Ross Girshick, and Jian Sun. Faster r-cnn: Towards real-time 399 
+
+object detection with region proposal networks. NeurIPS , 28, 2015. 400 
+
+[27] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal 401 
+
+policy optimization algorithms. arXiv preprint arXiv:1707.06347 , 2017. 402 
+
+[28] Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, 403 
+
+Mingchuan Zhang, YK Li, Y Wu, et al. Deepseekmath: Pushing the limits of mathematical 404 
+
+reasoning in open language models. arXiv preprint arXiv:2402.03300 , 2024. 405 
+
+[29] Kaihua Tang, Hanwang Zhang, Baoyuan Wu, Wenhan Luo, and Wei Liu. Learning to compose 406 
+
+dynamic tree structures for visual contexts. In CVPR , pages 6619–6628, 2019. 407 
+
+[30] Kaihua Tang, Yulei Niu, Jianqiang Huang, Jiaxin Shi, and Hanwang Zhang. Unbiased scene 408 
+
+graph generation from biased training. In CVPR , pages 3713–3722, 2020. 409 
+
+[31] Leandro von Werra, Younes Belkada, Lewis Tunstall, Edward Beeching, Tristan Thrush, Nathan 410 
+
+Lambert, Shengyi Huang, Kashif Rasul, and Quentin Gallouédec. Trl: Transformer reinforcement 411 
+
+learning. https://github.com/huggingface/trl , 2020. 412 
+
+[32] Peng Wang, Shuai Bai, Sinan Tan, Shijie Wang, Zhihao Fan, Jinze Bai, Keqin Chen, Xuejing Liu, 413 
+
+Jialin Wang, Wenbin Ge, Yang Fan, Kai Dang, Mengfei Du, Xuancheng Ren, Rui Men, Dayiheng 414 
+
+Liu, Chang Zhou, Jingren Zhou, and Junyang Lin. Qwen2-vl: Enhancing vision-language model’s 415 
+
+perception of the world at any resolution. arXiv preprint arXiv:2409.12191 , 2024. 416 
+
+[33] Weiyun Wang, Yiming Ren, Haowen Luo, Tiantong Li, Chenxiang Yan, Zhe Chen, Wenhai 417 
+
+Wang, Qingyun Li, Lewei Lu, Xizhou Zhu, et al. The all-seeing project v2: Towards general 418 
+
+relation comprehension of the open world. In ECCV , pages 471–490. Springer, 2024. 419 
+
+[34] Danfei Xu, Yuke Zhu, Christopher B. Choy, and Li Fei-Fei. Scene graph generation by iterative 420 
+
+message passing. In CVPR , pages 3097–3106, 2017. 421 
+
+[35] Mingjie Xu, Mengyang Wu, Yuzhi Zhao, Jason Chun Lok Li, and Weifeng Ou. Llava-spacesgg: 422 
+
+Visual instruct tuning for open-vocabulary scene graph generation with enhanced spatial relations. 423 
+
+In WACV , pages 6362–6372, 2025. 424 
+
+[36] Jingkang Yang, Yi Zhe Ang, Zujin Guo, Kaiyang Zhou, Wayne Zhang, and Ziwei Liu. Panoptic 425 
+
+scene graph generation. In ECCV , pages 178–196. Springer, 2022. 426 
+
+11 [37] Hang Yin, Xiuwei Xu, Zhenyu Wu, Jie Zhou, and Jiwen Lu. Sg-nav: Online 3d scene graph 427 
+
+prompting for llm-based zero-shot object navigation. NeurIPS , 37:5285–5307, 2024. 428 
+
+[38] Rowan Zellers, Mark Yatskar, Sam Thomson, and Yejin Choi. Neural motifs: Scene graph 429 
+
+parsing with global context. In CVPR , pages 5831–5840, 2018. 430 
+
+[39] Zhiyuan Zeng, Qinyuan Cheng, Zhangyue Yin, Yunhua Zhou, and Xipeng Qiu. Revisiting the 431 
+
+test-time scaling of o1-like models: Do they truly possess test-time scaling capabilities? arXiv 432 
+
+preprint arXiv:2502.12215 , 2025. 433 
+
+[40] Yong Zhang, Yingwei Pan, Ting Yao, Rui Huang, Tao Mei, and Chang Wen Chen. Learning to 434 
+
+generate language-supervised and open-vocabulary scene graph using pre-trained visual-semantic 435 
+
+space. In CVPR , pages 2915–2924, 2023. 436 
+
+[41] Chenyangguang Zhang, Alexandros Delitzas, Fangjinhua Wang, Ruida Zhang, Xiangyang 437 
+
+Ji, Marc Pollefeys, and Francis Engelmann. Open-vocabulary functional 3d scene graphs for 438 
+
+real-world indoor spaces. In CVPR , 2025. 439 
+
+[42] Chengyang Zhao, Yikang Shen, Zhenfang Chen, Mingyu Ding, and Chuang Gan. Textpsg: 440 
+
+Panoptic scene graph generation from textual descriptions. In ICCV , pages 2839–2850, 2023. 441 
+
+[43] Yiwu Zhong, Jing Shi, Jianwei Yang, Chenliang Xu, and Yin Li. Learning to generate scene 442 
+
+graph from natural language supervision. In ICCV , pages 1823–1834, 2021. 443 
+
+[44] Yifeng Zhu, Jonathan Tremblay, Stan Birchfield, and Yuke Zhu. Hierarchical planning for 444 
+
+long-horizon manipulation with geometric and symbolic scene graphs. In ICRA , pages 6541–6548, 445 
+
+2021. 446 
+
+12 Table 5: Prompting an M-LLM to generate scene graphs without providing predefined object classes or predicate types. messages = [{ "role ": "system ", "content ": " {system_prompt}" }, { "role ": "user ",
+
+"content ": f """ Generate a structured scene graph for an image using the following format: “‘json { "objects": [ {"id": "object_name.number", "bbox": [x1, y1, x2, y2]}, ... ], "relation-ships": [ {"subject": "object_name.number", "predicate": "relationship_type", "object": "ob-ject_name.number"}, ... ] }“‘. ### **Guidelines:** - **Objects:** - Assign a unique ID for each object using the format "object_name.number" (e.g., "person.1", "bike.2"). - Provide its bounding box ‘[x1, y1, x2, y2]’ in integer pixel format. - Include all visible objects, even if they have no relationships. - **Relationships:** - Represent interactions accurately using "subject", "predicate", and "ob-ject". - Omit relationships for orphan objects. 
+
+### **Example Output:** “‘json { "objects": [ {"id": "person.1", "bbox": [120, 200, 350, 700]}, {"id": "bike.2", "bbox": [100, 600, 400, 800]}, {"id": "helmet.3", "bbox": [150, 150, 280, 240]}, {"id": "tree.4", "bbox": [500, 100, 750, 700]} ], "relationships": [ {"subject": "per-son.1", "predicate": "riding", "object": "bike.2"}, {"subject": "person.1", "predicate": "wearing", "object": "helmet.3"} ] } “‘ Now, generate the complete scene graph for the provided image: 
+
+""" } ] Table 6: Prompting an M-LLM to generate scene graphs with predefined object classes and predicate types. Here, OBJ_CLS and REL_CLS refer to the predefined object classes and relation categories respectively. messages = [{ "role ": "system ", "content ": " {system_prompt}" }, { "role ": "user ",
+
+"content ": f """ Generate a structured scene graph for an image using the following format: “‘json { "objects": [ {"id": "object_name.number", "bbox": [x1, y1, x2, y2]}, ... ], "relation-ships": [ {"subject": "object_name.number", "predicate": "relationship_type", "object": "ob-ject_name.number"}, ... ] }“‘. ### **Guidelines:** - **Objects:** - Assign a unique ID for each object using the format "object_name.number" (e.g., "person.1", "bike.2"). The **ob-ject_name** must belong to the predefined object set: ‘{OBJ_CLS}’. - Provide its bounding box ‘[x1, y1, x2, y2]’ in integer pixel format. - Include all visible objects, even if they have no relationships. - **Relationships:** - Represent interactions accurately using "subject", "predicate", and "ob-ject". - Omit relationships for orphan objects. - The **predicate** must belong to the prede-fined relationship set: ‘{REL_CLS}’. ### **Example Output:** “‘json { "objects": [ {"id": "person.1", "bbox": [120, 200, 350, 700]}, {"id": "bike.2", "bbox": [100, 600, 400, 800]}, {"id": "helmet.3", "bbox": [150, 150, 280, 240]}, {"id": "tree.4", "bbox": [500, 100, 750, 700]} ], "relationships": [ {"subject": "person.1", "predicate": "riding", "object": "bike.2"}, {"subject": "person.1", "predicate": "wearing", "object": "helmet.3"} ] } “‘ Now, generate the complete scene graph for the provided image: """ } ] 
+
+## A Supplementary Material 447 
+
+A.1 Prompt Templates for SGG 448 
+
+In this work, we adopt two prompt templates for scene graph generation, as illustrated in Table 6 and 449 
+
+Table 5. The difference lies in whether predefined object classes and relation categories are provided. 450 451 
+
+A.2 How Well Do M-LLMs Reason About Visual Relationships? 452 
+
+To evaluate the reasoning capabilities of M-LLMs over visual relationships, we present results in 453 
+
+Table 7. We vary both the visual input and the text prompt conditions to assess robustness. For visual 454 
+
+variations, we consider: org. img. , mask img. , and mask obj. ; for prompt variations, we add: w/o cats. 455 
+
+(without object categories) and w/o box. (without bounding boxes). 456 
+
+13 Table 7: Comparison of VQA on the VG150 validation set across various models and settings. Gains compared to the Original Image (1st row) are indicated in red. “mask img.” refers to masking the entire image with random noise, “mask obj.” refers to masking object regions with black pixels, “w/o cats.” refers to not providing object categories in the prompt, and “w/o box.” refers to not providing bounding boxes in the prompt. 
+
+InstructBLIP 7B LLaVA v1.5 7B LLaVA v1.6 7B Qwen2VL 7B Acc mAcc Acc mAcc Acc mAcc Acc mAcc 
+
+org. img. 2.3 1.9 45.8 45.6 28.7 29.2 53.7 53.4 mask img. 1.0 (-1.3) 1.0 (-0.9) 21.8 (-24.0) 21.6 (-24.0) 3.9 (-24.8) 4.0 (-25.2) 0.0 (-53.7) 0.0 (-53.4) 
+
+mask obj. 1.9 (-0.4) 1.9 (-0.1) 37.2 (-8.6) 37.2 (-8.4) 12.8 (-15.9) 13.2 (-16.0) 16.2 (-37.5) 16.8 (-36.5) 
+
+w/o cats. 2.5 (+0.2) 2.4 (+0.4) 32.8 (-12.9) 32.7 (-12.9) 9.5 (-19.2) 10.1 (-19.1) 16.8 (-36.9) 18.1 (-35.3) 
+
++ mask img. 1.0 (-1.3) 1.0 (-0.9) 15.4 (-30.3) 15.3 (-30.3) 0.0 (-28.7) 0.0 (-29.2) 0.2 (-53.6) 0.2 (-53.1) 
+
++ mask obj. 1.8 (-0.5) 1.7 (-0.3) 27.9 (-17.8) 28.4 (-17.2) 3.3 (-25.4) 3.8 (-25.4) 4.7 (-49.1) 5.5 (-47.8) 
+
+w/o box. 26.0 (+23.7) 25.9 (+24.0) 61.9 (+16.2) 61.3 (+15.7) 53.5 (+24.8) 52.1 (+22.9) 78.1 (+24.4) 77.1 (+23.8) 
+
++ mask img. 10.1 (+7.9) 10.2 (+8.2) 36.3 (-9.5) 35.2 (-10.4) 11.5 (-17.2) 11.4 (-17.7) 0.0 (-53.7) 0.0 (-53.4) 
+
++ mask obj. 19.3 (+17.0) 19.1 (+17.1) 54.2 (+8.5) 53.8 (+8.2) 33.5 (+4.8) 33.2 (+4.1) 40.3 (-13.4) 39.3 (-14.1) 
+
+0 400 800 1,200 
+
+20 
+
+40 
+
+60 
+
+80 
+
+100 
+
+Training Steps 
+
+> Failure Rate (%)
+
+0 400 800 1,200 
+
+0
+
+5
+
+10 
+
+15 
+
+Training Steps 
+
+> AP@50
+
+0 400 800 1,200 
+
+0
+
+5
+
+10 
+
+Training Steps 
+
+> Recall (%)
+
+0 400 800 1,200 1,600 
+
+0
+
+50 
+
+100 
+
+Training Steps 
+
+> Failure Rate (%)
+
+0 400 800 1,200 1,600 
+
+0
+
+5
+
+10 
+
+15 
+
+20 
+
+Training Steps 
+
+> AP@50
+
+0 400 800 1,200 1,600 
+
+0
+
+10 
+
+20 
+
+Training Steps 
+
+> Recall (%)
+
+Qwen2-VL-2B-Instruct (SFT) Qwen2-VL-7B-Instruct (SFT) 
+
+R1-SGG-Zero (2B) R1-SGG-Zero (7B) R1-SGG (2B) R1-SGG (7B) 
+
+Figure 2: Comparison of R1-SGG-Zero and R1-SGG models against SFT baselines (Qwen2-VL-2B/7B-Instruct) across training steps on the VG150 validation set in terms of Failure Rate (%), AP@50, and Recall (%). 
+
+A.3 Qualitative Results 457 
+
+We present qualitative results in Fig. 6 and Fig. 7, and analyze head and tail predicate performance in 458 
+
+Fig. 3 and Fig. 4 to assess long-tail bias. As shown in Fig. 3, both specific models such as OvSGTR 459 
+
+and M-LLMs like Qwen2-VL-7B-Instruct (with or without SFT) tend to be biased toward head 460 
+
+classes, whereas R1-SGG achieves significantly higher recall on tail predicates. This trend is also 461 
+
+confirmed on the PSG dataset in Fig. 4. These results demonstrate that R1-SGG is more effective at 462 
+
+generating unbiased scene graphs. 463 
+
+14 on 
+
+> has
+> wearing
+> near
+> in
+> of
+> with
+> above
+> behind
+> in front of
+> holding
+> walking on
+> sitting on
+> attached to
+> under
+> parked on
+> wears
+> at
+> standing on
+> belonging to
+> carrying
+> over
+> riding
+> hanging from
+> covering
+> mounted on
+> part of
+> to
+> and
+> between
+> for
+> along
+> looking at
+> watching
+> on back of
+> against
+> laying on
+> walking in
+> covered in
+> eating
+> growing on
+> lying on
+> using
+> across
+> from
+> painted on
+> made of
+> playing
+> says
+
+1
+
+100 
+
+10000 
+
+> Count
+
+(a) Histogram of predicate frequency in the VG150 validation set. 
+
+> on
+> has
+> wearing
+> near
+> in
+> of
+> with
+> above
+> behind
+> in front of
+> holding
+> walking on
+> sitting on
+> attached to
+> under
+> parked on
+> wears
+> at
+> standing on
+> belonging to
+> carrying
+> over
+> riding
+> hanging from
+
+0
+
+20 
+
+40 
+
+> Recall (%)
+
+Baseline Baseline (SFT) OvSGTR 
+
+R1-SGG-Zero (7B) R1-SGG (7B) 
+
+(b) Recall scores of top-24 predicates of the VG150 validation set. 
+
+> covering
+> mounted on
+> part of
+> to
+> and
+> between
+> for
+> along
+> looking at
+> watching
+> on back of
+> against
+> laying on
+> walking in
+> covered in
+> eating
+> growing on
+> lying on
+> using
+> across
+> from
+> painted on
+> made of
+> playing
+> says
+
+0
+
+20 
+
+40 
+
+> Recall (%)
+
+Baseline Baseline (SFT) OvSGTR 
+
+R1-SGG-Zero (7B) R1-SGG (7B) 
+
+(c) Recall scores of tail-25 predicates of the VG150 validation set. 
+
+Figure 3: Comparison of predicate frequency and predicate-wise recall on the VG150 validation set. Subfigures (b) and (c) report the recall performance of R1-SGG compared to four models on the top-24 and tail-25 predicates (the VG150 validation set contains only 49 predicates, with the predicate “ flying in ” missing.), respectively. Here, Baseline refers to Qwen2-VL-7B-Instruct .15 on 
+
+> beside
+> over
+> in front of
+> attached to
+> standing on
+> holding
+> in
+> looking at
+> sitting on
+> parked on
+> driving on
+> walking on
+> wearing
+> enclosing
+> riding
+> carrying
+> hanging from
+> playing
+> leaning on
+> lying on
+> eating
+> flying over
+> running on
+> talking to
+> touching
+> swinging
+> on back of
+> driving
+> crossing
+> playing with
+> about to hit
+> jumping from
+> pulling
+> painted on
+> entering
+> catching
+> pushing
+> going down
+> jumping over
+> chasing
+> throwing
+> guiding
+> slicing
+> biting
+> feeding
+> picking
+> cleaning
+> drinking
+> exiting
+> cooking
+> kicking
+> climbing
+> falling off
+> kissing
+> opening
+
+1
+
+10 
+
+100 
+
+1000 
+
+> Count
+
+(a) Histogram of predicate frequency in the PSG test set. 
+
+> on
+> beside
+> over
+> in front of
+> attached to
+> standing on
+> holding
+> in
+> looking at
+> sitting on
+> parked on
+> driving on
+> walking on
+> wearing
+> enclosing
+> riding
+> carrying
+> hanging from
+> playing
+> leaning on
+> lying on
+> eating
+> flying over
+> running on
+> talking to
+> touching
+> swinging
+> on back of
+
+0
+
+20 
+
+40 
+
+60 
+
+80 
+
+> Recall (%)
+
+Baseline Baseline (SFT) ASMv2 (13B) 
+
+R1-SGG-Zero (7B) R1-SGG (7B) 
+
+(b) Recall scores of top-28 predicates of the PSG test set. 
+
+> driving
+> crossing
+> playing with
+> about to hit
+> jumping from
+> pulling
+> painted on
+> entering
+> catching
+> pushing
+> going down
+> jumping over
+> chasing
+> throwing
+> guiding
+> slicing
+> biting
+> feeding
+> picking
+> cleaning
+> drinking
+> exiting
+> cooking
+> kicking
+> climbing
+> falling off
+> kissing
+> opening
+
+0
+
+20 
+
+40 
+
+60 
+
+80 
+
+100 
+
+> Recall (%)
+
+Baseline Baseline (SFT) ASMv2 (13B) 
+
+R1-SGG-Zero (7B) R1-SGG (7B) 
+
+(c) Recall scores of tail-28 predicates of the PSG test set. 
+
+Figure 4: Comparison of predicate frequency and predicate-wise recall on the PSG test set. Subfigures (b) and (c) report the recall performance of R1-SGG compared to four models on the top-28 and tail-28 predicates, respectively. Here, Baseline refers to Qwen2-VL-7B-Instruct .16 0 400 800 1,200 1,600 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+
+Training Steps     
+
+> Failure Rate (%)
+> 0400 800 1,200 1,600
+> 5
+> 10
+> 15
+> 20
+
+Training Steps     
+
+> AP@50
+> 0400 800 1,200 1,600
+> 5
+> 10
+> 15
+> 20
+
+Training Steps     
+
+> Recall (%)
+> 0400 800 1,200 1,600
+> 0
+> 50
+> 100
+
+Training Steps     
+
+> Failure Rate (%)
+> 0400 800 1,200 1,600
+> 0
+> 5
+> 10
+> 15
+> 20
+
+Training Steps     
+
+> AP@50
+> 0400 800 1,200 1,600
+> 0
+> 10
+> 20
+
+Training Steps             
+
+> Recall (%)
+> 0400 800 1,200 1,600
+> 0
+> 50
+> 100
+> Training Steps
+> Failure Rate (%)
+> 0400 800 1,200 1,600
+> 5
+> 10
+> 15
+> 20
+> Training Steps
+> AP@50
+> 0400 800 1,200 1,600
+> 5
+> 10
+> 15
+> 20
+> Training Steps
+> Recall (%)
+
+R1-SGG (2B, w. KL) R1-SGG (2B, w/o KL) 
+
+R1-SGG (2B, sampling length 2k) R1-SGG (2B, sampling length 1k) 
+
+R1-SGG (2B, group size 16) R1-SGG (2B, group size 8) 
+
+Figure 5: Performance comparison of R1-SGG (2B) across training steps on the VG150 validation set. Each row evaluates a different setting: (Top) KL divergence regularization ( β=0 .04 vs. β=0 ), (Middle) sampling length, and (Bottom) group size. Metrics reported include Failure Rate (%), AP@50, and Recall (%). 
+
+## NeurIPS Paper Checklist 464 
+
+1. Claims 465 
+
+Question: Do the main claims made in the abstract and introduction accurately reflect the 466 
+
+paper’s contributions and scope? 467 
+
+Answer: [Yes] 468 
+
+Justification: The abstract and introduction clearly state the objective of the paper: to enhance 469 
+
+end-to-end scene graph generation using reinforcement learning (RL) with multimodal 470 
+
+LLMs and summarize contributions such as novel reward design, integration of GRPO and 471 
+
+significant performance gains. These are substantiated by methodology and experiments 472 
+
+sections. 473 
+
+Guidelines: 474 
+
+• The answer NA means that the abstract and introduction do not include the claims 475 
+
+made in the paper. 476 
+
+17 woman.14 
+
+jacket.4 
+
+> wearing/
+> has
+
+horse.3 
+
+hat.2 
+
+> riding
+
+leg.6 
+
+> has
+
+leg.8 
+
+leg.7 
+
+> has
+
+tail.11 
+
+> has
+
+leg.5 
+
+> has
+> wearing/
+> has
+> has
+
+## (a) GT. 
+
+## (b) Qwen2-VL-7B-Instruct. horse.1 has tail.10 
+
+horse.14 
+
+has 
+
+number.4 
+
+person.6 
+
+pant.5 helmet.2 
+
+wearing wearing 
+
+## (c) Qwen2-VL-7B-Instruct (SFT). woman 
+
+shirt jacket   
+
+> wearing wearing
+> on/of on/of
+
+pant 
+
+> wearing
+> on/of
+
+horse 
+
+helmet 
+
+> wearing/has
+> on/of/
+> for
+> riding/sitting on /on
+
+pole 
+
+> behind
+
+track 
+
+> on
+
+number 
+
+> on
+> has
+
+head 
+
+> has
+
+tail 
+
+> has
+
+wheel 
+
+> on
+
+helmet.2 on 
+
+## (d) R1-SGG-Zero (7B). woman.13 
+
+jacket.4 
+
+> wearing/
+> in
+> on
+
+pant.8 
+
+> wearing
+> on
+
+horse.3 
+
+helmet.2 
+
+> wearing
+> on
+> riding
+
+leg.6 
+
+> has
+
+number.7 
+
+> on
+> has
+
+head.1 
+
+> has
+
+tail.10  
+
+> has
+> of of
+
+leg.5  
+
+> of
+> has of
+
+sign.9  
+
+> on
+> on says
+
+## (e) R1-SGG (7B). 
+
+Figure 6: Qualitative comparison of generated scene graphs (from VG150). (a) Ground-truth scene graph annotated by humans. (b) Zero-shot Qwen2-VL-7B-Instruct produces an invalid JSON (failure to follow format). (c) Qwen2-VL-7B-Instruct (SFT) outputs a valid graph but omits many relations. (d) R1-SGG-Zero (7B) recovers most objects and relations but still hallucinates incorrect triplets ( e.g. ,
+
+< wheel, on, horse > and < helmet.2, on, horse >). (e) R1-SGG (7B) yields a complete, structurally correct scene graph with higher recall. 18 person.1 
+
+ski.2 
+
+standing on / 
+
+playing 
+
+snow.3 
+
+looking at 
+
+on (a) GT. wearing wearing 
+
+person.1 
+
+green_ 
+
+pole.6 
+
+holding 
+
+green_ 
+
+pole.5 
+
+holding 
+
+net.3 
+
+orange_ 
+
+ribbon.4 
+
+# (b) Qwen2-VL-7B-Instruct. person.1 
+
+ski.2 
+
+standing on 
+
+snow.4 
+
+on 
+
+# (c) Qwen2-VL-7B-Instruct (SFT). hanging from 
+
+person .0 
+
+ski s
+
+> standing on/on/holding/
+> wearing /attached to/
+> guided by /looking at
+
+snow  
+
+> standing on/walking
+> on/beside /
+> looking at/on
+> on/beside
+
+net holding /wearing / 
+
+> in front of
+> on /
+> beside
+
+tree -merged 
+
+> in front of
+> in front of
+> beside/on
+
+fence -
+
+merged 
+
+> on /
+> beside
+
+sky -other -
+
+merged 
+
+> over
+
+# (d) R1-SGG-Zero (7B). snow.4 
+
+person .1 
+
+skis.2 
+
+on/standing on/ 
+
+wearing/playing 
+
+net.3 tree -merged.5 
+
+on/standing on /
+
+looking at /
+
+going down 
+
+in front of 
+
+on/sliding on/in 
+
+in front of/beside 
+
+on/attached 
+
+to/enclosing 
+
+attached to net.3 
+
+beside /
+
+attached to 
+
+in front of/beside 
+
+beside 
+
+# (e) R1-SGG (7B). 
+
+Figure 7: Qualitative comparison of generated scene graphs (from PSG). (a) Ground-truth scene graph annotated by humans. (b) Zero-shot Qwen2-VL-7B-Instruct generates a valid graph but includes incorrect triplets ( e.g. , <person.1, wearing, net.3 >). (c) Qwen2-VL-7B-Instruct (SFT) produces a valid graph but omits some relationships. (d) R1-SGG-Zero (7B) recovers most objects and relations but still hallucinates errors ( e.g. , <person.0, wearing, net >). (e) R1-SGG (7B) generates a complete and accurate scene graph with higher recall. 19 • The abstract and/or introduction should clearly state the claims made, including the 477 
+
+contributions made in the paper and important assumptions and limitations. A No or 478 
+
+NA answer to this question will not be perceived well by the reviewers. 479 
+
+• The claims made should match theoretical and experimental results, and reflect how 480 
+
+much the results can be expected to generalize to other settings. 481 
+
+• It is fine to include aspirational goals as motivation as long as it is clear that these goals 482 
+
+are not attained by the paper. 483 
+
+2. Limitations 484 
+
+Question: Does the paper discuss the limitations of the work performed by the authors? 485 
+
+Answer: [Yes] 486 
+
+Justification: Limitations are discussed, particularly in Section 4.5. 487 
+
+Guidelines: 488 
+
+• The answer NA means that the paper has no limitation while the answer No means that 489 
+
+the paper has limitations, but those are not discussed in the paper. 490 
+
+• The authors are encouraged to create a separate "Limitations" section in their paper. 491 
+
+• The paper should point out any strong assumptions and how robust the results are to 492 
+
+violations of these assumptions (e.g., independence assumptions, noiseless settings, 493 
+
+model well-specification, asymptotic approximations only holding locally). The authors 494 
+
+should reflect on how these assumptions might be violated in practice and what the 495 
+
+implications would be. 496 
+
+• The authors should reflect on the scope of the claims made, e.g., if the approach was 497 
+
+only tested on a few datasets or with a few runs. In general, empirical results often 498 
+
+depend on implicit assumptions, which should be articulated. 499 
+
+• The authors should reflect on the factors that influence the performance of the approach. 500 
+
+For example, a facial recognition algorithm may perform poorly when image resolution 501 
+
+is low or images are taken in low lighting. Or a speech-to-text system might not be 502 
+
+used reliably to provide closed captions for online lectures because it fails to handle 503 
+
+technical jargon. 504 
+
+• The authors should discuss the computational efficiency of the proposed algorithms 505 
+
+and how they scale with dataset size. 506 
+
+• If applicable, the authors should discuss possible limitations of their approach to 507 
+
+address problems of privacy and fairness. 508 
+
+• While the authors might fear that complete honesty about limitations might be used by 509 
+
+reviewers as grounds for rejection, a worse outcome might be that reviewers discover 510 
+
+limitations that aren’t acknowledged in the paper. The authors should use their best 511 
+
+judgment and recognize that individual actions in favor of transparency play an impor-512 
+
+tant role in developing norms that preserve the integrity of the community. Reviewers 513 
+
+will be specifically instructed to not penalize honesty concerning limitations. 514 
+
+3. Theory assumptions and proofs 515 
+
+Question: For each theoretical result, does the paper provide the full set of assumptions and 516 
+
+a complete (and correct) proof? 517 
+
+Answer: [NA] 518 
+
+Justification: This is not a theoretical paper. 519 
+
+Guidelines: 520 
+
+• The answer NA means that the paper does not include theoretical results. 521 
+
+• All the theorems, formulas, and proofs in the paper should be numbered and cross-522 
+
+referenced. 523 
+
+• All assumptions should be clearly stated or referenced in the statement of any theorems. 524 
+
+• The proofs can either appear in the main paper or the supplemental material, but if 525 
+
+they appear in the supplemental material, the authors are encouraged to provide a short 526 
+
+proof sketch to provide intuition. 527 
+
+• Inversely, any informal proof provided in the core of the paper should be complemented 528 
+
+by formal proofs provided in appendix or supplemental material. 529 
+
+20 • Theorems and Lemmas that the proof relies upon should be properly referenced. 530 
+
+4. Experimental result reproducibility 531 
+
+Question: Does the paper fully disclose all the information needed to reproduce the main ex-532 
+
+perimental results of the paper to the extent that it affects the main claims and/or conclusions 533 
+
+of the paper (regardless of whether the code and data are provided or not)? 534 
+
+Answer: [Yes] 535 
+
+Justification: The paper describes datasets, training setup, reward design, hyperparameters, 536 
+
+model configurations, and evaluation metrics. This level of detail supports reproducibility 537 
+
+even without direct code access. 538 
+
+Guidelines: 539 
+
+• The answer NA means that the paper does not include experiments. 540 
+
+• If the paper includes experiments, a No answer to this question will not be perceived 541 
+
+well by the reviewers: Making the paper reproducible is important, regardless of 542 
+
+whether the code and data are provided or not. 543 
+
+• If the contribution is a dataset and/or model, the authors should describe the steps taken 544 
+
+to make their results reproducible or verifiable. 545 
+
+• Depending on the contribution, reproducibility can be accomplished in various ways. 546 
+
+For example, if the contribution is a novel architecture, describing the architecture fully 547 
+
+might suffice, or if the contribution is a specific model and empirical evaluation, it may 548 
+
+be necessary to either make it possible for others to replicate the model with the same 549 
+
+dataset, or provide access to the model. In general. releasing code and data is often 550 
+
+one good way to accomplish this, but reproducibility can also be provided via detailed 551 
+
+instructions for how to replicate the results, access to a hosted model (e.g., in the case 552 
+
+of a large language model), releasing of a model checkpoint, or other means that are 553 
+
+appropriate to the research performed. 554 
+
+• While NeurIPS does not require releasing code, the conference does require all submis-555 
+
+sions to provide some reasonable avenue for reproducibility, which may depend on the 556 
+
+nature of the contribution. For example 557 
+
+(a) If the contribution is primarily a new algorithm, the paper should make it clear how 558 
+
+to reproduce that algorithm. 559 
+
+(b) If the contribution is primarily a new model architecture, the paper should describe 560 
+
+the architecture clearly and fully. 561 
+
+(c) If the contribution is a new model (e.g., a large language model), then there should 562 
+
+either be a way to access this model for reproducing the results or a way to reproduce 563 
+
+the model (e.g., with an open-source dataset or instructions for how to construct 564 
+
+the dataset). 565 
+
+(d) We recognize that reproducibility may be tricky in some cases, in which case 566 
+
+authors are welcome to describe the particular way they provide for reproducibility. 567 
+
+In the case of closed-source models, it may be that access to the model is limited in 568 
+
+some way (e.g., to registered users), but it should be possible for other researchers 569 
+
+to have some path to reproducing or verifying the results. 570 
+
+5. Open access to data and code 571 
+
+Question: Does the paper provide open access to the data and code, with sufficient instruc-572 
+
+tions to faithfully reproduce the main experimental results, as described in supplemental 573 
+
+material? 574 
+
+Answer: [Yes] 575 
+
+Justification: We use public datasets and the code will be released. Supplementary material 576 
+
+also provides detailed prompt templates for reproducibility. 577 
+
+Guidelines: 578 
+
+• The answer NA means that paper does not include experiments requiring code. 579 
+
+• Please see the NeurIPS code and data submission guidelines ( https://nips.cc/ 580 
+
+public/guides/CodeSubmissionPolicy ) for more details. 581 
+
+21 • While we encourage the release of code and data, we understand that this might not be 582 
+
+possible, so “No” is an acceptable answer. Papers cannot be rejected simply for not 583 
+
+including code, unless this is central to the contribution (e.g., for a new open-source 584 
+
+benchmark). 585 
+
+• The instructions should contain the exact command and environment needed to run to 586 
+
+reproduce the results. See the NeurIPS code and data submission guidelines ( https: 587 
+
+//nips.cc/public/guides/CodeSubmissionPolicy ) for more details. 588 
+
+• The authors should provide instructions on data access and preparation, including how 589 
+
+to access the raw data, preprocessed data, intermediate data, and generated data, etc. 590 
+
+• The authors should provide scripts to reproduce all experimental results for the new 591 
+
+proposed method and baselines. If only a subset of experiments are reproducible, they 592 
+
+should state which ones are omitted from the script and why. 593 
+
+• At submission time, to preserve anonymity, the authors should release anonymized 594 
+
+versions (if applicable). 595 
+
+• Providing as much information as possible in supplemental material (appended to the 596 
+
+paper) is recommended, but including URLs to data and code is permitted. 597 
+
+6. Experimental setting/details 598 
+
+Question: Does the paper specify all the training and test details (e.g., data splits, hyper-599 
+
+parameters, how they were chosen, type of optimizer, etc.) necessary to understand the 600 
+
+results? 601 
+
+Answer: [Yes] 602 
+
+Justification: Section 4.1 clearly provides training details, dataset splits, evaluation protocols, 603 
+
+model sizes, batch sizes, learning rates, and compute resources used. 604 
+
+Guidelines: 605 
+
+• The answer NA means that the paper does not include experiments. 606 
+
+• The experimental setting should be presented in the core of the paper to a level of detail 607 
+
+that is necessary to appreciate the results and make sense of them. 608 
+
+• The full details can be provided either with the code, in appendix, or as supplemental 609 
+
+material. 610 
+
+7. Experiment statistical significance 611 
+
+Question: Does the paper report error bars suitably and correctly defined or other appropriate 612 
+
+information about the statistical significance of the experiments? 613 
+
+Answer: [No] 614 
+
+Justification: The paper does not report error bars, variance, confidence intervals, or signifi-615 
+
+cance tests. 616 
+
+Guidelines: 617 
+
+• The answer NA means that the paper does not include experiments. 618 
+
+• The authors should answer "Yes" if the results are accompanied by error bars, confi-619 
+
+dence intervals, or statistical significance tests, at least for the experiments that support 620 
+
+the main claims of the paper. 621 
+
+• The factors of variability that the error bars are capturing should be clearly stated (for 622 
+
+example, train/test split, initialization, random drawing of some parameter, or overall 623 
+
+run with given experimental conditions). 624 
+
+• The method for calculating the error bars should be explained (closed form formula, 625 
+
+call to a library function, bootstrap, etc.) 626 
+
+• The assumptions made should be given (e.g., Normally distributed errors). 627 
+
+• It should be clear whether the error bar is the standard deviation or the standard error 628 
+
+of the mean. 629 
+
+• It is OK to report 1-sigma error bars, but one should state it. The authors should 630 
+
+preferably report a 2-sigma error bar than state that they have a 96% CI, if the hypothesis 631 
+
+of Normality of errors is not verified. 632 
+
+22 • For asymmetric distributions, the authors should be careful not to show in tables or 633 
+
+figures symmetric error bars that would yield results that are out of range (e.g. negative 634 
+
+error rates). 635 
+
+• If error bars are reported in tables or plots, The authors should explain in the text how 636 
+
+they were calculated and reference the corresponding figures or tables in the text. 637 
+
+8. Experiments compute resources 638 
+
+Question: For each experiment, does the paper provide sufficient information on the com-639 
+
+puter resources (type of compute workers, memory, time of execution) needed to reproduce 640 
+
+the experiments? 641 
+
+Answer: [Yes] 642 
+
+Justification: Section 4.1 provides specifics: SFT on 4 A100 GPUs, RL on 16 GH200 GPUs, 643 
+
+with training durations, batch sizes, and generation counts. 644 
+
+Guidelines: 645 
+
+• The answer NA means that the paper does not include experiments. 646 
+
+• The paper should indicate the type of compute workers CPU or GPU, internal cluster, 647 
+
+or cloud provider, including relevant memory and storage. 648 
+
+• The paper should provide the amount of compute required for each of the individual 649 
+
+experimental runs as well as estimate the total compute. 650 
+
+• The paper should disclose whether the full research project required more compute 651 
+
+than the experiments reported in the paper (e.g., preliminary or failed experiments that 652 
+
+didn’t make it into the paper). 653 
+
+9. Code of ethics 654 
+
+Question: Does the research conducted in the paper conform, in every respect, with the 655 
+
+NeurIPS Code of Ethics https://neurips.cc/public/EthicsGuidelines ?656 
+
+Answer: [Yes] 657 
+
+Justification: The research aligns with NeurIPS ethical guidelines, including transparency of 658 
+
+method, release plans, and no direct risks related to human subjects or private data. 659 
+
+Guidelines: 660 
+
+• The answer NA means that the authors have not reviewed the NeurIPS Code of Ethics. 661 
+
+• If the authors answer No, they should explain the special circumstances that require a 662 
+
+deviation from the Code of Ethics. 663 
+
+• The authors should make sure to preserve anonymity (e.g., if there is a special consid-664 
+
+eration due to laws or regulations in their jurisdiction). 665 
+
+10. Broader impacts 666 
+
+Question: Does the paper discuss both potential positive societal impacts and negative 667 
+
+societal impacts of the work performed? 668 
+
+Answer: [No] 669 
+
+Justification: The paper does not explicitly address societal impacts such as misuse, fairness, 670 
+
+or safety. Although scene graph generation has potential societal implications, this aspect 671 
+
+falls outside the scope of the current work. 672 
+
+Guidelines: 673 
+
+• The answer NA means that there is no societal impact of the work performed. 674 
+
+• If the authors answer NA or No, they should explain why their work has no societal 675 
+
+impact or why the paper does not address societal impact. 676 
+
+• Examples of negative societal impacts include potential malicious or unintended uses 677 
+
+(e.g., disinformation, generating fake profiles, surveillance), fairness considerations 678 
+
+(e.g., deployment of technologies that could make decisions that unfairly impact specific 679 
+
+groups), privacy considerations, and security considerations. 680 
+
+• The conference expects that many papers will be foundational research and not tied 681 
+
+to particular applications, let alone deployments. However, if there is a direct path to 682 
+
+any negative applications, the authors should point it out. For example, it is legitimate 683 
+
+23 to point out that an improvement in the quality of generative models could be used to 684 
+
+generate deepfakes for disinformation. On the other hand, it is not needed to point out 685 
+
+that a generic algorithm for optimizing neural networks could enable people to train 686 
+
+models that generate Deepfakes faster. 687 
+
+• The authors should consider possible harms that could arise when the technology is 688 
+
+being used as intended and functioning correctly, harms that could arise when the 689 
+
+technology is being used as intended but gives incorrect results, and harms following 690 
+
+from (intentional or unintentional) misuse of the technology. 691 
+
+• If there are negative societal impacts, the authors could also discuss possible mitigation 692 
+
+strategies (e.g., gated release of models, providing defenses in addition to attacks, 693 
+
+mechanisms for monitoring misuse, mechanisms to monitor how a system learns from 694 
+
+feedback over time, improving the efficiency and accessibility of ML). 695 
+
+11. Safeguards 696 
+
+Question: Does the paper describe safeguards that have been put in place for responsible 697 
+
+release of data or models that have a high risk for misuse (e.g., pretrained language models, 698 
+
+image generators, or scraped datasets)? 699 
+
+Answer: [No] 700 
+
+Justification: Since our models are trained on two public datasets, there is no direct risk of 701 
+
+misuse. 702 
+
+Guidelines: 703 
+
+• The answer NA means that the paper poses no such risks. 704 
+
+• Released models that have a high risk for misuse or dual-use should be released with 705 
+
+necessary safeguards to allow for controlled use of the model, for example by requiring 706 
+
+that users adhere to usage guidelines or restrictions to access the model or implementing 707 
+
+safety filters. 708 
+
+• Datasets that have been scraped from the Internet could pose safety risks. The authors 709 
+
+should describe how they avoided releasing unsafe images. 710 
+
+• We recognize that providing effective safeguards is challenging, and many papers do 711 
+
+not require this, but we encourage authors to take this into account and make a best 712 
+
+faith effort. 713 
+
+12. Licenses for existing assets 714 
+
+Question: Are the creators or original owners of assets (e.g., code, data, models), used in 715 
+
+the paper, properly credited and are the license and terms of use explicitly mentioned and 716 
+
+properly respected? 717 
+
+Answer: [Yes] 718 
+
+Justification: Datasets and tools like VG150, PSG, vLLM, and trl are used and properly 719 
+
+cited with corresponding references. 720 
+
+Guidelines: 721 
+
+• The answer NA means that the paper does not use existing assets. 722 
+
+• The authors should cite the original paper that produced the code package or dataset. 723 
+
+• The authors should state which version of the asset is used and, if possible, include a 724 
+
+URL. 725 
+
+• The name of the license (e.g., CC-BY 4.0) should be included for each asset. 726 
+
+• For scraped data from a particular source (e.g., website), the copyright and terms of 727 
+
+service of that source should be provided. 728 
+
+• If assets are released, the license, copyright information, and terms of use in the 729 
+
+package should be provided. For popular datasets, paperswithcode.com/datasets 730 
+
+has curated licenses for some datasets. Their licensing guide can help determine the 731 
+
+license of a dataset. 732 
+
+• For existing datasets that are re-packaged, both the original license and the license of 733 
+
+the derived asset (if it has changed) should be provided. 734 
+
+• If this information is not available online, the authors are encouraged to reach out to 735 
+
+the asset’s creators. 736 
+
+24 13. New assets 737 
+
+Question: Are new assets introduced in the paper well documented and is the documentation 738 
+
+provided alongside the assets? 739 
+
+Answer: [Yes] 740 
+
+Justification: The paper introduces the R1-SGG model and corresponding reward mecha-741 
+
+nisms, and promises documentation and release of assets. 742 
+
+Guidelines: 743 
+
+• The answer NA means that the paper does not release new assets. 744 
+
+• Researchers should communicate the details of the dataset/code/model as part of their 745 
+
+submissions via structured templates. This includes details about training, license, 746 
+
+limitations, etc. 747 
+
+• The paper should discuss whether and how consent was obtained from people whose 748 
+
+asset is used. 749 
+
+• At submission time, remember to anonymize your assets (if applicable). You can either 750 
+
+create an anonymized URL or include an anonymized zip file. 751 
+
+14. Crowdsourcing and research with human subjects 752 
+
+Question: For crowdsourcing experiments and research with human subjects, does the paper 753 
+
+include the full text of instructions given to participants and screenshots, if applicable, as 754 
+
+well as details about compensation (if any)? 755 
+
+Answer: [NA] 756 
+
+Justification: The work does not involve human subjects or crowdsourced data collection. 757 
+
+Guidelines: 758 
+
+• The answer NA means that the paper does not involve crowdsourcing nor research with 759 
+
+human subjects. 760 
+
+• Including this information in the supplemental material is fine, but if the main contribu-761 
+
+tion of the paper involves human subjects, then as much detail as possible should be 762 
+
+included in the main paper. 763 
+
+• According to the NeurIPS Code of Ethics, workers involved in data collection, curation, 764 
+
+or other labor should be paid at least the minimum wage in the country of the data 765 
+
+collector. 766 
+
+15. Institutional review board (IRB) approvals or equivalent for research with human 767 
+
+subjects 768 
+
+Question: Does the paper describe potential risks incurred by study participants, whether 769 
+
+such risks were disclosed to the subjects, and whether Institutional Review Board (IRB) 770 
+
+approvals (or an equivalent approval/review based on the requirements of your country or 771 
+
+institution) were obtained? 772 
+
+Answer: [NA] 773 
+
+Justification: Not applicable since no human subjects are involved. 774 
+
+Guidelines: 775 
+
+• The answer NA means that the paper does not involve crowdsourcing nor research with 776 
+
+human subjects. 777 
+
+• Depending on the country in which research is conducted, IRB approval (or equivalent) 778 
+
+may be required for any human subjects research. If you obtained IRB approval, you 779 
+
+should clearly state this in the paper. 780 
+
+• We recognize that the procedures for this may vary significantly between institutions 781 
+
+and locations, and we expect authors to adhere to the NeurIPS Code of Ethics and the 782 
+
+guidelines for their institution. 783 
+
+• For initial submissions, do not include any information that would break anonymity (if 784 
+
+applicable), such as the institution conducting the review. 785 
+
+16. Declaration of LLM usage 786 
+
+25 Question: Does the paper describe the usage of LLMs if it is an important, original, or 787 
+
+non-standard component of the core methods in this research? Note that if the LLM is used 788 
+
+only for writing, editing, or formatting purposes and does not impact the core methodology, 789 
+
+scientific rigorousness, or originality of the research, declaration is not required. 790 
+
+Answer: [No] 791 
+
+Justification: We only use LLMs for writing assistance and proofreading. 792 
+
+Guidelines: 793 
+
+• The answer NA means that the core method development in this research does not 794 
+
+involve LLMs as any important, original, or non-standard components. 795 
+
+• Please refer to our LLM policy ( https://neurips.cc/Conferences/2025/LLM )796 
+
+for what should or should not be described. 797 
+
+26

@@ -1,0 +1,1829 @@
+{
+  "top_k": 200,
+  "generated_at": "2026-06-09T07:03:45.121732+00:00",
+  "papers": [
+    {
+      "id": "openreview-neurips-2025-1nsynwhvu2",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "Dynamic Bundling with Large Language Models for Zero-Shot Inference on Text-Attributed Graphs",
+      "abstract": "Large language models (LLMs) have been used in many zero-shot learning problems, with their strong generalization ability. Recently, adopting LLMs in text-attributed graphs (TAGs) has drawn increasing attention. However, the adoption of LLMs faces two major challenges: limited information on graph structure and unreliable responses. LLMs struggle with text attributes isolated from the graph topology. Worse still, they yield unreliable predictions due to both information insufficiency and the inherent weakness of LLMs (e.g., hallucination). Towards this end, this paper proposes a novel method named Dynamic Text Bundling Supervision (DENSE) that queries LLMs with bundles of texts to obtain bundle-level labels and uses these labels to supervise graph neural networks. Specifically, we sample a set of bundles, each containing a set of nodes with corresponding texts of close proximity. We then query LLMs with the bundled texts to obtain the label of each bundle. Subsequently, the bundle labels are used to supervise the optimization of graph neural networks, and the bundles are further refined to exclude noisy items. To justify our design, we also provide theoretical analysis of the proposed method. Extensive experiments across ten datasets validate the effectiveness of the proposed method.",
+      "authors": [
+        "Yusheng Zhao",
+        "Qixin Zhang",
+        "Xiao Luo",
+        "Weizhi Zhang",
+        "Zhiping Xiao",
+        "Wei Ju",
+        "Philip S. Yu",
+        "Ming Zhang"
+      ],
+      "primary_category": "Text-Attributed Graphs",
+      "categories": [
+        "Text-Attributed Graphs",
+        "Large Language Models",
+        "Zero-Shot Inference"
+      ],
+      "published": "2025-09-18T17:32:58.063+00:00",
+      "link": "https://openreview.net/forum?id=1nSynwHvu2",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-0qnmavqqqj",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "GFM-RAG: Graph Foundation Model for Retrieval Augmented Generation",
+      "abstract": "Retrieval-augmented generation (RAG) has proven effective in integrating knowledge into large language models (LLMs). However, conventional RAGs struggle to capture complex relationships between pieces of knowledge, limiting their performance in intricate reasoning that requires integrating knowledge from multiple sources. Recently, graph-enhanced retrieval augmented generation (GraphRAG) builds a graph structure to explicitly model these relationships, enabling more effective and efficient retrievers. Nevertheless, its performance is still hindered by the noise and incompleteness within the graph structure. To address this, we introduce GFM-RAG, a novel graph foundation model (GFM) for retrieval augmented generation. GFM-RAG is powered by an innovative graph neural network that reasons over graph structure to capture complex query-knowledge relationships. The GFM with 8M parameters undergoes a two-stage training process on large-scale datasets, comprising 60 knowledge graphs with over 14M triples and 700k documents. This results in impressive performance and generalizability for GFM-RAG, making it the first graph foundation model applicable to unseen datasets for retrieval without any fine-tuning required. Extensive experiments on three multi-hop QA datasets and seven domain-specific RAG datasets demonstrate that GFM-RAG achieves state-of-the-art performance while maintaining efficiency and alignment with neural scaling laws, highlighting its potential for further improvement.",
+      "authors": [
+        "Linhao Luo",
+        "Zicheng Zhao",
+        "Gholamreza Haffari",
+        "Dinh Phung",
+        "Chen Gong",
+        "Shirui Pan"
+      ],
+      "primary_category": "Graph Foundation Model",
+      "categories": [
+        "Graph Foundation Model",
+        "Retrieval Augmented Generation",
+        "Graph-enhanced Retrieval Augmented Generation"
+      ],
+      "published": "2025-09-18T17:40:09.407+00:00",
+      "link": "https://openreview.net/forum?id=0QNmAvQQqj",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-9env0bdcdv",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "Unifying Text Semantics and Graph Structures for Temporal Text-attributed Graphs with Large Language Models",
+      "abstract": "Temporal graph neural networks (TGNNs) have shown remarkable performance in temporal graph modeling. However, real-world temporal graphs often possess rich textual information, giving rise to temporal text-attributed graphs (TTAGs). Such combination of dynamic text semantics and evolving graph structures introduces heightened complexity. Existing TGNNs embed texts statically and rely heavily on encoding mechanisms that biasedly prioritize structural information, overlooking the temporal evolution of text semantics and the essential interplay between semantics and structures for synergistic reinforcement.\nTo tackle these issues, we present $\\textbf{CROSS}$, a flexible framework that seamlessly extends existing TGNNs for TTAG modeling. CROSS is designed by decomposing the TTAG modeling process into two phases: (i) temporal semantics extraction; and (ii) semantic-structural information unification. The key idea is to advance the large language models (LLMs) to $\\textit{dynamically}$ extract the temporal semantics in text space and then generate $\\textit{cohesive}$ representations unifying both semantics and structures.\nSpecifically, we propose a Temporal Semantics Extractor in the CROSS framework, which empowers LLMs to offer the temporal semantic understanding of node's evolving contexts of textual neighborhoods, facilitating semantic dynamics.\nSubsequently, we introduce the Semantic-structural Co-encoder, which collaborates with the above Extractor for synthesizing illuminating representations by jointly considering both semantic and structural information while encouraging their mutual reinforcement. Extensive experiments show that CROSS achieves state-of-the-art results on four public datasets and one industrial dataset, with 24.7\\% absolute MRR gain on average in temporal link prediction and 3.7\\% AUC gain in node classification of industrial application.",
+      "authors": [
+        "Siwei Zhang",
+        "Yun Xiong",
+        "Yateng Tang",
+        "Jiarong Xu",
+        "Xi Chen",
+        "Zehao Gu",
+        "Xuehao Zheng",
+        "Zi'an Jia",
+        "Jiawei Zhang"
+      ],
+      "primary_category": "Temporal Text-attributed Graph",
+      "categories": [
+        "Temporal Text-attributed Graph",
+        "Large Language Models",
+        "Data Mining"
+      ],
+      "published": "2025-09-18T17:30:57.384+00:00",
+      "link": "https://openreview.net/forum?id=9env0BdcDV",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-60i6tzuhob",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "Preference-driven Knowledge Distillation for Few-shot Node Classification",
+      "abstract": "Graph neural networks (GNNs) can efficiently process text-attributed graphs (TAGs) due to their message-passing mechanisms, but their training heavily relies on the human-annotated labels. Moreover, the complex and diverse local topologies of nodes of real-world TAGs make it challenging for a single mechanism to handle. Large language models (LLMs) perform well in zero-/few-shot learning on TAGs but suffer from a scalability challenge. Therefore, we propose a preference-driven knowledge distillation (PKD) framework to synergize the complementary strengths of LLMs and various GNNs for few-shot node classification. Specifically, we develop a GNN-preference-driven node selector that effectively promotes prediction distillation from LLMs to teacher GNNs. To further tackle nodes' intricate local topologies, we develop a node-preference-driven GNN selector that identifies the most suitable teacher GNN for each node, thereby facilitating tailored knowledge distillation from teacher GNNs to the student GNN. Extensive experiments validate the efficacy of our proposed framework in few-shot node classification on real-world TAGs.\nOur code can be available at <https://github.com/GEEX-Weixing/PKD>.",
+      "authors": [
+        "Xing Wei",
+        "Chunchun Chen",
+        "Rui Fan",
+        "Xiaofeng Cao",
+        "Sourav Medya",
+        "Wei Ye"
+      ],
+      "primary_category": "Preference-driven",
+      "categories": [
+        "Preference-driven",
+        "Knowledge distillation",
+        "Large language models",
+        "Few-shot node classification"
+      ],
+      "published": "2025-09-18T17:46:10.137+00:00",
+      "link": "https://openreview.net/forum?id=60I6TzuHOb",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-j4w4rtwlyb",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "Graph-KV: Breaking Sequence via Injecting Structural Biases into Large Language Models",
+      "abstract": "Modern large language models (LLMs) are inherently auto-regressive, requiring input to be serialized into flat sequences regardless of their structural dependencies. This serialization hinders the model’s ability to leverage structural inductive biases, especially in tasks such as retrieval-augmented generation (RAG) and reasoning on data with native graph structures, where inter-segment dependencies are crucial. \nWe introduce Graph-KV with the potential to overcome this limitation. Graph-KV leverages the KV-cache of text segments as condensed representations and governs their interaction through structural inductive biases. In this framework, ''target'' segments selectively attend only to the KV-caches of their designated ''source'' segments, rather than all preceding segments in a serialized sequence. This approach induces a graph-structured block mask, sparsifying attention and enabling a message-passing-like step within the LLM. Furthermore, strategically allocated positional encodings for source and target segments reduce positional bias and context window consumption. \nWe evaluate Graph-KV across three scenarios: (1) seven RAG benchmarks spanning direct inference, multi-hop reasoning, and long-document understanding; (2) Arxiv-QA, a novel academic paper QA task with full-text scientific papers structured as citation ego-graphs; and (3) paper topic classification within a citation network.\nBy effectively reducing positional bias and harnessing structural inductive biases, Graph-KV substantially outperforms baselines, including standard costly sequential encoding, across various settings.",
+      "authors": [
+        "Haoyu Peter Wang",
+        "Peihao Wang",
+        "Mufei Li",
+        "Shikun Liu",
+        "Siqi Miao",
+        "Zhangyang Wang",
+        "Pan Li"
+      ],
+      "primary_category": "Large Language Model",
+      "categories": [
+        "Large Language Model",
+        "Graph",
+        "Retrieval-augmented Generation",
+        "Structural Inductive Biases"
+      ],
+      "published": "2025-09-18T17:42:37.605+00:00",
+      "link": "https://openreview.net/forum?id=J4w4RtwLyB",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-rdz6esqykk",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "GraphChain: Large Language Models for Large-scale Graph Analysis via Tool Chaining",
+      "abstract": "Large Language Models (LLMs) face significant limitations when applied to large-scale graphs, struggling with context constraints and inflexible reasoning. We introduce GraphChain, a novel framework enabling LLMs to analyze large graphs by orchestrating dynamic sequences of specialized tools, mimicking human exploratory processes. GraphChain incorporates two core technical contributions: (1) Progressive Graph Distillation, a reinforcement learning approach that learns to generate tool sequences balancing task relevance and intermediate state compression, thereby overcoming LLM context limitations. (2) Structure-aware Test-Time Adaptation (STTA), a mechanism using a lightweight, self-supervised adapter conditioned on graph spectral properties to efficiently adapt a frozen LLM policy to diverse graph structures via soft prompts without retraining. Experiments show GraphChain significantly outperforms prior methods, enabling scalable and adaptive LLM-driven graph analysis.",
+      "authors": [
+        "Chunyu Wei",
+        "Wenji Hu",
+        "Xingjia Hao",
+        "Xin Wang",
+        "Yifan Yang",
+        "Yunhai Wang",
+        "Yang Tian",
+        "Yueguo Chen"
+      ],
+      "primary_category": "Large Language Model",
+      "categories": [
+        "Large Language Model",
+        "Graph Analysis",
+        "Tool Learning"
+      ],
+      "published": "2025-09-18T17:36:52.956+00:00",
+      "link": "https://openreview.net/forum?id=Rdz6ESQYkK",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-lq4nned2xx",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "$\\texttt{G1}$: Teaching LLMs to Reason on Graphs with Reinforcement Learning",
+      "abstract": "Although Large Language Models (LLMs) have demonstrated remarkable progress, their proficiency in graph-related tasks remains notably limited, hindering the development of truly general-purpose models. Previous attempts, including pretraining graph foundation models or employing supervised fine-tuning, often face challenges such as the scarcity of large-scale, universally represented graph data. We introduce $\\texttt{G1}$, a simple yet effective approach demonstrating that Reinforcement Learning (RL) on synthetic graph-theoretic tasks can significantly scale LLMs' graph reasoning abilities. To enable RL training, we curate \\erdos, the largest graph reasoning dataset to date comprising 50 diverse graph-theoretic tasks of varying difficulty levels, 100k training data and 5k test data, all drived from real-world graphs. With RL on \\erdos, $\\texttt{G1}$ obtains substantial improvements in graph reasoning, where our finetuned 3B model even outperforms Qwen2.5-72B-Instruct (24x size). RL-trained models also show strong zero-shot generalization to unseen tasks, domains, and graph encoding schemes, including other graph-theoretic benchmarks as well as real-world node classification and link prediction tasks, without compromising general reasoning abilities. Our findings offer an efficient, scalable path for building strong graph reasoners by finetuning LLMs with RL on graph-theoretic tasks, which combines the strengths of pretrained LLM capabilities with abundant, automatically generated synthetic data, suggesting that LLMs possess graph understanding abilities that RL can elicit successfully. Our implementation is open-sourced at https://github.com/PKU-ML/G1, with models and datasets hosted on Hugging Face collections https://huggingface.co/collections/PKU-ML/g1-683d659e992794fc99618cf2 for broader accessibility.",
+      "authors": [
+        "Xiaojun Guo",
+        "Ang Li",
+        "Yifei Wang",
+        "Stefanie Jegelka",
+        "Yisen Wang"
+      ],
+      "primary_category": "Graph",
+      "categories": [
+        "Graph",
+        "Large Language Models",
+        "Reasoning",
+        "Reinforcement Learning"
+      ],
+      "published": "2025-09-18T17:38:40.835+00:00",
+      "link": "https://openreview.net/forum?id=Lq4nneD2xX",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-1qo6dzdpog",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "From Sequence to Structure: Uncovering Substructure Reasoning in Transformers",
+      "abstract": "Recent studies suggest that large language models (LLMs) possess the capability to solve graph reasoning tasks. Notably, even when graph structures are embedded within textual descriptions, LLMs can still effectively answer related questions. This raises a fundamental question: How can a decoder-only Transformer architecture understand underlying graph structures? To address this, \nwe start with the substructure extraction task, interpreting the inner mechanisms inside the transformers and analyzing the impact of the input queries. Specifically, through both empirical results and theoretical analysis, we present Induced Substructure Filtration (ISF), a perspective that captures the substructure identification in the multi-layer transformers. We further validate the ISF process in LLMs, revealing consistent internal dynamics across layers. Building on these insights, we explore the broader capabilities of Transformers in handling diverse graph types. Specifically, we introduce the concept of thinking in substructures to efficiently extract complex composite patterns, and demonstrate that decoder-only Transformers can successfully extract substructures from attributed graphs, such as molecular graphs. Together, our findings offer a new insight on how sequence-based Transformers perform the substructure extraction task over graph data.",
+      "authors": [
+        "Xinnan Dai",
+        "Kai Yang",
+        "Jay Revolinsky",
+        "Kai Guo",
+        "Aoran Wang",
+        "Bohang Zhang",
+        "Jiliang Tang"
+      ],
+      "primary_category": "LLMs for graph reasoning",
+      "categories": [
+        "LLMs for graph reasoning",
+        "interpretation for Transformers"
+      ],
+      "published": "2025-09-18T17:33:56.123+00:00",
+      "link": "https://openreview.net/forum?id=1Qo6DzdPOG",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-udoezgwjlc",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "Reasoning by Superposition: A Theoretical Perspective on Chain of Continuous Thought",
+      "abstract": "Large Language Models (LLMs) have demonstrated remarkable performance in many applications, including challenging reasoning problems via chain-of-thought (CoT) techniques that generate ``thinking tokens'' before answering the questions. While existing theoretical works demonstrate that CoT with discrete tokens boosts the capability of LLMs, recent work on continuous CoT lacks a theoretical understanding of why it outperforms discrete counterparts in various reasoning tasks, such as directed graph reachability, a fundamental graph reasoning problem that includes many practical domain applications as special cases. In this paper, we prove that a two-layer transformer with $D$ steps of continuous CoT can solve the directed graph reachability problem, where $D$ is the diameter of the graph, while the best known result of constant-depth transformers with discrete CoT requires $O(n^2)$ decoding steps where $n$ is the number of vertices ($D<n$). \nIn our construction, each continuous thought vector is a superposition state that encodes multiple search frontiers simultaneously (i.e., parallel breadth-first search (BFS)), while discrete CoT must choose a single path sampled from the superposition state, which leads to a sequential search that requires many more steps and may be trapped in local solutions.\nWe also performed extensive experiments to verify that our theoretical construction aligns well with the empirical solution obtained via training dynamics. Notably, encoding of multiple search frontiers as a superposition state automatically emerges in training continuous CoT, without explicit supervision to guide the model to explore multiple paths simultaneously.",
+      "authors": [
+        "Hanlin Zhu",
+        "Shibo Hao",
+        "Zhiting Hu",
+        "Jiantao Jiao",
+        "Stuart Russell",
+        "Yuandong Tian"
+      ],
+      "primary_category": "reasoning",
+      "categories": [
+        "reasoning",
+        "chain of continuous thought",
+        "superposition",
+        "transformer"
+      ],
+      "published": "2025-09-18T17:42:49.939+00:00",
+      "link": "https://openreview.net/forum?id=UdOEZgWJLc",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-zav9s8im2t",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "UniGTE: Unified Graph–Text Encoding for Zero-Shot Generalization across Graph Tasks and Domains",
+      "abstract": "Generalizing to unseen graph tasks without task-specific supervision is challenging: conventional graph neural networks are typically tied to a fixed label space, while large language models (LLMs) struggle to capture graph structure. We introduce UniGTE, an instruction-tuned encoder–decoder framework that unifies structural and semantic reasoning. The encoder augments a pretrained autoregressive LLM with learnable alignment tokens and a structure-aware graph–text attention mechanism, enabling it to attend jointly to a tokenized graph and a natural-language task prompt while remaining permutation-invariant to node order. This yields compact, task-aware graph representations. Conditioned solely on these representations, a frozen LLM decoder predicts and reconstructs: it outputs the task answer and simultaneously paraphrases the input graph in natural language. The reconstruction objective regularizes the encoder to preserve structural cues. UniGTE is instruction-tuned on five datasets spanning node-, edge-, and graph-level tasks across diverse domains, yet requires no fine-tuning at inference. It achieves new state-of-the-art zero-shot results on node classification, link prediction, graph classification and graph regression under cross-task and cross-domain settings, demonstrating that tight integration of graph structure with LLM semantics enables robust, transferable graph reasoning.",
+      "authors": [
+        "Duo Wang",
+        "Yuan Zuo",
+        "Guangyue Lu",
+        "Junjie Wu"
+      ],
+      "primary_category": "Large Language Models",
+      "categories": [
+        "Large Language Models",
+        "Graph Neural Networks",
+        "Zero Shot Learning"
+      ],
+      "published": "2025-09-18T17:37:35.389+00:00",
+      "link": "https://openreview.net/forum?id=zaV9s8iM2T",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-mgvhgfcfnk",
+      "source": "NeurIPS-2025-Rejected-Public",
+      "title": "Query-Aware Graph Attention for Precise Subgraph Retrieval in Knowledge-Augmented Reasoning",
+      "abstract": "In recent years, Retrieval-Augmented Generation (RAG) has demonstrated great potential in enhancing the factual accuracy of large language models (LLMs) in open-domain question answering. Incorporating knowledge graphs (KGs) as external knowledge sources into the RAG paradigm is a promising direction. However, KG-RAG systems for complex multi-hop reasoning tasks still face significant challenges in precisely retrieving structured evidence highly relevant to the query. Existing approaches struggle to dynamically and accurately retrieve graph-based evidence by effectively leveraging query semantics and relational information. To address these challenges, we propose a novel framework called Query-aware Subgraph Retrieval Augmented Generation (QSRAG), centered around a new attention-based architecture termed Query-Relational Graph Attention Network (QR-GAT). QR-GAT is a graph attention mechanism that learns expressive representations of triples by capturing intricate interactions between the query context and relation types. Based on these representations, a scoring module assigns fine-grained relevance scores to triples in the KG, enabling precise subgraph retrieval for downstream reasoning. These structured evidence subgraphs, enriched with confidence scores, are then provided to an LLM to enhance its reasoning capability. Extensive experiments on two widely-used multi-hop Knowledge Graph Question Answering (KGQA) datasets, WebQSP and CWQ, demonstrate that our approach achieves state-of-the-art retrieval performance, particularly excelling in identifying complex multi-hop evidence. KGQA results further show that QSRAG delivers state-of-the-art or competitive performance on both datasets. Our work highlights the effectiveness of query-aware graph attention for accurate structured evidence retrieval, and its potential to enhance knowledge-augmented reasoning with large language models.",
+      "authors": [
+        "Yuanye Xu",
+        "Yue Zhang",
+        "Ning Fu"
+      ],
+      "primary_category": "Knowledge Graph Question Answering",
+      "categories": [
+        "Knowledge Graph Question Answering",
+        "Large Language Models",
+        "Retrieval-Augmented Generation",
+        "Graph Neural Networks"
+      ],
+      "published": "2025-05-11T11:32:43.552+00:00",
+      "link": "https://openreview.net/forum?id=MGvhGFCFNK",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-bultwq5knk",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "Deliberation on Priors: Trustworthy Reasoning of Large Language Models on Knowledge Graphs",
+      "abstract": "Knowledge graph-based retrieval-augmented generation seeks to mitigate hallucinations in Large Language Models (LLMs) caused by insufficient or outdated knowledge. However, existing methods often fail to fully exploit the prior knowledge embedded in knowledge graphs (KGs), particularly their structural information and explicit or implicit constraints. The former can enhance the faithfulness of LLMs' reasoning, while the latter can improve the reliability of response generations. Motivated by these, we propose a trustworthy reasoning framework, termed Deliberation over Priors (\\texttt{DP}), which sufficiently utilizes the priors contained in KGs. Specifically, \\texttt{DP} adopts a progressive knowledge distillation strategy that integrates structural priors into LLMs through a combination of supervised fine-tuning and Kahneman-Tversky Optimization, thereby improving the faithfulness of relation path generation. Furthermore, our framework employs a reasoning-introspection strategy, which guides LLMs to perform refined reasoning verification based on extracted constraint priors, ensuring the reliability of response generation. Extensive experiments on three benchmark datasets demonstrate that \\texttt{DP} achieves new state-of-the-art performance, especially a H@1 improvement of 13% on the ComplexWebQuestions dataset, and generates highly trustworthy responses. We also conduct various analyses to verify its flexibility and practicality. Code is available at [https://github.com/mira-ai-lab/Deliberation-on-Priors](https://github.com/mira-ai-lab/Deliberation-on-Priors).",
+      "authors": [
+        "Jie Ma",
+        "Ning Qu",
+        "Zhitao Gao",
+        "Xing Rui",
+        "Jun Liu",
+        "Hongbin Pei",
+        "Jiang Xie",
+        "Lingyun Song",
+        "Pinghui Wang",
+        "Jing Tao",
+        "su zhou"
+      ],
+      "primary_category": "Knowledge Graph-based Retrieval Augmentation",
+      "categories": [
+        "Knowledge Graph-based Retrieval Augmentation",
+        "Knowledge Graph Question Answering",
+        "Large Language Models"
+      ],
+      "published": "2025-09-18T17:29:18.775+00:00",
+      "link": "https://openreview.net/forum?id=bulTwq5kNK",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-l8razjitey",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "On the Bias of Next-Token Predictors Toward Systematically Inefficient Reasoning: A Shortest-Path Case Study",
+      "abstract": "Recent advances in natural language processing highlight two key factors for improving reasoning in large language models (LLMs): (i) allocating more test-time compute tends to help on harder problems but often introduces redundancy in the reasoning trace, and (ii) compute is most effective when reasoning is systematic and incremental, forming structured chains of thought (CoTs) akin to human problem-solving. To study these factors in isolation, we introduce a controlled setting based on shortest-path tasks in layered graphs. We train decoder-only transformers on question–trace–answer triples using a custom tokenizer, comparing models trained on optimal bottom-up dynamic programming traces with those trained on longer, valid traces involving backtracking. Surprisingly, under the same training-token budget, the latter models generalize better to unseen graphs. This benefit is not due to length alone—injecting arbitrary redundancy into reasoning traces fails to help and can even hurt performance. Instead, we find that generalization correlates with the model's confidence in next-token prediction, suggesting that long, coherent, and locally incremental traces make the training signal easier to optimize.",
+      "authors": [
+        "Riccardo Alberghi",
+        "Elizaveta Demyanenko",
+        "Luca Biggio",
+        "Luca Saglietti"
+      ],
+      "primary_category": "Reasoning",
+      "categories": [
+        "Reasoning",
+        "Chain-of-thought",
+        "Next-token prediction",
+        "Transformers",
+        "Algorithm",
+        "Shortest-Path"
+      ],
+      "published": "2025-09-18T17:43:47.961+00:00",
+      "link": "https://openreview.net/forum?id=l8razJItEy",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-wf3ebtqgdw",
+      "source": "NeurIPS-2025-Rejected-Public",
+      "title": "Compile Scene Graphs with Reinforcement Learning",
+      "abstract": "Next token prediction is the fundamental principle for training large language models (LLMs), \nand reinforcement learning (RL) further enhances their reasoning performance.\nAs an effective way to model language, image, video, and other modalities, \nthe use of LLMs for end-to-end extraction of structured visual representations, such as scene graphs, remains underexplored.\nIt requires the model to accurately produce a set of objects and relationship triplets, rather than generating text token by token.\nTo achieve this, \nwe introduce  R1-SGG, \na multimodal LLM (M-LLM) initially trained via supervised fine-tuning (SFT) on the scene graph dataset and subsequently refined using reinforcement learning  to enhance its ability to generate scene graphs in an end-to-end manner.\nThe SFT follows a conventional prompt-response paradigm, \nwhile RL requires the design of effective reward signals. \nWe design a set of graph centric rewards, including three recall based variants—Hard Recall, Hard Recall+Relax, and Soft Recall—which evaluate semantic and spatial alignment between predictions and ground truth at the object and relation levels.\nA format consistency reward further ensures that outputs follow the expected structural schema.\nExtensive experiments on the VG150 and PSG benchmarks show that R1-SGG substantially reduces failure rates and achieves strong performance in Recall and mean Recall, surpassing traditional SGG models and existing multimodal language models.",
+      "authors": [
+        "Zuyao Chen",
+        "Jinlin Wu",
+        "Zhen Lei",
+        "Marc Pollefeys",
+        "Chang Wen Chen"
+      ],
+      "primary_category": "scene graph generation",
+      "categories": [
+        "scene graph generation",
+        "multimodal LLMs",
+        "reinforcement learning"
+      ],
+      "published": "2025-04-18T21:27:50.058+00:00",
+      "link": "https://openreview.net/forum?id=Wf3EbtqGdw",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-ythwhncazn",
+      "source": "NeurIPS-2025-Rejected-Public",
+      "title": "KG-BiLM: Knowledge Graph Embedding via Bidirectional Language Models",
+      "abstract": "Recent advances in knowledge representation learning (KRL) highlight the urgent necessity to unify symbolic knowledge graphs (KGs) with language models (LMs) for richer semantic understanding. However, existing approaches typically prioritize either graph structure or textual semantics, leaving a gap: a unified framework that simultaneously captures global KG connectivity, nuanced linguistic context, and discriminative reasoning semantics. To bridge this gap, we introduce KG-BiLM, a bidirectional LM framework that fuses structural cues from KGs with the semantic expressiveness of generative transformers. KG-BiLM incorporates three key components: (i) Bidirectional Knowledge Attention, which removes the causal mask to enable full interaction among all tokens and entities; (ii) Knowledge-Masked Prediction, which encourages the model to leverage both local semantic contexts and global graph connectivity; and (iii) Contrastive Graph Semantic Aggregation, which preserves KG structure via contrastive alignment of sampled sub-graph representations. Extensive experiments on standard benchmarks demonstrate that KG-BiLM outperforms strong baselines in link prediction, especially on large-scale graphs with complex multi-hop relations—validating its effectiveness in unifying structural information and textual semantics.",
+      "authors": [
+        "Zirui Chen",
+        "Xin Wang",
+        "Zhao Li",
+        "Wenbin Guo",
+        "Dongxiao He"
+      ],
+      "primary_category": "Knowledge Graph Embedding",
+      "categories": [
+        "Knowledge Graph Embedding",
+        "Language Model",
+        "Transformer",
+        "Attention Mechanism"
+      ],
+      "published": "2025-05-11T03:20:31.762+00:00",
+      "link": "https://openreview.net/forum?id=yThwhNCaZN",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-7fzntlustl",
+      "source": "NeurIPS-2025-Rejected-Public",
+      "title": "Query-Aware Subgraph Packing: A Knapsack Optimization Paradigm for Graph Retrieval-Augmented Generation",
+      "abstract": "Graph Retrieval‑Augmented Generation (GraphRAG) has recently emerged as a task paradigm for injecting graph‑structured knowledge into large language models (LLMs), yet most existing approaches still rely on flat, similarity‑based retrieval that ignores topology and uses static encoders, producing redundant or structurally incoherent evidence. In this paper, we propose GraphPack, a query‑aware GraphRAG framework that overcomes these limitations by casting subgraph selection as a 0–1 knapsack optimization. For every natural language query, GraphPack packs the most informative subgraph under a size budget by jointly maximizing semantic relevance and minimizing structural redundancy. The selected subgraph is then encoded by a query‑aware graph encoder whose parameters are conditioned on the query, allowing node representations to adapt dynamically to user intent. Extensive experiments on multiple knowledge-intensive graph benchmarks demonstrate that GraphPack achieves state-of-the-art performance, showcasing its strong capability in addressing structural and contextual challenges under supervised learning, cross-domain settings, and zero-shot scenarios.",
+      "authors": [
+        "Chenjie Qiu",
+        "yongqi luo",
+        "Bingfeng chen",
+        "Boyan Xu",
+        "Ruichu Cai",
+        "Zhifeng Hao"
+      ],
+      "primary_category": "Natural Language Processing",
+      "categories": [
+        "Natural Language Processing",
+        "Graph Based Learning",
+        "Information Retrieval"
+      ],
+      "published": "2025-05-12T08:38:41.673+00:00",
+      "link": "https://openreview.net/forum?id=7fZNTLuStL",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-eszmes7j1f",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "Flatten Graphs as Sequences: Transformers are Scalable Graph Generators",
+      "abstract": "We introduce AutoGraph, a scalable autoregressive model for attributed graph generation using decoder-only transformers. By flattening graphs into random sequences of tokens through a reversible process, AutoGraph enables modeling graphs as sequences without relying on additional node features that are expensive to compute, in contrast to diffusion-based approaches. This results in sampling complexity and sequence lengths that scale optimally linearly with the number of edges, making it scalable and efficient for large, sparse graphs. A key success factor of AutoGraph is that its sequence prefixes represent induced subgraphs, creating a direct link to sub-sentences in language modeling. Empirically, AutoGraph achieves state-of-the-art performance on synthetic and molecular benchmarks, with up to 100x faster generation and 3x faster training than leading diffusion models. It also supports substructure-conditioned generation without fine-tuning and shows promising transferability, bridging language modeling and graph generation to lay the groundwork for graph foundation models. Our code is available at https://github.com/BorgwardtLab/AutoGraph.",
+      "authors": [
+        "Dexiong Chen",
+        "Markus Krimmel",
+        "Karsten Borgwardt"
+      ],
+      "primary_category": "graph generation",
+      "categories": [
+        "graph generation",
+        "transformers",
+        "autoregressive modeling",
+        "language models",
+        "LLMs"
+      ],
+      "published": "2025-09-18T17:34:10.759+00:00",
+      "link": "https://openreview.net/forum?id=eszmES7j1F",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-po0eyoyfua",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "Can Knowledge-Graph-based Retrieval Augmented Generation Really Retrieve What You Need?",
+      "abstract": "Retrieval-Augmented Generation (RAG) based on knowledge graphs (KGs) enhances large language models (LLMs) by providing structured and interpretable external knowledge.\nHowever, existing KG-based RAG methods struggle to retrieve accurate and diverse information from text-rich KGs for complex real-world queries.\nProcess Reward Models (PRMs) offer a way to align the retrieval process of KG-based RAG with query-specific knowledge requirements, \nbut they heavily rely on process-level supervision signals that are expensive and hard to obtain on KGs.\nTo address this challenge, we propose GraphFlow, a framework that efficiently retrieves accurate and diverse knowledge required for real-world queries from text-rich KGs.\nGraphFlow employs a transition-based flow matching objective to jointly optimize a retrieval policy and a flow estimator.\nThe flow estimator factorizes the reward of the retrieval outcome into the intermediate retrieval states.\nSuch reward factorization guides the retrieval policy to retrieve candidates from KGs in proportion to their reward.\nThis allows GraphFlow to explore high-quality regions of KGs that yield diverse and relevant results. \nWe evaluate GraphFlow on the STaRK benchmark, which includes real-world queries from multiple domains over text-rich KGs. \nGraphFlow outperforms strong KG-RAG baselines, including GPT-4o, by 10\\% on average in hit rate and recall. \nIt also shows strong generalization to unseen KGs, demonstrating its effectiveness and robustness.",
+      "authors": [
+        "Junchi Yu",
+        "Yujie Liu",
+        "Jindong Gu",
+        "Philip Torr",
+        "Dongzhan Zhou"
+      ],
+      "primary_category": "graph machine learning",
+      "categories": [
+        "graph machine learning",
+        "knowledge graph",
+        "LLM"
+      ],
+      "published": "2025-09-18T17:31:02.467+00:00",
+      "link": "https://openreview.net/forum?id=po0eyoYFUa",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-h3dbocj7po",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "GraphMaster: Automated Graph Synthesis via LLM Agents in Data-Limited Environments",
+      "abstract": "The era of foundation models has revolutionized AI research, yet Graph Foundation Models (GFMs) remain constrained by the scarcity of large-scale graph corpora. Traditional graph data synthesis techniques primarily focus on simplistic structural operations, lacking the capacity to generate semantically rich nodes with meaningful textual attributes—a critical limitation for real-world applications. While large language models (LLMs) demonstrate exceptional text generation capabilities, their direct application to graph synthesis is impeded by context window limitations, hallucination phenomena, and structural consistency challenges. To address these issues, we introduce \\textbf{GraphMaster}—the first multi-agent framework specifically designed for graph data synthesis in data-limited environments. GraphMaster orchestrates four specialized LLM agents (Manager, Perception, Enhancement, and Evaluation) that collaboratively optimize the synthesis process through iterative refinement, ensuring both semantic coherence and structural integrity. To rigorously evaluate our approach, we create new data-limited “Sub” variants of six standard graph benchmarks, specifically designed to test synthesis capabilities under realistic constraints. Additionally, we develop a novel interpretability assessment framework that combines human evaluation with a principled Grassmannian manifold-based analysis, providing both qualitative and quantitative measures of semantic coherence. Experimental results demonstrate that GraphMaster significantly outperforms traditional synthesis methods across multiple datasets, establishing a strong foundation for advancing GFMs in data-scarce environments.",
+      "authors": [
+        "Enjun Du",
+        "Xunkai Li",
+        "Tian Jin",
+        "Zhihan Zhang",
+        "Rong-Hua Li",
+        "Guoren Wang"
+      ],
+      "primary_category": "Graph data synthesis",
+      "categories": [
+        "Graph data synthesis",
+        "text-attributed graphs",
+        "multi-agent framework",
+        "large language models",
+        "retrieval-augmented generation",
+        "data-limited environments"
+      ],
+      "published": "2025-09-18T17:28:17.019+00:00",
+      "link": "https://openreview.net/forum?id=h3dbocj7po",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm"
+      ]
+    },
+    {
+      "id": "openreview-neurips-2025-k0wyi4cogy",
+      "source": "NeurIPS-2025-Accepted",
+      "title": "KARMA: Leveraging Multi-Agent LLMs for Automated Knowledge Graph Enrichment",
+      "abstract": "Maintaining comprehensive and up-to-date knowledge graphs (KGs) is critical for modern AI systems, but manual curation struggles to scale with the rapid growth of scientific literature. This paper presents KARMA, a novel framework employing multi-agent large language models (LLMs) to automate KG enrichment through structured analysis of unstructured text. Our approach employs nine collaborative agents, spanning entity discovery, relation extraction, schema alignment, and conflict resolution that iteratively parse documents, verify extracted knowledge, and integrate it into existing graph structures while adhering to domain-specific schema. Experiments on 1,200 PubMed articles from three different domains demonstrate the effectiveness of KARMA in knowledge graph enrichment, with the identification of up to 38,230 new entities while achieving 83.1\\% LLM-verified correctness and reducing conflict edges by 18.6\\% through multi-layer assessments.",
+      "authors": [
+        "Yuxing Lu",
+        "Wei Wu",
+        "Xukai Zhao",
+        "Rui Peng",
+        "Jinzhuo Wang"
+      ],
+      "primary_category": "Knowledge Graphs",
+      "categories": [
+        "Knowledge Graphs",
+        "Multi Agent System"
+      ],
+      "published": "2025-09-18T17:33:05.678+00:00",
+      "link": "https://openreview.net/forum?id=k0wyi4cOGy",
+      "pdf_url": null,
+      "tags": [
+        "keyword:graph-llm"
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "type": "intent_query",
+      "tag": "graph-llm",
+      "paper_tag": "query:graph-llm",
+      "query_text": "How to integrate graph neural networks with large language models?",
+      "sim_scores": {
+        "openreview-neurips-2025-zav9s8im2t": {
+          "score": 0.02964426877470356,
+          "rank": 4
+        },
+        "openreview-neurips-2025-1nsynwhvu2": {
+          "score": 0.01639344262295082,
+          "rank": 5
+        },
+        "openreview-neurips-2025-0qnmavqqqj": {
+          "score": 0.016129032258064516,
+          "rank": 6
+        },
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.016129032258064516,
+          "rank": 7
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.015873015873015872,
+          "rank": 9
+        },
+        "openreview-neurips-2025-9env0bdcdv": {
+          "score": 0.015625,
+          "rank": 10
+        },
+        "openreview-neurips-2025-60i6tzuhob": {
+          "score": 0.013888888888888888,
+          "rank": 14
+        },
+        "openreview-neurips-2025-7fzntlustl": {
+          "score": 0.013157894736842105,
+          "rank": 18
+        },
+        "openreview-neurips-2025-1qo6dzdpog": {
+          "score": 0.009174311926605505,
+          "rank": 51
+        }
+      },
+      "ranked": [
+        {
+          "paper_id": "openreview-neurips-2025-zav9s8im2t",
+          "score": 1.0,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-60i6tzuhob",
+          "score": 1.0,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-j4w4rtwlyb",
+          "score": 0.9586435070306036,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-lq4nned2xx",
+          "score": 0.9586435070306036,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-rdz6esqykk",
+          "score": 0.9185999185999183,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-9env0bdcdv",
+          "score": 0.9185999185999183,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-7fzntlustl",
+          "score": 0.8798076923076922,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-1qo6dzdpog",
+          "score": 0.8422090729783037,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-0qnmavqqqj",
+          "score": 0.8422090729783037,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-h3dbocj7po",
+          "score": 0.8057498057498057,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-ythwhncazn",
+          "score": 0.7703788748564866,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-1nsynwhvu2",
+          "score": 0.73604826546003,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-wf3ebtqgdw",
+          "score": 0.6703296703296702,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-eszmes7j1f",
+          "score": 0.6703296703296702,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-k0wyi4cogy",
+          "score": 0.5495495495495496,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-mgvhgfcfnk",
+          "score": 0.5495495495495496,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-udoezgwjlc",
+          "score": 0.5213675213675214,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-po0eyoyfua",
+          "score": 0.3668882557771445,
+          "star_rating": 3
+        },
+        {
+          "paper_id": "openreview-neurips-2025-l8razjitey",
+          "score": 0.29792429792429775,
+          "star_rating": 3
+        },
+        {
+          "paper_id": "openreview-neurips-2025-bultwq5knk",
+          "score": 0.09983633387888699,
+          "star_rating": 2
+        }
+      ]
+    },
+    {
+      "type": "intent_query",
+      "tag": "graph-llm",
+      "paper_tag": "query:graph-llm",
+      "query_text": "Training graph enhanced large language models",
+      "sim_scores": {
+        "openreview-neurips-2025-0qnmavqqqj": {
+          "score": 0.02736726874657909,
+          "rank": 3
+        },
+        "openreview-neurips-2025-wf3ebtqgdw": {
+          "score": 0.01639344262295082,
+          "rank": 4
+        },
+        "openreview-neurips-2025-7fzntlustl": {
+          "score": 0.01639344262295082,
+          "rank": 5
+        },
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.016129032258064516,
+          "rank": 7
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.015873015873015872,
+          "rank": 8
+        },
+        "openreview-neurips-2025-1nsynwhvu2": {
+          "score": 0.015625,
+          "rank": 10
+        },
+        "openreview-neurips-2025-j4w4rtwlyb": {
+          "score": 0.015151515151515152,
+          "rank": 13
+        },
+        "openreview-neurips-2025-zav9s8im2t": {
+          "score": 0.014925373134328358,
+          "rank": 15
+        },
+        "openreview-neurips-2025-9env0bdcdv": {
+          "score": 0.013513513513513514,
+          "rank": 22
+        },
+        "openreview-neurips-2025-po0eyoyfua": {
+          "score": 0.013333333333333334,
+          "rank": 23
+        },
+        "openreview-neurips-2025-mgvhgfcfnk": {
+          "score": 0.012658227848101266,
+          "rank": 27
+        },
+        "openreview-neurips-2025-60i6tzuhob": {
+          "score": 0.01020408163265306,
+          "rank": 45
+        },
+        "openreview-neurips-2025-eszmes7j1f": {
+          "score": 0.00980392156862745,
+          "rank": 49
+        }
+      },
+      "ranked": [
+        {
+          "paper_id": "openreview-neurips-2025-0qnmavqqqj",
+          "score": 1.0,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-lq4nned2xx",
+          "score": 1.0,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-wf3ebtqgdw",
+          "score": 0.9586435070306036,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-rdz6esqykk",
+          "score": 0.9586435070306036,
+          "star_rating": 5
+        },
+        {
+          "paper_id": "openreview-neurips-2025-bultwq5knk",
+          "score": 0.8798076923076922,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-j4w4rtwlyb",
+          "score": 0.8798076923076922,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-h3dbocj7po",
+          "score": 0.8422090729783037,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-7fzntlustl",
+          "score": 0.8422090729783037,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-l8razjitey",
+          "score": 0.8057498057498057,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-1nsynwhvu2",
+          "score": 0.8057498057498057,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-k0wyi4cogy",
+          "score": 0.7703788748564866,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-po0eyoyfua",
+          "score": 0.7703788748564866,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-zav9s8im2t",
+          "score": 0.73604826546003,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-mgvhgfcfnk",
+          "score": 0.702712746191007,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-1qo6dzdpog",
+          "score": 0.6703296703296702,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-9env0bdcdv",
+          "score": 0.578503688092729,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-60i6tzuhob",
+          "score": 0.5495495495495496,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-eszmes7j1f",
+          "score": 0.5213675213675214,
+          "star_rating": 4
+        },
+        {
+          "paper_id": "openreview-neurips-2025-ythwhncazn",
+          "score": 0.4411571334648256,
+          "star_rating": 3
+        },
+        {
+          "paper_id": "openreview-neurips-2025-udoezgwjlc",
+          "score": 0.23371647509578536,
+          "star_rating": 3
+        }
+      ]
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "graph machine learning",
+      "sim_scores": {}
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "graph machine learning techniques for large language models",
+      "sim_scores": {
+        "openreview-neurips-2025-7fzntlustl": {
+          "score": 0.01639344262295082,
+          "rank": 1
+        },
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.016129032258064516,
+          "rank": 2
+        },
+        "openreview-neurips-2025-1nsynwhvu2": {
+          "score": 0.015873015873015872,
+          "rank": 3
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.015625,
+          "rank": 4
+        },
+        "openreview-neurips-2025-60i6tzuhob": {
+          "score": 0.015151515151515152,
+          "rank": 6
+        },
+        "openreview-neurips-2025-9env0bdcdv": {
+          "score": 0.014925373134328358,
+          "rank": 7
+        },
+        "openreview-neurips-2025-zav9s8im2t": {
+          "score": 0.014492753623188406,
+          "rank": 9
+        },
+        "openreview-neurips-2025-po0eyoyfua": {
+          "score": 0.014084507042253521,
+          "rank": 11
+        },
+        "openreview-neurips-2025-j4w4rtwlyb": {
+          "score": 0.0136986301369863,
+          "rank": 13
+        },
+        "openreview-neurips-2025-0qnmavqqqj": {
+          "score": 0.011494252873563218,
+          "rank": 27
+        },
+        "openreview-neurips-2025-mgvhgfcfnk": {
+          "score": 0.011363636363636364,
+          "rank": 28
+        },
+        "openreview-neurips-2025-eszmes7j1f": {
+          "score": 0.009708737864077669,
+          "rank": 43
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "graph neural networks",
+      "sim_scores": {
+        "openreview-neurips-2025-1nsynwhvu2": {
+          "score": 0.011235955056179775,
+          "rank": 29
+        },
+        "openreview-neurips-2025-0qnmavqqqj": {
+          "score": 0.010416666666666666,
+          "rank": 36
+        },
+        "openreview-neurips-2025-9env0bdcdv": {
+          "score": 0.00980392156862745,
+          "rank": 42
+        },
+        "openreview-neurips-2025-60i6tzuhob": {
+          "score": 0.009708737864077669,
+          "rank": 43
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "graph reasoning",
+      "sim_scores": {
+        "openreview-neurips-2025-lq4nned2xx": {
+          "score": 0.01639344262295082,
+          "rank": 1
+        },
+        "openreview-neurips-2025-1qo6dzdpog": {
+          "score": 0.015384615384615385,
+          "rank": 5
+        },
+        "openreview-neurips-2025-udoezgwjlc": {
+          "score": 0.014925373134328358,
+          "rank": 7
+        },
+        "openreview-neurips-2025-zav9s8im2t": {
+          "score": 0.014705882352941176,
+          "rank": 8
+        },
+        "openreview-neurips-2025-0qnmavqqqj": {
+          "score": 0.013888888888888888,
+          "rank": 12
+        },
+        "openreview-neurips-2025-mgvhgfcfnk": {
+          "score": 0.012658227848101266,
+          "rank": 19
+        },
+        "openreview-neurips-2025-j4w4rtwlyb": {
+          "score": 0.012195121951219513,
+          "rank": 22
+        },
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.012048192771084338,
+          "rank": 23
+        },
+        "openreview-neurips-2025-bultwq5knk": {
+          "score": 0.011235955056179775,
+          "rank": 29
+        },
+        "openreview-neurips-2025-l8razjitey": {
+          "score": 0.009900990099009901,
+          "rank": 41
+        },
+        "openreview-neurips-2025-wf3ebtqgdw": {
+          "score": 0.009615384615384616,
+          "rank": 44
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.009345794392523364,
+          "rank": 47
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "graph reasoning capabilities of large language models",
+      "sim_scores": {
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.01639344262295082,
+          "rank": 1
+        },
+        "openreview-neurips-2025-7fzntlustl": {
+          "score": 0.016129032258064516,
+          "rank": 2
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.015873015873015872,
+          "rank": 3
+        },
+        "openreview-neurips-2025-zav9s8im2t": {
+          "score": 0.015384615384615385,
+          "rank": 5
+        },
+        "openreview-neurips-2025-mgvhgfcfnk": {
+          "score": 0.015151515151515152,
+          "rank": 6
+        },
+        "openreview-neurips-2025-1qo6dzdpog": {
+          "score": 0.014925373134328358,
+          "rank": 7
+        },
+        "openreview-neurips-2025-1nsynwhvu2": {
+          "score": 0.014492753623188406,
+          "rank": 9
+        },
+        "openreview-neurips-2025-bultwq5knk": {
+          "score": 0.014084507042253521,
+          "rank": 11
+        },
+        "openreview-neurips-2025-udoezgwjlc": {
+          "score": 0.013888888888888888,
+          "rank": 12
+        },
+        "openreview-neurips-2025-9env0bdcdv": {
+          "score": 0.0136986301369863,
+          "rank": 13
+        },
+        "openreview-neurips-2025-h3dbocj7po": {
+          "score": 0.013157894736842105,
+          "rank": 16
+        },
+        "openreview-neurips-2025-l8razjitey": {
+          "score": 0.01282051282051282,
+          "rank": 18
+        },
+        "openreview-neurips-2025-po0eyoyfua": {
+          "score": 0.0125,
+          "rank": 20
+        },
+        "openreview-neurips-2025-eszmes7j1f": {
+          "score": 0.012345679012345678,
+          "rank": 21
+        },
+        "openreview-neurips-2025-j4w4rtwlyb": {
+          "score": 0.011904761904761904,
+          "rank": 24
+        },
+        "openreview-neurips-2025-k0wyi4cogy": {
+          "score": 0.011363636363636364,
+          "rank": 28
+        },
+        "openreview-neurips-2025-0qnmavqqqj": {
+          "score": 0.009615384615384616,
+          "rank": 44
+        },
+        "openreview-neurips-2025-60i6tzuhob": {
+          "score": 0.009433962264150943,
+          "rank": 46
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "graph representation learning",
+      "sim_scores": {
+        "openreview-neurips-2025-mgvhgfcfnk": {
+          "score": 0.011111111111111112,
+          "rank": 30
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.01098901098901099,
+          "rank": 31
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "graph representation learning combined with large language models",
+      "sim_scores": {
+        "openreview-neurips-2025-7fzntlustl": {
+          "score": 0.01639344262295082,
+          "rank": 1
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.016129032258064516,
+          "rank": 2
+        },
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.015873015873015872,
+          "rank": 3
+        },
+        "openreview-neurips-2025-zav9s8im2t": {
+          "score": 0.015384615384615385,
+          "rank": 5
+        },
+        "openreview-neurips-2025-1nsynwhvu2": {
+          "score": 0.015151515151515152,
+          "rank": 6
+        },
+        "openreview-neurips-2025-9env0bdcdv": {
+          "score": 0.014705882352941176,
+          "rank": 8
+        },
+        "openreview-neurips-2025-60i6tzuhob": {
+          "score": 0.0136986301369863,
+          "rank": 13
+        },
+        "openreview-neurips-2025-1qo6dzdpog": {
+          "score": 0.012048192771084338,
+          "rank": 23
+        },
+        "openreview-neurips-2025-eszmes7j1f": {
+          "score": 0.011363636363636364,
+          "rank": 28
+        },
+        "openreview-neurips-2025-mgvhgfcfnk": {
+          "score": 0.010309278350515464,
+          "rank": 37
+        },
+        "openreview-neurips-2025-j4w4rtwlyb": {
+          "score": 0.009433962264150943,
+          "rank": 46
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "graph-enhanced language models",
+      "sim_scores": {
+        "openreview-neurips-2025-0qnmavqqqj": {
+          "score": 0.01639344262295082,
+          "rank": 1
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "graph-enhanced training of large language models",
+      "sim_scores": {
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.01639344262295082,
+          "rank": 1
+        },
+        "openreview-neurips-2025-7fzntlustl": {
+          "score": 0.016129032258064516,
+          "rank": 2
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.015873015873015872,
+          "rank": 3
+        },
+        "openreview-neurips-2025-1nsynwhvu2": {
+          "score": 0.015625,
+          "rank": 4
+        },
+        "openreview-neurips-2025-zav9s8im2t": {
+          "score": 0.014492753623188406,
+          "rank": 9
+        },
+        "openreview-neurips-2025-j4w4rtwlyb": {
+          "score": 0.014084507042253521,
+          "rank": 11
+        },
+        "openreview-neurips-2025-60i6tzuhob": {
+          "score": 0.01282051282051282,
+          "rank": 18
+        },
+        "openreview-neurips-2025-9env0bdcdv": {
+          "score": 0.011363636363636364,
+          "rank": 28
+        },
+        "openreview-neurips-2025-po0eyoyfua": {
+          "score": 0.009900990099009901,
+          "rank": 41
+        },
+        "openreview-neurips-2025-0qnmavqqqj": {
+          "score": 0.009615384615384616,
+          "rank": 44
+        },
+        "openreview-neurips-2025-wf3ebtqgdw": {
+          "score": 0.009523809523809525,
+          "rank": 45
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "integrating graph neural networks with large language models",
+      "sim_scores": {
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.01639344262295082,
+          "rank": 1
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.016129032258064516,
+          "rank": 2
+        },
+        "openreview-neurips-2025-1nsynwhvu2": {
+          "score": 0.015873015873015872,
+          "rank": 3
+        },
+        "openreview-neurips-2025-7fzntlustl": {
+          "score": 0.015625,
+          "rank": 4
+        },
+        "openreview-neurips-2025-zav9s8im2t": {
+          "score": 0.015384615384615385,
+          "rank": 5
+        },
+        "openreview-neurips-2025-9env0bdcdv": {
+          "score": 0.015151515151515152,
+          "rank": 6
+        },
+        "openreview-neurips-2025-60i6tzuhob": {
+          "score": 0.014492753623188406,
+          "rank": 9
+        },
+        "openreview-neurips-2025-1qo6dzdpog": {
+          "score": 0.011111111111111112,
+          "rank": 30
+        },
+        "openreview-neurips-2025-j4w4rtwlyb": {
+          "score": 0.010638297872340425,
+          "rank": 34
+        },
+        "openreview-neurips-2025-mgvhgfcfnk": {
+          "score": 0.010101010101010102,
+          "rank": 39
+        },
+        "openreview-neurips-2025-eszmes7j1f": {
+          "score": 0.009174311926605505,
+          "rank": 49
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "large language models",
+      "sim_scores": {
+        "openreview-neurips-2025-j4w4rtwlyb": {
+          "score": 0.010101010101010102,
+          "rank": 39
+        },
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.009174311926605505,
+          "rank": 49
+        }
+      }
+    },
+    {
+      "type": "keyword",
+      "tag": "graph-llm",
+      "paper_tag": "keyword:graph-llm",
+      "query_text": "using large language models for graph-structured data",
+      "sim_scores": {
+        "openreview-neurips-2025-7fzntlustl": {
+          "score": 0.01639344262295082,
+          "rank": 1
+        },
+        "openreview-neurips-2025-rdz6esqykk": {
+          "score": 0.016129032258064516,
+          "rank": 2
+        },
+        "openreview-neurips-2025-ythwhncazn": {
+          "score": 0.015873015873015872,
+          "rank": 3
+        },
+        "openreview-neurips-2025-9env0bdcdv": {
+          "score": 0.015625,
+          "rank": 4
+        },
+        "openreview-neurips-2025-1qo6dzdpog": {
+          "score": 0.015151515151515152,
+          "rank": 6
+        },
+        "openreview-neurips-2025-zav9s8im2t": {
+          "score": 0.014925373134328358,
+          "rank": 7
+        },
+        "openreview-neurips-2025-1nsynwhvu2": {
+          "score": 0.014492753623188406,
+          "rank": 9
+        },
+        "openreview-neurips-2025-mgvhgfcfnk": {
+          "score": 0.014285714285714285,
+          "rank": 10
+        },
+        "openreview-neurips-2025-eszmes7j1f": {
+          "score": 0.014084507042253521,
+          "rank": 11
+        },
+        "openreview-neurips-2025-po0eyoyfua": {
+          "score": 0.013888888888888888,
+          "rank": 12
+        },
+        "openreview-neurips-2025-j4w4rtwlyb": {
+          "score": 0.013513513513513514,
+          "rank": 14
+        },
+        "openreview-neurips-2025-h3dbocj7po": {
+          "score": 0.012048192771084338,
+          "rank": 23
+        },
+        "openreview-neurips-2025-0qnmavqqqj": {
+          "score": 0.011494252873563218,
+          "rank": 27
+        },
+        "openreview-neurips-2025-k0wyi4cogy": {
+          "score": 0.01098901098901099,
+          "rank": 31
+        },
+        "openreview-neurips-2025-bultwq5knk": {
+          "score": 0.010526315789473684,
+          "rank": 35
+        }
+      }
+    }
+  ],
+  "global_candidate_ids": [
+    "openreview-neurips-2025-fokbhmaw0i",
+    "openreview-neurips-2025-onyzhnhapp",
+    "openreview-neurips-2025-lbnl8xgai2",
+    "openreview-neurips-2025-d6wozrzawd",
+    "openreview-neurips-2025-721bdivjen",
+    "openreview-neurips-2025-7fzntlustl",
+    "openreview-neurips-2025-rdz6esqykk",
+    "openreview-neurips-2025-gxomu9yydy",
+    "openreview-neurips-2025-n2f6n4jopz",
+    "openreview-neurips-2025-lq4nned2xx",
+    "openreview-neurips-2025-o1g8nwkxqf",
+    "openreview-neurips-2025-jjtlq7sxab",
+    "openreview-neurips-2025-nc7fprupki",
+    "openreview-neurips-2025-ythwhncazn",
+    "openreview-neurips-2025-0qnmavqqqj",
+    "openreview-neurips-2025-iy4caxotrf",
+    "openreview-neurips-2025-rz2nst1x58",
+    "openreview-neurips-2025-zav9s8im2t",
+    "openreview-neurips-2025-1nsynwhvu2",
+    "openreview-neurips-2025-uksr3kgeqv",
+    "openreview-neurips-2025-9env0bdcdv",
+    "openreview-neurips-2025-tdmwo3jb21",
+    "openreview-neurips-2025-j4w4rtwlyb",
+    "openreview-neurips-2025-tyerwc5520",
+    "openreview-neurips-2025-60i6tzuhob",
+    "openreview-neurips-2025-mgvhgfcfnk",
+    "openreview-neurips-2025-bgwzsfljfu",
+    "openreview-neurips-2025-7txgibria5",
+    "openreview-neurips-2025-oinssze5gi",
+    "openreview-neurips-2025-yl9lxrl5tj",
+    "openreview-neurips-2025-1qo6dzdpog",
+    "openreview-neurips-2025-oemk0js4lq",
+    "openreview-neurips-2025-tyyzs6nfgm",
+    "openreview-neurips-2025-eszmes7j1f",
+    "openreview-neurips-2025-y5wmoibdds",
+    "openreview-neurips-2025-otaiypp6ga",
+    "openreview-neurips-2025-po0eyoyfua",
+    "openreview-neurips-2025-lwiqc4mvjz",
+    "openreview-neurips-2025-yvgnoqy0zf",
+    "openreview-neurips-2025-tirl2l9okg",
+    "openreview-neurips-2025-dsp8dulzfq",
+    "openreview-neurips-2025-2exvhre6jd",
+    "openreview-neurips-2025-ca1xvsvn72",
+    "openreview-neurips-2025-0ugbz0qaxi",
+    "openreview-neurips-2025-4vkvume1i8",
+    "openreview-neurips-2025-yeyakpaufr",
+    "openreview-neurips-2025-lfncialhni",
+    "openreview-neurips-2025-gzjplll9jm",
+    "openreview-neurips-2025-7fhwzfovem",
+    "openreview-neurips-2025-8lmwwt8e2s",
+    "openreview-neurips-2025-v6oo0zo2oa",
+    "openreview-neurips-2025-xk5d55eu1i",
+    "openreview-neurips-2025-3dng7lckxt",
+    "openreview-neurips-2025-odcagsxzzp",
+    "openreview-neurips-2025-yyhrjxxbpi",
+    "openreview-neurips-2025-bfle9ayejy",
+    "openreview-neurips-2025-qykhcah8oz",
+    "openreview-neurips-2025-wbeknrzbpt",
+    "openreview-neurips-2025-jgtcg08azk",
+    "openreview-neurips-2025-bultwq5knk",
+    "openreview-neurips-2025-hxfjmc95rl",
+    "openreview-neurips-2025-wf3ebtqgdw",
+    "openreview-neurips-2025-tkhcdblsjj",
+    "openreview-neurips-2025-whm5j9uanv",
+    "openreview-neurips-2025-nkjzafyyi4",
+    "openreview-neurips-2025-zxfwvts5it",
+    "openreview-neurips-2025-enhfxzkii4",
+    "openreview-neurips-2025-h918wypf0s",
+    "openreview-neurips-2025-e6zdfjtoix",
+    "openreview-neurips-2025-ailabrwwjo",
+    "openreview-neurips-2025-jj4ndjtxwp",
+    "openreview-neurips-2025-tkedqv0bxb",
+    "openreview-neurips-2025-iietqpgvyv",
+    "openreview-neurips-2025-eafijozahm",
+    "openreview-neurips-2025-zj1uv88eyu",
+    "openreview-neurips-2025-qaggjev2jo",
+    "openreview-neurips-2025-nadvppcmvn",
+    "openreview-neurips-2025-xsbzmjzj2l",
+    "openreview-neurips-2025-4aawjasgvb",
+    "openreview-neurips-2025-o4ljra0s3i",
+    "openreview-neurips-2025-h2kwurafkj",
+    "openreview-neurips-2025-ioslbwzkal",
+    "openreview-neurips-2025-7hvadbw8fh",
+    "openreview-neurips-2025-udoezgwjlc",
+    "openreview-neurips-2025-nuctkoflsv",
+    "openreview-neurips-2025-5bu1ioovf0",
+    "openreview-neurips-2025-c7len0piqv",
+    "openreview-neurips-2025-7ty89cqlfe",
+    "openreview-neurips-2025-xqia0vgium",
+    "openreview-neurips-2025-h3dbocj7po",
+    "openreview-neurips-2025-yhi8ao6gae",
+    "openreview-neurips-2025-poihcjqzn0",
+    "openreview-neurips-2025-pjrvx7jz2c",
+    "openreview-neurips-2025-kkhrttmxfv",
+    "openreview-neurips-2025-wu8ikglpbi",
+    "openreview-neurips-2025-n1xlwrmf7v",
+    "openreview-neurips-2025-8m9t7nl454",
+    "openreview-neurips-2025-ztb34bqi54",
+    "openreview-neurips-2025-drird9elmb",
+    "openreview-neurips-2025-maj3asz0ni",
+    "openreview-neurips-2025-vzfqdwf09z",
+    "openreview-neurips-2025-lnrazsnjse",
+    "openreview-neurips-2025-9lmisuxb0f",
+    "openreview-neurips-2025-qxsfkp0els",
+    "openreview-neurips-2025-3rrzyrpo70",
+    "openreview-neurips-2025-gh4bra4zp3",
+    "openreview-neurips-2025-uipk3fzi09",
+    "openreview-neurips-2025-l8razjitey",
+    "openreview-neurips-2025-ravs5h8mng",
+    "openreview-neurips-2025-fmnqklfsys",
+    "openreview-neurips-2025-k0wyi4cogy",
+    "openreview-neurips-2025-09bpzrmckg",
+    "openreview-neurips-2025-qvvy0x63fv",
+    "openreview-neurips-2025-upu88pupzx",
+    "openreview-neurips-2025-8i5endn5ux",
+    "openreview-neurips-2025-l3qq5mu5vx",
+    "openreview-neurips-2025-h9bdn4f2vz",
+    "openreview-neurips-2025-z5vzdi2r6j",
+    "openreview-neurips-2025-6r2acwubhf",
+    "openreview-neurips-2025-9lasmulfuj",
+    "openreview-neurips-2025-8z3cover4z",
+    "openreview-neurips-2025-ectxvrfhua",
+    "openreview-neurips-2025-rnbjpkakkm",
+    "openreview-neurips-2025-mr7fn23hse",
+    "openreview-neurips-2025-24tuze5kzc"
+  ],
+  "global_pool_lane_top_k": 30,
+  "global_pool_limit": 120,
+  "global_pool_guaranteed_per_lane": 2,
+  "global_pool_effective_size": 125,
+  "reranked_at": "2026-06-09T07:04:16.656734+00:00",
+  "llm_ranked": [
+    {
+      "paper_id": "openreview-neurips-2025-lq4nned2xx",
+      "score": 10.0,
+      "evidence_en": "uses reinforcement learning to improve LLMs' graph reasoning abilities on synthetic graph tasks",
+      "evidence_cn": "利用强化学习提升大语言模型在图任务上的推理能力",
+      "canonical_evidence": "利用强化学习提升大语言模型在图任务上的推理能力",
+      "tldr_en": "G1 shows that reinforcement learning on synthetic graph-theoretic tasks can significantly enhance LLMs' graph reasoning abilities, overcoming data scarcity and improving performance across diverse graph problems.",
+      "tldr_cn": "大语言模型在图推理任务上表现有限，现有方法面临大规模图数据稀缺的挑战。G1创新地采用强化学习，在合成的大规模图论数据集Erdos上训练LLM，该数据集包含50种多样化的图任务。通过精心设计的奖励机制，模型学会了图结构推理，实验表明其在多个图推理基准上显著超越现有方法，为图增强LLM训练开辟了新途径。",
+      "title_zh": "G1：通过强化学习教授大语言模型图推理能力",
+      "motivation_cn": "现有LLM在图推理任务上能力不足，且缺乏大规模标注图数据。",
+      "method_cn": "构建大规模合成图任务集Erdos，采用强化学习训练LLM图推理。",
+      "result_cn": "训练的LLM在多种图推理任务上达到领先性能，显著超越基线。",
+      "conclusion_cn": "强化学习能有效提升LLM的图推理能力，是图增强训练的新范式。",
+      "matched_requirement_id": "req-3",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-9env0bdcdv",
+      "score": 10.0,
+      "evidence_en": "presents CROSS, a framework extending temporal GNNs with LLMs for synergistic text and structure modeling on temporal text-attributed graphs",
+      "evidence_cn": "提出CROSS框架，用大语言模型扩展时序图神经网络，实现文本语义与图结构的协同建模",
+      "canonical_evidence": "提出CROSS框架，用大语言模型扩展时序图神经网络，实现文本语义与图结构的协同建模",
+      "tldr_en": "CROSS unifies dynamic text semantics and evolving graph structures by integrating LLMs into temporal GNNs, enabling better representation learning on temporal text-attributed graphs.",
+      "tldr_cn": "针对时序文本属性图中动态文本语义与演变图结构难以协同建模的问题，提出CROSS框架，将大语言模型无缝接入现有时序图神经网络，联合学习时序文本和图拓扑，实验表明其在多种任务上优于传统方法，为图文合一学习提供了新方案。",
+      "title_zh": "使用大语言模型统一时序文本属性图中的文本语义与图结构",
+      "motivation_cn": "现有TGNN忽略文本的时序演变和语义-结构协同，导致表示学习受限。",
+      "method_cn": "提出灵活框架CROSS，将LLM嵌入与TGNN结合，实现语义和结构的协同训练。",
+      "result_cn": "在多个时序图任务上取得显著性能提升，验证了联合建模的优势。",
+      "conclusion_cn": "通过融合LLM，有效捕捉了动态文本语义与图结构，提升了时序图学习。",
+      "matched_requirement_id": "req-1",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-60i6tzuhob",
+      "score": 10.0,
+      "evidence_en": "proposes preference-driven knowledge distillation that synergizes LLMs and GNNs for few-shot node classification on text-attributed graphs",
+      "evidence_cn": "提出偏好驱动的知识蒸馏框架，协同大语言模型与图神经网络用于文本属性图少样本节点分类",
+      "canonical_evidence": "提出偏好驱动的知识蒸馏框架，协同大语言模型与图神经网络用于文本属性图少样本节点分类",
+      "tldr_en": "This paper combines LLMs and GNNs via preference-driven distillation, using LLMs to guide GNNs on text-attributed graphs, significantly improving few-shot node classification.",
+      "tldr_cn": "针对文本属性图上GNN依赖标注且单机制难以处理多样局部拓扑，LLM可扩展性差的问题，提出偏好驱动知识蒸馏框架PKD，利用LLM的预测蒸馏到GNN教师，并通过GNN偏好选择器提升蒸馏质量，在多个基准上大幅提升少样本节点分类性能，展现了图与大模型协同的潜力。",
+      "title_zh": "偏好驱动的知识蒸馏用于少样本节点分类",
+      "motivation_cn": "GNN依赖人工标注，且单一机制难以处理TAG的复杂局部拓扑；LLM可零/少样本学习但扩展性差。",
+      "method_cn": "提出PKD框架，通过GNN偏好驱动的节点选择，将LLM预测蒸馏到GNN教师，再蒸馏到学生。",
+      "result_cn": "在多个TAG数据集上，少样本分类准确率显著超越单独GNN或LLM方法。",
+      "conclusion_cn": "通过偏好蒸馏有效结合LLM与GNN优势，为图表示学习提供了新方案。",
+      "matched_requirement_id": "req-1",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-zav9s8im2t",
+      "score": 10.0,
+      "evidence_en": "Augments LLM with graph-text attention for unified structural and semantic reasoning",
+      "evidence_cn": "用图文本注意力增强LLM，实现统一的结构与语义推理",
+      "canonical_evidence": "用图文本注意力增强LLM，实现统一的结构与语义推理",
+      "tldr_en": "UniGTE is an instruction-tuned encoder-decoder that augments a pretrained LLM with alignment tokens and a structure-aware graph-text attention mechanism, enabling zero-shot generalization across graph tasks.",
+      "tldr_cn": "传统图神经网络受限于固定标签空间，大语言模型难以捕捉图结构。本文提出UniGTE框架，在自回归LLM中添加可学习的对齐令牌和结构感知的图文本注意力机制，实现联合编码图结构和自然语言任务描述。在多个未见过的图任务和领域上，UniGTE取得显著的零样本泛化效果，统一了结构与语义推理。",
+      "title_zh": "UniGTE: 统一图文本编码实现跨图任务和领域的零样本泛化",
+      "motivation_cn": "GNN受固定标签空间限制，LLM难以捕获图结构信息。",
+      "method_cn": "提出UniGTE，在LLM中加入对齐令牌和图文本注意力，联合编码图与文本。",
+      "result_cn": "在多个未见图任务和领域上实现强零样本泛化。",
+      "conclusion_cn": "UniGTE为图与语言模型的深度融合开辟了新方向。",
+      "matched_requirement_id": "req-1",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-j4w4rtwlyb",
+      "score": 9.0,
+      "evidence_en": "injecting structural biases into LLMs to handle graph-structured data by breaking the sequential limitation",
+      "evidence_cn": "向LLM注入结构偏置以通过打破序列限制处理图结构化数据",
+      "canonical_evidence": "向LLM注入结构偏置以通过打破序列限制处理图结构化数据",
+      "tldr_en": "Graph-KV enables LLMs to process graph-structured data by using KV-caches and structural biases, allowing target segments to attend only to source segments as prescribed by graph structure, overcoming serialization limits in tasks like RAG and reasoning.",
+      "tldr_cn": "针对大语言模型因自回归序列化而无法利用结构归纳偏置的局限，Graph-KV 将文本段的 KV 缓存作为压缩表示，并通过结构偏置控制段间注意力，使目标段仅关注图中指定源段的缓存。该方法突破了序列限制，在检索增强生成和图结构推理任务中展现了潜力，为 LLM 注入图结构认知开辟了新途径。",
+      "title_zh": "Graph-KV：通过注入结构偏置突破大型语言模型的序列限制",
+      "motivation_cn": "LLM 的自回归序列化特性导致其无法利用图结构中的归纳偏置，影响检索增强生成与推理性能。",
+      "method_cn": "Graph-KV 利用文本段 KV 缓存作为紧凑表示，并基于图结构偏置控制段间注意力，使目标段仅关注指定源段，打破线性序列约束。",
+      "result_cn": "在需要图结构交互的任务中，该方法能有效注入结构信息，克服序列化带来的限制。",
+      "conclusion_cn": "Graph-KV 为 LLM 处理图结构化数据提供了一种新范式，通过结构偏置提升模型对图依赖的建模能力。",
+      "matched_requirement_id": "req-2",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-1qo6dzdpog",
+      "score": 9.0,
+      "evidence_en": "analyzing how decoder-only transformers understand graph structures from text via Induced Substructure Filtration",
+      "evidence_cn": "通过诱导子结构过滤分析仅解码器变换器如何从文本中理解图结构",
+      "canonical_evidence": "通过诱导子结构过滤分析仅解码器变换器如何从文本中理解图结构",
+      "tldr_en": "This work proposes Induced Substructure Filtration to explain how multitlayer transformers identify substructures from textual graph descriptions, with empirical and theoretical validation, advancing understanding of LLM graph reasoning mechanisms.",
+      "tldr_cn": "针对大语言模型如何从文本描述中理解图结构这一核心问题，该论文以子结构提取切入，提出诱导子结构过滤（ISF）视角，从理论和实验两方面揭示了多层变换器识别子结构的内在机理。研究澄清了输入查询的影响，为解释和改进 LLM 的图推理能力提供了可解释的理论框架。",
+      "title_zh": "从序列到结构：揭示 Transformer 的子结构推理",
+      "motivation_cn": "尽管 LLM 能执行图推理任务，但其内部如何从文本中理解图结构仍不清楚。",
+      "method_cn": "以子结构提取任务为对象，提出诱导子结构过滤（ISF）视角，结合实证与理论分析揭示多层变换器内部机制。",
+      "result_cn": "ISF 有效捕获了变换器中的子结构识别过程，并阐明了输入查询的影响。",
+      "conclusion_cn": "该研究为 LLM 的图推理能力提供了机理性解释，有助于设计更强大的图推理模型。",
+      "matched_requirement_id": "req-3",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-po0eyoyfua",
+      "score": 9.0,
+      "evidence_en": "using knowledge graphs to enhance LLMs via retrieval-augmented generation, addressing retrieval accuracy and diversity",
+      "evidence_cn": "利用知识图谱通过检索增强生成提升LLM，解决检索准确性与多样性问题",
+      "canonical_evidence": "利用知识图谱通过检索增强生成提升LLM，解决检索准确性与多样性问题",
+      "tldr_en": "GraphFlow improves knowledge-graph-based retrieval-augmented generation for LLMs by efficiently retrieving accurate and diverse knowledge, using a trainable process reward model to align retrieval with query needs without expensive supervision.",
+      "tldr_cn": "针对现有基于知识图谱的检索增强生成方法难以从文本丰富图谱中检索准确多样信息的问题，GraphFlow 框架通过可训练的过程奖励模型对检索过程进行对齐，无需昂贵的过程级监督信号即可高效检索满足复杂查询需求的知识。该方法为 LLM 与知识图谱的深度融合提供了实用方案。",
+      "title_zh": "基于知识图谱的检索增强生成真的能检索到你需要的内容吗？",
+      "motivation_cn": "现有 KG-RAG 方法在文本丰富知识图谱上检索准确且多样的知识表现不佳，且过程监督信号昂贵难获。",
+      "method_cn": "提出 GraphFlow 框架，利用可训练过程奖励模型对齐 KG 检索与查询需求，高效检索准确多样知识。",
+      "result_cn": "GraphFlow 能有效提升检索质量和多样性，更好满足现实复杂查询。",
+      "conclusion_cn": "该框架为知识图谱增强的 LLM 提供了一种高效、可扩展的检索方案，推动了图-语言模型集成。",
+      "matched_requirement_id": "req-2",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-0qnmavqqqj",
+      "score": 9.0,
+      "evidence_en": "integrates a graph foundation model into LLM retrieval-augmented generation for complex reasoning",
+      "evidence_cn": "将图基础模型集成到大语言模型的检索增强生成中以支持复杂推理",
+      "canonical_evidence": "将图基础模型集成到大语言模型的检索增强生成中以支持复杂推理",
+      "tldr_en": "GFM-RAG leverages a graph foundation model to enhance retrieval-augmented generation for LLMs, capturing complex relationships and mitigating noise and incompleteness in graph structures, improving reasoning performance.",
+      "tldr_cn": "现有的检索增强生成方法难以获取知识间的复杂关系，导致复杂推理受限。GFM-RAG提出基于图基础模型的RAG框架，通过多级图索引、任务感知检索和自适应图融合，有效建模知识关联并抑制噪声。在多个推理基准上，GFM-RAG相比现有GraphRAG方法显著提升了答案准确性与事实性，验证了图基础模型在增强LLM推理中的价值。",
+      "title_zh": "GFM-RAG：面向检索增强生成的图基础模型",
+      "motivation_cn": "现有RAG难以捕捉知识间复杂关系，图增强方法存在噪声与不完整。",
+      "method_cn": "提出GFM-RAG，利用图基础模型实现多级图索引、任务感知检索与图融合增强。",
+      "result_cn": "在多个推理基准上，GFM-RAG显著优于现有GraphRAG方法，答案更准确。",
+      "conclusion_cn": "GFM-RAG展示了图基础模型在增强LLM复杂推理中的巨大潜力。",
+      "matched_requirement_id": "req-1",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-ythwhncazn",
+      "score": 9.0,
+      "evidence_en": "fuses knowledge graph structure with bidirectional language models for richer semantics",
+      "evidence_cn": "融合知识图谱结构与双向语言模型以获取丰富语义",
+      "canonical_evidence": "融合知识图谱结构与双向语言模型以获取丰富语义",
+      "tldr_en": "KG-BiLM proposes a bidirectional language model framework that integrates knowledge graph structural cues with generative transformer semantics, achieving strong performance on KG completion and reasoning tasks.",
+      "tldr_cn": "现有方法或偏重结构或偏重语义，导致表示不完整。KG-BiLM设计双向知识注意力模块，消除因果掩码以允许token之间充分交互，并引入结构感知编码，使语言模型同时捕捉知识图谱的连通模式与文本语义。在多个标准知识图谱基准上，KG-BiLM的链接预测和实体分类性能显著超过仅结构或仅语义的方法，为知识增强语言模型提供了新思路。",
+      "title_zh": "KG-BiLM：通过双向语言模型实现知识图谱嵌入",
+      "motivation_cn": "现有知识表示方法未能同时充分捕获图谱结构与文本语义。",
+      "method_cn": "提出双向语言模型框架，通过双向知识注意力融合图谱结构和语义信息。",
+      "result_cn": "在知识图谱补全与推理任务上性能领先，消融实验验证各组件有效性。",
+      "conclusion_cn": "结构信息与语言模型语义的深度融合是提升知识表示的关键。",
+      "matched_requirement_id": "req-4",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph representation learning combined with large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-bultwq5knk",
+      "score": 9.0,
+      "evidence_en": "leverages knowledge graphs to enhance LLM reasoning faithfulness and reliability",
+      "evidence_cn": "利用知识图谱增强大语言模型推理的忠实性和可靠性",
+      "canonical_evidence": "利用知识图谱增强大语言模型推理的忠实性和可靠性",
+      "tldr_en": "This paper proposes a trustworthy reasoning framework that distills structural and constraint priors from knowledge graphs to improve LLM responses, overcoming hallucinations in RAG.",
+      "tldr_cn": "针对现有知识图谱检索增强生成未能充分利用知识图谱结构信息的问题，提出了一种逐步知识蒸馏的推理框架，将图谱中的结构化先验和约束融入大语言模型，实验表明该方法能提升推理的忠实性和响应的可靠性，为知识图谱增强的大模型推理提供了新思路。",
+      "title_zh": "先验审议：基于知识图谱的大语言模型可信推理",
+      "motivation_cn": "现有方法未充分利用知识图谱中的结构信息和约束，导致大模型推理的忠实性和可靠性不足。",
+      "method_cn": "提出逐步知识蒸馏策略，将图谱结构信息和显式/隐式约束整合进LLM推理过程。",
+      "result_cn": "实验证明该方法能提升LLM在知识图谱相关任务上的忠实性和可靠性。",
+      "conclusion_cn": "通过充分利用KG先验，有效缓解了LLM幻觉，实现了更可信的推理。",
+      "matched_requirement_id": "req-2",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-7fzntlustl",
+      "score": 9.0,
+      "evidence_en": "proposes GraphPack, a graph retrieval-augmented framework for injecting graph knowledge into LLMs",
+      "evidence_cn": "提出GraphPack，一种向大语言模型注入图结构知识的图检索增强框架",
+      "canonical_evidence": "提出GraphPack，一种向大语言模型注入图结构知识的图检索增强框架",
+      "tldr_en": "GraphPack optimizes subgraph selection for GraphRAG by solving a knapsack problem, balancing relevance and redundancy to improve LLM answer quality with graph knowledge.",
+      "tldr_cn": "针对现有GraphRAG方法使用静态编码、忽略拓扑信息导致冗余的问题，提出将子图选择建模为0-1背包优化，在尺寸预算下联合最大化语义相关性和最小化结构冗余，实验表明所选子图能有效增强LLM的生成效果，推动了图检索增强生成研究。",
+      "title_zh": "查询感知子图打包：图检索增强生成的背包优化范式",
+      "motivation_cn": "当前GraphRAG方法依赖扁平相似度检索，忽略拓扑，产生冗余且结构不连贯的证据。",
+      "method_cn": "将子图选择建模为0-1背包优化，联合最大化语义相关性和最小化结构冗余。",
+      "result_cn": "在多个知识基准上，该方法选择的子图显著提升LLM回答的准确性和信息量。",
+      "conclusion_cn": "通过优化子图选择，有效提升了图知识注入LLM的效率和效果。",
+      "matched_requirement_id": "req-2",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-udoezgwjlc",
+      "score": 9.0,
+      "evidence_en": "proves that a two-layer transformer with continuous chain-of-thought can solve directed graph reachability",
+      "evidence_cn": "证明两层Transformer结合连续思维链可解决有向图可达性问题",
+      "canonical_evidence": "证明两层Transformer结合连续思维链可解决有向图可达性问题",
+      "tldr_en": "This theoretical work shows that continuous chain-of-thought enables transformers to solve graph reachability, providing a foundation for LLM graph reasoning.",
+      "tldr_cn": "针对连续思维链相比离散思维链在图推理等任务上优势的理论空白，从理论上证明两层Transformer结合连续协同可解决有向图可达性问题，为理解大语言模型的图推理能力奠定理论基础，揭示了连续表示在复杂推理中的潜力。",
+      "title_zh": "叠加推理：连续思维链的理论视角",
+      "motivation_cn": "连续思维链在图可达性等任务上表现优于离散版本，但缺乏理论解释。",
+      "method_cn": "通过构造理论证明，展示两层Transformer加连续协同可解有向图可达问题。",
+      "result_cn": "证明了该架构下连续步骤能准确求解图可达性。",
+      "conclusion_cn": "为连续思维链在图推理中的有效性提供了理论支撑。",
+      "matched_requirement_id": "req-3",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-rdz6esqykk",
+      "score": 9.0,
+      "evidence_en": "LLMs analyze large graphs via tool chaining with RL and test-time adaptation",
+      "evidence_cn": "LLM通过工具链和强化学习分析大规模图",
+      "canonical_evidence": "LLM通过工具链和强化学习分析大规模图",
+      "tldr_en": "GraphChain enables LLMs to analyze large-scale graphs by orchestrating tool sequences with RL-based distillation and structure-aware adaptation, overcoming context limits.",
+      "tldr_cn": "针对大语言模型分析大规模图时上下文受限和推理僵化的问题，本文提出GraphChain框架，通过强化学习生成动态工具链，并结合结构感知测试时自适应，有效扩展LLM的图分析能力。实验表明该方法能处理大规模图，提升分析性能。",
+      "title_zh": "GraphChain: 通过工具链实现大规模图分析的大语言模型",
+      "motivation_cn": "大语言模型因上下文限制难以直接分析大规模图，现有方法推理僵化。",
+      "method_cn": "提出GraphChain，利用强化学习生成图蒸馏工具序列，并引入结构感知测试时自适应。",
+      "result_cn": "GraphChain有效扩展LLM的大规模图分析能力，性能优于基线。",
+      "conclusion_cn": "该框架为LLM在图分析中的应用提供了新途径。",
+      "matched_requirement_id": "req-2",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-l8razjitey",
+      "score": 8.0,
+      "evidence_en": "studying bias in LLM reasoning on shortest-path tasks in layered graphs to analyze systematic reasoning",
+      "evidence_cn": "通过分层图上的最短路径任务研究LLM推理偏差以分析系统性推理",
+      "canonical_evidence": "通过分层图上的最短路径任务研究LLM推理偏差以分析系统性推理",
+      "tldr_en": "This paper analyzes the reasoning bias of LLMs on shortest-path tasks, finding that models trained on optimal bottom-up DP traces reason more systematically and efficiently than those trained on suboptimal traces, highlighting the importance of structured reasoning for graph problems.",
+      "tldr_cn": "为探究大语言模型在图推理任务中的系统性偏差，该研究在分层图最短路径任务上进行控制实验，比较使用最优自底向上动态规划轨迹与长而次优轨迹训练的解码器仅变换器模型。结果表明，最优轨迹训练的模型推理更系统高效，揭示了结构化思维链对于图推理的价值，为提升 LLM 图推理能力提供了实证依据。",
+      "title_zh": "论下一个令牌预测器对系统低效推理的偏差：以最短路径为例",
+      "motivation_cn": "LLM 在图推理中如何分配推理计算并避免冗余，以及系统性推理为何有效仍不清晰。",
+      "method_cn": "通过分层图最短路径任务训练仅解码器变换器，对比最优动态规划轨迹与长次优轨迹下的推理行为。",
+      "result_cn": "使用最优自底向上 DP 轨迹训练的模型推理更准确高效，避免了长轨迹中的冗余与偏差。",
+      "conclusion_cn": "系统且增量的推理模式能显著提升 LLM 在图问题上的推理质量，为未来推理策略设计提供指导。",
+      "matched_requirement_id": "req-3",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-wf3ebtqgdw",
+      "score": 8.0,
+      "evidence_en": "trains a multimodal LLM to end-to-end generate scene graphs, a graph-structured representation",
+      "evidence_cn": "训练多模态大语言模型端到端生成场景图这一图结构表示",
+      "canonical_evidence": "训练多模态大语言模型端到端生成场景图这一图结构表示",
+      "tldr_en": "This paper introduces an M-LLM trained via SFT and RL to generate scene graphs directly, showing LLMs can produce structured graph output beyond text, enhancing visual understanding.",
+      "tldr_cn": "针对大语言模型端到端提取结构化视觉表示（如场景图）的探索不足，提出通过监督微调和强化学习训练多模态大语言模型，使其能直接生成场景图三元组，实验证明该方法在场景图生成任务上表现优异，拓展了LLM在结构预测任务上的能力。",
+      "title_zh": "使用强化学习编译场景图",
+      "motivation_cn": "现有LLM主要用于文本生成，端到端提取结构化图表示（如场景图）的研究不足。",
+      "method_cn": "通过SFT和RL训练多模态LLM，使其以三元组形式直接输出场景图。",
+      "result_cn": "在场景图生成数据集上达到先进性能，并具备零样本能力。",
+      "conclusion_cn": "LLM可有效地用于生成结构化图，为视觉理解提供了新途径。",
+      "matched_requirement_id": "req-2",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-1nsynwhvu2",
+      "score": 8.0,
+      "evidence_en": "LLMs used for zero-shot inference on text-attributed graphs with dynamic text bundling",
+      "evidence_cn": "LLM通过动态文本捆绑对文本属性图进行零样本推理",
+      "canonical_evidence": "LLM通过动态文本捆绑对文本属性图进行零样本推理",
+      "tldr_en": "DENSE queries LLMs with bundled texts for bundle-level labels to supervise graph learning, addressing LLM unreliability and graph structure isolation.",
+      "tldr_cn": "LLM在文本属性图上直接推理面临图结构信息缺失和回答不可靠的挑战。本文提出DENSE方法，将关联文本动态捆绑后查询LLM获得捆绑级标签，再用这些标签监督图学习，从而缓解LLM幻觉并注入拓扑信息。实验表明DENSE在零样本节点分类等多个任务上显著提升准确率。",
+      "title_zh": "动态捆绑与大型语言模型用于文本属性图的零样本推理",
+      "motivation_cn": "LLM在文本属性图上孤立使用文本，缺乏图结构信息且易产生幻觉。",
+      "method_cn": "提出动态文本捆绑监督（DENSE），通过文本捆绑查询LLM得到标签以监督图模型。",
+      "result_cn": "在零样本节点分类等任务上准确率明显提升。",
+      "conclusion_cn": "DENSE为LLM在图数据上的可靠推理提供了新思路。",
+      "matched_requirement_id": "req-2",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-mgvhgfcfnk",
+      "score": 8.0,
+      "evidence_en": "Graph attention retrieves subgraphs from KGs to augment LLM reasoning",
+      "evidence_cn": "图注意力从知识图谱检索子图以增强LLM推理",
+      "canonical_evidence": "图注意力从知识图谱检索子图以增强LLM推理",
+      "tldr_en": "A query-aware graph attention framework retrieves precise subgraphs from knowledge graphs for RAG, boosting LLM factual accuracy in complex multi-hop QA.",
+      "tldr_cn": "现有知识图谱增强的大语言模型在复杂推理中难以精确检索相关子图。本文提出查询感知图注意力框架，动态结合查询语义和关系信息，精准检索图证据。在多个多跳问答数据集上，该方法显著提升了LLM的事实准确性，推动了知识增强推理的发展。",
+      "title_zh": "查询感知图注意力用于知识增强推理中的精确子图检索",
+      "motivation_cn": "现有KG-RAG方法难以动态准确地检索与查询相关的图证据。",
+      "method_cn": "设计查询感知图注意力机制，联合利用查询语义和关系信息进行子图检索。",
+      "result_cn": "在多跳问答任务上显著提升LLM的事实准确性。",
+      "conclusion_cn": "该框架为知识图谱与语言模型的深度集成提供了新思路。",
+      "matched_requirement_id": "req-1",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-k0wyi4cogy",
+      "score": 8.0,
+      "evidence_en": "Multi-agent LLMs automate knowledge graph enrichment from text",
+      "evidence_cn": "多代理LLM从文本自动丰富知识图谱",
+      "canonical_evidence": "多代理LLM从文本自动丰富知识图谱",
+      "tldr_en": "KARMA employs nine collaborative LLM agents for knowledge graph enrichment, automating entity discovery, relation extraction, and schema alignment from scientific literature.",
+      "tldr_cn": "手动维护知识图谱难以跟上文献增长速度。本文提出KARMA框架，利用九个协作的LLM代理，从非结构化文本中自动抽取实体、关系并进行模式对齐，实现知识图谱的丰富。在多个生物医学领域数据集上的实验验证了其有效性，为自动化知识工程提供了新方案。",
+      "title_zh": "KARMA: 利用多代理LLM实现自动化知识图谱丰富",
+      "motivation_cn": "知识图谱手动维护难以扩展，需要自动化方法。",
+      "method_cn": "设计九个协作的LLM代理，执行实体发现、关系抽取和模式对齐等任务。",
+      "result_cn": "在1200篇文献上成功丰富知识图谱，验证了框架有效性。",
+      "conclusion_cn": "KARMA为大规模知识图谱的自动更新提供了可行路径。",
+      "matched_requirement_id": "req-2",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-eszmes7j1f",
+      "score": 7.0,
+      "evidence_en": "autoregressive transformer model for graph generation by flattening graphs to sequences, leveraging LLM-like architecture",
+      "evidence_cn": "利用类LLM架构的自回归变换器通过展平图为序列进行图生成",
+      "canonical_evidence": "利用类LLM架构的自回归变换器通过展平图为序列进行图生成",
+      "tldr_en": "AutoGraph uses a decoder-only transformer to generate graphs autoregressively by flattening them into token sequences, achieving state-of-the-art performance with linear scaling, linking graph modeling to language modeling prefixes.",
+      "tldr_cn": "AutoGraph 提出了一种将属性图展平为随机令牌序列的可逆过程，使仅解码器变换器能以自回归方式生成图，采样复杂度与边数线性相关。该方法在图生成任务上达到最优性能，并将图序列前缀与语言建模中的子句建立直接联系，为使用变换器处理图结构化数据提供了可扩展的新思路。",
+      "title_zh": "展平图为序列：Transformer 作为可扩展的图生成器",
+      "motivation_cn": "现有基于扩散的图生成方法依赖昂贵的节点特征计算，且难以扩展到大规模图。",
+      "method_cn": "通过可逆过程将属性图展平为随机令牌序列，用仅解码器变换器自回归建模，序列前缀即诱导子图。",
+      "result_cn": "图生成达到最优性能，且采样和序列长度与边数线性相关，适合大稀疏图。",
+      "conclusion_cn": "将图表示为序列并利用变换器的语言建模能力，为可扩展图生成开辟了新范式。",
+      "matched_requirement_id": "req-5",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph machine learning techniques for large language models"
+    },
+    {
+      "paper_id": "openreview-neurips-2025-h3dbocj7po",
+      "score": 7.0,
+      "evidence_en": "Uses LLM agents to synthesize graph data for training graph foundation models",
+      "evidence_cn": "利用LLM代理合成图数据以训练图基础模型",
+      "canonical_evidence": "利用LLM代理合成图数据以训练图基础模型",
+      "tldr_en": "GraphMaster is a multi-agent LLM framework that generates semantically rich graph data despite context limits and hallucination, alleviating data scarcity for graph foundation models.",
+      "tldr_cn": "图基础模型的训练受限于大规模图语料库的匮乏。本文设计GraphMaster，一个多智能体LLM框架，通过克服上下文窗口和幻觉问题，自动生成带有语义丰富文本属性的图数据。实验表明合成数据能有效提升下游图任务性能，缓解数据稀缺瓶颈。",
+      "title_zh": "GraphMaster: 数据有限环境下通过LLM代理进行自动化图合成",
+      "motivation_cn": "大规模图数据稀缺制约图基础模型发展，现有合成方法缺乏语义丰富性。",
+      "method_cn": "提出多代理LLM框架GraphMaster，自动生成语义丰富的图数据。",
+      "result_cn": "合成数据有效提升下游图任务性能。",
+      "conclusion_cn": "GraphMaster为图领域数据增强提供了可扩展的解决方案。",
+      "matched_requirement_id": "req-2",
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data"
+    }
+  ],
+  "llm_ranked_at": "2026-06-09T07:11:37.407518+00:00",
+  "display_min_score": 4.0,
+  "pruned_at": "2026-06-09T07:11:37.451016+00:00"
+}

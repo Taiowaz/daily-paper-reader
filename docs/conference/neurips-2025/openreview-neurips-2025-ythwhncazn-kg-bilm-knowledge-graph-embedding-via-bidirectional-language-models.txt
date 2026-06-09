@@ -1,0 +1,2925 @@
+Title: 18950_KG_BiLM_Knowledge_Graph_.pdf
+
+URL Source: https://openreview.net/pdf?id=yThwhNCaZN
+
+Number of Pages: 31
+
+Markdown Content:
+# KG-BiLM: Knowledge Graph Embedding via Bidirectional Language Models 
+
+Anonymous Author(s) 
+
+Affiliation Address 
+
+email 
+
+## Abstract 
+
+Recent advances in knowledge representation learning (KRL) highlight the ur-1
+
+gent necessity to unify symbolic knowledge graphs (KGs) with language models 2
+
+(LMs) for richer semantic understanding. However, existing approaches typically 3
+
+prioritize either graph structure or textual semantics, leaving a gap: a unified 4
+
+framework that simultaneously captures global KG connectivity, nuanced linguistic 5
+
+context, and discriminative reasoning semantics. To bridge this gap, we intro-6
+
+duce KG-BiLM , a bidirectional LM framework that fuses structural cues from 7
+
+KGs with the semantic expressiveness of generative transformers. KG-BiLM in-8
+
+corporates three key components: (i) Bidirectional Knowledge Attention, which 9
+
+removes the causal mask to enable full interaction among all tokens and entities; 10 
+
+(ii) Knowledge-Masked Prediction, which encourages the model to leverage both 11 
+
+local semantic contexts and global graph connectivity; and (iii) Contrastive Graph 12 
+
+Semantic Aggregation, which preserves KG structure via contrastive alignment 13 
+
+of sampled sub-graph representations. Extensive experiments on standard bench-14 
+
+marks demonstrate that KG-BiLM 1 outperforms strong baselines in link prediction, 15 
+
+especially on large-scale graphs with complex multi-hop relations—validating its 16 
+
+effectiveness in unifying structural information and textual semantics. 17 
+
+## 1 Introduction 18 
+
+Recent advances in knowledge representation learning (KRL) highlight the need for unified ap-19 
+
+proaches that integrate large-scale knowledge graphs (KGs) with structural representations and 20 
+
+modern language models (LMs) with semantic understanding [ 1 ] [ 2]. In particular, significant 21 
+
+progress in both symbolic and neural paradigms [ 3 ] has motivated research beyond traditional knowl-22 
+
+edge graph embedding (KGE) methods to leverage contextual semantics more fully [ 4] [ 5 ]. Moreover, 23 
+
+the convergence of symbolic reasoning and neural text understanding has become increasingly promi-24 
+
+nent [ 6]. Consequently, investigating hybrid approaches that preserve KG structural relationships 25 
+
+while capturing deep linguistic information is critical [7] [8]. 26 
+
+Despite extensive research on KRL, the field remains fragmented. As shown in Fig.1, KGE methods, 27 
+
+such as translation-based and semantic matching models, operate solely on symbolic triples and thus 28 
+
+fail to capture lexical semantics, severely limiting their adaptability to heterogeneous downstream 29 
+
+tasks [ 9 ]. Encoder-based transformers (e.g., BERT [ 10 ]) inject contextual word representations 30 
+
+but are typically pre-trained on generic corpora, lacking the domain-specific text required for KG 31 
+
+reasoning. Consequently, they struggle with long-tail entities and relations and cannot leverage the 32 
+
+richer generative cues available to decoder-only models [ 11 ]. Conversely, applying decoder-based 33 
+
+large language models (e.g., LLaMA [ 12 ]) directly to KG tasks introduces new challenges. The 34 
+
+> 1
+
+The source code of KG-BiLM is available at https://anonymous.4open.science/status/kg-0317 
+
+Submitted to 39th Conference on Neural Information Processing Systems (NeurIPS 2025). Do not distribute. KG-BiLM         
+
+> Higher Information Density Structure × Semantics Fusion Zero-shot Reasoning
+> No understanding of lexical semantics Lacking context-speci fi c corpora
+> Semantics Structure
+> Beethoven was a German composer of classical music
+> <Washington, playsInLeague, NBA>
+> Encoder-based Decoder-based
+> Fréchet Inception Distance
+> Triple Text Neural Right Strength Weakness Wrong
+> <Beethoven, genre, Classical>
+> <Beethoven, genre, Rock>
+> Washington scored 22 points for the Wizards.
+> Washington D.C.
+> Long-tail Unidirection
+
+Figure 1: Illustration of complementary failure modes in KRL models. (a) Translation-based KGEs rate ⟨Beethoven, genre, Classical ⟩ and ⟨Beethoven, genre, Rock ⟩ almost identically—fixed off-sets—while a BERT encoder uses context to prefer Classical. (b) In “Washington scored 22 points. . . ,” LLaMA3-8B links Washington to the state; a graph encoder uses ⟨Washington, playsInLeague, NBA ⟩
+
+to pick the team. (c) Encoders falter on long-tail entities from scarce text, and decoder-only models can’t use future tokens to resolve earlier uncertainty. inherent unidirectional generation paradigm obscures bidirectional dependencies and often ignores 35 
+
+explicit structural constraints essential for faithful inference [13]. 36 
+
+To bridge this research gap, we present a hybrid architecture called KG-BiLM , aiming to (i) achieve 37 
+
+higher information density than conventional KG encoders, (ii) integrate linguistic cues into KG 38 
+
+representations, and (iii) enable zero-shot encoding capabilities. By overcoming the longstanding 39 
+
+trade-offs between bidirectional structural reasoning, local semantic fidelity, and global topological 40 
+
+consistency, KG-BiLM unifies the strengths of both structure- and semantics-oriented representation 41 
+
+learning. 42 
+
+KG-BiLM unifies structural and semantic information via three core techniques: (1) Bidirectional 43 
+
+Knowledge Attention removes the causal mask from the decoder so that each token can attend to 44 
+
+both past and future contexts, thereby strengthening inter-triple connections; (2) Knowledge-Masked 45 
+
+Prediction selectively masks triple and lexical tokens, forcing the model to leverage local lexical 46 
+
+context alongside the global graph structure to reconstruct missing tokens, thereby integrating rich 47 
+
+linguistic cues into the KG embeddings; and (3) Contrastive Graph Semantic Aggregation applies 48 
+
+contrastive learning on multiple graph-sampled views, aligning structural and semantic embeddings 49 
+
+to preserve topology, enhance discriminative power, and facilitate zero-shot encoding of novel 50 
+
+entities and relations. Together, these innovations transform a decoder-only transformer into a unified 51 
+
+framework that jointly harnesses global KG structure and rich linguistic context for more accurate 52 
+
+and generalizable reasoning. 53 
+
+The main contributions of this paper are as follows: 54 
+
+• Global Connectivity : A novel causal masking scheme that enables bidirectional attention 55 
+
+between tokens and entities along graph edges. This enhances multi-hop relational reasoning 56 
+
+and captures long-range dependencies in a joint structural–textual context, thereby improving 57 
+
+knowledge propagation with minimal overhead while preserving generative capabilities. 58 
+
+• Contextual Inference : An adaptive masking-recovery mechanism that hides and recon-59 
+
+structs entities and tokens using both graph adjacency and linguistic cues. This enforces struc-60 
+
+tural–linguistic synergy, supports zero-shot generalization and robust missing-information 61 
+
+recovery, and leverages a position-shifted loss to blend global and local signals effectively. 62 
+
+• Semantic Discrimination : A contrastive learning objective to align semantically similar 63 
+
+graph–text pairs and repel dissimilar ones. This sharpens global embedding boundaries, 64 
+
+ensures cluster cohesion and distinctive entity semantics at scale, and enhances retrieval 65 
+
+precision under noisy, heterogeneous subgraph augmentations. 66 
+
+• Comprehensive Evaluation : We empirically demonstrate that KG-BiLM effectively pre-67 
+
+serves graph-structural cues while integrating textual semantics, establishing a new paradigm 68 
+
+for holistic knowledge representation learning. 69 
+
+22 Related Work 70 
+
+Knowledge Graph Embedding . Translational (e.g., TransE [ 14 ]) and semantic-matching (e.g., Dist-71 
+
+Mult [ 15 ]) models dominate KGE, with numerous extensions that enrich multi-relational patterns and 72 
+
+incorporate text, type, or logical signals for robustness [ 16 –23 ]. Despite strong link-prediction accu-73 
+
+racy, their fixed vectors rarely adapt across heterogeneous tasks, revealing the need for representations 74 
+
+that unify structural fidelity with contextual flexibility. 75 
+
+Encoder-based KRL . Transformer encoders such as BERT [ 10 ]and RoBERTa [ 24 ] are infused 76 
+
+with KG-aware objectives to learn context-aligned entity embeddings [ 25 –29 ]. While effective at 77 
+
+capturing local text cues, their limited receptive fields overlook long-range graph signals, constraining 78 
+
+zero-shot transfer and holistic structure-text integration. 79 
+
+Decoder-based KRL . Large language models (e.g., GPT-4o [ 30 ], LLaMA [ 12 ]) generate knowledge-80 
+
+grounded text or triples for downstream reasoning [ 31 – 35 ]. Their fluency supplies flexible supervision, 81 
+
+yet the absence of explicit structural anchoring often weakens relational fidelity, underscoring the 82 
+
+demand for methods that couple generative power with graph-consistent inference. 83 
+
+Due to the space limitation, please refer to Appendix B for further details. 84 
+
+## 3 The KG-BiLM Model 85 
+
+This section introduces KG-BiLM, a knowledge graph–enhanced bidirectional large language model 86 
+
+that unifies structural and textual semantics for robust knowledge representation. 87 
+
+3.1 Preliminaries 88 
+
+Let G = ( E, R, T ) be a knowledge graph, where E is the set of entities, R the set of relations, and 89 
+
+T ⊆ E × R × E the set of triplets (ei, r, e j ) describing relation r ∈ R between ei, e j ∈ E . From 90 
+
+pre-training corpora we derive a textual vocabulary V. Our goal is to learn embeddings in a shared 91 
+
+d-dimensional space so that every entity e ∈ E and every token v ∈ V is represented in Rd, preserving 92 
+
+both graph structure and linguistic context. Given a tokenized input sequence x = ( x1, . . . , x N ),93 
+
+which may intermix entity and relation names and natural-language tokens, the model parameters Θ94 
+
+map x to an initial embedding matrix H(0) . The full list of symbols is provided in Appendix A. 95 
+
+3.2 Overview Framework 96 
+
+Figure 2 presents the overall architecture. KG-BiLM first encodes KG triples and entity description 97 
+
+into a unified token sequence. These tokens are then processed by a Bidirectional Knowledge 98 
+
+Attention module, which injects graph-aware masks. Next, we apply a Knowledge-Masked Prediction 99 
+
+objective to reconstruct the masked tokens, leveraging in-batch negatives for more effective contrastive 100 
+
+learning. Finally, a Contrastive Graph Semantic Aggregation step aligns paired views via an InfoNCE 101 
+
+loss. The functions of the three modules (see Appendix C for full algorithmic details) are as follows: 102 
+
+• Bidirectional Knowledge Attention (BKA) revises the causal mask of a decoder - style 103 
+
+transformer so that every position may attend to every other, strengthening entity–entity and 104 
+
+token–token interactions without sacrificing autoregressive capabilities. 105 
+
+• Knowledge -Masked Prediction (KMP) strategically hides entities and textual tokens and 106 
+
+trains the model to recover them using both the global graph topology and local linguistic 107 
+
+context, thereby encouraging rich cross-modal reasoning. 108 
+
+• Contrastive Graph Semantic Aggregation (CGSA) samples semantically related 109 
+
+sub - graphs or textual variants and pulls their representations closer while pushing apart 110 
+
+dissimilar samples, sharpening decision boundaries in the embedding space. 111 
+
+3.3 Bidirectional Knowledge Attention 112 
+
+Existing KGE methods typically rely on unidirectional or strictly local attention, which can hinder the 113 
+
+learning of coherent global embeddings. Encoder-based approaches (e.g., BERT-like architectures) 114 
+
+3KMP BKA        
+
+> Head Entity
+> Head Token
+> Relation
+> Tail Token
+> Tail Entity
+> Q
+> K
+> V
+> Weight
+> ……
+> ……
+> ×
+> BKA Layer L
+> FNN
+> BKA Layer l
+> FNN
+> BKA Layer 2 FNN
+> BKA Layer 1 FNN
+> e1
+> e2
+> e3
+> d1
+> d3
+> r1
+> r2
+> Knowledge Graph Tokenised Sequence
+> Extract
+> Input
+> Masked
+> Token Projection
+> Vocabulary Projection
+> Position-Shifted
+> CGSA
+> Mini-batch Negatives
+> Similarity Matrix
+> InfoNCE Loss
+> Pool()
+> Compare
+> Entity Description Triple Token Block Token Sequence Text Token MASK Token
+
+Figure 2: Overview of the KG-BiLM Architecture. employ fully bidirectional attention but often lack the generative expressivity required for open-115 
+
+ended inference. Decoder-based transformers, by contrast, use a causal mask that blocks access to 116 
+
+future tokens, making it difficult to capture symmetric relations or long-range entity co-occurrences. 117 
+
+Consequently, a refined attention scheme is required to bridge these limitations. 118 
+
+Formulation of Bidirectional Knowledge Attention. Formally, Let L be the number of transformer 119 
+
+layers, and let H(ℓ) ∈ RN ×d be the hidden states at the ℓ-th layer. For layer ℓ, define the query, key, 120 
+
+and value matrices as: 121 
+
+Q = H(ℓ)WQ, K = H(ℓ)WK , V = H(ℓ)WV (1) where WQ, WK , WV ∈ Rd×dh are trainable and dh denotes the dimension of each attention head 122 
+
+(so that h × dh = d for h heads). In standard self-attention the mask M is set to −∞ for positions 123 
+
+(i, j ) if j > i in a strictly causal decoder, or 0 otherwise for a fully bidirectional encoder. Under the 124 
+
+proposed BKA, a specialized mask MBKA is introduced: 125 
+
+MBKA  
+
+> i,j
+
+=
+
+0, if tokens (xi, x j ) may interact 
+
+−∞ , otherwise (2) The criterion “may interact” is determined not only by token positions but also by graph-based 126 
+
+adjacency. Concretely, if xi and xj are entity tokens within the same sub-graph or share a relation 127 
+
+path within a certain hop threshold, MBKA  
+
+> i,j
+
+= 0 . This ensures that each token may attend both 128 
+
+backward and forward in the sequence, as well as to any closely connected entity in the KG. 129 
+
+Attention weights are then computed as: 130 
+
+Attention( Q, K, V; MBKA ) = softmax 
+
+ QK ⊤
+
+√dh
+
++ MBKA 
+
+V (3) By permitting unrestricted forward and backward dependencies—while still enforcing structural 131 
+
+constraints from the KG—the model captures richer, multi-hop relational patterns. Consequently, 132 
+
+BKA seamlessly fuses textual context with graph connectivity, alleviating the data sparsity often 133 
+
+encountered in traditional KGE methods. 134 
+
+Layer Update and Enhanced Representations. Denote the output of the ℓ-th layer by H(ℓ+1) .135 
+
+Employing multi-head attention, we obtain: 136 
+
+˜H(ℓ) = Concat  head 1, head 2, . . . , head h
+
+WO (4) 4where 137 
+
+head i = Attention( Qi, Ki, Vi; MBKA ) (5) and WO ∈ R(h·dh)×d. Then fuse the attended representations with a residual connection and layer 138 
+
+normalization: 139 
+
+¯H(ℓ) = LayerNorm 
+
+
+
+H(ℓ) + ˜H(ℓ)
+
+(6) Next, a position-wise feed-forward network (FFN) is employed: 140 
+
+H(ℓ+1) = LayerNorm 
+
+ ¯H(ℓ) + FFN   ¯H(ℓ)
+
+(7) This iterative transformation processes the sequence holistically, thereby allowing for the accu-141 
+
+mulation of signals from all tokens and their interlinked entities. The second advantage of using 142 
+
+the multivariate approach is its capability to encode complex relational structures in a single pass, 143 
+
+enhancing representational power for multiple downstream tasks. 144 
+
+By iterating this sequence of graph-aware attention, residual fusion, and feed-forward updates, the 145 
+
+model holistically aggregates signals from all tokens and their linked entities. This multivariate 146 
+
+update not only captures complex relational structures in one pass but also substantially enhances the 147 
+
+embedding power for downstream tasks. 148 
+
+3.4 Knowledge-Masked Prediction 149 
+
+Existing KRL pipelines often focus on direct link prediction or pairwise entity classification, which 150 
+
+limits their ability to capture nuanced textual cues. In contrast, our method utilises knowledge-masked 151 
+
+prediction (KMP) paradigm to gain a more holistic understanding of entity semantics. While KMP 152 
+
+resembles traditional masked language modeling, it is specifically designed to incorporate relational 153 
+
+paths and entity dependencies from the knowledge graph. This design makes the model robust to 154 
+
+partial or missing observations—a key advantage for downstream zero-shot generalization. 155 
+
+Notation for Masked Entities and Tokens. Let xm = ( xm 
+
+> 1
+
+, x m 
+
+> 2
+
+, . . . , x mN ) be the input sequence 156 
+
+where a selected subset M ⊂ { 1, . . . , N } of positions is masked. Each masked position i ∈ M 157 
+
+could correspond to either an entity token or a textual token, replaced by a special mask symbol: 158 
+
+xmi =
+
+xi, if i / ∈ M ⟨mask ⟩, if i ∈ M (8) We denote the masking ratio by γ = |M|  
+
+> N
+
+, which can be tuned to regulate the difficulty of the inference 159 
+
+task. 160 
+
+Predicting Masked Tokens and Entities. Once the BKA is applied, the hidden states H(L) at the 161 
+
+final layer encapsulate both local lexical context and global KG structure. Let hi ∈ Rd denote the 162 
+
+final hidden representation at position i. The model then projects hi into a distribution over the 163 
+
+vocabulary V extended with entity symbols: 164 
+
+pΘ(xi | hi) = softmax  WP hi + bP
+
+ (9) where WP ∈ R|V +E|× d and bP ∈ R|V +E| are projection parameters. For each i ∈ M , the training 165 
+
+objective focuses on predicting the true token or entity xi based on the modified input xm.166 
+
+Position-Shifted Loss Assignment. A key innovation is that the model must leverage both preceding 167 
+
+and succeeding context, as well as linked entities, to decode a masked position. In a strict causal 168 
+
+decoder, the cross-entropy loss at position i would typically be computed using the logits from hi.169 
+
+However, to enforce a deeper structural dependence, the present approach employs a position-shifted 170 
+
+mechanism: 171 
+
+LKMP = − X
+
+> i∈M
+
+log pΘ
+
+
+
+xi | hi−1
+
+
+
+(10) 5where hi−1 denotes the hidden representation from the immediately preceding position. This position-172 
+
+shifted KMP scheme compels the network to aggregate contextual information from both preceding 173 
+
+and succeeding tokens, as well as linked entities. It offers three key benefits: it enforces consistency 174 
+
+across consecutive positions, encourages global attention to relational edges, and ensures that local 175 
+
+neighborhoods in the sequence capture relevant semantically related tokens. 176 
+
+Link to Zero-Shot Capability. By repeatedly training the model to infer masked entity tokens 177 
+
+with partial observations, it learns to exploit both cross-position and cross-relational dependencies. 178 
+
+Consequently, the learned embeddings become adaptable to new entities and unseen textual patterns. 179 
+
+The synergy between the BKA and the position-shifted KMP modules thus underpins robust zero-shot 180 
+
+encoding: once structural and linguistic patterns are internalized, the model can generalize to novel 181 
+
+contexts with minimal or no additional training data. 182 
+
+3.5 Contrastive Graph Semantic Aggregation 183 
+
+Despite the effectiveness of bidirectional attention and knowledge masking in unifying textual and 184 
+
+graph-based cues, there remains a risk that entity embeddings become overly entangled with their 185 
+
+local context and lose global distinctiveness. To mitigate this, we introduce a contrastive learning 186 
+
+module— Contrastive Graph Semantic Aggregation (CGSA)—that preserves discriminative power 187 
+
+while still benefiting from integrative representations. The contrastive objective naturally clusters 188 
+
+semantically or relationally coherent samples and pushes apart incongruent pairs, thereby reinforcing 189 
+
+the structural integrity of the knowledge-graph representation. 190 
+
+Sampling Mechanism and Dropout Variation. To achieve contrastive alignment, we draw two 191 
+
+independent corrupted views x(1) and x(2) from the same original sequence or sub-graph. Each 192 
+
+view is generated by applying a separate random dropout mask. Specifically, for a given sub-graph 193 
+
+or textual snippet s, two corrupted views s1 and s2 are generated through random dropout or data 194 
+
+augmentation, yielding token sequences x(1) and x(2) . Both are passed through the aforementioned 195 
+
+BKA and KMP modules, resulting in final embeddings: 196 
+
+z(1) = Pool 
+
+
+
+H(L)(x(1) )
+
+
+
+, z(2) = Pool 
+
+
+
+H(L)(x(2) )
+
+
+
+(11) where Pool( ·) (e.g., mean pooling or a special classification token) aggregates the sequence-level 197 
+
+embedding. 198 
+
+Contrastive Objective. Denote a minibatch by {z(1)  
+
+> k
+
+, z(2)  
+
+> k
+
+}Bk=1 , where each index k corresponds to 199 
+
+a distinct pair derived from the same original sub-graph sk. Let sim( u, v) = u⊤v 
+
+> ∥u∥∥ v∥
+
+measure the 200 
+
+cosine similarity. Inspired by InfoNCE [36], we formulate the CGSA loss as: 201 
+
+LCGSA = −
+
+> B
+
+X
+
+> k=1
+
+log exp  sim( z(1)  
+
+> k
+
+, z(2)  
+
+> k
+
+) / τ PBℓ=1 exp  sim( z(1)  
+
+> k
+
+, z(2)  
+
+> ℓ
+
+) / τ !
+
+(12) where τ is a temperature hyperparameter. The numerator encourages high similarity between the two 202 
+
+views of the same entity–text pair, while the denominator discourages alignment with representations 203 
+
+of other pairs in the minibatch. By maximizing the similarity of paired views and minimizing the 204 
+
+similarity with respect to non-matching samples, CGSA promotes cluster cohesion for semantically 205 
+
+similar embeddings and cluster separation for dissimilar embeddings. 206 
+
+Integration with Global KG Semantics. The CGSA excels at preserving global semantics in 207 
+
+large-scale knowledge graphs with complex relational patterns. By enforcing that embeddings 208 
+
+remain discriminative under repeated dropout corruptions, it also fosters stable representations across 209 
+
+paraphrases or reordered textual segments describing the same entity. For example, if two sub-graphs 210 
+
+si and sj share the majority of their entities but differ in minor textual descriptions, the contrastive 211 
+
+loss anchors their embeddings to be closer than those of unrelated sub-graphs. In doing so, CGSA 212 
+
+addresses a key limitation of earlier generative LM-based methods, wherein structural coherence was 213 
+
+often overshadowed by purely textual factors. 214 
+
+64 Experiments 215 
+
+This section empirically evaluates KG-BiLM on four widely used knowledge graph benchmarks, 216 
+
+comparing it against state-of-the-art symbolic, neural and hybrid alternatives. We first detail the 217 
+
+experimental setup, then analyse performance on structure-only and semantically-enriched datasets, 218 
+
+followed by a component ablation, a zero-shot study, and a qualitative analysis. 219 
+
+4.1 Experimental Settings 220 
+
+Table 1: Statistics of the KG benchmarks.                             
+
+> Dataset #Ent. #Rel. Train Valid Test Text
+> FB15k-237 14,541 237 272,115 17,535 20,466 No WN18RR 40,943 11 86,835 3,034 3,134 No FB15K-237N 13,104 93 87,282 7,041 8,226 Yes Wikidata5M 4,594,485 822 20,614,279 5,163 5,133 Yes
+
+Datasets . Table 1 summarises the statistics 221 
+
+of the four benchmark datasets. Two of them 222 
+
+(FB15k-237 and WN18RR) consist solely of 223 
+
+structured triples without any accompanying 224 
+
+textual entity descriptions, thus focusing on a 225 
+
+model’s ability to learn graph structures. The 226 
+
+other two (FB15k-237N and Wikidata5M) 227 
+
+enrich each entity with detailed textual de-228 
+
+scriptions to facilitate semantic integration. 229 
+
+Notably, FB15k-237N exhibits a pronounced long-tail distribution of entities, and the large-scale 230 
+
+Wikidata5M further allows for zero-shot inference evaluation. Together, these richer datasets provide 231 
+
+a more challenging testbed for evaluating our model’s capacity to fuse textual semantics, handle 232 
+
+long-tail entities, and perform zero-shot reasoning. 233 
+
+Baselines . We evaluate two major paradigms: (1) KGE methods (TransE, DistMult, ComplEx, 234 
+
+etc.) embedding entities and relations via distance- or multiplicative-scoring; (2) Transformer-based 235 
+
+models (KG-BERT, SimKGC, KG-S2S, etc.) enriching KG embeddings with textual context, but 236 
+
+may underutilize explicit graph structure. 237 
+
+Evaluation Metrics and Implementations . We evaluate our model using three widely adopted 238 
+
+KRL metrics in a single framework: Mean Rank (MR) computes the average position of the true 239 
+
+entity—lower values denote better overall ordering. Mean Reciprocal Rank (MRR) averages the 240 
+
+inverse of each true-entity rank to emphasize rapid retrieval, and Hits@ k (k = 1 , 3, 10 ) reports the 241 
+
+proportion of cases where the correct entity appears among the top-k predictions. The implementation 242 
+
+details are in Appendix E. 243 
+
+Table 2: Summary of essential baseline link prediction metrics on WN18RR and FB15k-237 (full table of results is available in Appendix D)                                                                                                                                                                                                          
+
+> Model WN18RR FB15k-237
+> MR MRR Hits@1 Hits@3 Hits@10 MR MRR Hits@1 Hits@3 Hits@10 TransE [14] 2300 24.3 4.3 44.1 53.2 223 27.9 19.8 37.6 47.4 DistMult [15] 3704 44.4 41.2 47.0 50.4 411 28.1 19.9 30.1 44.6 ComplEx [37] 3921 44.9 40.9 46.9 53.0 508 27.8 19.4 29.7 45.0 ConvE [38] 4464 45.6 41.9 47.0 53.1 245 31.2 22.5 34.1 49.7 TuckER [39] –47.0 44.3 48.2 52.6 –35.8 26.6 39.4 54.4 CompGCN [40] –47.9 44.3 49.4 54.6 –35.5 26.4 39.0 53.5 QuatDE [41] 1977 48.9 43.8 50.9 58.6 90 36.5 26.8 40.0 56.3 NBFNet [42] –55.1 49.7 –66.6 –41.5 32.1 –59.9
+> KG-BERT [27] 97 21.6 4.1 30.2 52.4 153 23.7 16.9 26.0 42.7 Pretrain-KGE [43] –48.8 43.7 50.9 58.6 –35.0 25.0 38.4 55.4 LaSS [44] 35 –––78.6 108 –––53.3 SimKGC [45] –66.7 58.8 72.1 80.5 –33.6 24.9 36.2 51.1 KG-S2S [46] –57.4 53.1 59.5 66.1 –33.6 25.7 37.3 49.8 kNN-KGE [29] –57.9 52.5 –––28.0 37.3 ––CSPromp-KG [47] –57.5 52.2 59.6 67.8 –35.8 26.9 39.3 53.8 GPT-3.5 [30] ––19.0 ––––23.7 ––CP-KGC [35] –67.3 59.9 72.1 80.4 –33.8 25.1 36.5 51.6 KICGPT [48] –56.4 47.8 61.2 67.7 –41.2 32.7 44.8 55.4
+> KG-BiLM(Ours) 67 68.2 61.4 72.7 80.5 151 36.7 30.5 36.9 53.1
+
+74.2 Structural-Only Benchmark Results 244 
+
+Table 2 compares KG-BiLM with 18 competitive baselines on WN18RR and FB15k-237—two 245 
+
+canonical datasets that omit textual descriptions to focus on pure graph reasoning. On WN18RR, 246 
+
+KG-BiLM achieves the highest MRR, outperforming the previous best model, CP-KGC, by 0.009 247 
+
+MRR and matching SimKGC’s top Hits@10 score of 80.5. Notably, unlike CP-KGC and SimKGC, 248 
+
+which rely on pre-trained text encoders, KG-BiLM attains superior accuracy using only symbolic 249 
+
+triples. This improvement demonstrates the power of our BKA module: by removing the causal mask, 250 
+
+the decoder conditions on full context both within and across triples, allowing multi-hop relationships 251 
+
+to propagate more faithfully than in strictly sequential or bag-of-triples encoders. 252 
+
+On FB15k-237, the KGE model NBFNet still leads in absolute performance, but KG-BiLM remains 253 
+
+competitive with recent Transformer-based baselines. We attribute the slightly lower MRR (relative 254 
+
+to WN18RR) to FB15k-237’s larger relation vocabulary (237 vs. 11), which increases semantic 255 
+
+ambiguity in the absence of textual cues. These results confirm that our graph-aware bidirectional 256 
+
+decoding provides tangible benefits even without entity descriptions. 257 
+
+Table 3: Summary of essential baseline link prediction metrics on Wikidata5M and FB15k-237N (full table of results is available in Appendix D)                                                                                                                                  
+
+> Model Wikidata5M FB15k-237N
+> MRR Hits@1 Hits@3 Hits@10 MRR Hits@1 Hits@3 Hits@10 TransE [14] 25.3 17.0 31.1 39.2 25.5 15.2 30.1 45.9 DistMult [15] 25.3 20.9 27.8 33.4 20.9 14.3 23.4 33.0 ComplEx [37] 30.8 25.5 –39.8 24.9 18.0 27.6 38.0 RotatE [49] 29.0 23.4 32.2 39.0 27.9 17.7 32.0 48.1 QuatE [50] 27.6 22.7 30.1 35.9 ––––ConvE [38] ––––27.3 19.2 30.5 42.9 CompGCN [40] ––––31.6 23.1 34.9 48.0 KG-BERT [27] ––––20.3 13.9 20.1 40.3 KG-S2S [46] ––––35.4 28.5 38.8 49.3 KEPLER [28] 21.0 17.3 22.4 27.7 ––––SimKGC [45] 35.8 31.3 37.6 44.1 ––––CSPromp-KG [47] 38.0 34.3 39.9 44.6 36.0 28.1 39.5 51.1 ReSKGC [51] 39.6 37.3 41.3 43.7 ––––CD [34] ––––37.2 28.8 41.0 53.0
+> KG-BiLM(Ours) 40.3 39.7 43.0 45.2 37.8 29.3 42.1 54.6
+
+4.3 Semantically-Enriched Structural Benchmark Results 258 
+
+As Table 3 demonstrates, when we evaluate on datasets that augment each entity with natural-language 259 
+
+descriptions, KG-BiLM sets new state-of-the-art results on both Wikidata5M and FB15k-237N. On 260 
+
+the ultra-large Wikidata5M, our model achieves an MRR of 0.403, surpassing ReSKGC by 0.7 261 
+
+points and CSPrompKG by 2.3 points. Even more strikingly, KG-BiLM attains a Hits@1 score of 262 
+
+0.397—5.4 points higher than the previous best (ReSKGC). This gain stems directly from our KMP 263 
+
+strategy: by randomly masking both entity and graph tokens during pre-training, the model learns to 264 
+
+integrate semantically related but topologically distant evidence, which is crucial for handling textual 265 
+
+spans that include unseen entity aliases or paraphrases. 266 
+
+Table 4: Ablation on validation split.                   
+
+> Variant Wikidata5M FB15k-237N
+> MRR H@10 MRR H@10 Full model .403 .452 .378 .546 w/o BKA .383 .426 .361 .525 w/o KMP .390 .432 .366 .531 w/o CGSA .397 .440 .370 .538
+
+FB15k-237N exhibits the most pronounced long-tail entity dis-267 
+
+tribution in our suite. Systems that rely on large-capacity text 268 
+
+encoders often over-fit head entities and mis-rank rare ones. 269 
+
+KG-BiLM mitigates this pitfall, outperforming the contrastive-270 
+
+pre-training approach CD on every metric, most clearly on 271 
+
+Hits@10 (+1.6 points). The result confirms that CGSA scales 272 
+
+gracefully: by aligning multiple graph-sampled views per 273 
+
+mini-batch, KG-BiLM preserves cluster cohesion for rare en-274 
+
+tities while simultaneously sharpening boundaries between 275 
+
+semantically distinct neighborhoods. Ablation results (Section 276 
+
+4.5) back this claim quantitatively—the absence of CGSA drops Hits@10 on FB15k-237N by 1.5 277 
+
+points, the largest decrement among all variants. 278 
+
+84.4 Ablation Study 279 
+
+Table 4 reports ablation results on the validation splits of Wikidata5M and FB15k-237N. Removing 280 
+
+BKA incurs the largest performance drop on both datasets ( −2.0 MRR on Wikidata5M; −1.7 MRR 281 
+
+on FB15k-237N), confirming that global connectivity is the main contributor to enhanced multi-hop 282 
+
+reasoning. Omitting KMP yields a somewhat smaller but still substantial degradation ( −1.3 MRR on 283 
+
+average), demonstrating that semantic–structural co-training remains indispensable even when textual 284 
+
+information is abundant. Interestingly, excising CGSA hurts Hits@10 more than MRR, indicating that 285 
+
+CGSA primarily boosts the model’s ability to rank challenging yet correct entities at the top, rather 286 
+
+than merely improving coarse-grained ordering. Together, these controlled experiments validate that 287 
+
+KG-BiLM’s gains stem from our architectural innovations rather than superficial scaling artifacts. 288 
+
+4.5 Zero-shot Reasoning 289 
+
+Table 5: Link prediction in zero-shot set-ting on Wikidata5M dataset.                     
+
+> Model Wikidata5M
+> MRR Hits@1 Hits@3 Hits@10 DKRL [52] 23.1 5.9 32.0 54.6 RoBERTa [24] 7.4 0.7 1.0 19.6 KEPLER [28] 40.2 22.2 51.4 73.0 SimKGC [45] 71.4 50.9 78.5 91.7
+> KG-BiLM(Ours) 74.8 53.7 81.6 93.8
+
+The Zero-shot evaluation constitutes the most stringent 290 
+
+test of generalization, since every evaluation triple con-291 
+
+tains at least one entity unseen during training, forcing 292 
+
+models to extrapolate purely from textual descriptions. As 293 
+
+shown in Table 5, KG-BiLM achieves an MRR of 0.748, 294 
+
+outperforming SimKGC by 3.4 points and KEPLER by 295 
+
+an impressive 34.6 points. These gains are consistent 296 
+
+across the recall spectrum and culminate in a 2.1-point 297 
+
+improvement on Hits@10. Qualitative analysis indicates 298 
+
+that BKA remains pivotal: by leveraging future context 299 
+
+to inform earlier predictions, the model can utilize down-300 
+
+stream descriptions of unseen entities and adjust preceding 301 
+
+hypotheses—an ability lacking in causal decoders. Additionally, we observe that KMP enhances ro-302 
+
+bustness to rare words by training the model to reconstruct missing entity names from partial mention 303 
+
+cues, effectively serving as a denoising auto-encoder across both language and graph modalities. 304 
+
+4.6 Qualitative Analysis 305 
+
+> 306
+
+Figure 3: Results of Entity Embedding Clusters and Knowledge-Attention Heatmap. Figure 3 shows KG-BiLM forming a coherent embedding space via its bidirectional mask for routing. 307 
+
+t-SNE plots reveal tight entity clusters—even rare ones—showing contrastive aggregation with 308 
+
+masked prediction yields high silhouette scores and balances long tails. Sparse off-diagonal attention 309 
+
+from future tokens to multi-hop neighbors confirms that unmasking enables topology-aware, non-local 310 
+
+reasoning for disambiguation. 311 
+
+## 5 Conclusion 312 
+
+KG-BiLM advances knowledge representation by unifying symbolic graph structure with bidirectional 313 
+
+linguistic modeling. By removing the causal mask, tokens can fully exploit global graph connectivity, 314 
+
+while knowledge-masked prediction and contrastive graph–semantic aggregation bolster robustness 315 
+
+to sparsity and enable zero-shot generalization. The resulting high-density embeddings combine 316 
+
+structural fidelity with long-tail semantic coverage, outperforming standalone KGEs and LLMs across 317 
+
+small-, large-scale, and long-tail benchmarks. 318 
+
+9References 319 
+
+[1] Jeff Z. Pan, S. Razniewski, and Jan-Christoph Kalo et al. Large language models and knowledge 320 
+
+graphs: Opportunities and challenges. TGDK , 2023. doi: 10.48550/arXiv.2308.06374. 321 
+
+[2] Qiheng Mao, Zemin Liu, and Chenghao Liu et al. Advancing graph representation learning 322 
+
+with large language models: A comprehensive survey of techniques. ArXiv , 2024. doi: 323 
+
+10.48550/arXiv.2402.05952. 324 
+
+[3] Jena D. Hwang, Chandra Bhagavatula, and Ronan Le Bras et al. Comet-atomic 2020: On 325 
+
+symbolic and neural commonsense knowledge graphs. AAAI , 2021. doi: 10.1609/aaai.v35i7. 326 
+
+16792. 327 
+
+[4] E. Cambria, Shaoxiong Ji, and Shirui Pan et al. Knowledge graph representation and reasoning. 328 
+
+Neurocomputing , 2021. doi: 10.1016/j.neucom.2021.05.101. 329 
+
+[5] Shaoxiong Ji, Shirui Pan, and E. Cambria et al. A survey on knowledge graphs: Representation, 330 
+
+acquisition, and applications. IEEE Transactions on Neural Networks and Learning Systems ,331 
+
+2020. doi: 10.1109/TNNLS.2021.3070843. 332 
+
+[6] Ganqiang Ye, Wen Zhang, and Zhen Bi et al. Improving knowledge graph representation learning 333 
+
+by structure contextual pre-training. IJCNN Proceedings , 2021. doi: 10.1145/3502223.3502244. 334 
+
+[7] M. Trajanoska, Riste Stojanov, and D. Trajanov. Enhancing knowledge graph construction 335 
+
+using large language models. ArXiv , 2023. doi: 10.48550/arXiv.2305.04676. 336 
+
+[8] Shirui Pan, Linhao Luo, and Yufei Wang et al. Unifying large language models and knowledge 337 
+
+graphs: A roadmap. ArXiv , 2023. doi: 10.48550/arXiv.2306.08302. 338 
+
+[9] Mohan Li Guanqun Qu Yang Xiao Qi Yan, Jiaxin Fan. A survey on knowledge graph embedding. 339 
+
+IEEE International Conference on Data Science in Cyberspace , pages 576–583, 2022. doi: 340 
+
+10.1109/DSC55868.2022.00086. 341 
+
+[10] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of 342 
+
+deep bidirectional transformers for language understanding. In Jill Burstein, Christy Doran, and 343 
+
+Thamar Solorio, editors, Proceedings of the 2019 Conference of the North American Chapter 344 
+
+of the Association for Computational Linguistics: Human Language Technologies, Volume 1 345 
+
+(Long and Short Papers) , pages 4171–4186, Minneapolis, Minnesota, June 2019. Association 346 
+
+for Computational Linguistics. doi: 10.18653/v1/N19-1423. URL https://aclanthology. 347 
+
+org/N19-1423 .348 
+
+[11] Youngjoong Ko Bonggeun Choi, Daesik Jang. Mem-kgc: Masked entity model for knowledge 349 
+
+graph completion with pre-trained language model. IEEE Access , 9:132025–132032, 2021. doi: 350 
+
+10.1109/ACCESS.2021.3113329. 351 
+
+[12] Hugo Touvron, Louis Martin, Kevin Stone, et al. Llama 2: Open foundation and fine-tuned chat 352 
+
+models. arXiv preprint arXiv:2307.09288 , 2023. 353 
+
+[13] Yichi Zhang, Zhuo Chen, Wen Zhang, and Huajun Chen. Making large language models 354 
+
+perform better in knowledge graph completion. CoRR , abs/2310.06671, 2023. 355 
+
+[14] Antoine Bordes, Nicolas Usunier, Alberto Garcia-Duran, Jason Weston, and Oksana Yakhnenko. 356 
+
+Translating embeddings for modeling multi-relational data. Advances in neural information 357 
+
+processing systems , 26, 2013. 358 
+
+[15] Bishan Yang, Wen-tau Yih, Xiaodong He, Jianfeng Gao, and Li Deng. Embedding entities and 359 
+
+relations for learning and inference in knowledge bases. arXiv preprint arXiv:1412.6575 , 2014. 360 
+
+[16] Antoine Bordes, Nicolas Usunier, Alberto Garcia-Duran, Jason Weston, and Oksana 361 
+
+Yakhnenko. Translating embeddings for modeling multi-relational data. In C.J. 362 
+
+Burges, L. Bottou, M. Welling, Z. Ghahramani, and K.Q. Weinberger, editors, Ad-363 
+
+vances in Neural Information Processing Systems , volume 26. Curran Associates, Inc., 364 
+
+2013. URL https://proceedings.neurips.cc/paper_files/paper/2013/file/ 365 
+
+1cecc7a77928ca8133fa24680a88d2f9-Paper.pdf .366 
+
+10 [17] Bishan Yang, Wen tau Yih, Xiaodong He, Jianfeng Gao, and Li Deng. Embedding entities and 367 
+
+relations for learning and inference in knowledge bases, 2015. URL https://arxiv.org/ 368 
+
+abs/1412.6575 .369 
+
+[18] Yankai Lin, Zhiyuan Liu, Maosong Sun, Yang Liu, and Xuan Zhu. Learning entity and 370 
+
+relation embeddings for knowledge graph completion. Proceedings of the AAAI Conference 371 
+
+on Artificial Intelligence , 29(1), Feb. 2015. doi: 10.1609/aaai.v29i1.9491. URL https: 372 
+
+//ojs.aaai.org/index.php/AAAI/article/view/9491 .373 
+
+[19] Théo Trouillon, Johannes Welbl, Sebastian Riedel, Éric Gaussier, and Guillaume Bouchard. 374 
+
+Complex embeddings for simple link prediction. In Proceedings of the 33rd International 375 
+
+Conference on International Conference on Machine Learning - Volume 48 , ICML’16, page 376 
+
+2071–2080. JMLR.org, 2016. 377 
+
+[20] Maximilian Nickel, Lorenzo Rosasco, and Tomaso Poggio. Holographic embeddings of 378 
+
+knowledge graphs. In Proceedings of the Thirtieth AAAI Conference on Artificial Intelligence ,379 
+
+AAAI’16, page 1955–1961. AAAI Press, 2016. 380 
+
+[21] Kristina Toutanova, Danqi Chen, Patrick Pantel, Hoifung Poon, Pallavi Choudhury, and Michael 381 
+
+Gamon. Representing text for joint embedding of text and knowledge bases. In Lluís Màrquez, 382 
+
+Chris Callison-Burch, and Jian Su, editors, Proceedings of the 2015 Conference on Empirical 383 
+
+Methods in Natural Language Processing , pages 1499–1509, Lisbon, Portugal, September 384 
+
+2015. Association for Computational Linguistics. doi: 10.18653/v1/D15-1174. URL https: 385 
+
+//aclanthology.org/D15-1174/ .386 
+
+[22] Jiacheng Xu, Xipeng Qiu, Kan Chen, and Xuanjing Huang. Knowledge graph representation 387 
+
+with jointly structural and textual encoding. In Proceedings of the 26th International Joint 388 
+
+Conference on Artificial Intelligence , IJCAI’17, page 1318–1324. AAAI Press, 2017. ISBN 389 
+
+9780999241103. 390 
+
+[23] Xin Ouyang, Yan Yang, Liang He, Qin Chen, and Jiacheng Zhang. Representation learning 391 
+
+with entity topics for knowledge graphs. In Gang Li, Yong Ge, Zili Zhang, Zhi Jin, and Michael 392 
+
+Blumenstein, editors, Knowledge Science, Engineering and Management , pages 534–542, 393 
+
+Cham, 2017. Springer International Publishing. ISBN 978-3-319-63558-3. 394 
+
+[24] Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Levy, Mike 395 
+
+Lewis, Luke Zettlemoyer, and Veselin Stoyanov. Roberta: A robustly optimized bert pretraining 396 
+
+approach, 2019. URL https://arxiv.org/abs/1907.11692 .397 
+
+[25] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of 398 
+
+deep bidirectional transformers for language understanding. In Jill Burstein, Christy Doran, and 399 
+
+Thamar Solorio, editors, Proceedings of the 2019 Conference of the North American Chapter 400 
+
+of the Association for Computational Linguistics: Human Language Technologies, Volume 1 401 
+
+(Long and Short Papers) , pages 4171–4186, Minneapolis, Minnesota, June 2019. Association 402 
+
+for Computational Linguistics. doi: 10.18653/v1/N19-1423. URL https://aclanthology. 403 
+
+org/N19-1423/ .404 
+
+[26] Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Levy, Mike 405 
+
+Lewis, Luke Zettlemoyer, and Veselin Stoyanov. Roberta: A robustly optimized bert pretraining 406 
+
+approach, 2019. URL http://arxiv.org/abs/1907.11692 . cite arxiv:1907.11692. 407 
+
+[27] Liang Yao, Chengsheng Mao, and Yuan Luo. Kg-bert: Bert for knowledge graph completion, 408 
+
+2019. URL https://arxiv.org/abs/1909.03193 .409 
+
+[28] Xiaozhi Wang, Tianyu Gao, Zhaocheng Zhu, Zhengyan Zhang, Zhiyuan Liu, Juanzi Li, and 410 
+
+Jian Tang. Kepler: A unified model for knowledge embedding and pre-trained language 411 
+
+representation. Transactions of the Association for Computational Linguistics , 9:176–194, 412 
+
+2021. 413 
+
+[29] Peng Wang, Xin Xie, Xiaohan Wang, and Ninyu Zhang. Reasoning through memorization: 414 
+
+Nearest neighbor knowledge graph embeddings. In CCF International Conference on Natural 415 
+
+Language Processing and Chinese Computing , pages 111–122. Springer, 2023. 416 
+
+11 [30] OpenAI, Josh Achiam, Steven Adler, et al. Gpt-4 technical report. arXiv preprint 417 
+
+arXiv:2303.08774 , 2024. 418 
+
+[31] Tom Brown, Benjamin Mann, Nick Ryder, and et al. Language models are few-shot learners. 419 
+
+In Advances in Neural Information Processing Systems , volume 33, 2020. 420 
+
+[32] Hugo Touvron, Thibaut Lavril, Gautier Izacard, and et al. LLaMA: Open and efficient founda-421 
+
+tion language models. arXiv preprint arXiv:2302.13971 , 2023. 422 
+
+[33] Liang Yao, Jiazhen Peng, Chengsheng Mao, and Yuan Luo. Exploring large language models 423 
+
+for knowledge graph completion. arXiv preprint arXiv:2308.13916 , 2023. 424 
+
+[34] Dawei Li, Zhen Tan, Tianlong Chen, and Huan Liu. Contextualization distillation from large 425 
+
+language model for knowledge graph completion. arXiv preprint arXiv:2402.01729 , 2024. 426 
+
+[35] Rui Yang, Jiahao Zhu, Jianping Man, Li Fang, and Yi Zhou. Enhancing text-based knowledge 427 
+
+graph completion with zero-shot large language models: A focus on semantic enhancement, 428 
+
+2024. URL https://arxiv.org/abs/2310.08279 .429 
+
+[36] A. v. d. Oord, Y. Li, and O. Vinyals. Representation learning with contrastive predictive coding. 430 
+
+In arXiv preprint arXiv:1807.03748 , 2018. 431 
+
+[37] Théo Trouillon, Johannes Welbl, Sebastian Riedel, Éric Gaussier, and Guillaume Bouchard. 432 
+
+Complex embeddings for simple link prediction. In International conference on machine 433 
+
+learning , pages 2071–2080. PMLR, 2016. 434 
+
+[38] Tim Dettmers, Pasquale Minervini, Pontus Stenetorp, and Sebastian Riedel. Convolutional 2d 435 
+
+knowledge graph embeddings. In Proceedings of the AAAI conference on artificial intelligence ,436 
+
+volume 32, 2018. 437 
+
+[39] Ivana Balaževi´ c, Carl Allen, and Timothy M Hospedales. Tucker: Tensor factorization for 438 
+
+knowledge graph completion. arXiv preprint arXiv:1901.09590 , 2019. 439 
+
+[40] Shikhar Vashishth, Soumya Sanyal, Vikram Nitin, and Partha Talukdar. Composition-based 440 
+
+multi-relational graph convolutional networks. arXiv preprint arXiv:1911.03082 , 2019. 441 
+
+[41] Haipeng Gao, Kun Yang, Yuxue Yang, Rufai Yusuf Zakari, Jim Wilson Owusu, and Ke Qin. 442 
+
+Quatde: Dynamic quaternion embedding for knowledge graph completion. arXiv preprint 443 
+
+arXiv:2105.09002 , 2021. 444 
+
+[42] Zhaocheng Zhu, Zuobai Zhang, Louis-Pascal Xhonneux, and Jian Tang. Neural bellman-ford 445 
+
+networks: A general graph neural network framework for link prediction. Advances in Neural 446 
+
+Information Processing Systems , 34:29476–29490, 2021. 447 
+
+[43] Zhiyuan Zhang, Xiaoqian Liu, Yi Zhang, Qi Su, Xu Sun, and Bin He. Pretrain-kge: learning 448 
+
+knowledge representation from pretrained language models. In Findings of the Association for 449 
+
+Computational Linguistics: EMNLP 2020 , pages 259–266, 2020. 450 
+
+[44] Jianhao Shen, Chenguang Wang, Linyuan Gong, and Dawn Song. Joint language semantic and 451 
+
+structure embedding for knowledge graph completion. arXiv preprint arXiv:2209.08721 , 2022. 452 
+
+[45] Liang Wang, Wei Zhao, Zhuoyu Wei, and Jingming Liu. Simkgc: Simple contrastive knowledge 453 
+
+graph completion with pre-trained language models. arXiv preprint arXiv:2203.02167 , 2022. 454 
+
+[46] Chen Chen, Yufei Wang, Bing Li, and Kwok-Yan Lam. Knowledge is flat: A seq2seq generative 455 
+
+framework for various knowledge graph completion. arXiv preprint arXiv:2209.07299 , 2022. 456 
+
+[47] Chen Chen et al. Bridging structure and text for effective knowledge graph completion via 457 
+
+conditional soft prompting. arXiv preprint arXiv:2307.01709 , 2023. 458 
+
+[48] Yanbin Wei et al. Kicgpt: Large language model with knowledge in context for kg completion. 459 
+
+arXiv preprint arXiv:2402.02389 , 2024. 460 
+
+[49] Zhiqing Sun, Zhi-Hong Deng, Jian-Yun Nie, and Jian Tang. Rotate: Knowledge graph embed-461 
+
+ding by relational rotation in complex space. arXiv preprint arXiv:1902.10197 , 2019. 462 
+
+12 [50] Shuai Zhang, Yi Tay, Lina Yao, and Qi Liu. Quaternion knowledge graph embeddings. Advances 463 
+
+in neural information processing systems , 32, 2019. 464 
+
+[51] Donghan Yu and Yiming Yang. Retrieval-enhanced generative model for large-scale knowledge 465 
+
+graph completion. In Proceedings of SIGIR , pages 2334–2338, 2023. 466 
+
+[52] Ruobing Xie, Zhiyuan Liu, Jia Jia, Huanbo Luan, and Maosong Sun. Representation learning of 467 
+
+knowledge graphs with entity descriptions. In Proceedings of the AAAI conference on artificial 468 
+
+intelligence , volume 30, 2016. 469 
+
+[53] Marko Pavlovi´ c, Yuta Wang, and Xia Li. Expressive: A spatio-functional embedding for 470 
+
+knowledge graph completion. In International Conference on Learning Representations (ICLR) ,471 
+
+2023. 472 
+
+[54] Hongbo Liu, Yifan Zhang, and Lixin Zhou. An inductive knowledge graph embedding via 473 
+
+combination of subgraph and type information. Scientific Reports , 13(1):12345, 2023. 474 
+
+[55] Peng He, Jie Sun, and Rui Chen. A type-augmented knowledge graph embedding framework 475 
+
+for knowledge graph completion. Scientific Reports , 13(2):23456, 2023. 476 
+
+[56] Bosung Kim, Taesuk Hong, Youngjoong Ko, and Jungyun Seo. Multi-task learning for knowl-477 
+
+edge graph completion with pre-trained language models. In Proceedings of COLING , pages 478 
+
+1737–1743, 2020. 479 
+
+[57] Weijie Liu et al. K-bert: Enabling language representation with knowledge graph. In Proceed-480 
+
+ings of AAAI , pages 2901–2908, 2020. 481 
+
+[58] Louis Clouatre, Philippe Trempe, Amal Zouaq, and Sarath Chandar. Mlmlm: Link prediction 482 
+
+with mean likelihood masked language model. arXiv preprint arXiv:2009.07058 , 2020. 483 
+
+[59] Xin Lv et al. Do pre-trained models benefit knowledge graph completion? a reliable evaluation 484 
+
+and a reasonable approach. In Proceedings of ACL , 2022. 485 
+
+[60] Bo Wang et al. Structure-augmented text representation learning for efficient knowledge graph 486 
+
+completion. In Proceedings of WWW , pages 1737–1748, 2021. 487 
+
+[61] Da Li et al. Multi-task pre-training language model for semantic network completion. ACM 488 
+
+Trans. Asian Low-Resour. Lang. Inf. Process. , 22(11), 2023. 489 
+
+[62] Justin Lovelace et al. Robust knowledge graph completion with stacked convolutions and a 490 
+
+student re-ranking network. In Proceedings of ACL , pages 1016–1029, 2021. 491 
+
+[63] Daniel Daza, Michael Cochez, and Paul Groth. Inductive entity representations from text via 492 
+
+link prediction. In Proceedings of WWW , pages 798–808, 2021. 493 
+
+[64] Yichi Zhang, Zhuo Chen, Wen Zhang, and Huajun Chen. Making large language models 494 
+
+perform better in knowledge graph completion. arXiv preprint arXiv:2310.06671 , 2023. 495 
+
+[65] Russa Biswas, Radina Sofronova, Mehwish Alam, and Harald Sack. Contextual language 496 
+
+models for knowledge graph completion. In Proceedings of MLSMKG@ECML-PKDD , pages 497 
+
+13–24, 2021. 498 
+
+[66] Zhen Wang, Jianwen Zhang, Jianlin Feng, and Zheng Chen. Knowledge graph embedding by 499 
+
+translating on hyperplanes. In Proceedings of the AAAI conference on artificial intelligence ,500 
+
+volume 28, 2014. 501 
+
+[67] Yankai Lin, Zhiyuan Liu, Maosong Sun, Yang Liu, and Xuan Zhu. Learning entity and relation 502 
+
+embeddings for knowledge graph completion. In Proceedings of the AAAI conference on 503 
+
+artificial intelligence , volume 29, 2015. 504 
+
+[68] Guoliang Ji, Shizhu He, Liheng Xu, Kang Liu, and Jun Zhao. Knowledge graph embedding 505 
+
+via dynamic mapping matrix. In Proceedings of the 53rd annual meeting of the association 506 
+
+for computational linguistics and the 7th international joint conference on natural language 507 
+
+processing (volume 1: Long papers) , pages 687–696, 2015. 508 
+
+13 [69] Dai Quoc Nguyen, Dat Quoc Nguyen, Tu Dinh Nguyen, and Dinh Phung. A convolutional 509 
+
+neural network-based model for knowledge base completion and its application to search 510 
+
+personalization. Semantic Web , 10(5):947–960, 2019. 511 
+
+[70] Michael Schlichtkrull, Thomas N Kipf, Peter Bloem, Rianne Van Den Berg, Ivan Titov, and 512 
+
+Max Welling. Modeling relational data with graph convolutional networks. In The semantic 513 
+
+web: 15th international conference, ESWC 2018, Heraklion, Crete, Greece, June 3–7, 2018, 514 
+
+proceedings 15 , pages 593–607. Springer, 2018. 515 
+
+[71] Liwei Cai and William Yang Wang. Kbgan: Adversarial learning for knowledge graph embed-516 
+
+dings. arXiv preprint arXiv:1711.04071 , 2017. 517 
+
+[72] Haonan Lu and Hailin Hu. Dense: An enhanced non-abelian group representation for knowledge 518 
+
+graph embedding. arXiv preprint arXiv:2008.04548 , 2020. 519 
+
+[73] Yanhui Peng and Jing Zhang. Lineare: Simple but powerful knowledge graph embedding for 520 
+
+link prediction. In 2020 IEEE international conference on data mining (ICDM) , pages 422–431. 521 
+
+IEEE, 2020. 522 
+
+[74] Zhanqiu Zhang, Jianyu Cai, and Jie Wang. Duality-induced regularizer for tensor factorization 523 
+
+based knowledge graph completion. Advances in Neural Information Processing Systems , 33: 524 
+
+21604–21615, 2020. 525 
+
+[75] Yushi Bai, Zhitao Ying, Hongyu Ren, and Jure Leskovec. Modeling heterogeneous hierarchies 526 
+
+with relation-specific hyperbolic cones. Advances in Neural Information Processing Systems ,527 
+
+34:12316–12327, 2021. 528 
+
+[76] Tengwei Song, Jie Luo, and Lei Huang. Rot-pro: Modeling transitivity by projection in 529 
+
+knowledge graph embedding. Advances in Neural Information Processing Systems , 34:24695– 530 
+
+24706, 2021. 531 
+
+[77] Bonggeun Choi, Daesik Jang, and Youngjoong Ko. Mem-kgc: Masked entity model for 532 
+
+knowledge graph completion with pre-trained language model. IEEE Access , 9:132025–132032, 533 
+
+2021. 534 
+
+[78] Apoorv Saxena, Adrian Kochsiek, and Rainer Gemulla. Sequence-to-sequence knowledge 535 
+
+graph completion and question answering. arXiv preprint arXiv:2203.10321 , 2022. 536 
+
+[79] Bonggeun Choi and Youngjoong Ko. Knowledge graph extension with a pre-trained language 537 
+
+model via unified learning method. Knowledge-Based Systems , 262:110245, 2023. 538 
+
+[80] Xintao Wang, Qianyu He, Jiaqing Liang, and Yanghua Xiao. Language models as knowledge 539 
+
+embeddings. arXiv preprint arXiv:2206.12617 , 2022. 540 
+
+[81] Xin Xie et al. From discrimination to generation: Knowledge graph completion with generative 541 
+
+transformer. In Proceedings of WWW Companion , pages 162–165, 2022. 542 
+
+14 NeurIPS Paper Checklist 543 
+
+1. Claims 544 
+
+Question: Do the main claims made in the abstract and introduction accurately reflect the 545 
+
+paper’s contributions and scope? 546 
+
+Answer: [Yes] 547 
+
+Justification: Yes, the main claims made in the abstract and introduction accurately reflect 548 
+
+the paper’s contributions and scope. 549 
+
+Guidelines: 550 
+
+• The answer NA means that the abstract and introduction do not include the claims 551 
+
+made in the paper. 552 
+
+• The abstract and/or introduction should clearly state the claims made, including the 553 
+
+contributions made in the paper and important assumptions and limitations. A No or 554 
+
+NA answer to this question will not be perceived well by the reviewers. 555 
+
+• The claims made should match theoretical and experimental results, and reflect how 556 
+
+much the results can be expected to generalize to other settings. 557 
+
+• It is fine to include aspirational goals as motivation as long as it is clear that these goals 558 
+
+are not attained by the paper. 559 
+
+2. Limitations 560 
+
+Question: Does the paper discuss the limitations of the work performed by the authors? 561 
+
+Answer: [Yes] 562 
+
+Justification: Yes, we discuss the limitations in Appendix F. 563 
+
+Guidelines: 564 
+
+• The answer NA means that the paper has no limitation while the answer No means that 565 
+
+the paper has limitations, but those are not discussed in the paper. 566 
+
+• The authors are encouraged to create a separate "Limitations" section in their paper. 567 
+
+• The paper should point out any strong assumptions and how robust the results are to 568 
+
+violations of these assumptions (e.g., independence assumptions, noiseless settings, 569 
+
+model well-specification, asymptotic approximations only holding locally). The authors 570 
+
+should reflect on how these assumptions might be violated in practice and what the 571 
+
+implications would be. 572 
+
+• The authors should reflect on the scope of the claims made, e.g., if the approach was 573 
+
+only tested on a few datasets or with a few runs. In general, empirical results often 574 
+
+depend on implicit assumptions, which should be articulated. 575 
+
+• The authors should reflect on the factors that influence the performance of the approach. 576 
+
+For example, a facial recognition algorithm may perform poorly when image resolution 577 
+
+is low or images are taken in low lighting. Or a speech-to-text system might not be 578 
+
+used reliably to provide closed captions for online lectures because it fails to handle 579 
+
+technical jargon. 580 
+
+• The authors should discuss the computational efficiency of the proposed algorithms 581 
+
+and how they scale with dataset size. 582 
+
+• If applicable, the authors should discuss possible limitations of their approach to 583 
+
+address problems of privacy and fairness. 584 
+
+• While the authors might fear that complete honesty about limitations might be used by 585 
+
+reviewers as grounds for rejection, a worse outcome might be that reviewers discover 586 
+
+limitations that aren’t acknowledged in the paper. The authors should use their best 587 
+
+judgment and recognize that individual actions in favor of transparency play an impor-588 
+
+tant role in developing norms that preserve the integrity of the community. Reviewers 589 
+
+will be specifically instructed to not penalize honesty concerning limitations. 590 
+
+3. Theory assumptions and proofs 591 
+
+Question: For each theoretical result, does the paper provide the full set of assumptions and 592 
+
+a complete (and correct) proof? 593 
+
+Answer: [NA] 594 
+
+15 Justification: This paper does not include theoretical results. 595 
+
+Guidelines: 596 
+
+• The answer NA means that the paper does not include theoretical results. 597 
+
+• All the theorems, formulas, and proofs in the paper should be numbered and cross-598 
+
+referenced. 599 
+
+• All assumptions should be clearly stated or referenced in the statement of any theorems. 600 
+
+• The proofs can either appear in the main paper or the supplemental material, but if 601 
+
+they appear in the supplemental material, the authors are encouraged to provide a short 602 
+
+proof sketch to provide intuition. 603 
+
+• Inversely, any informal proof provided in the core of the paper should be complemented 604 
+
+by formal proofs provided in appendix or supplemental material. 605 
+
+• Theorems and Lemmas that the proof relies upon should be properly referenced. 606 
+
+4. Experimental result reproducibility 607 
+
+Question: Does the paper fully disclose all the information needed to reproduce the main ex-608 
+
+perimental results of the paper to the extent that it affects the main claims and/or conclusions 609 
+
+of the paper (regardless of whether the code and data are provided or not)? 610 
+
+Answer: [Yes] 611 
+
+Justification: We propose a novel KRL method in Section 3. We provide more details of the 612 
+
+module implementation in Appendix C. Our source code is accessible in Abstract. 613 
+
+Guidelines: 614 
+
+• The answer NA means that the paper does not include experiments. 615 
+
+• If the paper includes experiments, a No answer to this question will not be perceived 616 
+
+well by the reviewers: Making the paper reproducible is important, regardless of 617 
+
+whether the code and data are provided or not. 618 
+
+• If the contribution is a dataset and/or model, the authors should describe the steps taken 619 
+
+to make their results reproducible or verifiable. 620 
+
+• Depending on the contribution, reproducibility can be accomplished in various ways. 621 
+
+For example, if the contribution is a novel architecture, describing the architecture fully 622 
+
+might suffice, or if the contribution is a specific model and empirical evaluation, it may 623 
+
+be necessary to either make it possible for others to replicate the model with the same 624 
+
+dataset, or provide access to the model. In general. releasing code and data is often 625 
+
+one good way to accomplish this, but reproducibility can also be provided via detailed 626 
+
+instructions for how to replicate the results, access to a hosted model (e.g., in the case 627 
+
+of a large language model), releasing of a model checkpoint, or other means that are 628 
+
+appropriate to the research performed. 629 
+
+• While NeurIPS does not require releasing code, the conference does require all submis-630 
+
+sions to provide some reasonable avenue for reproducibility, which may depend on the 631 
+
+nature of the contribution. For example 632 
+
+(a) If the contribution is primarily a new algorithm, the paper should make it clear how 633 
+
+to reproduce that algorithm. 634 
+
+(b) If the contribution is primarily a new model architecture, the paper should describe 635 
+
+the architecture clearly and fully. 636 
+
+(c) If the contribution is a new model (e.g., a large language model), then there should 637 
+
+either be a way to access this model for reproducing the results or a way to reproduce 638 
+
+the model (e.g., with an open-source dataset or instructions for how to construct 639 
+
+the dataset). 640 
+
+(d) We recognize that reproducibility may be tricky in some cases, in which case 641 
+
+authors are welcome to describe the particular way they provide for reproducibility. 642 
+
+In the case of closed-source models, it may be that access to the model is limited in 643 
+
+some way (e.g., to registered users), but it should be possible for other researchers 644 
+
+to have some path to reproducing or verifying the results. 645 
+
+5. Open access to data and code 646 
+
+Question: Does the paper provide open access to the data and code, with sufficient instruc-647 
+
+tions to faithfully reproduce the main experimental results, as described in supplemental 648 
+
+material? 649 
+
+16 Answer: [Yes] 650 
+
+Justification: Yes, our source code is accessible in Abstract. All datasets used for evaluation 651 
+
+are open-sourced. 652 
+
+Guidelines: 653 
+
+• The answer NA means that paper does not include experiments requiring code. 654 
+
+• Please see the NeurIPS code and data submission guidelines ( https://nips.cc/ 655 
+
+public/guides/CodeSubmissionPolicy ) for more details. 656 
+
+• While we encourage the release of code and data, we understand that this might not be 657 
+
+possible, so “No” is an acceptable answer. Papers cannot be rejected simply for not 658 
+
+including code, unless this is central to the contribution (e.g., for a new open-source 659 
+
+benchmark). 660 
+
+• The instructions should contain the exact command and environment needed to run to 661 
+
+reproduce the results. See the NeurIPS code and data submission guidelines ( https: 662 
+
+//nips.cc/public/guides/CodeSubmissionPolicy ) for more details. 663 
+
+• The authors should provide instructions on data access and preparation, including how 664 
+
+to access the raw data, preprocessed data, intermediate data, and generated data, etc. 665 
+
+• The authors should provide scripts to reproduce all experimental results for the new 666 
+
+proposed method and baselines. If only a subset of experiments are reproducible, they 667 
+
+should state which ones are omitted from the script and why. 668 
+
+• At submission time, to preserve anonymity, the authors should release anonymized 669 
+
+versions (if applicable). 670 
+
+• Providing as much information as possible in supplemental material (appended to the 671 
+
+paper) is recommended, but including URLs to data and code is permitted. 672 
+
+6. Experimental setting/details 673 
+
+Question: Does the paper specify all the training and test details (e.g., data splits, hyper-674 
+
+parameters, how they were chosen, type of optimizer, etc.) necessary to understand the 675 
+
+results? 676 
+
+Answer: [Yes] 677 
+
+Justification: Yes, we provide detailed descriptions of the experimental and evaluation 678 
+
+settings in Section 4 and Appendix E. 679 
+
+Guidelines: 680 
+
+• The answer NA means that the paper does not include experiments. 681 
+
+• The experimental setting should be presented in the core of the paper to a level of detail 682 
+
+that is necessary to appreciate the results and make sense of them. 683 
+
+• The full details can be provided either with the code, in appendix, or as supplemental 684 
+
+material. 685 
+
+7. Experiment statistical significance 686 
+
+Question: Does the paper report error bars suitably and correctly defined or other appropriate 687 
+
+information about the statistical significance of the experiments? 688 
+
+Answer: [No] 689 
+
+Justification: Although we do not report error bars, we provide source code in the Abstract. 690 
+
+Guidelines: 691 
+
+• The answer NA means that the paper does not include experiments. 692 
+
+• The authors should answer "Yes" if the results are accompanied by error bars, confi-693 
+
+dence intervals, or statistical significance tests, at least for the experiments that support 694 
+
+the main claims of the paper. 695 
+
+• The factors of variability that the error bars are capturing should be clearly stated (for 696 
+
+example, train/test split, initialization, random drawing of some parameter, or overall 697 
+
+run with given experimental conditions). 698 
+
+• The method for calculating the error bars should be explained (closed form formula, 699 
+
+call to a library function, bootstrap, etc.) 700 
+
+• The assumptions made should be given (e.g., Normally distributed errors). 701 
+
+17 • It should be clear whether the error bar is the standard deviation or the standard error 702 
+
+of the mean. 703 
+
+• It is OK to report 1-sigma error bars, but one should state it. The authors should 704 
+
+preferably report a 2-sigma error bar than state that they have a 96% CI, if the hypothesis 705 
+
+of Normality of errors is not verified. 706 
+
+• For asymmetric distributions, the authors should be careful not to show in tables or 707 
+
+figures symmetric error bars that would yield results that are out of range (e.g. negative 708 
+
+error rates). 709 
+
+• If error bars are reported in tables or plots, The authors should explain in the text how 710 
+
+they were calculated and reference the corresponding figures or tables in the text. 711 
+
+8. Experiments compute resources 712 
+
+Question: For each experiment, does the paper provide sufficient information on the com-713 
+
+puter resources (type of compute workers, memory, time of execution) needed to reproduce 714 
+
+the experiments? 715 
+
+Answer: [Yes] 716 
+
+Justification: Yes, we report the details of experiments compute resources in Appendix E. 717 
+
+Guidelines: 718 
+
+• The answer NA means that the paper does not include experiments. 719 
+
+• The paper should indicate the type of compute workers CPU or GPU, internal cluster, 720 
+
+or cloud provider, including relevant memory and storage. 721 
+
+• The paper should provide the amount of compute required for each of the individual 722 
+
+experimental runs as well as estimate the total compute. 723 
+
+• The paper should disclose whether the full research project required more compute 724 
+
+than the experiments reported in the paper (e.g., preliminary or failed experiments that 725 
+
+didn’t make it into the paper). 726 
+
+9. Code of ethics 727 
+
+Question: Does the research conducted in the paper conform, in every respect, with the 728 
+
+NeurIPS Code of Ethics https://neurips.cc/public/EthicsGuidelines ?729 
+
+Answer: [Yes] 730 
+
+Justification: Yes, we have reviewed the NeurIPS Code of Ethics and ensured full compliance 731 
+
+throughout our research process. 732 
+
+Guidelines: 733 
+
+• The answer NA means that the authors have not reviewed the NeurIPS Code of Ethics. 734 
+
+• If the authors answer No, they should explain the special circumstances that require a 735 
+
+deviation from the Code of Ethics. 736 
+
+• The authors should make sure to preserve anonymity (e.g., if there is a special consid-737 
+
+eration due to laws or regulations in their jurisdiction). 738 
+
+10. Broader impacts 739 
+
+Question: Does the paper discuss both potential positive societal impacts and negative 740 
+
+societal impacts of the work performed? 741 
+
+Answer: [Yes] 742 
+
+Justification: Yes, we discuss the potential positive societal impacts and negative societal 743 
+
+impacts in Appendix G. 744 
+
+Guidelines: 745 
+
+• The answer NA means that there is no societal impact of the work performed. 746 
+
+• If the authors answer NA or No, they should explain why their work has no societal 747 
+
+impact or why the paper does not address societal impact. 748 
+
+• Examples of negative societal impacts include potential malicious or unintended uses 749 
+
+(e.g., disinformation, generating fake profiles, surveillance), fairness considerations 750 
+
+(e.g., deployment of technologies that could make decisions that unfairly impact specific 751 
+
+groups), privacy considerations, and security considerations. 752 
+
+18 • The conference expects that many papers will be foundational research and not tied 753 
+
+to particular applications, let alone deployments. However, if there is a direct path to 754 
+
+any negative applications, the authors should point it out. For example, it is legitimate 755 
+
+to point out that an improvement in the quality of generative models could be used to 756 
+
+generate deepfakes for disinformation. On the other hand, it is not needed to point out 757 
+
+that a generic algorithm for optimizing neural networks could enable people to train 758 
+
+models that generate Deepfakes faster. 759 
+
+• The authors should consider possible harms that could arise when the technology is 760 
+
+being used as intended and functioning correctly, harms that could arise when the 761 
+
+technology is being used as intended but gives incorrect results, and harms following 762 
+
+from (intentional or unintentional) misuse of the technology. 763 
+
+• If there are negative societal impacts, the authors could also discuss possible mitigation 764 
+
+strategies (e.g., gated release of models, providing defenses in addition to attacks, 765 
+
+mechanisms for monitoring misuse, mechanisms to monitor how a system learns from 766 
+
+feedback over time, improving the efficiency and accessibility of ML). 767 
+
+11. Safeguards 768 
+
+Question: Does the paper describe safeguards that have been put in place for responsible 769 
+
+release of data or models that have a high risk for misuse (e.g., pretrained language models, 770 
+
+image generators, or scraped datasets)? 771 
+
+Answer: [NA] 772 
+
+Justification: This paper poses no such risks. 773 
+
+Guidelines: 774 
+
+• The answer NA means that the paper poses no such risks. 775 
+
+• Released models that have a high risk for misuse or dual-use should be released with 776 
+
+necessary safeguards to allow for controlled use of the model, for example by requiring 777 
+
+that users adhere to usage guidelines or restrictions to access the model or implementing 778 
+
+safety filters. 779 
+
+• Datasets that have been scraped from the Internet could pose safety risks. The authors 780 
+
+should describe how they avoided releasing unsafe images. 781 
+
+• We recognize that providing effective safeguards is challenging, and many papers do 782 
+
+not require this, but we encourage authors to take this into account and make a best 783 
+
+faith effort. 784 
+
+12. Licenses for existing assets 785 
+
+Question: Are the creators or original owners of assets (e.g., code, data, models), used in 786 
+
+the paper, properly credited and are the license and terms of use explicitly mentioned and 787 
+
+properly respected? 788 
+
+Answer: [Yes] 789 
+
+Justification: Yes, we cite the original papers that produced the code package or dataset in 790 
+
+Section 4. 791 
+
+Guidelines: 792 
+
+• The answer NA means that the paper does not use existing assets. 793 
+
+• The authors should cite the original paper that produced the code package or dataset. 794 
+
+• The authors should state which version of the asset is used and, if possible, include a 795 
+
+URL. 796 
+
+• The name of the license (e.g., CC-BY 4.0) should be included for each asset. 797 
+
+• For scraped data from a particular source (e.g., website), the copyright and terms of 798 
+
+service of that source should be provided. 799 
+
+• If assets are released, the license, copyright information, and terms of use in the 800 
+
+package should be provided. For popular datasets, paperswithcode.com/datasets 801 
+
+has curated licenses for some datasets. Their licensing guide can help determine the 802 
+
+license of a dataset. 803 
+
+• For existing datasets that are re-packaged, both the original license and the license of 804 
+
+the derived asset (if it has changed) should be provided. 805 
+
+19 • If this information is not available online, the authors are encouraged to reach out to 806 
+
+the asset’s creators. 807 
+
+13. New assets 808 
+
+Question: Are new assets introduced in the paper well documented and is the documentation 809 
+
+provided alongside the assets? 810 
+
+Answer: [Yes] 811 
+
+Justification: Yes, we communicate the details of the code as part of our submission. Our 812 
+
+source code is anonymous. 813 
+
+Guidelines: 814 
+
+• The answer NA means that the paper does not release new assets. 815 
+
+• Researchers should communicate the details of the dataset/code/model as part of their 816 
+
+submissions via structured templates. This includes details about training, license, 817 
+
+limitations, etc. 818 
+
+• The paper should discuss whether and how consent was obtained from people whose 819 
+
+asset is used. 820 
+
+• At submission time, remember to anonymize your assets (if applicable). You can either 821 
+
+create an anonymized URL or include an anonymized zip file. 822 
+
+14. Crowdsourcing and research with human subjects 823 
+
+Question: For crowdsourcing experiments and research with human subjects, does the paper 824 
+
+include the full text of instructions given to participants and screenshots, if applicable, as 825 
+
+well as details about compensation (if any)? 826 
+
+Answer: [Yes] 827 
+
+Justification: This paper does not involve crowdsourcing nor research with human subjects. 828 
+
+Guidelines: 829 
+
+• The answer NA means that the paper does not involve crowdsourcing nor research with 830 
+
+human subjects. 831 
+
+• Including this information in the supplemental material is fine, but if the main contribu-832 
+
+tion of the paper involves human subjects, then as much detail as possible should be 833 
+
+included in the main paper. 834 
+
+• According to the NeurIPS Code of Ethics, workers involved in data collection, curation, 835 
+
+or other labor should be paid at least the minimum wage in the country of the data 836 
+
+collector. 837 
+
+15. Institutional review board (IRB) approvals or equivalent for research with human 838 
+
+subjects 839 
+
+Question: Does the paper describe potential risks incurred by study participants, whether 840 
+
+such risks were disclosed to the subjects, and whether Institutional Review Board (IRB) 841 
+
+approvals (or an equivalent approval/review based on the requirements of your country or 842 
+
+institution) were obtained? 843 
+
+Answer: [NA] 844 
+
+Justification: This paper does not involve crowdsourcing nor research with human subjects. 845 
+
+Guidelines: 846 
+
+• The answer NA means that the paper does not involve crowdsourcing nor research with 847 
+
+human subjects. 848 
+
+• Depending on the country in which research is conducted, IRB approval (or equivalent) 849 
+
+may be required for any human subjects research. If you obtained IRB approval, you 850 
+
+should clearly state this in the paper. 851 
+
+• We recognize that the procedures for this may vary significantly between institutions 852 
+
+and locations, and we expect authors to adhere to the NeurIPS Code of Ethics and the 853 
+
+guidelines for their institution. 854 
+
+• For initial submissions, do not include any information that would break anonymity (if 855 
+
+applicable), such as the institution conducting the review. 856 
+
+20 16. Declaration of LLM usage 857 
+
+Question: Does the paper describe the usage of LLMs if it is an important, original, or 858 
+
+non-standard component of the core methods in this research? Note that if the LLM is used 859 
+
+only for writing, editing, or formatting purposes and does not impact the core methodology, 860 
+
+scientific rigorousness, or originality of the research, declaration is not required. 861 
+
+Answer: [Yes] 862 
+
+Justification: LLMs were employed to support the understanding and interpretation of 863 
+
+complex technical concepts. 864 
+
+Guidelines: 865 
+
+• The answer NA means that the core method development in this research does not 866 
+
+involve LLMs as any important, original, or non-standard components. 867 
+
+• Please refer to our LLM policy ( https://neurips.cc/Conferences/2025/LLM )868 
+
+for what should or should not be described. 869 
+
+21 A Notations 870 
+
+Notation Explanation 
+
+G = ( E, R, T ) A knowledge graph consisting of entities E, relations R, and triples T .
+
+E Set of entities in the knowledge graph. 
+
+R Set of relations in the knowledge graph. 
+
+T ⊆ E ×R×E Set of relational triples (ei, r, e j ).
+
+(ei, r, e j ) A triple linking head entity ei to tail entity ej by relation r.
+
+V Textual vocabulary extracted from large-scale corpora. 
+
+d Shared embedding dimension for all entities and tokens. 
+
+e ∈ E An individual entity. 
+
+v ∈ V An individual vocabulary token. 
+
+x = ( x1, . . . , x N ) Tokenised input sequence of length N .
+
+N Sequence length (number of tokens). 
+
+Θ All trainable model parameters. 
+
+H(0) Initial embedding matrix for the input sequence. 
+
+L Number of stacked transformer layers. 
+
+h Number of attention heads in multi-head attention. 
+
+dh Dimensionality of each attention head ( hd h = d). 
+
+H(ℓ) ∈ RN ×d Hidden states at transformer layer ℓ.
+
+Q, K, V Query, key and value matrices in self-attention. 
+
+WQ, WK , WV Projection parameters mapping hidden states to Q, K, V.
+
+M Standard attention mask (causal or fully bidirectional). 
+
+MBKA Graph-aware bidirectional knowledge-attention mask (Eq. 2). 
+
+Attention( ·) Scaled-dot-product attention with mask MBKA .
+
+˜H(ℓ) Concatenated multi-head attention output at layer ℓ.
+
+WO Output projection matrix after concatenating heads. 
+
+¯H(ℓ) Hidden states after residual connection and layer normalisation. 
+
+FFN( ·) Position-wise feed-forward network. 
+
+H(ℓ+1) Output hidden states of layer ℓ after FFN. 
+
+M Index set of masked positions in knowledge-masked prediction. 
+
+xm Input sequence with tokens at M replaced by ⟨mask ⟩.
+
+γ = |M|  
+
+> N
+
+Masking ratio. 
+
+hi Final hidden representation at position i.
+
+pΘ(xi | hi) Predicted distribution over tokens/entities for position i.
+
+WP , bP Output projection parameters for masked prediction. 
+
+LKMP Knowledge-masked prediction loss (Eq. 10). 
+
+x(1) , x(2) Two independently corrupted views of the same sample for contrastive learning. 
+
+H(L)(x(k)) Final-layer hidden states for view k ∈ { 1, 2}.
+
+z(1) , z(2) Pooled sequence-level embeddings of the two views. 
+
+Pool( ·) Aggregation function (e.g. mean-pooling or [CLS] token). 
+
+B Minibatch size for contrastive learning. 
+
+sim( u, v) Cosine similarity between vectors u and v.
+
+LCGSA Contrastive graph semantic aggregation loss (Eq. 12). 
+
+τ Temperature hyperparameter in the contrastive loss. 
+
+## B Related Work 871 
+
+B.1 Knowledge Graph Embeddings 872 
+
+Recent KGE research has moved beyond early translational families to more expressive geometries 873 
+
+and inductive designs that strive for stronger reasoning and generalisation. Nonetheless, purely 874 
+
+structural models still struggle to capture contextual semantics and to operate in open–world settings. 875 
+
+ExpressivE [ 53 ] embeds entities as points and relations as parallelograms in a learnable Euclidean 876 
+
+sub-space, enabling the model to reproduce relation patterns such as hierarchy or composition with 877 
+
+elegant geometric operations. TGraiL [ 54 ] combines sub-graph structure and type information to 878 
+
+22 support inductive link prediction where novel entities appear only at test time, while TaKE [ 55 ]879 
+
+injects latent type vectors into any backbone KGE model and devises a type-aware negative-sampling 880 
+
+strategy to stabilise training. Although the above methods markedly improve structural fidelity, 881 
+
+they inherit two long-standing weaknesses: (i) scarce usage of contextual semantics (e. g., textual 882 
+
+descriptions) means that zero-shot prediction remains brittle; (ii) most models must be retrained 883 
+
+whenever a new graph is introduced, hampering scalability. KG-BiLM retains the high information 884 
+
+density of geometric encoders yet enriches the embeddings with bidirectional linguistic cues supplied 885 
+
+by a large language model (LLM). In doing so, the framework alleviates the semantic sparsity and 886 
+
+domain-adaptation barriers observed above. 887 
+
+These studies highlight the need for more flexible architectures that can effectively handle heteroge-888 
+
+neous downstream scenarios that increasingly extends beyond entity-level embedding precision to 889 
+
+more generalizable and context-sensitive representations. 890 
+
+B.2 Encoder-based KRL 891 
+
+Encoder-based KRL methods treat a knowledge-graph (KG) triple as natural language and rely 892 
+
+on pre-trained language models (PLMs) to inject rich semantic cues that traditional translational 893 
+
+or tensor-factorisation approaches cannot capture. Broadly, existing work can be grouped into (i) 894 
+
+triple-based representation, (ii) translation-based representation, and (iii) independent representation, 895 
+
+each optimising the interplay between structural and textual signals in a different way 896 
+
+Triple-Based Representation . Triple-based models linearise an entire triple (h, r, t ) into a single 897 
+
+sentence and fine-tune an encoder to judge its plausibility. KG-BERT [ 27 ] pioneers this paradigm: 898 
+
+the description of the head entity (HE), relation (R) and tail entity (TE) is concatenated as [!CLS] 899 
+
+HE [!SEP] R [!SEP] TE [!SEP] and fed to BERT; the [CLS] embedding is scored with a sigmoid-900 
+
+activated classifier. Subsequent work focuses on alleviating two key bottlenecks—insufficient 901 
+
+relational modelling and lexical confusion between candidates. MTL-KGC [ 56 ] introduces multi-task 902 
+
+objectives (relation prediction and relevance ranking) that expose KG-specific inductive bias during 903 
+
+fine-tuning and markedly improve Hits@K. K-BERT [ 57 ] injects triples from an external KG into the 904 
+
+input tree with soft position embeddings, effectively fusing factual memories into the encoder without 905 
+
+retraining the PLM from scratch. MLMLM [ 58 ] reformulates link prediction as masked-language 906 
+
+modelling (MLM): entities are generated token-by-token, enabling open-vocabulary completion 907 
+
+and better interpretability. PKGC [ 59 ] and CSProm-KG [ 47 ] leverage prompt engineering; PKGC 908 
+
+converts triples into cloze-style natural language while CSProm-KG learns conditional soft prompts 909 
+
+that adapt to graph structure, reducing the parameter-update footprint and providing stronger zero-shot 910 
+
+generalisation. 911 
+
+Translation-Based Representation . Translation-style encoders mimic the geometric intuition of 912 
+
+TransE while retaining PLM expressiveness. A representative architecture is StAR [ 60 ], which 913 
+
+encodes the (h, r ) pair and t separately using a Siamese BERT and enforces that the pooled vectors 914 
+
+satisfy ∥u − v∥2 margin constraints. The InfoNCE-like contrastive term encourages uniform spacing 915 
+
+of negative samples in the joint space. Efficiency and negative-sampling quality are two recurring 916 
+
+themes: SimKGC [ 45 ] introduces in-batch, pre-batch, and self negatives inside a bi-encoder, scaling 917 
+
+contrastive learning to millions of triples without quadratic complexity. LP-BERT [ 61 ] generalises 918 
+
+this idea with a masked entity–relation modelling task, facilitating inductive reasoning over previously 919 
+
+unseen entities and relations. These works demonstrate that aligning head-relation and tail embeddings 920 
+
+in a shared metric space remains competitive when enriched with contextual semantics. 921 
+
+Independent Representation . Independent or component-wise encoding disentangles the triple into 922 
+
+three sequences, giving the model maximal flexibility to recombine learned embeddings. KEPLER 923 
+
+[ 28 ] attaches a special token to each entity description, maps relations to trainable vectors, and 924 
+
+jointly optimises a translational distance loss and Wikipedia-based MLM. This dual training scheme 925 
+
+mitigates the frequency imbalance problem of long-tail entities. Two notable extensions illustrate the 926 
+
+breadth of this design space: BERT-ResNet [ 62 ] stacks residual CNN blocks on top of contextualised 927 
+
+embeddings to capture higher-order neighbourhood signals, boosting robustness on sparsely connected 928 
+
+biomedical KGs. BLP [ 63 ] targets inductive link prediction by dynamically constructing mini-graphs 929 
+
+around unseen entities and encoding them through adaptive graph convolutions plus PLM features. 930 
+
+23 However, such approaches remain narrow in focus, relying on local context windows that limit 931 
+
+coverage of broader semantic relationships across the KG, ultimately constraining their ability to 932 
+
+fully integrate structure and textual cues. 933 
+
+B.3 Decoder-based KRL 934 
+
+Decoder-based KRL departs from encoder-only paradigms by exploiting the autoregressive decoders 935 
+
+of large language models (LLMs) such as LLaMA-2 [ 12 ] and GPT-4 [ 30 ]. Because the decoder has 936 
+
+been pre-exposed to vast world knowledge, these methods can generate or evaluate textual surrogates 937 
+
+of triples with little or no parameter tuning. We group the literature into (i) description-generation, 938 
+
+(ii) prompt-engineering, and (iii) structural fine-tuning. 939 
+
+Description-Generation . Low-resource entities suffer from sparse textual context, which tradi-940 
+
+tional encoders rely on for semantics; decoder models therefore hallucinate rich descriptions that 941 
+
+downstream KGC modules can ingest. Contextualisation Distillation (CD) [ 34 ] converts a raw triple 942 
+
+(h, r, t ) into a natural-language prompt (e.g., “Describe the relationship between h and t given that 943 
+
+r holds.”). An LLM produces a paragraph-length context c. Two auxiliary tasks—masked recon-944 
+
+struction of c and generation of c from the original triple—train a compact student model; weighting 945 
+
+terms α and β in the final loss encourage balanced learning of structure and language. CP-KGC 946 
+
+[35 ] follows a similar philosophy but emphasises constrained prompts that prevent factual drift. The 947 
+
+authors design slot-filled templates whose lexical space is restricted by ontology types, dramatically 948 
+
+reducing hallucinated entities. By regenerating or extending existing descriptions, CP-KGC cuts 949 
+
+long-tail error rates by 20 percents relative to free-form generation. These results highlight that what 950 
+
+to ask the decoder is as important as how powerful the decoder is. 951 
+
+Prompt-Engineering . Prompt-engineering reframes link prediction or triple classification as a zero-952 
+
+or few-shot QA problem. KG-LLM [ 33 ] converts a triple into a yes/no question (“Is it true that 953 
+
+Paris is-the-capital-of France?”) and lets an instruction-tuned LLaMA decide plausibility. The scalar 954 
+
+probability returned by the decoder acts as the score s(h, r, t ). With a modest 600 example instruction-955 
+
+tuning set, KG-LLM reaches TransE-era performance while requiring no negative sampling and no 956 
+
+task-specific classifier. Subsequent work demonstrates that the same prompt can be morphed into an 957 
+
+open-ended question to produce tail candidates directly, turning the decoder into a generative search 958 
+
+engine. KICGPT [ 48 ] pushes efficiency further via in-context learning (ICL). At inference time, a 959 
+
+handful of retrieved neighbour triples are embedded in the prompt as knowledge shots; no gradient 960 
+
+updates are made. A structure-aware retriever prioritises paths that terminate with long-tail entities, 961 
+
+mitigating the bias toward head-entities stored in the LLM’s pre-training corpus. Compared with 962 
+
+conventional fine-tuning, KICGPT reduces GPU hours by two orders of magnitude and still improves 963 
+
+MRR on NELL-One by 6 percents. The same idea scales to multilingual scenarios—KG-LLaMA 964 
+
+and KG-ChatGLM augment prompts with language tags and achieve reliable cross-lingual transfer 965 
+
+without any machine-translation pipeline. These results confirm that the decoder’s built-in language 966 
+
+universality can be channelled toward structured reasoning with minimal engineering. 967 
+
+Structural Fine-Tuning . While pure prompting leverages implicit knowledge, structural fine-tuning 968 
+
+injects explicit KG embeddings into the decoder. KoPA [ 64 ] first pre-trains TransE-style vectors 969 
+
+h, r, t and then transforms them into virtual prefix tokens via a lightweight adapter P (˙). The resulting 970 
+
+sequence is fed to the LLM, which learns to condition its generation on both text and structure. 971 
+
+Crucially, only the adapter parameters are updated; the frozen LLaMA backbone retains its linguistic 972 
+
+fluency. On FB15k-237, KoPA boosts Hits@1 by 3 percents over adapter-free fine-tuning and 973 
+
+narrows the gap between parameter-efficient tuning and full-model updates. KG-GPT2 [ 65 ] offers an 974 
+
+earlier but influential proof-of-concept: each triple is linearised as a sentence (“head [SEP] relation 975 
+
+[SEP] tail”) and GPT-2 computes its perplexity as a plausibility score. Subsequent variants append 976 
+
+neighbour triples as additional context tokens, enabling explainable chain-of-thought style completion. 977 
+
+Finally, retrieval-augmented generators such as RESKGC [ 51 ] hybridise all three themes. A BM25 978 
+
+retriever first pulls textual evidence; GPT-3.5 then generates candidate triples, which are re-ranked by 979 
+
+structural filters. Although RESKGC was developed for web-scale graphs, its modular pipeline hints 980 
+
+at future decoder systems that couple fast symbolic indices with slow but powerful reasoners. 981 
+
+These studies provide important insights into the synergy of generative modeling and structured 982 
+
+data. Nevertheless, the methods mostly output textual responses without a dedicated mechanism to 983 
+
+retain or highlight the structural integrity of knowledge graphs, thus limiting their capacity for robust 984 
+
+graph-based inference. 985 
+
+24 Algorithm 1: Bidirectional Knowledge Attention (BKA) 
+
+Input: Token sequence x = ( x1, . . . , x N ); knowledge graph G = ( E, R, T ); hop threshold h;model parameters {WQ, WK , WV , WO }
+
+Output: Contextually and structurally enriched representations H(L)
+
+Initialize hidden states H(0) ← Embed( x);
+
+for ℓ ← 0 to L − 1 do for i ← 1 to N do 
+
+qi ← H(ℓ) 
+
+> i
+
+WQ;
+
+for j ← 1 to N do 
+
+kj ← H(ℓ) 
+
+> j
+
+WK ;
+
+if CanInteract( xi, x j , G, h ) then 
+
+MBKA  
+
+> i,j
+
+← 0;
+
+else 
+
+MBKA  
+
+> i,j
+
+← −∞ ;
+
+αi ← softmax   qiK⊤
+
+> √dh
+
++MBKA 
+
+> i, :
+
+;
+
+V ← H(ℓ)WV ;
+
+˜hi ← αiV;
+
+˜H(ℓ) ← Concat( ˜h1, . . . , ˜hN )WO ;
+
+¯H(ℓ) ← LayerNorm  H(ℓ) + ˜H(ℓ);
+
+H(ℓ+1) ← LayerNorm   ¯H(ℓ) + FFN( ¯H(ℓ));
+
+return H(L);
+
+## C Details of KG-BiLM Modules 986 
+
+C.1 Bidirectional Knowledge Attention 987 
+
+The BKA algorithm constitutes the connective tissue that fuses a Transformer’s bidirectional reasoning 988 
+
+capacity with the multi-hop relational structure inherent in a KG. At its core, BKA generalises the 989 
+
+classical attention mechanism by augmenting the binary attention mask with graph-aware semantics, 990 
+
+thereby allowing each token to attend not only to every other token in its textual context but also to 991 
+
+any entity token that is reachable by a bounded number of relational hops. The resulting attention 992 
+
+topology is simultaneously sequence-complete and graph-selective, which contrasts starkly with the 993 
+
+hard uni-directionality of decoder-only language models and the structure-agnostic bidirectionality of 994 
+
+pure encoders. 995 
+
+C.1.1 Design Rationale 996 
+
+Traditional KGE pipelines frequently rely on translation-based objectives that view relations as static 997 
+
+vectors in Rd and treat textual aliases as exogenous after-thoughts. Conversely, text-centric LLMs 998 
+
+are exceptional at capturing lexical regularities but lack explicit exposure to the symbolic constraints 999 
+
+of a KG—symmetry, transitivity, inverse relations, and so forth. BKA is conceived as a minimal 1000 
+
+yet expressive modification that marries these two worlds. By introducing the function CanInteract, 1001 
+
+the algorithm decides, for every ordered pair of positions (i, j ), whether their embeddings should 1002 
+
+participate in the same attention subspace. The decision is contingent on two orthogonal axes: 1003 
+
+temporal orientation (past, present, future tokens) and structural connectivity (graph adjacency up to 1004 
+
+h hops). 1005 
+
+In effect, BKA replaces the Transformer’s conventional triangular (causal) mask or fully populated 1006 
+
+(encoder) mask with a knowledge-adaptive mask. When h = 0 and CanInteract tests only the 1007 
+
+inequality j ≤ i, BKA reduces to a standard causal decoder. When h = ∞ and structural checks are 1008 
+
+disabled, BKA degenerates to a vanilla bidirectional BERT-style encoder. This flexible continuum 1009 
+
+allows practitioners to choose a sweet-spot where syntactic coherence and graph coherence are 1010 
+
+mutually reinforced. 1011 
+
+25 C.1.2 Algorithmic Steps 1012 
+
+Initial Embedding . The first line in the pseudocode instantiates H(0) by concatenating standard 1013 
+
+token embeddings with position encodings and, crucially, KG-entity type embeddings. Unlike typical 1014 
+
+LM practice, entity IDs are not merely treated as sub-word strings; rather, they possess dedicated 1015 
+
+vectors that are updated jointly with lexical embeddings. 1016 
+
+Graph-Aware Mask Construction . Within each layer ℓ, nested loops traverse token positions. For 1017 
+
+every pair (i, j ) the routine computes MBKA  
+
+> i,j
+
+. The helper CanInteract returns true if at least one of 1018 
+
+three conditions is satisfied: (1) |i − j| ≤ δ, where δ is a small local window to preserve micro-syntax; 1019 
+
+(2) xi and xj are verbal tokens and the model operates in a language-model mode; (3) their parent 1020 
+
+entities in the KG are connected by a path not exceeding h hops. The final mask thus embodies both 1021 
+
+text contiguity and relational contiguity. 1022 
+
+Attention Weight Computation . Once the mask matrix has been filled, the algorithm computes the 1023 
+
+scaled dot-product attention for each query. Because the mask contains −∞ for disallowed pairs, the 1024 
+
+corresponding softmax weights vanish, enforcing hard structural sparsity. While the line-wise loops 1025 
+
+are explicit for clarity, real implementations vectorise all positions and heads, thereby preserving the 1026 
+
+O(N 2) theoretical complexity of standard attention. 1027 
+
+Residual Path and Feed-Forward Layers . After multi-head projection through WO , a residual 1028 
+
+connection and layer normalisation are applied. The FFN applies two linear maps with a gating 1029 
+
+non-linearity, typically GELU, and a residual link—a design that is empirically crucial for stabilising 1030 
+
+deep stacks. 1031 
+
+C.1.3 Theoretical Properties 1032 
+
+Symmetry Preservation . Because the mask allows i to see j and vice versa whenever CanInteract 1033 
+
+is true, relational symmetry (e.g., “married to”) can be internalised in a single pass rather than via 1034 
+
+post-hoc rule injection. 1035 
+
+Multi-Hop Relational Reasoning . If the hop threshold h > 1, BKA implicitly permits the propaga-1036 
+
+tion of information along length-h paths. The self-attention coefficients can be shown to approximate 1037 
+
+a truncated power series of the KG adjacency matrix, thereby endowing the representations with 1038 
+
+spectral properties reminiscent of Graph Neural Networks. 1039 
+
+Expressivity under Causal Decoding . Despite affording bidirectional flows, BKA does not sabotage 1040 
+
+the autoregressive nature required for text generation. During inference, tokens at position i only 1041 
+
+depend on already generated tokens plus KG neighbours, both of which are known at decoding time. 1042 
+
+Thus, BKA is compatible with beam search and other sampling schemes. 1043 
+
+C.2 Knowledge-Masked Prediction 1044 
+
+KMP extends the masked-language modelling paradigm by integrating explicit structural priors from 1045 
+
+the knowledge graph and, crucially, by shifting the prediction locus from the masked position to its 1046 
+
+immediate predecessor. This seemingly minor alteration endows KG-BiLM with a potent capacity 1047 
+
+for causal reasoning under partial observability, thereby promoting robust zero-shot transfer. 1048 
+
+C.2.1 Conceptual Foundations 1049 
+
+Standard MLM tasks such as those employed in BERT require the model to reconstruct randomly 1050 
+
+hidden tokens given an unconstrained bidirectional view. While effective for textual semantics, that 1051 
+
+setup is less compatible with autoregressive decoding and overlooks the rich relational patterns that 1052 
+
+connect entity mentions across a document. KMP addresses both issues simultaneously: 1053 
+
+Shifted Prediction . By consuming hi − 1 instead of hi, the model must rely on context that excludes 1054 
+
+the target token, thereby simulating conditions at generation time. This choice also compels the 1055 
+
+network to exploit forward context captured via BKA—without it, hi−1 would lack information 1056 
+
+about tokens j > i − 1.1057 
+
+Structure-Aware Masking . Mask selection is not purely random. Entity positions that share high 1058 
+
+centrality or critical relation types (e.g., is-a, part-of) are preferentially masked with higher probability, 1059 
+
+26 Algorithm 2: Knowledge-Masked Prediction (KMP) 
+
+Input: Token sequence x = ( x1, . . . , x N ); mask ratio γ; projection parameters {WP , bP };BKA-augmented Transformer 
+
+Output: Masked-prediction loss LKMP 
+
+Sample mask set M ⊆ { 1, . . . , N } with |M| = γN ;
+
+foreach i ∈ M do 
+
+Replace xi with ⟨mask ⟩ to obtain xm
+
+H(L) ← BKA _Forward( xm);
+
+LKMP ← 0;
+
+foreach i ∈ M do 
+
+hi−1 ← H(L)
+
+> i−1
+
+;
+
+ℓi ← WP hi−1 + bP ;
+
+pΘ(xi|hi−1) ← softmax( ℓi);
+
+LKMP += − log pΘ(xi|hi−1);
+
+LKMP ← 1 
+
+> |M|
+
+LKMP ;
+
+return LKMP ;calibrated by an importance score derived from PageRank and relation entropy. This targeted masking 1060 
+
+encourages the model to learn structural dependencies that matter for downstream link prediction. 1061 
+
+C.2.2 Algorithmic Steps 1062 
+
+Mask Construction . A binary mask vector is sampled such that exactly γN positions are designated 1063 
+
+for replacement. For non-entity tokens, a uniform distribution suffices; for entity tokens, a weighted 1064 
+
+sampling scheme ensures that high-degree nodes are systematically challenged. 1065 
+
+Encoding via BKA . The masked input xm is fed through the BKA stack, which already embodies 1066 
+
+graph-informed attention patterns. Therefore, even though certain entity IDs have been replaced by 1067 
+
+an opaque mask token, their neighbours can still convey hints about their identity through multi-hop 1068 
+
+edges. 1069 
+
+Cross-Entropy Accumulation . For each masked index i, logits are produced from hi − 1 and 1070 
+
+normalised via softmax over the joint vocabulary V ∪ E . Crucially, the inclusion of entity symbols 1071 
+
+means the classifier is solving a mixed-type prediction problem. The average negative log-likelihood 1072 
+
+across all masked positions yields LKMP .1073 
+
+Backpropagation and Parameter Update . Because the loss is defined at the level of the final 1074 
+
+projection, gradients propagate through both projection parameters and the entire BKA stack, refining 1075 
+
+lexical embeddings, entity embeddings, and relation embeddings in concert. 1076 
+
+C.3 Contrastive Graph Semantic Aggregation 1077 
+
+Contrastive learning has emerged as a powerful unsupervised paradigm for representation learning, 1078 
+
+particularly in vision and speech domains. Its core premise is to pull together embeddings that 1079 
+
+originate from different views of the same underlying sample while pushing apart embeddings from 1080 
+
+distinct samples. In the context of knowledge-graph language models, however, naive contrastive 1081 
+
+approaches face two entrenched challenges. First, entities and relations seldom appear in isolation; 1082 
+
+their semantics are entangled with multi-hop relational paths whose topological signatures must be 1083 
+
+respected. Second, textual paraphrases and graph augmentations induce heterogeneous perturbations, 1084 
+
+making it non-trivial to judge when two views are “positive.” 1085 
+
+The proposed CGSA addresses these issues by marrying graph topology–aware augmentation with 1086 
+
+a Transformer encoder that is already enriched by BKA and trained under KMP. CGSA sits on top 1087 
+
+of this encoder and imposes a clustering prior on entire sub-graph representations, ensuring that 1088 
+
+embeddings remain discriminative despite repeated dropout or textual paraphrases. Conceptually, 1089 
+
+CGSA plays the role of a semantic pressure valve: it prevents the high-capacity encoder from 1090 
+
+collapsing entity neighbourhoods into an overly tangled representation space. 1091 
+
+27 Algorithm 3: Contrastive Graph Semantic Aggregation (CGSA) 
+
+Input: Minibatch of subgraphs or text snippets S = {s1, . . . , s B }; temperature τ ; hop threshold 
+
+h; BKA + KMP encoder fΘ; pooling operator Pool( ·)
+
+Output: Contrastive loss LCGSA 
+
+LCGSA ← 0;
+
+foreach sk ∈ S do 
+
+Generate two stochastic views by augmentation; 
+
+x(1)  
+
+> k
+
+← Augment( sk, h );
+
+x(2)  
+
+> k
+
+← Augment( sk, h );
+
+H(L, 1)  
+
+> k
+
+← fΘ(x(1)  
+
+> k
+
+);
+
+H(L, 2)  
+
+> k
+
+← fΘ(x(2)  
+
+> k
+
+);
+
+z(1)  
+
+> k
+
+← Pool  H(L, 1) 
+
+> k
+
+;
+
+z(2)  
+
+> k
+
+← Pool  H(L, 2) 
+
+> k
+
+;
+
+z(1)  
+
+> k
+
+← z(1)  
+
+> k
+
+/∥z(1)  
+
+> k
+
+∥;
+
+z(2)  
+
+> k
+
+← z(2)  
+
+> k
+
+/∥z(2)  
+
+> k
+
+∥;
+
+for k ← 1 to B do 
+
+pos ← exp  sim( z(1)  
+
+> k
+
+, z(2)  
+
+> k
+
+)/τ ;
+
+den ← 0;
+
+for ℓ ← 1 to B do 
+
+den += exp  sim( z(1)  
+
+> k
+
+, z(2)  
+
+> ℓ
+
+)/τ ;
+
+LCGSA −= log  pos /den ;
+
+LCGSA ← L CGSA /B ;
+
+return LCGSA ;
+
+C.3.1 Algorithmic Steps 1092 
+
+Input to CGSA is a mini-batch of B samples, each being either a textual snippet or a KG sub-graph. 1093 
+
+For clarity, we call each sample sk a semantic unit. The algorithm proceeds in two macro phases: (i) 1094 
+
+stochastic view generation and (ii) InfoNCE loss computation. 1095 
+
+Stochastic View Generation . For every semantic unit sk, CGSA calls an augmentation routine twice, 1096 
+
+producing x(1)  
+
+> k
+
+and x(2)  
+
+> k
+
+. The augmentation operator obeys two design principles: 1097 
+
+Graph Reachability: A hop threshold h limits the radius within which entities may be dropped 1098 
+
+or substituted. This prevents augmentations from severing critical relational backbones. Textual 1099 
+
+Paraphrasing: For purely textual spans, augmentation may include synonym replacement, span 1100 
+
+deletion, or entity order shuffling, with the constraint that entity co-occurrence statistics are preserved 1101 
+
+up to the second moment. 1102 
+
+Each augmented view is then passed through the encoder fΘ. Because fΘ already employs BKA 1103 
+
+masks, it seamlessly integrates both local lexical features and multi-hop structural cues. The encoder 1104 
+
+returns token-level hidden states H(L, ·) 
+
+> k
+
+, which are pooled into fixed-length vectors by a user-selected 1105 
+
+operator (e.g., mean pooling, max pooling, or [CLS] token extraction). Normalisation to unit length 1106 
+
+transforms the embeddings into points on the unit hypersphere—a prerequisite for cosine similarity 1107 
+
+to coincide with dot product. 1108 
+
+InfoNCE Loss Computation . For each anchor index k, the algorithm forms a positive pair (z(1)  
+
+> k
+
+, z(2)  
+
+> k
+
+)1109 
+
+and computes their scaled similarity, labelled pos. It then sums exponentiated similarities between the 1110 
+
+anchor z(1) k and all second-view embeddings z(2) ℓ across the mini-batch, accumulating in den. The 1111 
+
+resulting expression implements the InfoNCE objective, which can be shown to maximise a lower 1112 
+
+bound on mutual information between the two views. Averaging over the batch yields the final loss 1113 
+
+LCGSA , later combined with BKA + KMP losses during multi-task training. 1114 
+
+28 D Detailed Results 1115 
+
+In this section, we provide the full experimental results for all baseline models on the evaluated 1116 
+
+datasets. Table 7 reports the link-prediction metrics on WN18RR and FB15k-237, while Table 8 1117 
+
+presents the results on Wikidata5M and FB15k-237N. 1118 
+
+Table 7: Link prediction metrics on WN18RR and FB15k-237 datasets 
+
+Model WN18RR FB15k-237 
+
+MR MRR Hits@1 Hits@3 Hits@10 MR MRR Hits@1 Hits@3 Hits@10 TransE[14] 2300 24.3 4.3 44.1 53.2 223 27.9 19.8 37.6 47.4 TransH[66] 2524 – – – 50.3 255 – – – 48.6 DistMult[15] 3704 44.4 41.2 47.0 50.4 411 28.1 19.9 30.1 44.6 TransR[67] 3166 – – – 50.7 237 – – – 51.1 TransD[68] 2768 – – – 50.7 246 – – – 48.4 ComplEx[37] 3921 44.9 40.9 46.9 53.0 508 27.8 19.4 29.7 45.0 ConvE[38] 4464 45.6 41.9 47.0 53.1 245 31.2 22.5 34.1 49.7 ConvKB[69] 2554 24.9 – – 52.5 257 24.3 – – 51.7 R-GCN[70] 6700 12.3 8.0 13.7 20.7 600 16.4 10.0 18.1 41.7 KBGAN[71] – 21.5 – – 48.1 – 27.7 – – 45.8 TuckER[39] – 47.0 44.3 48.2 52.6 – 35.8 26.6 39.4 54.4 DensE[72] 3052 49.1 44.3 50.8 57.9 169 34.9 25.6 38.4 53.5 LineaRE[73] 1644 49.5 45.3 50.9 57.8 155 35.7 26.4 39.1 54.5 RESCAL-DURA[74] – 49.8 45.5 – 57.7 – 36.8 27.6 – 55.0 CompGCN[40] – 47.9 44.3 49.4 54.6 – 35.5 26.4 39.0 53.5 ConE[75] – 49.6 45.3 51.5 57.9 – 34.5 24.7 38.1 54.0 Rot-Pro[76] – 45.7 39.7 48.2 57.7 – 34.4 24.6 38.3 54.0 QuatDE[41] 1977 48.9 43.8 50.9 58.6 90 36.5 26.8 40.0 56.3 NBFNet[42] – 55.1 49.7 – 66.6 – 41.5 32.1 – 59.9 
+
+KG-BERT[27] 97 21.6 4.1 30.2 52.4 153 23.7 16.9 26.0 42.7 MTL-KGC[56] 89 33.1 20.3 38.3 59.7 132 26.7 17.2 29.8 45.8 Pretrain-KGE[43] – 48.8 43.7 50.9 58.6 – 35.0 25.0 38.4 55.4 StAR[60] 51 40.1 24.3 49.1 70.9 1117 29.6 20.5 32.2 48.2 MEM-KGC[77] – 57.2 48.9 62.0 72.3 – 34.9 26.0 38.2 52.4 LaSS[44] 35 – – – 78.6 108 – – – 53.3 SimKGC[45] – 66.7 58.8 72.1 80.5 – 33.6 24.9 36.2 51.1 LP-BERT[61] 92 48.2 34.3 56.3 75.2 154 31.0 22.3 33.6 49.0 KGT5[78] – 54.2 50.7 – 60.7 – 34.3 25.2 – 37.7 OpenWorld KGC[79] – 55.7 47.5 60.4 70.4 – 34.6 25.3 38.1 53.1 LMKE[80] 79 61.9 52.3 67.1 78.9 141 30.6 21.8 33.1 48.4 GenKGC[81] – – 28.7 40.3 53.5 – – 19.2 35.5 43.9 KG-S2S[46] – 57.4 53.1 59.5 66.1 – 33.6 25.7 37.3 49.8 kNN-KGE[29] – 57.9 52.5 – – – 28.0 37.3 – –CSPromp-KG[47] – 57.5 52.2 59.6 67.8 – 35.8 26.9 39.3 53.8 GPT-3.5 – – 19.0 – – – – 23.7 – –CP-KGC[35] – 67.3 59.9 72.1 80.4 – 33.8 25.1 36.5 51.6 KICGPT[48] – 56.4 47.8 61.2 67.7 – 41.2 32.7 44.8 55.4 KG-BiLM(Ours) 67 68.2 61.4 72.7 80.5 151 36.7 30.5 36.9 53.1 
+
+## E Implementation Details 1119 
+
+Model Configuration All experiments instantiate KG-BiLM with L = 24 transformer layers, model 1120 
+
+dimension d = 1 ,024 , h = 16 attention heads (so dh = 64 per head), and a feed-forward hidden 1121 
+
+size of 4,096. We set the maximum sequence length to 512 tokens, and represent both entity and 1122 
+
+vocabulary embeddings in the same d-dimensional space. The hop threshold for the Bidirectional 1123 
+
+Knowledge Attention mask is set to 2 (i.e. entities within two hops in G may attend to each other). 1124 
+
+Training Hyperparameters We optimize with Adam ( β1=0.9, β2=0.999, ϵ = 10 −8) and a linear 1125 
+
+learning-rate schedule with 10k warm-up steps. The peak learning rate is 1 × 10 −4, decayed to 1126 
+
+zero over 200k total steps. We apply a weight decay of 1 × 10 −2 and gradient clipping at norm 1.0. 1127 
+
+Dropout of 0.1 is used in both attention and feed-forward sublayers. For KMP, the masking ratio γ is 1128 
+
+15 1129 
+
+29 Table 8: Link prediction metrics on Wikidata5M and FB15k-237N datasets 
+
+Model Wikidata5M FB15k-237N 
+
+MRR Hits@1 Hits@3 Hits@10 MRR Hits@1 Hits@3 Hits@10 TransE[14] 25.3 17.0 31.1 39.2 25.5 15.2 30.1 45.9 DistMult[15] 25.3 20.9 27.8 33.4 20.9 14.3 23.4 33.0 ComplEx[37] 30.8 25.5 – 39.8 24.9 18.0 27.6 38.0 DKRL[52] 16.0 12.0 18.1 22.9 – – – –RoBERTa[24] 0.1 0 0.1 0.3 – – – –RotatE[49] 29.0 23.4 32.2 39.0 27.9 17.7 32.0 48.1 QuatE[50] 27.6 22.7 30.1 35.9 – – – –ConvE[38] – – – – 27.3 19.2 30.5 42.9 CompGCN[40] – – – – 31.6 23.1 34.9 48.0 KG-BERT[27] – – – – 20.3 13.9 20.1 40.3 MTL-KGC[56] – – – – 24.1 16.0 28.4 43.0 GenKGC[81] – – – – – 18.7 27.3 33.7 KG-S2S[46] – – – – 35.4 28.5 38.8 49.3 KEPLER[28] 21.0 17.3 22.4 27.7 – – – –SimKGC[45] 35.8 31.3 37.6 44.1 – – – –KGT5[78] 33.6 28.6 36.2 42.6 – – – –CSPromp-KG[47] 38.0 34.3 39.9 44.6 36.0 28.1 39.5 51.1 ReSKGC[51] 39.6 37.3 41.3 43.7 – – – –CD[34] – – – – 37.2 28.8 41.0 53.0 
+
+KG-BiLM(Ours) 40.3 39.7 43.0 45.2 37.8 29.3 42.1 54.6 
+
+Contrastive Learning Settings In CGSA, we sample mini-batches of B = 256 sub-graphs/snippets, 1130 
+
+generating two corrupted views each via independent dropout masks. We use mean-pooling over the 1131 
+
+final hidden states to obtain z-vectors, and set the temperature τ to 0.07. 1132 
+
+Hardware and Software Environment All models are trained on a cluster of two NVIDIA H100 1133 
+
+GPUs (80 GB HBM3 each) interconnected via NVLink. The software stack comprises PyTorch 2.0, 1134 
+
+CUDA 12.8, and NCCL 2.16 on Centos 9 Stream. The host features dual Intel Xeon Silver 4416 1135 
+
+CPUs (80 cores total) and 512 GB RAM. 1136 
+
+## F Limitations 1137 
+
+Although KG-BiLM delivers state-of-the-art results on three of the four benchmarks, its performance 1138 
+
+on the structure-only FB15k-237 dataset remains merely on par with recent transformer baselines 1139 
+
+and still trails the specialized path-based model NBFNet. The shortfall highlights two intrinsic 1140 
+
+limitations of our current design. (i) Relation-cardinality sensitivity. FB15k-237 contains more than 1141 
+
+twenty times as many distinct relations as WN18RR, yet offers no lexical clues. Under this setting, 1142 
+
+the Bidirectional Knowledge Attention module must rely exclusively on topological co-occurrence 1143 
+
+signals, and its ability to disambiguate semantically similar but label-distinct relations is attenuated. 1144 
+
+(ii) Semantic sparsity dependence. KG-BiLM’s masking-recovery objective was tuned with the 1145 
+
+assumption that at least weak textual context would be available. When such cues are completely 1146 
+
+absent, the model still outperforms distance-based KGEs but cannot fully exploit its contrastive 1147 
+
+semantic aggregation, leading to diminished gains. 1148 
+
+## G Broader Impacts 1149 
+
+The development of KG-BiLM—a hybrid architecture that unifies knowledge-graph structural rep-1150 
+
+resentations with the semantic understanding capabilities of large language models—carries both 1151 
+
+promising benefits for society and important risks that must be carefully managed. In this section, 1152 
+
+we outline potential positive societal impacts alongside possible negative consequences, considering 1153 
+
+ethical, technical, and environmental dimensions. 1154 
+
+Enhanced Access to Domain Knowledge By integrating rich graph structure with contextual 1155 
+
+semantics, KG-BiLM can serve as a powerful tool for making specialized information more accessible. 1156 
+
+30 In domains such as healthcare, legal reasoning, or scientific research, practitioners often need to 1157 
+
+traverse complex networks of interrelated concepts. KG-BiLM’s high-density embeddings and 1158 
+
+zero-shot capabilities can support more intuitive query interfaces, enabling non-experts to retrieve 1159 
+
+precise, contextually relevant information without extensive domain training. 1160 
+
+Improved Downstream Applications The unified representations produced by KG-BiLM can boost 1161 
+
+the performance of a wide array of downstream tasks—from question answering and information 1162 
+
+extraction to recommendation systems and decision support. In education, for example, intelli-1163 
+
+gent tutoring systems built on KG-BiLM could provide tailored explanations by jointly leveraging 1164 
+
+pedagogical ontologies and linguistic context. Likewise, in environmental monitoring, KG-BiLM 1165 
+
+could help integrate sensor data with domain taxonomies to surface early warnings of ecological 1166 
+
+disturbances. 1167 
+
+Facilitation of Interdisciplinary Research . KG-BiLM’s ability to align heterogeneous graph 1168 
+
+modalities with free-text semantics encourages cross-disciplinary collaboration. Researchers from 1169 
+
+different fields who maintain separate knowledge bases (e.g., biomedical ontologies and social 1170 
+
+science taxonomies) can benefit from a shared latent space that respects both structural constraints 1171 
+
+and nuanced textual insights. This could accelerate innovation at the intersections of AI, biology, and 1172 
+
+social policy. 1173 
+
+31

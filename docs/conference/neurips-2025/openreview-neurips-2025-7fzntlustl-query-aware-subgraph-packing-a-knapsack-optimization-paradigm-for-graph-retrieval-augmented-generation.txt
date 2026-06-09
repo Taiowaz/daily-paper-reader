@@ -1,0 +1,2032 @@
+Title: 27887_Query_Aware_Subgraph_Pac.pdf
+
+URL Source: https://openreview.net/pdf?id=7fZNTLuStL
+
+Number of Pages: 19
+
+Markdown Content:
+# Query-Aware Subgraph Packing: A Knapsack Optimization Paradigm for Graph Retrieval-Augmented Generation 
+
+Anonymous Author(s) 
+
+Affiliation Address 
+
+email 
+
+Abstract 
+
+Graph Retrieval - Augmented Generation (GraphRAG) has recently emerged as a 1
+
+task paradigm for injecting graph -structured knowledge into large language models 2
+
+(LLMs), yet most existing approaches still rely on flat, similarity - based retrieval that 3
+
+ignores topology and uses static encoders, producing redundant or structurally inco-4
+
+herent evidence. In this paper, we propose GraphPack, a query-aware GraphRAG 5
+
+framework that overcomes these limitations by casting subgraph selection as a 0–1 6
+
+knapsack optimization. For every natural language query, GraphPack packs the 7
+
+most informative subgraph under a size budget by jointly maximizing semantic 8
+
+relevance and minimizing structural redundancy. The selected subgraph is then 9
+
+encoded by a query -aware graph encoder whose parameters are conditioned on the 10 
+
+query, allowing node representations to adapt dynamically to user intent. Extensive 11 
+
+experiments on multiple knowledge-intensive graph benchmarks demonstrate that 12 
+
+GraphPack achieves state-of-the-art performance, showcasing its strong capabil-13 
+
+ity in addressing structural and contextual challenges under supervised learning, 14 
+
+cross-domain settings, and zero-shot scenarios. 15 
+
+1 Introduction 16 
+
+Graph-structured data plays a central role in real-world applications such as recommendation systems 17 
+
+[He et al., 2020], social network analysis [Huang et al., 2024], and knowledge-intensive reasoning 18 
+
+tasks [Fu et al., 2020, Lan et al., 2021]. Large language models (LLMs) have demonstrated impressive 19 
+
+capabilities in natural language understanding and generation. However, their ability to effectively 20 
+
+integrate structured knowledge and user intent remains limited, leading to suboptimal performance 21 
+
+on tasks such as query-focused summarization (QFS). A key challenge lies in retrieving and encoding 22 
+
+task-relevant entities from large-scale textual graphs in a manner that aligns with the user’s intent. 23 
+
+Graph Retrieval-Augmented Generation (GraphRAG) [Edge et al., 2025] has emerged as an innovative 24 
+
+solution to address the challenges of integrating structured knowledge into LLMs. Unlike traditional 25 
+
+retrieval-augmented generation (RAG) [Lewis et al., 2020, Guu et al., 2020, Ram et al., 2023, Izacard 26 
+
+et al., 2022], which primarily operates over flat textual corpora, GraphRAG retrieves graph elements 27 
+
+— such as nodes, triples, paths, or subgraphs — that are semantically relevant to a given query 28 
+
+from a pre-constructed graph database. These retrieved elements provide rich relational knowledge 29 
+
+that enhances both the depth and accuracy of LLM-based reasoning. By retrieving subgraphs or 30 
+
+graph communities, GraphRAG enables comprehensive understanding of the underlying knowledge 31 
+
+structure, making it particularly effective in tasks such as query-focused summarization, where 32 
+
+concise yet informative responses must align closely with user intent. 33 
+
+Submitted to 39th Conference on Neural Information Processing Systems (NeurIPS 2025). Do not distribute. Description :                       
+
+> Question : What category does the following paper belong to?
+> Description :
+> Attention Is All You Need \n Abstract: The dominant sequence
+> transduction models are based on complex recurrent or
+> convolutional neural networks that include an encoder and a
+> decoder. The best performing models also connect the encoder
+> and decoder through an attention mechanism. We propose a
+> new simple network architecture, the Transformer, based solely
+> on attention mechanisms, dispensing with recurrence and
+> convolutions entirely.
+> …
+> Attention Is All
+> You Need
+> Segment anything The llama 3 herd
+> of models
+> Gemini: A Family of Highly
+> Capable Multimodal Models Mamba: Linear -Time Sequence
+> Modeling with Selective State Spaces
+> LLMs
+> Answer : The paper "Attention Is All You Need" is
+> primarily categorized under Computation and Language
+> (cs.CL ) due to its core contribution to the field of Natural
+> Language Processing through the introduction of the
+> Transformer architecture.
+> Citation graph :
+> Question : Where does fabio capello come from?
+> Description :
+> LLMs
+> Answer :Based on the provided knowledge graph, fabio
+> capello come from San Canzian d'Isonzo . a town in the
+> province of Gorizia, located in the Friuli Venezia Giulia
+> region of northeastern Italy.
+> Knowledge graph :
+> Question : What‘s the deal between Ronaldo and Real Madrid ?
+> LLMs
+> Answer :Ronaldo is a former Real Madrid player. He
+> joined the club from Inter Milan in 2002 and played there
+> for five seasons (2002 –2007).
+> Knowledge graph :
+> 0,football \n3,male \n4,football player \n8,catholicism
+> \n10,san canzian d‘isonzo \n20,italy \n22,fabio capello
+> …
+> football
+> fabio capello
+> football player
+> male
+> san canzian
+> d'isonzo catholicism
+> italy
+> notable_types
+> containedby
+> sports_coached
+> people_born
+> _here person.religion
+> person.nationality person.gender
+> 22,common.topic.notable_types,4
+> 10,location.location.people_born_here,22
+> 22,sports.sports_team_coach.sports_coached,0
+> 22,people.person.nationality,20
+> …
+> Ronaldo Luis Nazario de Lima
+> description: Brazilian footballer
+> Real Madrid Club
+> description: Spanish association football club
+> Real Madrid
+> football_player
+> team Ronaldo
+
+Figure 1: Generative knowledge-intensive graph tasks require combining textual information, knowl-edge graphs, and language models to perform reasoning and answer user questions. A key challenge in applying LLMs to graph-structured data lies in designing retrieval mechanisms 34 
+
+that are not only semantically informative but also adaptable across diverse graph tasks. As shown in 35 
+
+figure 1, Knowledge-intensive tasks such as multi-hop question answering require global structural 36 
+
+reasoning, demanding the model to identify and integrate information from semantically related, 37 
+
+yet topologically distant entities. A major limitation of current graph-augmented LLMs lies in their 38 
+
+reliance on similarity-based retrieval mechanisms, which often neglect the rich topological structure 39 
+
+embedded in the graph. For example, GRAG [Hu et al., 2025] re-ranks candidate subgraphs based 40 
+
+on both their relational alignment with the query and fine-grained concept-level similarity. KELP 41 
+
+[Liu et al., 2024] trains a pretrained language model to score the relevance between retrieved paths 42 
+
+and input queries. While these methods perform well at identifying nodes or subgraphs that are 43 
+
+semantically close to a given query, they tend to treat the graph as a flat collection of textual elements, 44 
+
+neglecting the relational patterns that define its underlying structure. 45 
+
+To address this issue, we propose GraphPack, a novel framework for query-aware graph retrieval-46 
+
+augmented generation. Specifically, we formulate subgraph packing as a 0-1 knapsack problem, 47 
+
+allowing the model to dynamically identify query-relevant regions of the graph by jointly considering 48 
+
+semantic relevance and structural cost. We further introduce Query-LM, a graph encoder with 49 
+
+query-aware capabilities that enhances node representations through conditional linear modulation 50 
+
+modules. This enables the model to adaptively adjust node embeddings based on the input query, 51 
+
+leading to more accurate and context-sensitive graph encoding. Additionally, we design an auxil-52 
+
+iary graph-to-text reconstruction objective. This training signal improves the expressiveness and 53 
+
+interpretability of graph embeddings without requiring any architectural changes — making our 54 
+
+approach both general and practical. Our method goes beyond traditional GraphRAG frameworks 55 
+
+by explicitly modeling what the user is asking and how the graph structure should respond. This 56 
+
+leads to a more principled integration of structured knowledge into the language generation process. 57 
+
+Extensive experiments demonstrate that GraphLLM achieves strong performance across multiple 58 
+
+graph benchmarks, highlighting its effectiveness in bridging structured knowledge with LLMs for 59 
+
+downstream applications. 60 
+
+2 Method 61 
+
+2.1 Large Language Model for Graph 62 
+
+GraphLLM aims to effectively incorporate graph-structured contextual information into both the 63 
+
+retrieval and generation stages, thereby enhancing the relevance between the generated outputs and the 64 
+
+textual graph knowledge. Specifically, given a user query xq and a textual graph G = ( V, E, Xv , Xe),65 
+
+we expect GraphLLM to generate answers that are aligned with the intended semantics of the query. 66 
+
+2q
+
+Query : What team does Messi play for 2011? 
+
+Semantic -based 
+
+Retrieval 
+
+lionel messi   
+
+> leo messi
+> m.0j_8pbk
+> awards_won m.010nx8b0
+> award_winner
+> lfp best forward award_honor
+> best ibero -american
+> soccer player
+> award_honor
+> m.0w8wsdx
+> football_player
+> fc barcelona
+> argentina national
+> football team
+> football_team
+> m.0w9d7mr
+> football_player
+> football_team
+
+n-hop Subgraph  
+
+> Value =
+
+leo messi 5
+
+football_team 4
+
+lfp bestforward 1
+
+…
+
+> Weight =
+
+football_team 2
+
+football_player 1
+
+lfp bestforward 2
+
+…
+
+query query 
+
+leo messi 
+
+football_team 
+
+lfp bestforward 
+
+…  
+
+> leo messi
+> m.0w8wsdx
+> argentina national
+> football team
+> football_t
+> football_team
+> football_team
+> football_player
+> …
+> selected elements
+> leo messi
+> m.0w9d7mr
+> fc barcelona
+> m.0w8wsdx
+> m.0w9d7mr
+> argentina national
+> football team
+> football_player
+> football_player
+> football_team
+> football_team
+
+q
+
+> Subgraph Construct
+
+Knapsack Problem 
+
+Optimization Goal: 
+
+G
+
+Instruct 
+
+R
+
+informat 
+
+extract th 
+
+relevant 
+
+Query 
+
+Graph 
+
+Transformer 
+
+Query -LM 
+
+LLMEmbed 
+
+LLMs decoder 
+
+Node -level Readouts 
+
+l-th Graph Encoder Text Input            
+
+> node_id,node_attr
+> 9,lionel messi
+> 48,argentina national
+> football team
+> 125,fc barcelona
+> …
+> src,edge_attr,dst
+> 256 , player, 9
+> 125, football_team ,25 6
+> …
+> Query: What team does
+> Messi play for 2011?
+> Answer:
+> barcelona
+> argentina national | fc barcelona
+> frozen
+> argentina national | fc barcelona argentina national | fc barcelona
+> fc
+> trainable
+
+Figure 2: Overview of the GraphPack Workflow. A natural - language query retrieves anchor nodes, their neighbourhood is expanded into a candidate subgraph, a 0 - 1 knapsack optimiser packs the most relevant portion under a size budget, and the packed subgraph is encoded by a query - aware graph encoder before being fed—together with the query—to an LLM for answer generation. However, real-world graphs can be large in scale and contain substantial amounts of irrelevant or 67 
+
+redundant information. Directly feeding the entire graph into the model is not only computationally 68 
+
+expensive but may also lead to generated outputs that deviate from the user’s actual intent. To 69 
+
+address this challenge, we emphasize the integration of a subgraph retrieval mechanism in the design 70 
+
+of GraphLLM, ensuring that the model can leverage the rich semantic information present in the 71 
+
+graph while remaining highly sensitive to the specific query intent during the generation process. we 72 
+
+formally define the generation process of GraphLLM under the graph-augmented retrieval mechanism. 73 
+
+Given a user query xq and the original textual graph G, the model first retrieves the most relevant 74 
+
+subgraph G∗ with respect to the query through a retrieval mechanism: 75 
+
+G∗ = Retrieval (xq , G) (1) We model GraphLLM with graph-retrieval-augmented generation as a likelihood-based model that 76 
+
+defines the probability of generating a query-related answer y:77 
+
+p(y | xq , G∗) = 
+
+LY
+
+l=1 
+
+p(yl | y<l , x q , G∗) (2) where yl denotes the l-th element in the output sequence, and y<l represents the first l-1 generated 78 
+
+words. G∗ contains both the structural and textual information of the graph, which assists the model 79 
+
+in generating y. This modeling approach not only preserves the topological information of the graph 80 
+
+structure but also enables joint modeling of context and query intent, encouraging the model to 81 
+
+develop strong capabilities in understanding and utilizing graph-structured knowledge. 82 
+
+2.2 Semantic-Aware Subgraph Retrieval via Knapsack Optimization 83 
+
+Graph Indexing We adopt a retrieval approach similar to RAG to efficiently retrieve subgraphs 84 
+
+relevant to user needs from large textual graphs. Specifically, we use a frozen text encoder such as 85 
+
+sentence-bert [Reimers and Gurevych, 2019] to map various types of text into a unified vector space: 86 
+
+zv = TextEncoder( xv ) ∈ RdLM , z e = TextEncoder( xe) ∈ RdLM (3) Here, zv and ze denote the embeddings of the node and edge. dLM represents the dimension of the 87 
+
+pretrained language model. To enable efficient graph retrieval, we precompute the textual embeddings 88 
+
+of the graph for subsequent use. 89 
+
+3Anchor Node Identification Traditional graph retrieval methods often struggle to balance semantic 90 
+
+relevance with structural coherence, especially in large and complex graphs. A promising approach is 91 
+
+to first identify a small set of semantically relevant nodes as anchor point and then expand the search 92 
+
+within their local neighborhoods. This two-step strategy not only addresses computational challenges 93 
+
+but also introduces a novel way to harmonize semantic alignment with topological connectivity. We 94 
+
+process the user’s question in the same manner as the textual information of the graph to obtain the 95 
+
+embedding zq .96 
+
+Vanchor = argtopk n∈V cos( zq , z n) (4) We use the cosine similarity function cos( ·, ·) to measure the similarity between the question rep-97 
+
+resentation and the node representations. The argtopk operation retrieves the top - k nodes with the 98 
+
+highest similarity scores, which are then selected as anchor nodes. 99 
+
+Knapsack Optimization We model subgraph packing as a 0-1 knapsack problem [Freville, 2004], 100 
+
+integrating both semantic relevance and structural redundancy into the subgraph retrieval frame-101 
+
+work. Our method dynamically balances the value of each graph element (node or edge) against 102 
+
+its construction cost, aiming to achieve a trade-off between accuracy and efficiency in subgraph 103 
+
+construction. 104 
+
+Formally, we model the subgraph retrieval task as a 0-1 knapsack problem. For an n-hop subgraph 105 
+
+gin = ( V′, E′) rooted at an anchor node via ∈ Vanchor , each graph element is treated as an element e106 
+
+in the knapsack formulation. A value function value( e) measures the semantic relevance of e, while a 107 
+
+weight function weight( e) quantifies its structural cost. The goal is to maximize the total value of 108 
+
+selected items under a capacity constraint C:109 
+
+arg max X
+
+> e∈S
+
+value (e), s.t. X
+
+> e∈S
+
+weight (e) ≤ C , S ⊆ V ′ ∪ E ′ (5) 
+
+Rank-Based Value Assignment To evaluate semantic relevance, we introduce a ranking-based 110 
+
+decaying value mechanism. We first sort all elements in descending order based on their semantic 111 
+
+relevance scores and assign each element a rank( e). The value of each element is then computed as 112 
+
+followed: 113 
+
+value (e) = max_score − rank (e) (6) This design ensures that elements with higher semantic relevance within the local subgraph re-114 
+
+ceive higher value scores, and are therefore prioritized for inclusion in the final subgraph. 115 
+
+Algorithm 1 Dynamic Programming for 0-1 Knapsack Prob-lem 
+
+Input: Values v[1 ..n ], Weights w[1 ..n ], Capacity C
+
+Output: Selected items maximizing total value within C
+
+Initialize A ← array of (n + 1) × (C + 1) with 0 Initialize keep ← boolean array of (n + 1) × (C + 1) with False 
+
+for i = 1 to n do for c = 0 to C do if w[i] ≤ c and v[i]+ A[i−1][ c−w[i]] > A [i−1][ c]
+
+then 
+
+A[i][ c] ← v[i] + A[i − 1][ c − w[i]] 
+
+keep [i][ c] ← True 
+
+else 
+
+A[i][ c] ← A[i − 1][ c]
+
+Initialize S ← [] , c ← C
+
+for i = n downto 1 do if keep [i][ c] then 
+
+Append i to Sc ← c − w[i]
+
+return S
+
+> 116
+
+Structure-Aware Weight Assign-117 
+
+ment In terms of measuring struc-118 
+
+tural cost, we adopt a structure-aware 119 
+
+weighting mechanism to suppress re-120 
+
+dundancy. For each element e, the 121 
+
+weight is determined by the smallest 122 
+
+n-hop subgraph in which it appears 123 
+
+— in other words, the minimum hop 124 
+
+level at which the element is first en-125 
+
+countered: 126 
+
+weight (e) = min {n | e ∈ gin} (7) This means that nearby elements (e.g., 127 
+
+those within 1-hop) are assigned lower 128 
+
+weights, while incorporating distant 129 
+
+elements (e.g., those beyond 3-hops) 130 
+
+incurs a higher cost. In this way, the 131 
+
+inclusion of remote and potentially re-132 
+
+dundant elements — which may con-133 
+
+tribute little semantic value but sig-134 
+
+nificantly increase structural complex-135 
+
+ity — is effectively discouraged. This 136 
+
+leads to the construction of more com-137 
+
+pact and effective subgraphs. We use an efficient dynamic programming Algorithm 1 to solve the 138 
+
+subgraph optimization problem. Finally, we use the query embedding as a prompt node to connect 139 
+
+all retrieved elements and construct a coherent subgraph. We present discussions on the algorithm 140 
+
+implementation in Appendix A. 141 
+
+42.3 Query-aware Graph Encoder 142 
+
+We employ a graph neural network to encode the topological structure of the retrieved subgraph. 143 
+
+However, traditional GNNs rely solely on local neighborhood topology and edge attributes for 144 
+
+message passing and feature aggregation. As a result, they lack the ability to dynamically adjust their 145 
+
+modeling focus based on the input query — a critical limitation in knowledge-intensive question 146 
+
+answering tasks that require identifying task-specific paths or substructures. 147 
+
+To address this issue, we propose a query-aware graph encoder, which introduces conditional 148 
+
+modulation into the GNN architecture through FiLM-style transformations. we perform multi-layer 149 
+
+GNN message passing over the retrieved subgraph G∗. At each layer, node representations are 150 
+
+updated by aggregating information from their neighbors, preserving contextual relationships within 151 
+
+the graph structure. Formally, the output of the l-th GNN layer is given by: 152 
+
+˜h(l) 
+
+> v
+
+= GNN (l) 
+
+h(l−1)  
+
+> v
+
+,
+
+n 
+
+h(l−1)  
+
+> u
+
+, euv 
+
+
+
+| u ∈ N (v)
+
+o 
+
+(8) where N (v) denotes the neighborhood of node v in the retrieved subgraph. To overcome the 153 
+
+limitations of traditional GNNs in static modeling, inspired by the FiLM [Perez et al., 2017], we 154 
+
+introduce the Query-aware Linear Modulation (Query-LM), which serves as a conditional control 155 
+
+mechanism within the GNN message passing process. Specifically, we encode the natural language 156 
+
+question into a vector representation: 157 
+
+hq = Pooling (LLMEmbedded (xq )) (9) which serves as a guiding signal for the subsequent graph encoding process. This allows the model to 158 
+
+adaptively steer feature learning according to the specific requirements of the given task. We then 159 
+
+define the Query-FiLM module at each layer as follows: 160 
+
+γ(l) 
+
+> j
+
+= σ
+
+
+
+W(l) 
+
+> γ1
+
+· hq + b(l)
+
+> γ1
+
+
+
+, β(l) 
+
+> j
+
+= σ
+
+
+
+W(l) 
+
+> β1
+
+· hq + b(l)
+
+> β1
+
+
+
+(10) 
+
+> 161
+
+h(l) 
+
+> v
+
+= γ(l) 
+
+> v
+
+⊙ ˜h(l) 
+
+> v
+
++ β(l) 
+
+> v
+
+(11) where ⊙ denotes the Hadamard product, and σ represents an activation function. Query-FiLM uses 162 
+
+the query embedding hq to generate the affine transformation parameters γ(l) 
+
+> j
+
+and β(l) 
+
+> j
+
+, which are 163 
+
+then applied to scale and shift the intermediate node representations ˜h(l) 
+
+> v
+
+output by the GNN in a 164 
+
+channel-wise manner, resulting in the updated node representations h(l) 
+
+> v
+
+. Through the Query-FiLM, 165 
+
+the model translates the semantics of the natural language query into explicit modulation signals 166 
+
+over the GNN feature space, enabling the acquisition of query-aware graph representations while 167 
+
+preserving the original capability to model graph structure. 168 
+
+Then we use a graph readout method based on node-level nonlinear transformations. We obtain the 169 
+
+final graph-level representation by applying average pooling to the transformed embeddings of all 170 
+
+nodes: 171 
+
+hg = 1
+
+|V| 
+
+X
+
+> v∈V
+
+σ(W1h(L) 
+
+> v
+
++ b1)W2 + b2 (12) Here, W1, W2 and b1, b2 denote the learnable weight matrices and bias terms. Before the node 172 
+
+embeddings are pooled into a graph-level representation, they are first mapped through independent 173 
+
+nonlinear transformations. This enhances the expressive power of each node embedding while 174 
+
+maintaining geometric consistency with the LLM’s textual semantic space. 175 
+
+2.4 LLMs Supervised Fine-Tuning 176 
+
+During the supervised fine-tuning (SFT) phase, we use the original user query xq and the textual 177 
+
+description of the subgraph xg as the initial input to the decoder. The graph representation hg is 178 
+
+concatenated with the embeddings of the input text to form the contextual representation for the 179 
+
+language model. For the target answer sequence y corresponding to the query, we optimize the 180 
+
+model parameters by maximizing the standard log-likelihood of the output sequence. This process 181 
+
+effectively learns the conditional probability distribution defined in Equation 1, enabling the model to 182 
+
+generate accurate and semantically coherent answers. 183 
+
+However, a challenge arises as the input length increases – the attention weights allocated to the 184 
+
+graph embedding inevitably decrease, leading to a potential loss of structural information [Ma et al., 185 
+
+52024, Kong et al., 2025]. To address this issue, we design an auxiliary graph-to-text reconstruction 186 
+
+task . Specifically, we train the model to answer the user query only based on the abstracted graph 187 
+
+embedding, by maximizing the standard log-likelihood of the target answer sequence y. 188 
+
+The purpose of this auxiliary task is to enhance the invertibility and interpretability of the graph 189 
+
+embedding, ensuring that it not only captures the underlying graph structure effectively but also can 190 
+
+independently guide high-quality answer generation within the language model. Importantly, this 191 
+
+strategy does not require any modification to the model architecture itself; instead, it improves the 192 
+
+representational power of the graph embeddings purely through adjustments to the training objective, 193 
+
+making it both general and practical. 194 
+
+3 Related works 195 
+
+Here, we mainly introduce the generation-based GraphLLM [Ren et al., 2024] and GRAG [Peng 196 
+
+et al., 2024]. The classification-based GraphLLM and its connection to graph neural networks will be 197 
+
+discussed in the Appendix B. 198 
+
+3.1 LLMs with Graphs 199 
+
+Recent research has explored how to apply LLMs to tasks involving graph-structured data. One 200 
+
+intuitive approach is to serialize the textual graph into structured descriptions, which are then directly 201 
+
+fed into the LLMs for fine-tuning [Wang et al., 2024, Ye et al., 2024, Zhao et al., 2023, Fatemi et al., 202 
+
+2023, Tan et al., 2024]. These methods can leverage LLMs to improve the generalization of tasks, 203 
+
+but they fail to model the unique structural information of graph data, leading to suboptimal results. 204 
+
+Subsequent works use specialized graph encoders to handle structural information [Tang et al., 2024a, 205 
+
+Chen et al., 2024, Kong et al., 2025, Tian et al., 2024, He et al., 2025, Tang et al., 2024b, Zhang et al., 206 
+
+2024]. GraphGPT [Tang et al., 2024a] trains a graph encoder by aligning structural and semantic 207 
+
+information using CLIP [Radford et al., 2021]. LLaGA [Chen et al., 2024] uses Laplacian embeddings 208 
+
+as the structural encoder to help the model recognize graph-structured knowledge. GOFA [Kong 209 
+
+et al., 2025] incorporates the embeddings of LLMs into the GNN message passing process to allow 210 
+
+interaction between the graph encoder and LLMs. Despite these efforts, most existing approaches 211 
+
+either treat the graph as static input or fail to dynamically adapt to user queries. This significantly 212 
+
+limits their ability to perform complex reasoning over large-scale graphs. In contrast, GraphPack 213 
+
+explicitly models the interplay between query intent and graph structure through a semantic-aware 214 
+
+subgraph retrieval mechanism , enabling more effective and targeted reasoning. 215 
+
+3.2 Retrieval on Graphs 216 
+
+In GraphRAG, various retrieval methods exhibit distinct advantages when addressing different aspects 217 
+
+of the retrieval task. We categorize them into two main types: Parameter-free Retrievers and Model-218 
+
+based Retrievers. Parameter-free Retrievers do not rely on deep learning models, enabling efficient 219 
+
+and scalable retrieval. For instance, QA-GNN [Yasunaga et al., 2022] connect the QA context and KG 220 
+
+to form a joint graph. OpenCSR [Han et al., 2023] constructs a question-dependent open knowledge 221 
+
+graph based on retrieved supporting facts. GraphRAG [Edge et al., 2025] structures the corpus to 222 
+
+enable query-centric retrieval. GRAG [Hu et al., 2025] retrieves subgraphs based on the similarity 223 
+
+between the query and entities. G-Retriever [He et al., 2024] extracts relevant subgraphs using 224 
+
+Prize-Collecting Steiner Tree optimization. Model-based Retrievers train specialized models to 225 
+
+extract relevant entities or subgraphs, achieving higher accuracy at the cost of increased computational 226 
+
+overhead. Some studies [Mavromatis and Karypis, 2024, Han et al., 2023] employs GNN to identify 227 
+
+entities from the knowledge graph. Subgraph Retriever[Zhang et al., 2022] uses RoBERTa [Liu et al., 228 
+
+2019] to expand from the topic entity and retrieves the relevant paths in a sequential decision process. 229 
+
+Unlike previous methods, GraphPack formulates subgraph retrieval as an optimization problem akin 230 
+
+to the knapsack problem, ensuring that the selected subgraphs are both highly relevant and minimally 231 
+
+noisy. Moreover, our approach can adapt to new tasks without requiring retraining, making it more 232 
+
+practical and versatile than existing model-based retrievers. 233 
+
+6Table 1: Results on supervised learning (first). The best results are displayed in bold , while the second-best results are marked with underlines. 
+
+Model Cora Citeseer Wikics Instagram ogbn-arxiv 
+
+Acc F1 Acc F1 Acc F1 Acc F1 Acc F1 OFA 75.24 74.20 73.04 68.98 77.34 74.97 60.85 55.44 73.23 57.38 InstructGLM 69.10 65.74 51.87 50.65 45.73 42.70 57.94 54.87 39.09 24.65 GraphText 76.21 74.51 59.43 56.43 67.35 64.55 62.64 54.00 49.47 24.76 GraphAdapter 72.85 70.66 69.57 66.21 70.85 66.49 67.40 58.40 74.45 56.04 LLaGA 74.42 72.50 55.73 54.83 73.88 70.90 62.94 54.62 72.78 53.86 
+
+GraphPack 76.40 75.45 69.95 67.59 79.59 77.18 66.40 59.34 75.01 58.51 
+
+Table 2: Results on supervised learning (sec-ond). The best results are displayed in bold ,while the second-best results are marked with underlines. 
+
+Model WebQSP CWQ 
+
+F1 Hit@1 F1 Hit@1 Llama-2-7B 42.95 61.86 32.29 36.92 Mistral-7B 43.11 62.52 32.87 36.46 G-Retriever 50.23 70.16 39.89 47.75 GRAG 50.41 72.75 39.62 47.43 
+
+GraphPack 51.79 73.01 41.03 48.50 
+
+10 20 30 
+
+40 
+
+40 .5
+
+41 
+
+41 .5
+
+Capacity 
+
+> F1 Score (%)
+
+5
+
+10 
+
+15 
+
+20 
+
+> Avg. Node
+
+□ F1 Score • Avg. Node 
+
+Figure 3: Analysis of knapsack capacity and average subgraph size. 
+
+4 Experiments 234 
+
+We conducted comprehensive experiments to validate the effectiveness of our framework under 235 
+
+various settings, aiming to address the following key research questions: 236 
+
+RQ1. How does GraphPack perform overall on different graph tasks? 237 
+
+RQ2. How does GraphPack affect the reasoning of LLMs? 238 
+
+RQ3. How well does GraphPack generalize across different tasks under the zero-shot setting? 239 
+
+RQ4. What is the role of query-aware modeling in GraphPack? 240 
+
+4.1 Experimental Settings 241 
+
+Datasets. The datasets and tasks used in our evaluation represent knowledge-intensive graph 242 
+
+reasoning , where successful performance requires not only semantic understanding but also the 243 
+
+ability to integrate complex relational structures. These tasks span multiple domains and reasoning 244 
+
+paradigms, including citation graphs, social networks, and knowledge graphs, etc. We present the 245 
+
+details of the datasets we used in Appendix C.1. 246 
+
+Implement Details. To ensure a fair comparison, we employ the Llama-2-7b 1 base model as the 247 
+
+baseline. Additionally, we select Sentence-BERT [Reimers and Gurevych, 2019] as the text encoder 248 
+
+and GraphTransformer [Shi et al., 2021] as the graph encoder. All training and experiment details, 249 
+
+including baseline, hyperparameters and templates, are provided in the Appendix C. 250 
+
+4.2 Overall Performance on Supervised Learning (RQ1) 251 
+
+As shown in Table 1 and Table 2, Across a range of benchmark tests, our framework demonstrates 252 
+
+significantly improved performance compared to traditional baseline models. Notably, the methods 253 
+
+> 1
+
+https://huggingface.co/meta-llama/Llama-2-7b-hf 
+
+7Table 3: Comparison of Prediction Results Between ChatGPT and GraphPack on the WebQSP Dataset. Predictions with a ★ symbol match the ground truth. 
+
+Question : What are some inventions that leonardo da vinci invented? 
+
+Ground Truth : Diving suit | Triple barrel canon | Viola organista | Double hull | Aerial screw | Anemometer | 33-barreled organ | Armored car | Parachute | Ornithopter 
+
+ChatGPT: Flying Machine, Anemometer ★, Diving Suit ★, Ball Bearings, Helicopter 
+
+GraphPack: Anemometer ★, Triple barrel canon ★, Aerial screw ★, 33-barreled organ ★,Double hull ★
+
+Question : What languages do they speak in costa rica? 
+
+Ground Truth : Bribri language | Spanish language | Limonese creole | Jamaican creole english language 
+
+ChatGPT: In Costa Rica, the official language is Spanish ★. Additionally, English is also com-monly spoken 
+
+GraphPack: Spanish language ★ | Limonese creole ★ | Bribri language ★ | Jamaican creole english language ★
+
+employed in the baseline model are not well-suited for various types of graph tasks, whereas 254 
+
+GraphPack highlights its versatility and outstanding effectiveness in tackling diverse graph-related 255 
+
+challenges. Furthermore, as task size and complexity grow, GraphPack consistently maintains robust 256 
+
+and efficient performance, offering a universal and powerful solution for a broader spectrum of graph 257 
+
+tasks. Further performance reports on more graph benchmark tasks and knowledge-intensive tasks 258 
+
+are presented in Appendix D.1. 259 
+
+4.3 Subgraph Retrieval Strategy (RQ2) 260 
+
+To verify the effectiveness of GraphPack’s graph-enhanced retrieval strategy, we evaluate its impact on 261 
+
+LLMs without fine-tuning. Table 4 demonstrates the performance improvements achieved by different 262 
+
+strategies during the inference of LLMs without any fine-tuning. It is noteworthy that GraphPack 263 
+
+achieves a 18.61% increase in F1 Score compared to the baseline model. This is particularly important 264 
+
+in real-world question answering scenarios, as it can provide users with more correct candidate entities 265 
+
+to choose from. Furthermore, As shown in Table 3, we analyze the performance of ChatGPT and 266 
+
+GraphPack when addressing questions involving multiple entities within labels. The results reveal 267 
+
+that ChatGPT exhibit false detection issues, whereas GraphPack demonstrates higher reliability in 268 
+
+handling multi-entity problems. This validates the perspective raised in RQ2: GraphPack significantly 269 
+
+enhances the practicality of the model in graph-based question-answering scenarios by offering users 270 
+
+more accurate and diverse candidate entities. We present a comparison of subgraph retrieval time and 271 
+
+efficiency between GraphPack and other methods in Appendix D.2. Notably, GraphPack retrieves the 272 
+
+optimal subgraph in less than 0.25 seconds — even in graphs containing millions of nodes. These 273 
+
+advantages make the GraphPack strategy significantly valuable in practical applications. 274 
+
+Furthermore, We conduct an ablation study over a range of knapsack capacities C to examine the 275 
+
+impact of subgraph size on retrieval effectiveness and computational efficiency. As shown in Figure 3, 276 
+
+increasing C allows the model to retrieve more nodes on average — from 8.34 nodes at C=10 to 17.96 277 
+
+nodes at C=30 — suggesting improved coverage of the graph structure. However, this increase in 278 
+
+coverage does not translate into consistent gains in performance. On the WebQSP dataset, the best 279 
+
+result (41.03 F1 score) is achieved at C=20. Further increasing C to 30 leads to a drop in performance 280 
+
+(40.72 F1 score), likely due to the inclusion of noisy or irrelevant entities that distract the LLM during 281 
+
+generation. This trend highlights a key insight: the optimal setting strikes a balance between semantic 282 
+
+richness and structural compactness, ensuring both high-quality retrieval and efficient reasoning. 283 
+
+4.4 Zero-Shot Adaptation and Transfer Performance (RQ3) 284 
+
+Zero-shot learning involves training the model on a specific dataset and then evaluating it on un-285 
+
+seen datasets or tasks. This approach is crucial for assessing the generalization capability of the 286 
+
+8Table 4: Impact of different retrieval strate-gies.                      
+
+> Model WebQSP
+> F1 Hit@1 Recall Llama2-7B 0.2555 0.4148 0.2920 G-Retriever 0.2571 0.4760 0.2954
+> GraphPack 0.3023 0.4732 0.3061 Mistral-7B 0.2589 0.4213 0.2967 G-Retriever 0.2634 0.4832 0.2981
+> GraphPack 0.3071 0.4878 0.3088
+
+Table 5: Cross-domain zero-shot experi-ments.                          
+
+> Train →Test Model Acc F1
+> Cora →Wikics Llama2-7B 0.4115 0.3772 GraphPack 0.5589 0.5367 Cora →Instagram Llama2-7B 0.4078 0.4369 GraphPack 0.4543 0.4698 CWQ →Wikics Llama2-7B 0.1534 0.1802 GraphPack 0.4279 0.4167 CWQ →Instagram Llama2-7B 0.1679 0.2421 GraphPack 0.39.87 0.4021
+
+model. Specifically, we design two experimental settings to evaluate different aspects of zero-shot 287 
+
+performance. The first setting focuses on cross-domain generalization , where the model is trained 288 
+
+on citation graph datasets and evaluated on social network graphs. The second setting examines 289 
+
+cross-task generalization , involving different textual description templates of the graph and varying 290 
+
+user intents. As shown in Table 5, we compare the zero-shot performance of LLMs and GraphPack 291 
+
+under various settings. The results indicate that GraphPack consistently outperforms the fine-tuned 292 
+
+LLM in all conditions. In particular, when evaluated on cross-task scenarios, the fine-tuned LLM 293 
+
+struggles to answer domain-specific questions, whereas GraphPack maintains strong zero-shot perfor-294 
+
+mance. This suggests that the structural knowledge encoded through our retrieval and modulation 295 
+
+framework transfers well across domains and task formulations, even without access to target-domain 296 
+
+supervision. Furthermore, in more complex and resource-constrained settings — such as when only 297 
+
+partial graph structures are available or when the target domain exhibits significant divergence — 298 
+
+GraphPack still demonstrates robust performance. Additional experiments presented in Appendix 299 
+
+D.3 explore these challenging zero-shot and few-shot scenarios. 300 
+
+4.5 Effectiveness of Query-Aware Modeling (RQ4) 301 
+
+We conduct ablation studies by systematically removing different components of the query-aware 302 
+
+modeling framework and evaluating their impact on performance. In one variant, we remove the 303 
+
+ranking-based value assignment for both nodes and edges, thereby eliminating the model’s ability to 304 
+
+prioritize semantically meaningful connections during subgraph selection. Additionally, we evaluate 305 
+
+the effect of excluding the Query-LM module from the graph encoder, effectively replacing the 306 
+
+conditional modulation mechanism with a standard static aggregation scheme commonly used in 307 
+
+traditional GNNs. Experimental results in Appendix D.4 demonstrate that the removal of any of these 308 
+
+query-aware components leads to consistent performance degradation across a range of knowledge-309 
+
+intensive tasks. This highlights the importance of integrating explicit query signals into both the 310 
+
+retrieval and encoding stages, as doing so enables the model to dynamically align its focus with user 311 
+
+intent while preserving structural coherence. 312 
+
+5 Conclusion, Limitations, and Future Works 313 
+
+In this paper, we propose GraphPack, a query -aware framework for Graph Retrieval - Augmented 314 
+
+Generation. Its core idea is to cast subgraph selection as a 0 - 1 knapsack optimisation that simultane-315 
+
+ously maximises semantic relevance and minimises topological redundancy, then encode the chosen 316 
+
+subgraph with a query -aware graph encoder whose parameters adapt to the user’s intent. Extensive 317 
+
+experiments on citation, social -network and knowledge -graph benchmarks demonstrate that Graph-318 
+
+Pack consistently outperforms strong GraphRAG baselines in supervised, cross -domain and zero - shot 319 
+
+settings. Two practical limitations remain: the framework’s dependence on high - quality semantic 320 
+
+embeddings means noisy or sparse signals can degrade anchor node identification. Additionally, 321 
+
+GraphPack depends on downstream task fine-tuning, restricting its potential to become a general 322 
+
+graph foundation model. Addressing these challenges, by improving robustness to noisy semantics 323 
+
+and developing GFM—forms promising directions for future work. 324 
+
+9References 325 
+
+Runjin Chen, Tong Zhao, Ajay Kumar Jaiswal, Neil Shah, and Zhangyang Wang. LLaGA: Large 326 
+
+language and graph assistant. In Ruslan Salakhutdinov, Zico Kolter, Katherine Heller, Adrian 327 
+
+Weller, Nuria Oliver, Jonathan Scarlett, and Felix Berkenkamp, editors, Proceedings of the 41st 328 
+
+International Conference on Machine Learning , volume 235 of Proceedings of Machine Learning 329 
+
+Research , pages 7809–7823. PMLR, 21–27 Jul 2024. URL https://proceedings.mlr.press/ 330 
+
+v235/chen24bh.html .331 
+
+Darren Edge, Ha Trinh, Newman Cheng, Joshua Bradley, Alex Chao, Apurva Mody, Steven Truitt, 332 
+
+Dasha Metropolitansky, Robert Osazuwa Ness, and Jonathan Larson. From local to global: A 333 
+
+graph rag approach to query-focused summarization, 2025. URL https://arxiv.org/abs/ 334 
+
+2404.16130 .335 
+
+Bahare Fatemi, Jonathan Halcrow, and Bryan Perozzi. Talk like a graph: Encoding graphs for large 336 
+
+language models, 2023. URL https://arxiv.org/abs/2310.04560 .337 
+
+Arnaud Freville. The multidimensional 0-1 knapsack problem: An overview. European Journal 338 
+
+of Operational Research , 155(1):1–21, May 2004. URL https://ideas.repec.org/a/eee/ 339 
+
+ejores/v155y2004i1p1-21.html .340 
+
+Bin Fu, Yunqi Qiu, Chengguang Tang, Yang Li, Haiyang Yu, and Jian Sun. A survey on complex 341 
+
+question answering over knowledge base: Recent advances and challenges, 2020. URL https: 342 
+
+//arxiv.org/abs/2007.13069 .343 
+
+Kelvin Guu, Kenton Lee, Zora Tung, Panupong Pasupat, and Ming-Wei Chang. Realm: Retrieval-344 
+
+augmented language model pre-training, 2020. URL https://arxiv.org/abs/2002.08909 .345 
+
+Zhen Han, Yue Feng, and Mingming Sun. A graph-guided reasoning approach for open-ended 346 
+
+commonsense question answering, 2023. URL https://arxiv.org/abs/2303.10395 .347 
+
+Xiangnan He, Kuan Deng, Xiang Wang, Yan Li, Yongdong Zhang, and Meng Wang. Lightgcn: 348 
+
+Simplifying and powering graph convolution network for recommendation, 2020. URL https: 349 
+
+//arxiv.org/abs/2002.02126 .350 
+
+Xiaoxin He, Yijun Tian, Yifei Sun, Nitesh V. Chawla, Thomas Laurent, Yann LeCun, Xavier Bresson, 351 
+
+and Bryan Hooi. G-retriever: Retrieval-augmented generation for textual graph understanding and 352 
+
+question answering, 2024. URL https://arxiv.org/abs/2402.07630 .353 
+
+Yufei He, Yuan Sui, Xiaoxin He, and Bryan Hooi. Unigraph: Learning a unified cross-domain foun-354 
+
+dation model for text-attributed graphs, 2025. URL https://arxiv.org/abs/2402.13630 .355 
+
+Yuntong Hu, Zhihan Lei, Zheng Zhang, Bo Pan, Chen Ling, and Liang Zhao. GRAG: Graph 356 
+
+retrieval-augmented generation. In Luis Chiruzzo, Alan Ritter, and Lu Wang, editors, Findings 357 
+
+of the Association for Computational Linguistics: NAACL 2025 , pages 4145–4157, Albuquerque, 358 
+
+New Mexico, April 2025. Association for Computational Linguistics. ISBN 979-8-89176-195-7. 359 
+
+URL https://aclanthology.org/2025.findings-naacl.232/ .360 
+
+Xuanwen Huang, Kaiqiao Han, Yang Yang, Dezheng Bao, Quanjin Tao, Ziwei Chai, and Qi Zhu. 361 
+
+Can gnn be good adapter for llms? WWW , 2024. 362 
+
+Gautier Izacard, Patrick Lewis, Maria Lomeli, Lucas Hosseini, Fabio Petroni, Timo Schick, Jane 363 
+
+Dwivedi-Yu, Armand Joulin, Sebastian Riedel, and Edouard Grave. Atlas: Few-shot learning with 364 
+
+retrieval augmented language models, 2022. URL https://arxiv.org/abs/2208.03299 .365 
+
+Lecheng Kong, Jiarui Feng, Hao Liu, Chengsong Huang, Jiaxin Huang, Yixin Chen, and Muhan 366 
+
+Zhang. Gofa: A generative one-for-all model for joint graph language modeling, 2025. URL 367 
+
+https://arxiv.org/abs/2407.09709 .368 
+
+Yunshi Lan, Gaole He, Jinhao Jiang, Jing Jiang, Wayne Xin Zhao, and Ji-Rong Wen. A survey on 369 
+
+complex knowledge base question answering: Methods, challenges and solutions. In Zhi-Hua 370 
+
+Zhou, editor, Proceedings of the Thirtieth International Joint Conference on Artificial Intelligence, 371 
+
+IJCAI-21 , pages 4483–4491. International Joint Conferences on Artificial Intelligence Organization, 372 
+
+8 2021. doi: 10.24963/ijcai.2021/611. URL https://doi.org/10.24963/ijcai.2021/611 .373 
+
+Survey Track. 374 
+
+10 Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman 375 
+
+Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, Sebastian Riedel, 376 
+
+and Douwe Kiela. Retrieval-augmented generation for knowledge-intensive nlp tasks. In 377 
+
+H. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin, editors, Advances in 378 
+
+Neural Information Processing Systems , volume 33, pages 9459–9474. Curran Associates, 379 
+
+Inc., 2020. URL https://proceedings.neurips.cc/paper_files/paper/2020/file/ 380 
+
+6b493230205f780e1bc26945df7481e5-Paper.pdf .381 
+
+Haochen Liu, Song Wang, Yaochen Zhu, Yushun Dong, and Jundong Li. Knowledge graph-enhanced 382 
+
+large language models via path selection. In Lun-Wei Ku, Andre Martins, and Vivek Srikumar, 383 
+
+editors, Findings of the Association for Computational Linguistics: ACL 2024 , pages 6311–6321, 384 
+
+Bangkok, Thailand, August 2024. Association for Computational Linguistics. doi: 10.18653/v1/ 385 
+
+2024.findings-acl.376. URL https://aclanthology.org/2024.findings-acl.376/ .386 
+
+Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Levy, Mike 387 
+
+Lewis, Luke Zettlemoyer, and Veselin Stoyanov. Roberta: A robustly optimized bert pretraining 388 
+
+approach, 2019. URL https://arxiv.org/abs/1907.11692 .389 
+
+Qiyao Ma, Xubin Ren, and Chao Huang. XRec: Large language models for explainable recommenda-390 
+
+tion. In Yaser Al-Onaizan, Mohit Bansal, and Yun-Nung Chen, editors, Findings of the Association 391 
+
+for Computational Linguistics: EMNLP 2024 , pages 391–402, Miami, Florida, USA, November 392 
+
+2024. Association for Computational Linguistics. doi: 10.18653/v1/2024.findings-emnlp.22. URL 393 
+
+https://aclanthology.org/2024.findings-emnlp.22/ .394 
+
+Costas Mavromatis and George Karypis. Gnn-rag: Graph neural retrieval for large language model 395 
+
+reasoning, 2024. URL https://arxiv.org/abs/2405.20139 .396 
+
+Boci Peng, Yun Zhu, Yongchao Liu, Xiaohe Bo, Haizhou Shi, Chuntao Hong, Yan Zhang, and Siliang 397 
+
+Tang. Graph retrieval-augmented generation: A survey, 2024. URL https://arxiv.org/abs/ 398 
+
+2408.08921 .399 
+
+Ethan Perez, Florian Strub, Harm de Vries, Vincent Dumoulin, and Aaron Courville. Film: Visual rea-400 
+
+soning with a general conditioning layer, 2017. URL https://arxiv.org/abs/1709.07871 .401 
+
+Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, 402 
+
+Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, and Ilya Sutskever. 403 
+
+Learning transferable visual models from natural language supervision, 2021. URL https: 404 
+
+//arxiv.org/abs/2103.00020 .405 
+
+Ori Ram, Yoav Levine, Itay Dalmedigos, Dor Muhlgay, Amnon Shashua, Kevin Leyton-Brown, and 406 
+
+Yoav Shoham. In-context retrieval-augmented language models. Transactions of the Association 407 
+
+for Computational Linguistics , 11:1316–1331, 2023. doi: 10.1162/tacl_a_00605. URL https: 408 
+
+//aclanthology.org/2023.tacl-1.75/ .409 
+
+Nils Reimers and Iryna Gurevych. Sentence-BERT: Sentence embeddings using Siamese BERT-410 
+
+networks. In Kentaro Inui, Jing Jiang, Vincent Ng, and Xiaojun Wan, editors, Proceedings 411 
+
+of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th 412 
+
+International Joint Conference on Natural Language Processing (EMNLP-IJCNLP) , pages 3982– 413 
+
+3992, Hong Kong, China, November 2019. Association for Computational Linguistics. doi: 414 
+
+10.18653/v1/D19-1410. URL https://aclanthology.org/D19-1410/ .415 
+
+Xubin Ren, Jiabin Tang, Dawei Yin, Nitesh Chawla, and Chao Huang. A survey of large language 416 
+
+models for graphs. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery 417 
+
+and Data Mining , KDD ’24, page 6616–6626. ACM, August 2024. doi: 10.1145/3637528.3671460. 418 
+
+URL http://dx.doi.org/10.1145/3637528.3671460 .419 
+
+Yunsheng Shi, Zhengjie Huang, Shikun Feng, Hui Zhong, Wenjin Wang, and Yu Sun. Masked 420 
+
+label prediction: Unified message passing model for semi-supervised classification, 2021. URL 421 
+
+https://arxiv.org/abs/2009.03509 .422 
+
+Yanchao Tan, Hang Lv, Xinyi Huang, Jiawei Zhang, Shiping Wang, and Carl Yang. Musegraph: 423 
+
+Graph-oriented instruction tuning of large language models for generic graph mining, 2024. URL 424 
+
+https://arxiv.org/abs/2403.04780 .425 
+
+11 Jiabin Tang, Yuhao Yang, Wei Wei, Lei Shi, Lixin Su, Suqi Cheng, Dawei Yin, and Chao Huang. 426 
+
+Graphgpt: Graph instruction tuning for large language models, 2024a. URL https://arxiv. 427 
+
+org/abs/2310.13023 .428 
+
+Jiabin Tang, Yuhao Yang, Wei Wei, Lei Shi, Long Xia, Dawei Yin, and Chao Huang. Higpt: 429 
+
+Heterogeneous graph language model, 2024b. URL https://arxiv.org/abs/2402.16024 .430 
+
+Yijun Tian, Huan Song, Zichen Wang, Haozhu Wang, Ziqing Hu, Fang Wang, Nitesh V. Chawla, and 431 
+
+Panpan Xu. Graph neural prompting with large language models. In Proceedings of the Thirty-432 
+
+Eighth AAAI Conference on Artificial Intelligence and Thirty-Sixth Conference on Innovative 433 
+
+Applications of Artificial Intelligence and Fourteenth Symposium on Educational Advances in 434 
+
+Artificial Intelligence , AAAI’24/IAAI’24/EAAI’24. AAAI Press, 2024. ISBN 978-1-57735-887-9. 435 
+
+doi: 10.1609/aaai.v38i17.29875. URL https://doi.org/10.1609/aaai.v38i17.29875 .436 
+
+Jianing Wang, Junda Wu, Yupeng Hou, Yao Liu, Ming Gao, and Julian McAuley. Instructgraph: 437 
+
+Boosting large language models via graph-centric instruction tuning and preference alignment, 438 
+
+2024. URL https://arxiv.org/abs/2402.08785 .439 
+
+Michihiro Yasunaga, Hongyu Ren, Antoine Bosselut, Percy Liang, and Jure Leskovec. Qa-gnn: 440 
+
+Reasoning with language models and knowledge graphs for question answering, 2022. URL 441 
+
+https://arxiv.org/abs/2104.06378 .442 
+
+Ruosong Ye, Caiqi Zhang, Runhui Wang, Shuyuan Xu, and Yongfeng Zhang. Language is all a graph 443 
+
+needs, 2024. URL https://arxiv.org/abs/2308.07134 .444 
+
+Jing Zhang, Xiaokang Zhang, Jifan Yu, Jian Tang, Jie Tang, Cuiping Li, and Hong Chen. Subgraph 445 
+
+retrieval enhanced model for multi-hop knowledge base question answering. In Smaranda Muresan, 446 
+
+Preslav Nakov, and Aline Villavicencio, editors, Proceedings of the 60th Annual Meeting of the 447 
+
+Association for Computational Linguistics (Volume 1: Long Papers) , pages 5773–5784, Dublin, 448 
+
+Ireland, May 2022. Association for Computational Linguistics. doi: 10.18653/v1/2022.acl-long. 449 
+
+396. URL https://aclanthology.org/2022.acl-long.396/ .450 
+
+Mengmei Zhang, Mingwei Sun, Peng Wang, Shen Fan, Yanhu Mo, Xiaoxiao Xu, Hong Liu, Cheng 451 
+
+Yang, and Chuan Shi. Graphtranslator: Aligning graph model to large language model for 452 
+
+open-ended tasks, 2024. URL https://arxiv.org/abs/2402.07197 .453 
+
+Jianan Zhao, Le Zhuo, Yikang Shen, Meng Qu, Kai Liu, Michael Bronstein, Zhaocheng Zhu, and 454 
+
+Jian Tang. Graphtext: Graph reasoning in text space, 2023. URL https://arxiv.org/abs/ 455 
+
+2310.01089 .456 
+
+12 NeurIPS Paper Checklist 457 
+
+1. Claims 458 
+
+Question: Do the main claims made in the abstract and introduction accurately reflect the 459 
+
+paper’s contributions and scope? 460 
+
+Answer: [Yes] 461 
+
+Justification: Yes, the main claims made in the abstract and introduction accurately reflect 462 
+
+the paper’s contributions and scope. 463 
+
+Guidelines: 464 
+
+• The answer NA means that the abstract and introduction do not include the claims 465 
+
+made in the paper. 466 
+
+• The abstract and/or introduction should clearly state the claims made, including the 467 
+
+contributions made in the paper and important assumptions and limitations. A No or 468 
+
+NA answer to this question will not be perceived well by the reviewers. 469 
+
+• The claims made should match theoretical and experimental results, and reflect how 470 
+
+much the results can be expected to generalize to other settings. 471 
+
+• It is fine to include aspirational goals as motivation as long as it is clear that these goals 472 
+
+are not attained by the paper. 473 
+
+2. Limitations 474 
+
+Question: Does the paper discuss the limitations of the work performed by the authors? 475 
+
+Answer: [Yes] 476 
+
+Justification: Check Section 5. 477 
+
+Guidelines: 478 
+
+• The answer NA means that the paper has no limitation while the answer No means that 479 
+
+the paper has limitations, but those are not discussed in the paper. 480 
+
+• The authors are encouraged to create a separate "Limitations" section in their paper. 481 
+
+• The paper should point out any strong assumptions and how robust the results are to 482 
+
+violations of these assumptions (e.g., independence assumptions, noiseless settings, 483 
+
+model well-specification, asymptotic approximations only holding locally). The authors 484 
+
+should reflect on how these assumptions might be violated in practice and what the 485 
+
+implications would be. 486 
+
+• The authors should reflect on the scope of the claims made, e.g., if the approach was 487 
+
+only tested on a few datasets or with a few runs. In general, empirical results often 488 
+
+depend on implicit assumptions, which should be articulated. 489 
+
+• The authors should reflect on the factors that influence the performance of the approach. 490 
+
+For example, a facial recognition algorithm may perform poorly when image resolution 491 
+
+is low or images are taken in low lighting. Or a speech-to-text system might not be 492 
+
+used reliably to provide closed captions for online lectures because it fails to handle 493 
+
+technical jargon. 494 
+
+• The authors should discuss the computational efficiency of the proposed algorithms 495 
+
+and how they scale with dataset size. 496 
+
+• If applicable, the authors should discuss possible limitations of their approach to 497 
+
+address problems of privacy and fairness. 498 
+
+• While the authors might fear that complete honesty about limitations might be used by 499 
+
+reviewers as grounds for rejection, a worse outcome might be that reviewers discover 500 
+
+limitations that aren’t acknowledged in the paper. The authors should use their best 501 
+
+judgment and recognize that individual actions in favor of transparency play an impor-502 
+
+tant role in developing norms that preserve the integrity of the community. Reviewers 503 
+
+will be specifically instructed to not penalize honesty concerning limitations. 504 
+
+3. Theory assumptions and proofs 505 
+
+Question: For each theoretical result, does the paper provide the full set of assumptions and 506 
+
+a complete (and correct) proof? 507 
+
+Answer: [Yes] 508 
+
+13 Justification: 509 
+
+Guidelines: 510 
+
+• The answer NA means that the paper does not include theoretical results. 511 
+
+• All the theorems, formulas, and proofs in the paper should be numbered and cross-512 
+
+referenced. 513 
+
+• All assumptions should be clearly stated or referenced in the statement of any theorems. 514 
+
+• The proofs can either appear in the main paper or the supplemental material, but if 515 
+
+they appear in the supplemental material, the authors are encouraged to provide a short 516 
+
+proof sketch to provide intuition. 517 
+
+• Inversely, any informal proof provided in the core of the paper should be complemented 518 
+
+by formal proofs provided in appendix or supplemental material. 519 
+
+• Theorems and Lemmas that the proof relies upon should be properly referenced. 520 
+
+4. Experimental result reproducibility 521 
+
+Question: Does the paper fully disclose all the information needed to reproduce the main ex-522 
+
+perimental results of the paper to the extent that it affects the main claims and/or conclusions 523 
+
+of the paper (regardless of whether the code and data are provided or not)? 524 
+
+Answer: [Yes] 525 
+
+Justification: The paper fully discloses all the information needed to reproduce the main 526 
+
+experimental results as they pertain to the paper’s main claims and conclusions. The code is 527 
+
+provided in the supplementary materials. 528 
+
+Guidelines: 529 
+
+• The answer NA means that the paper does not include experiments. 530 
+
+• If the paper includes experiments, a No answer to this question will not be perceived 531 
+
+well by the reviewers: Making the paper reproducible is important, regardless of 532 
+
+whether the code and data are provided or not. 533 
+
+• If the contribution is a dataset and/or model, the authors should describe the steps taken 534 
+
+to make their results reproducible or verifiable. 535 
+
+• Depending on the contribution, reproducibility can be accomplished in various ways. 536 
+
+For example, if the contribution is a novel architecture, describing the architecture fully 537 
+
+might suffice, or if the contribution is a specific model and empirical evaluation, it may 538 
+
+be necessary to either make it possible for others to replicate the model with the same 539 
+
+dataset, or provide access to the model. In general. releasing code and data is often 540 
+
+one good way to accomplish this, but reproducibility can also be provided via detailed 541 
+
+instructions for how to replicate the results, access to a hosted model (e.g., in the case 542 
+
+of a large language model), releasing of a model checkpoint, or other means that are 543 
+
+appropriate to the research performed. 544 
+
+• While NeurIPS does not require releasing code, the conference does require all submis-545 
+
+sions to provide some reasonable avenue for reproducibility, which may depend on the 546 
+
+nature of the contribution. For example 547 
+
+(a) If the contribution is primarily a new algorithm, the paper should make it clear how 548 
+
+to reproduce that algorithm. 549 
+
+(b) If the contribution is primarily a new model architecture, the paper should describe 550 
+
+the architecture clearly and fully. 551 
+
+(c) If the contribution is a new model (e.g., a large language model), then there should 552 
+
+either be a way to access this model for reproducing the results or a way to reproduce 553 
+
+the model (e.g., with an open-source dataset or instructions for how to construct 554 
+
+the dataset). 555 
+
+(d) We recognize that reproducibility may be tricky in some cases, in which case 556 
+
+authors are welcome to describe the particular way they provide for reproducibility. 557 
+
+In the case of closed-source models, it may be that access to the model is limited in 558 
+
+some way (e.g., to registered users), but it should be possible for other researchers 559 
+
+to have some path to reproducing or verifying the results. 560 
+
+5. Open access to data and code 561 
+
+14 Question: Does the paper provide open access to the data and code, with sufficient instruc-562 
+
+tions to faithfully reproduce the main experimental results, as described in supplemental 563 
+
+material? 564 
+
+Answer: [Yes] 565 
+
+Justification: The paper provides open access to the data and code, along with sufficient 566 
+
+instructions in the supplemental material to faithfully reproduce the main experimental 567 
+
+results. 568 
+
+Guidelines: 569 
+
+• The answer NA means that paper does not include experiments requiring code. 570 
+
+• Please see the NeurIPS code and data submission guidelines ( https://nips.cc/ 571 
+
+public/guides/CodeSubmissionPolicy ) for more details. 572 
+
+• While we encourage the release of code and data, we understand that this might not be 573 
+
+possible, so “No” is an acceptable answer. Papers cannot be rejected simply for not 574 
+
+including code, unless this is central to the contribution (e.g., for a new open-source 575 
+
+benchmark). 576 
+
+• The instructions should contain the exact command and environment needed to run to 577 
+
+reproduce the results. See the NeurIPS code and data submission guidelines ( https: 578 
+
+//nips.cc/public/guides/CodeSubmissionPolicy ) for more details. 579 
+
+• The authors should provide instructions on data access and preparation, including how 580 
+
+to access the raw data, preprocessed data, intermediate data, and generated data, etc. 581 
+
+• The authors should provide scripts to reproduce all experimental results for the new 582 
+
+proposed method and baselines. If only a subset of experiments are reproducible, they 583 
+
+should state which ones are omitted from the script and why. 584 
+
+• At submission time, to preserve anonymity, the authors should release anonymized 585 
+
+versions (if applicable). 586 
+
+• Providing as much information as possible in supplemental material (appended to the 587 
+
+paper) is recommended, but including URLs to data and code is permitted. 588 
+
+6. Experimental setting/details 589 
+
+Question: Does the paper specify all the training and test details (e.g., data splits, hyper-590 
+
+parameters, how they were chosen, type of optimizer, etc.) necessary to understand the 591 
+
+results? 592 
+
+Answer: [Yes] 593 
+
+Justification: The paper specifies all the training and test details necessary to understand the 594 
+
+results, including data splits, hyperparameter settings, optimizer types, and how these were 595 
+
+chosen. These details are provided in the Appendix C. 596 
+
+Guidelines: 597 
+
+• The answer NA means that the paper does not include experiments. 598 
+
+• The experimental setting should be presented in the core of the paper to a level of detail 599 
+
+that is necessary to appreciate the results and make sense of them. 600 
+
+• The full details can be provided either with the code, in appendix, or as supplemental 601 
+
+material. 602 
+
+7. Experiment statistical significance 603 
+
+Question: Does the paper report error bars suitably and correctly defined or other appropriate 604 
+
+information about the statistical significance of the experiments? 605 
+
+Answer: [Yes] 606 
+
+Justification: The paper reports the average results across all experiments based on five runs 607 
+
+of training and testing, which is sufficient to demonstrate the consistency and reliability of 608 
+
+the experimental outcomes. 609 
+
+Guidelines: 610 
+
+• The answer NA means that the paper does not include experiments. 611 
+
+• The authors should answer "Yes" if the results are accompanied by error bars, confi-612 
+
+dence intervals, or statistical significance tests, at least for the experiments that support 613 
+
+the main claims of the paper. 614 
+
+15 • The factors of variability that the error bars are capturing should be clearly stated (for 615 
+
+example, train/test split, initialization, random drawing of some parameter, or overall 616 
+
+run with given experimental conditions). 617 
+
+• The method for calculating the error bars should be explained (closed form formula, 618 
+
+call to a library function, bootstrap, etc.) 619 
+
+• The assumptions made should be given (e.g., Normally distributed errors). 620 
+
+• It should be clear whether the error bar is the standard deviation or the standard error 621 
+
+of the mean. 622 
+
+• It is OK to report 1-sigma error bars, but one should state it. The authors should 623 
+
+preferably report a 2-sigma error bar than state that they have a 96% CI, if the hypothesis 624 
+
+of Normality of errors is not verified. 625 
+
+• For asymmetric distributions, the authors should be careful not to show in tables or 626 
+
+figures symmetric error bars that would yield results that are out of range (e.g. negative 627 
+
+error rates). 628 
+
+• If error bars are reported in tables or plots, The authors should explain in the text how 629 
+
+they were calculated and reference the corresponding figures or tables in the text. 630 
+
+8. Experiments compute resources 631 
+
+Question: For each experiment, does the paper provide sufficient information on the com-632 
+
+puter resources (type of compute workers, memory, time of execution) needed to reproduce 633 
+
+the experiments? 634 
+
+Answer: [Yes] 635 
+
+Justification: The paper provides sufficient information on the computer resources required to 636 
+
+reproduce each experiment, including the type of compute workers, memory, and execution 637 
+
+time. This information can be found in Appendix C. 638 
+
+Guidelines: 639 
+
+• The answer NA means that the paper does not include experiments. 640 
+
+• The paper should indicate the type of compute workers CPU or GPU, internal cluster, 641 
+
+or cloud provider, including relevant memory and storage. 642 
+
+• The paper should provide the amount of compute required for each of the individual 643 
+
+experimental runs as well as estimate the total compute. 644 
+
+• The paper should disclose whether the full research project required more compute 645 
+
+than the experiments reported in the paper (e.g., preliminary or failed experiments that 646 
+
+didn’t make it into the paper). 647 
+
+9. Code of ethics 648 
+
+Question: Does the research conducted in the paper conform, in every respect, with the 649 
+
+NeurIPS Code of Ethics https://neurips.cc/public/EthicsGuidelines ?650 
+
+Answer: [Yes] 651 
+
+Justification: The research conducted in the paper conforms with the NeurIPS Code of 652 
+
+Ethics in every respect. 653 
+
+Guidelines: 654 
+
+• The answer NA means that the authors have not reviewed the NeurIPS Code of Ethics. 655 
+
+• If the authors answer No, they should explain the special circumstances that require a 656 
+
+deviation from the Code of Ethics. 657 
+
+• The authors should make sure to preserve anonymity (e.g., if there is a special consid-658 
+
+eration due to laws or regulations in their jurisdiction). 659 
+
+10. Broader impacts 660 
+
+Question: Does the paper discuss both potential positive societal impacts and negative 661 
+
+societal impacts of the work performed? 662 
+
+Answer: [NA] 663 
+
+Justification: The paper does no discuss both potential positive and negative societal impacts 664 
+
+of the proposed method. 665 
+
+16 Guidelines: 666 
+
+• The answer NA means that there is no societal impact of the work performed. 667 
+
+• If the authors answer NA or No, they should explain why their work has no societal 668 
+
+impact or why the paper does not address societal impact. 669 
+
+• Examples of negative societal impacts include potential malicious or unintended uses 670 
+
+(e.g., disinformation, generating fake profiles, surveillance), fairness considerations 671 
+
+(e.g., deployment of technologies that could make decisions that unfairly impact specific 672 
+
+groups), privacy considerations, and security considerations. 673 
+
+• The conference expects that many papers will be foundational research and not tied 674 
+
+to particular applications, let alone deployments. However, if there is a direct path to 675 
+
+any negative applications, the authors should point it out. For example, it is legitimate 676 
+
+to point out that an improvement in the quality of generative models could be used to 677 
+
+generate deepfakes for disinformation. On the other hand, it is not needed to point out 678 
+
+that a generic algorithm for optimizing neural networks could enable people to train 679 
+
+models that generate Deepfakes faster. 680 
+
+• The authors should consider possible harms that could arise when the technology is 681 
+
+being used as intended and functioning correctly, harms that could arise when the 682 
+
+technology is being used as intended but gives incorrect results, and harms following 683 
+
+from (intentional or unintentional) misuse of the technology. 684 
+
+• If there are negative societal impacts, the authors could also discuss possible mitigation 685 
+
+strategies (e.g., gated release of models, providing defenses in addition to attacks, 686 
+
+mechanisms for monitoring misuse, mechanisms to monitor how a system learns from 687 
+
+feedback over time, improving the efficiency and accessibility of ML). 688 
+
+11. Safeguards 689 
+
+Question: Does the paper describe safeguards that have been put in place for responsible 690 
+
+release of data or models that have a high risk for misuse (e.g., pretrained language models, 691 
+
+image generators, or scraped datasets)? 692 
+
+Answer: [NA] 693 
+
+Justification: 694 
+
+Guidelines: 695 
+
+• The answer NA means that the paper poses no such risks. 696 
+
+• Released models that have a high risk for misuse or dual-use should be released with 697 
+
+necessary safeguards to allow for controlled use of the model, for example by requiring 698 
+
+that users adhere to usage guidelines or restrictions to access the model or implementing 699 
+
+safety filters. 700 
+
+• Datasets that have been scraped from the Internet could pose safety risks. The authors 701 
+
+should describe how they avoided releasing unsafe images. 702 
+
+• We recognize that providing effective safeguards is challenging, and many papers do 703 
+
+not require this, but we encourage authors to take this into account and make a best 704 
+
+faith effort. 705 
+
+12. Licenses for existing assets 706 
+
+Question: Are the creators or original owners of assets (e.g., code, data, models), used in 707 
+
+the paper, properly credited and are the license and terms of use explicitly mentioned and 708 
+
+properly respected? 709 
+
+Answer: [Yes] 710 
+
+Justification: 711 
+
+Guidelines: 712 
+
+• The answer NA means that the paper does not use existing assets. 713 
+
+• The authors should cite the original paper that produced the code package or dataset. 714 
+
+• The authors should state which version of the asset is used and, if possible, include a 715 
+
+URL. 716 
+
+• The name of the license (e.g., CC-BY 4.0) should be included for each asset. 717 
+
+17 • For scraped data from a particular source (e.g., website), the copyright and terms of 718 
+
+service of that source should be provided. 719 
+
+• If assets are released, the license, copyright information, and terms of use in the 720 
+
+package should be provided. For popular datasets, paperswithcode.com/datasets 721 
+
+has curated licenses for some datasets. Their licensing guide can help determine the 722 
+
+license of a dataset. 723 
+
+• For existing datasets that are re-packaged, both the original license and the license of 724 
+
+the derived asset (if it has changed) should be provided. 725 
+
+• If this information is not available online, the authors are encouraged to reach out to 726 
+
+the asset’s creators. 727 
+
+13. New assets 728 
+
+Question: Are new assets introduced in the paper well documented and is the documentation 729 
+
+provided alongside the assets? 730 
+
+Answer: [Yes] 731 
+
+Justification: Yes, any new assets introduced in the paper are well documented, and the 732 
+
+documentation is provided alongside the assets in the appendix. 733 
+
+Guidelines: 734 
+
+• The answer NA means that the paper does not release new assets. 735 
+
+• Researchers should communicate the details of the dataset/code/model as part of their 736 
+
+submissions via structured templates. This includes details about training, license, 737 
+
+limitations, etc. 738 
+
+• The paper should discuss whether and how consent was obtained from people whose 739 
+
+asset is used. 740 
+
+• At submission time, remember to anonymize your assets (if applicable). You can either 741 
+
+create an anonymized URL or include an anonymized zip file. 742 
+
+14. Crowdsourcing and research with human subjects 743 
+
+Question: For crowdsourcing experiments and research with human subjects, does the paper 744 
+
+include the full text of instructions given to participants and screenshots, if applicable, as 745 
+
+well as details about compensation (if any)? 746 
+
+Answer: [NA] 747 
+
+Justification: 748 
+
+Guidelines: 749 
+
+• The answer NA means that the paper does not involve crowdsourcing nor research with 750 
+
+human subjects. 751 
+
+• Including this information in the supplemental material is fine, but if the main contribu-752 
+
+tion of the paper involves human subjects, then as much detail as possible should be 753 
+
+included in the main paper. 754 
+
+• According to the NeurIPS Code of Ethics, workers involved in data collection, curation, 755 
+
+or other labor should be paid at least the minimum wage in the country of the data 756 
+
+collector. 757 
+
+15. Institutional review board (IRB) approvals or equivalent for research with human 758 
+
+subjects 759 
+
+Question: Does the paper describe potential risks incurred by study participants, whether 760 
+
+such risks were disclosed to the subjects, and whether Institutional Review Board (IRB) 761 
+
+approvals (or an equivalent approval/review based on the requirements of your country or 762 
+
+institution) were obtained? 763 
+
+Answer: [NA] 764 
+
+Justification: 765 
+
+Guidelines: 766 
+
+• The answer NA means that the paper does not involve crowdsourcing nor research with 767 
+
+human subjects. 768 
+
+18 • Depending on the country in which research is conducted, IRB approval (or equivalent) 769 
+
+may be required for any human subjects research. If you obtained IRB approval, you 770 
+
+should clearly state this in the paper. 771 
+
+• We recognize that the procedures for this may vary significantly between institutions 772 
+
+and locations, and we expect authors to adhere to the NeurIPS Code of Ethics and the 773 
+
+guidelines for their institution. 774 
+
+• For initial submissions, do not include any information that would break anonymity (if 775 
+
+applicable), such as the institution conducting the review. 776 
+
+16. Declaration of LLM usage 777 
+
+Question: Does the paper describe the usage of LLMs if it is an important, original, or 778 
+
+non-standard component of the core methods in this research? Note that if the LLM is used 779 
+
+only for writing, editing, or formatting purposes and does not impact the core methodology, 780 
+
+scientific rigorousness, or originality of the research, declaration is not required. 781 
+
+Answer: [Yes] 782 
+
+Justification: The paper describes the use of LLMs as a pre-trained model in the research, 783 
+
+Guidelines: 784 
+
+• The answer NA means that the core method development in this research does not 785 
+
+involve LLMs as any important, original, or non-standard components. 786 
+
+• Please refer to our LLM policy ( https://neurips.cc/Conferences/2025/LLM )787 
+
+for what should or should not be described. 788 
+
+19
