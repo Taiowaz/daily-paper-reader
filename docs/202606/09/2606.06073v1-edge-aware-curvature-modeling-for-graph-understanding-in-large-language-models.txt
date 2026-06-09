@@ -1,0 +1,1654 @@
+Title: Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models
+
+URL Source: https://arxiv.org/pdf/2606.06073v1
+
+Published Time: Fri, 05 Jun 2026 01:05:57 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models 
+
+# Zhenghong Lin 
+
+College of Computing and Data Science, Nanyang Technological University Computational Intelligence Lab Singapore hongzhenglin970323@gmail.com 
+
+# Zhibin Shi 
+
+College of Computer and Data Science, Fuzhou University Fujian Provincial Key Laboratory of Network Computing and Intelligent Information Processing Fuzhou, China zbshi0593@163.com 
+
+# Hongyang Dong 
+
+College of Computer and Data Science, Fuzhou University Fujian Provincial Key Laboratory of Network Computing and Intelligent Information Processing Fuzhou, China Donghy0305@163.com 
+
+# Xinjie Ye 
+
+Department of Statistics, University of Wisconsin-Madison USA Newland Digital Technology Co., Ltd. Fuzhou, China yexj@newland.com.cn 
+
+# Yuhong Chen 
+
+Key Laboratory of Multimedia Trusted Perception and Efficient Computing, Ministry of Education of China, Xiamen University XiaMen, China yhchen2320@163.com 
+
+# Shiping Wang 
+
+College of Computer and Data Science, Fuzhou University Fujian Provincial Key Laboratory of Network Computing and Intelligent Information Processing Fuzhou, China shipingwangphd@163.com 
+
+## Abstract 
+
+Recently, graph-aware Large Language Models (LLMs) have shown promising capabilities in jointly modeling graph-structured data and textual information. Existing approaches typically employ a graph encoder and a frozen LLM to obtain node representations from graph and textual views, followed by node-level alignment to bridge the two modalities. However, such alignment mecha-nisms primarily focus on node information while overlooking edge-level structures, leading to suboptimal information propa-gation across views. In this work, we conduct a comprehensive theoretical analysis to uncover why node-level alignment is in-sufficient for aligning textual and graph representations. Specifi-cally, we prove theoretically for the first time that (1) neglecting edge information leads to suboptimal solutions and (2) negatively curved edges induce bottlenecked information flow, giving rise to the over-squashing phenomenon between graph and textual views. To address the two challenges, we innovatively proposed a CureLLM framework of Curvature-enhanced Graph Representa-tions for Large Language Model whose goal is to inject the signals of edge information into the existing LLMs. Specifically, CureLLM first introduces the training-free textual prompt mechanism to make the LLM model generate the output directly based on the edge-aware prompt without learnable parameter costs. Furthermore, a novel curvature-aware graph representation learning is designed to cap-ture the edge structure information to enhance the downstream tasks, where the message passing between text and graph represen-tations only depends on edges with positive curvature. Finally, we conduct evaluations with 20 different compared methods on 11 real-world datasets from various domains and the experiment results demonstrate the superiority of our proposed CureLLM framework. 
+
+## CCS Concepts 
+
+• Mathematics of computing → Graph algorithms ; • Comput-ing methodologies → Natural language processing .
+
+## Keywords 
+
+Graph Mining; Large Language Models; Graph Neural Networks; Graph Curvature; Prompt Learning 
+
+## 1 Introduction 
+
+With the rapid growth of online data scale [ 11 , 36 ], the large lan-guage models (LLMs) have achieved great success in many domains [ 20 , 37 , 46 ]. In order to transfer the rich knowledge of LLMs to the practical tasks based on the graph-structured data [ 32 ], such as recommender systems [ 30 ], social networks [ 38 ] and disease prediction [ 73 ], graph-aware LLMs have become a critical research area in recent years [ 29 , 59 ]. To enable LLMs to recognize graph structure data, most previous research [ 53 ] has explored project-ing the textual attributes and graph topology structure into the same latent space to enhance the representation learning in LLMs. Specifically, as illustrated in Fig. 1(a), the existing graph-textual paradigm of LLMs may use the frozen LLM encoder and trainable graph adapter to extract the textual and graph embeddings for the node 𝑣 1. Then, some alignment mechanism, such as supervised learning [ 7] or contrastive learning [ 62 ], is adopted to align the node embeddings under textual and graph views for node 𝑣 1.However, as a relatively nascent research area, recent studies and empirical observations suggest that such graph-textual alignment mechanism often leads to the suboptimal performance[ 74 ]. To gain initial insights into this issue, we visualize the learned representa-tions of existing graph-aware LLMs[ 51 ], as shown in Fig. 1(b). We observe that the alignment between textual and graph representa-tions is often partially aligned, especially for samples near decision boundaries. This gap leaves a fundamental question unanswered:  
+
+> arXiv:2606.06073v1 [cs.IR] 4 Jun 2026 MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Trovato et al.
+
+Why is node-level alignment insufficient for aligning textual and graph representations? 
+
+To explain the above question, we attempt to analyze the existing paradigm of graph-aware LLMs from a theoretical perspective. Our findings indicate that the limitations of node-level alignment stem from insufficient modeling of information propagation over graph structures, which can be attributed to two main reasons. 
+
+(1) Structural Constraints from Edge-Level Information. Be-yond node-level representations, information propagation is inher-ently governed by edge-level structures, which define the pathways of message passing in graphs. However, existing graph-aware LLMs largely overlook the role of edges in controlling how information flows across the graph and node-level alignment implicitly treats all connections uniformly. In particular, different edges may ex-hibit varying capacities for information transmission, leading to heterogeneous propagation patterns that cannot be captured by node-only alignment mechanisms. We further analyze the limita-tions of existing graph-textual alignment mechanisms in LLMs, as formalized in Theorem 1 (Section 2). 
+
+(2) Information Compression in Node-Level Alignment. In existing methods, alignment is established by matching node embed-dings across textual and graph views. However, each node represen-tation must aggregate information from its multi-hop neighborhood. Take Fig. 1(c) as an example, when alignment is established solely through a shared node (i.e., node 𝑣 1 in the textual view aligned with 𝑣 1 in the graph view), messages from multiple nodes (e.g., 
+
+𝑣 2, 𝑣 3, 𝑣 4, 𝑣 5, and 𝑣 6) are forced to propagate through the same align-ment bottleneck at 𝑣 1. This many-to-one interaction induces severe path-level congestion, where structurally diverse information is compressed into a single-node representation. The above problem, which compresses an exponentially growing amount of information into fixed-size node features and hinders message passing between nodes, is referred to as the over-squashing phenomenon in previous works [ 1, 2 ]. This phenomenon is further theoretically character-ized in Theorem 2 (Section 2), which formalizes the impact of such bottlenecked information propagation. To address the above two challenges, we innovatively propose a CureLLM framework of Cur vature-enhanced Graph Represen-tations for Large Language Model, consisting of the training-free textual prompt mechanism and curvature-aware graph represen-tation learning. Specifically, our CureLLM framework aims to ex-plicitly model edge-level information flow while mitigating the information compression issue in node-level alignment. For struc-tural constraints from edge-level information, we design a training-free textual prompting mechanism to inject the edge information into pre-trained LLMs without any additional task-specific training, which can reduce the cost of training. For information compression in node-level alignment, we propose a curvature-aware graph rep-resentation learning module to leverage curvature as a geometric tool to characterize information propagation on graphs. As estab-lished in prior works [ 13 ], Ricci curvature provides a principled way to characterize such propagation behavior: negatively curved regions correspond to bottlenecked information flow, while posi-tively curved regions indicate smoother information transmission, as shown in Fig. 1(c). Based on this observation, a two-step curva-ture alignment enhancement is exploited to alleviate the informa-tion bottleneck between the graph and textual views. Specifically, we enhance information propagation for inter-view alignment by promoting interactions along edges with positive curvature, while adopting graph convolution for intra-view representation learn-ing to ensure effective transfer of structural information across views. Finally, after the alignment mechanism, the obtained final textual-graph fusion representations are fed to the different heads for various downstream tasks, including node classification, link prediction and graph question answering. The contributions of this paper are outlined as follows: 
+
+• (1) About Novelty: To the best of our knowledge, our work is the first to introduce the curvature into the graph-aware LLMs to alleviate the over-squashing phenomenon between texutal and graph views. 
+
+• (2) About Effective Model Design: Our CureLLM is the first framework to exploit the edge structure information to en-hance the alignment between textual and graph representa-tions in graph-aware LLMs. 
+
+• (3) About Theoretical Analysis: We prove theoretically for the first time that the lack of edge information can lead to a suboptimal solution, and the edges with negative curvature are the main reason for the information bottleneck between the graph and textual views. 
+
+• (4) About Extensive Experiments: We conduct comprehen-sive experimental evaluations for three graph tasks, and experimental results on 11 real-world public datasets with 
+
+20 compared methods show the superiority of our CureLLM. 
+
+## 2 Theoretical Motivation and Preliminary 
+
+In this section, we first provide a theoretical analysis of the error upper bound and the message passing mechanism in graph repre-sentation learning with LLMs, in order to better understand the limitations of existing graph-aware LLM paradigms. Based on this analysis, we derive two key motivations for our work: (1) the ex-isting paradigm for graph LLMs using only node alignment while ignoring the structural information of edges can lead to suboptimal solutions and (2) negatively curved edges are those causing the graph bottleneck and thus leading to the partially indistinguishable phenomenon. The detailed theoretical derivations are provided in 
+
+Appendix A . Finally, we introduce the necessary preliminaries for our method, including fundamental concepts of curvature and the background is presented in Appendix B .
+
+Theoretical Motivation. Firstly, we analyze the Generalization Error Upper Bound [ 5] of graph representation learning for large language models. The smaller the upper bound of the generalization error, the better generalization ability for the model. Given the graph G = (X , Y, E) , we define the training set D = {( 𝒙 𝑖 , 𝒚 𝑖 )} 𝑁 𝑖 =1 ∈X × Y , where X, Y, E are the node, label and edge sets. Then, we denote the graph projection function 𝑓 (𝒙 ) : X → Y and 𝑓 (𝒙 ) is related to the information of the node itself and the aggregation mechanism through the edges. Therefore, the function 𝑓 (𝒙 ) can be defined as 𝑓 (𝒙 ) = 𝜔 𝑛 𝑓 𝑛 (𝒙 𝑛 ) + 𝜔 𝑒 𝑓 𝑒 (𝒙 𝑒 ), where 𝜔 𝑛 and 𝜔 𝑒 are the confidence weights for nodes and edges respectively. When defining ℓ as a convex logistic loss function, we can obtain the following theorem and the full theoretical proof of Theorem 1 is given in Appendix A.1 .Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil (c) Illustration for Graph Curvature  
+
+> Node 𝒗 1
+
+Node: 𝑣 1
+
+<paper_id >
+
+<word_attributes >
+
+[Textual Embedding] 
+
+(a) Existing Graph -Textual Alignment for LLMs  (b) Limitations of Existing Graph -Aware LLMs 
+
+under -reaching   
+
+> 𝒗 𝟐
+> 𝒗 𝟑 𝒗 𝟒
+> 𝒗 𝟓
+> 𝒗 1
+> 𝒗 2𝒗 3
+> 𝒗 4
+> 𝒗 5
+> 𝒗 6
+> 𝒗 1𝒗 2
+> 𝒗 3
+> 𝒗 4
+> 𝒗 5
+
+Figure 1: A toy example of large language models (LLMs) with graph understanding. (a) The existing paradigm of graph-textual LLMs; (b) The limitations of existing graph-textual alignment mechanisms in LLMs; (c) The illustration for graph curvature. Theorem 1. (Error Upper Bound for Graph Representation Learn-ing in LLMs) Let ˆ𝑒 (𝑓 𝑛 ) and ˆ𝑒 (𝑓 𝑒 ) denote the empirical errors of nodes and edges in the graph, and H is hypothesis set, where 𝑓 ∈ 𝐻 , and 
+
+R𝑁 (H ) is the Rademacher complexities [ 39 ]. With a confidence level of 1 − Δ (0 < Δ < 1) , we have generalization error (GE): 
+
+𝐺𝐸 (𝑓 ) ≤ 2R𝑁 (H ) + √︂ 2 ln (1/Δ)
+
+𝑁 + ˆ𝑒 (𝑓 𝑛 ) + ˆ𝑒 (𝑓 𝑒 )+ 
+
+12
+
+"
+
+𝐶𝑜𝑣 (𝜔 𝑛 , ℓ 𝑛 )
+
+| {z }
+
+> Node Covariance
+
++ 𝐶𝑜𝑣 (𝜔 𝑒 , ℓ 𝑒 )
+
+| {z }
+
+> Edge Covariance
+
+−𝐶𝑜𝑣 (𝜔 𝑛 , ℓ 𝑒 ) − 𝐶𝑜𝑣 (𝜔 𝑒 , ℓ 𝑛 )
+
+| {z }
+
+> Node-Edge Covariance
+
+#
+
+,
+
+(1) where 𝐶𝑜𝑣 (𝜔, ℓ ) is the covariance between the confidence weight 𝜔 
+
+and the loss function ℓ. Because the empirical errors ˆ𝑒 (𝑓 𝑛 ), ˆ𝑒 (𝑓 𝑒 ) and Rademacher complexities R𝑁 (H ) are constant, the lower 𝐺𝐸 (𝑓 )
+
+bound is achieved when 𝐶𝑜𝑣 (𝜔 𝑛 , ℓ 𝑛 ) < 0, 𝐶𝑜𝑣 (𝜔 𝑒 , ℓ 𝑒 ) < 0 and 
+
+𝐶𝑜𝑣 (𝜔 𝑛 , ℓ 𝑒 ) > 0, 𝐶𝑜𝑣 (𝜔 𝑒 , ℓ 𝑛 ) > 0 are satisfied. Theorem 1 shows not only that the generalization ability of the model also depends on the edge structure, but it also reveals how edge information should vary across nodes. Specifically, node and edge covariances (𝐶𝑜𝑣 (𝜔 𝑛 , ℓ 𝑛 ) < 0 and 𝐶𝑜𝑣 (𝜔 𝑒 , ℓ 𝑒 ) < 0) imply that when the node or edge embeddings are trained well enough for message pass-ing, we should increase the weights of these nodes and edges. On the contrary, the node-edge covariance ( 𝐶𝑜𝑣 (𝜔 𝑛 , ℓ 𝑒 ) > 0 and 
+
+𝐶𝑜𝑣 (𝜔 𝑒 , ℓ 𝑛 ) > 0) suggests that when node information is insuf-ficient for graph propagation, the weights of edges need to be increased to alleviate the above phenomenon. Secondly, we analyze the existing message passing paradigm for the alignment between the graph and text contents of LLMs and try to explain from a geometric perspective that edges with negative curvature limit the potential for graph representation learning in LLMs. For the convenience of explanation, we introduce the definitions of the message passing mechanism [65]. 
+
+Definition 1. (Graph Message Passing Mechanism) Given the ad-jacency matrix for the graph G = (X , Y, E) with 𝑑 -dimensional representations, we denote the hidden representation of node 𝑖 at layer 
+
+𝑙 as 𝒉 (𝑙 ) 
+
+> 𝑖
+
+, where 𝒉 (0) 
+
+> 𝑖
+
+= 𝒙 𝑖 . Assume that message function is 𝜓 𝑙 and the update function is 𝜙 𝑙 , the graph message passing mechanism can be reformulated as 
+
+𝒉 (𝑙 +1) 
+
+> 𝑖
+
+= 𝜙 𝑙 (𝒉 (𝑙 ) 
+
+> 𝑖
+
+,
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑨 𝑖 𝑗 𝜓 𝑙 (𝒉 (𝑙 ) 
+
+> 𝑖
+
+, 𝒉 (𝑙 ) 
+
+> 𝑗
+
+)) . (2) Then, we introduce the definition of curvature [ 27 ] to further an-alyze the graph mechanism. Following the previous works about the Ollivier-Ricci curvature [ 70 ], the curvature of the edge between nodes 𝑖 and 𝑗 can be written as 
+
+Definition 2. (Graph Ollivier-Ricci Curvature) Given the the graph 
+
+G = (X , Y, E) , we denote the set of neighboring nodes of a node 
+
+𝑖 ∈ X as N ( 𝑖 ) and a probability measure 𝒎 𝛼 𝑥 with a parameter 𝛼 
+
+within [0, 1]. For any edge between node 𝑖 and 𝑗 , the coarse Ricci curvature 𝜿 on edge (𝑖, 𝑗 ) is defined by comparing the Wasserstein distance 𝑊 (𝒎 𝑖 , 𝒎 𝑗 ) to the distance d(i, j): 
+
+𝜿 𝑖 𝑗 = 1 − 𝑊 (𝒎 𝑖 , 𝒎 𝑗 )
+
+𝑑 (𝑖, 𝑗 ) s.t. 𝒎 𝛼 𝑥 (𝑖 ) =
+
+
+
+𝛼 if 𝑥 = 𝑖  
+
+> 1−𝛼 𝑘
+
+if 𝑖 ∈ N ( 𝑥 )
+
+0 otherwise 
+
+. (3) After defining the 𝑟 -layer set 𝑆 𝑟 (𝑖 ) = { 𝑗 ∈ X : 𝑑 𝐺 (𝑖, 𝑗 ) = 𝑟 } and degrees of nodes 𝑖, 𝑗 as 𝑑 𝑖 , 𝑑 𝑗 , where 𝑑 𝐺 is the standard shortest-path distance on the graph and 𝑟 ∈ N is the receptive field in graph message passing, we can obtain Theorem 2 and the full proof is given in Appendix A.2 .
+
+Theorem 2. (Negative Curvature in Graph Representation Learn-ing with LLMs) Consider message passing and curvature as in Equa-tion (2) and (3) . Let node 𝑖 under the graph view and node 𝑗 under the textual view with 𝑑 𝑖 ≤ 𝑑 𝑗 . Assume that the derivatives of func-tions under graph-graph and text-text message passing are bounded with |∇ 𝜙 𝑙 | ≤ 𝛼 and |∇ 𝜓 𝑙 | ≤ 𝛽 , and the message passing func-tions between graph-text nodes are bounded with |∇ 𝜙 ′ 
+
+> 𝑙
+
+| ≤ 𝛼 ′ and 
+
+|∇ 𝜓 ′ 
+
+> 𝑙
+
+| ≤ 𝛽 ′, for each 0 ≤ 𝑙 ≤ 𝐿 − 1, with the depth of message passing 𝐿 ≥ 2. Following [ 55 ], there exists 𝛿 and 𝛾 −1 
+
+> max
+
+such that 
+
+0 < 𝛿 <  max {𝑑 𝑖 , 𝑑 𝑗 } − 12 , 𝛿 < 𝛾 −1 
+
+> max
+
+and 𝜿 𝑖 𝑗 ≤ − 2 + 𝛿 . Then given MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Trovato et al. 
+
+𝑄 𝑗 ⊆ 𝑆 2 (𝑖 ) satisfying |𝑄 𝑗 | > 𝛿 −1 and for 0 ≤ 𝑙 0 ≤ 𝐿 − 2, we have 
+
+1
+
+|𝑄 𝑗 |∑︁ 𝑘 ∈𝑄 𝑗 
+
+𝜕 𝒉 (𝑙 0+2)
+
+> 𝑘
+
+𝜕 𝒉 (𝑙 0 )
+
+> 𝑖
+
+< (𝛼𝛽 )( 𝛼 ′𝛽 ′)𝛿 14 . (4) The interpretability of Theorem 2 is that if we have a negative curvature for 𝑒𝑑𝑔𝑒 (𝑖, 𝑗 ) (𝜿 𝑖 𝑗 ≤ − 2 + 𝛿 ), there may exist a large number of nodes 𝑘 (𝑘 ∈ 𝑄 𝑗 ), where the message passing from node 
+
+𝑖 under the graph view to nodes 𝑘 under textual view is affected, even though the distance is 2 for these nodes 𝑘 to node 𝑖 (from layers 𝑙 0 to 𝑙 0 + 2). 
+
+Preliminary for Prompt Learning. Prompt learning [ 6] is an effective fine-tuning strategy to advance the generalization from LLMs to a specific downstream task [ 48 ]. Specifically, these prompt-based approaches [ 28 , 67 ] usually add a small number of addi-tional embeddings (e.g., the explanation why the model makes the prediction or a detailed description for the task) along with model inputs, while the LLM models are kept frozen. In this paper, our prompts are textual forms including additional information or constraints to guide behaviors of the model, such as a single sen-tence for the title of a node or a longer passage for the description of a specific task. Formally, the training process of LLMs can be defined to optimize a conditional probability distribution 𝑝 (𝒚 |𝒔 ),where 𝒔 = (𝒔 1, . . . , 𝒔 𝐿 𝐼 ) is a textual sequence of tokens for model inputs and 𝐿 𝐼 is the length of the input sentences. After introducing the prompt 𝒔 𝑝 = (𝒔 𝑝  
+
+> 1
+
+, . . . , 𝒔 𝑝 𝐿 𝑃 ), the new paradigm of LLMs can be reformulated to compute the conditional probability distribution 
+
+𝑝 (𝒚 |ˆ𝒔 ) = Î𝑚 𝑖 =1 𝑝 (𝒚 𝑖 | 𝒚 <𝑖 , ˆ𝒔 ). Here ˆ𝒔 = (𝒔 𝑝  
+
+> 1
+
+, . . . , 𝒔 𝑝 𝐿 𝑃 , 𝒔 1, . . . , 𝒔 𝐿 𝐼 ) is the token sequence obtained by concatenating the textual prompt 
+
+𝒔 𝑝 and input 𝒔 . The probability 𝑝 (𝒚 |ˆ𝒔 ) = Î𝑚 𝑖 =1 𝑝 (𝒚 𝑖 | 𝒚 <𝑖 , ˆ𝒔 ) means the probability of generating token 𝒚 𝑖 given 𝒚 <𝑖 and ˆ𝒔 . More details about the Related Work can be found in Appendix B. 
+
+## 3 Methodology 3.1 Problem Statement and Architecture Overview 
+
+The goal of our proposed CureLLM method is to inject the signals of edge attributes into the existing learning paradigm for the graph-driven LLMs to improve the generalization ability of LLMs for text contents with graph structures, e.g., text-attributed graphs (TAGs). Specifically, given the original node feature 𝑿 of the graph and textual sequence 𝑺 = {𝑺 1, 𝑺 2, . . . , 𝑺 𝑖 , . . . 𝑺 𝑁 } for each node, we use the frozen LLM and graph encoder that have been well pre-trained on large-scale datasets to obtain the embeddings 𝑿 𝑡𝑥𝑡 ∈ R𝑁 ×𝑑 𝑡 
+
+and 𝑿 𝑔𝑟𝑎 ∈ R𝑁 ×𝑑 𝑔 under the textual and graph views, respectively. Here, 𝑁 is the number of nodes in the graph structure, 𝑑 𝑡 and 𝑑 𝑔 are the dimensions of the latent space, and 𝑺 𝑖 means the textual contents of the model input for the 𝑖 -th node. Enhanced by the adjacency matrix 𝑨 ∈ R𝑁 ×𝑁 and edge curvature 𝜿 ∈ R𝑁 ×𝑁 , our proposed CureLLM can generate the aligned fusion embedding 𝑿 𝑓 ∈ R𝑁 ×𝑑 ,where the values of 𝑨 𝑖 𝑗 means the connection relations between nodes 𝑖 and 𝑗 and 𝜿 𝑖 𝑗 is the value of curvature for 𝑒𝑑𝑔𝑒 (𝑖, 𝑗 ). Note that, after extracting the refined final embedding, we fed the fusion embedding 𝑿 𝑓 to the different heads of various downstream tasks (we focus on three main graph tasks in this paper: node classifica-tion, link prediction and graph question answering). In summary, the inputs of our CureLLM are the node feature 𝑿 , the adjacency matrix 𝑨 and the textual sequence 𝑺 . The outputs are the refined fusion embedding 𝑿 𝑓 . The overall architecture is provided in Fig. 2, which consists of the training-free textual prompt mechanism and the curvature-aware graph representation learning. 
+
+## 3.2 Training-Free Textual Prompt Mechanism 
+
+Instead of pre-training the LLM for downstream tasks via specific objective engineering [ 26 ], we aim to directly guide the LLM to incorporate edge structural information without additional training. Inspired by the success of prompt learning [ 33 ] with an entirely unsupervised way to solve a great number of tasks, we propose a novel training-free textual prompt mechanism that explicitly encodes edge-aware structural signals into textual inputs without training costs. Specifically, our prompt mechanism integrates both node-level attributes and edge-level structural information into the textual view. Given a target node, we construct edge-aware prompts by incorporating its structural context, such as neighboring nodes, connectivity patterns, or relation-aware descriptions, into the textual input. In this way, edge information is transformed into a textual form that can be naturally processed by the LLM. We adopt two frozen encoders to extract representations under textual and graph views (textual encoder and graph encoder), respectively. Then, we initialize and freeze the two encoders using the graph-aware large language model weights which have been well pre-trained on the large corpus of text and graph data. For example, we use the frozen Llama [ 56 ] as the textual encoder and a frozen graph encoder in [17]. To effectively transfer the textual and graph knowledge from general frozen weights to unknown downstream tasks, our training-free prompt ensemble the techniques for textual-prompt enhance-ment by constructing diverse task-specific captions, attributes, or high-level concepts of downstream tasks. The more details about designs for the prompt can be referred to Appendix A.3 . We take the node classification task as an example and the general template of the prompt is: 
+
+Here is the abstract of a paper: [ ABSTRACT ]; This paper belongs to the [ TOPIC ]; The title of this paper is [ TITLE ]; The citation relationships of this paper are [ EDGE PROMPTS ]; [OTHER PROMPTS ]; Now you are a predictor for [ TASK ]; Please predict this paper may belong to what category and explain the reasons [ EXPLANATION ]. 
+
+(5) The above locations [ABSTRACT ], [ TOPIC ], [ TITLE ], [ EDGE PROMPTS ] are the data-specific textual prompts and [TASK ], [EXPLAINATION ] are the task-specific hand-crafted prompts. The identifier [OTHER PROMPTS ] means that readers can optionally add relevant prompts meeting the requirements for various tasks to enhance the transferability of LLMs without any additional task-specific training. For node 𝑖 with the feature 𝑿 𝑖 and its textual data 
+
+ˆ𝑺 𝑖 = {𝑺 𝑃 𝑖, 1, . . . , 𝑺 𝑃 𝑖,𝐿 𝑃 , 𝑺 𝑖, 1, . . . , 𝑺 𝑖,𝐿 𝐼 }, where 𝐿 𝑃 and 𝐿 𝐼 are the length of prompts and the original text, we can extract the low-dimensional representation by the frozen LLM and graph encoder. The above process can be described as follows: 
+
+𝑿 𝑡𝑥𝑡 𝑖 = 𝐸𝑛𝑐𝑜𝑑𝑒𝑟𝐿𝐿𝑀 ( ˆ𝑺 𝑖 ), 𝑿 𝑔𝑟𝑎 𝑖 = 𝐸𝑛𝑐𝑜𝑑𝑒𝑟𝐺𝑟𝑎𝑝ℎ (𝑿 𝑖 ). (6) Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Node: 𝑣 1
+
+<paper_id >
+
+<word_attributes >
+
+<class_label > [Textual Token] 
+
+[Graph Token] 
+
+LLM 
+
+(Text Encoder) 
+
+> Curvature Align
+> Graph Update
+
+𝑅𝑖𝑐𝑐𝑖 𝐹𝑙𝑜𝑤 
+
+Task -specific Prompts 
+
+Representation Fusion  Downstream Head 
+
+[Fusion Embedding]  ?
+
+Node Classification 
+
+LLM 
+
+(Graph Encoder) 
+
+> Tuned
+> Frozen
+
+Graph 
+
+Enc 
+
+> Positive
+> Curvature
+> Negative
+> Curvature
+
+𝐶𝑢𝑟𝑣𝑎𝑡𝑢𝑟𝑒 𝑚𝑎𝑡𝑟𝑖𝑥 𝜅 
+
+𝜅 < 0
+
+𝜅 > 0
+
+𝐺𝑟𝑎𝑝ℎ 
+
+curvature      
+
+> Here is the abstract of a paper: [ABSTRACT ];
+> Now you are a predictor for [TASK] ;
+> Please predict the category and explain the
+> reasons [EXPLAINATION ].
+
+Text 
+
+Enc 
+
+ Training -Free Textual Prompt Mechanism   Curvature -Aware Graph Representation Learning 
+
+Figure 2: The overall framework of CureLLM. In the left part, a parameter-free mechanism is employed to generate the desired output without any additional task-specific training. In the right part, the Curvature-Aware Graph Representation Learning is designed to align the embeddings between textual and graph views based on the graph curvature. 
+
+Here, 𝑺 𝑃 , 𝑺 are the textual tokens of prompts and original inputs respectively, and ˆ𝑺 is the concatenated textual contents. Then, the textual representation 𝑿 𝑡𝑥𝑡 ∈ R𝑁 ×𝑑 𝑡 and graph representation 
+
+𝑿 𝑔𝑟𝑎 ∈ R𝑁 ×𝑑 𝑔 are fed to the next curvature-aware graph represen-tation learning for fusion, where 𝑁 is the number of nodes and 
+
+𝑑 𝑡 , 𝑑 𝑔 are the dimension of latent embeddings. Compared with ex-isting prompt learning [ 15 , 35 ], the training-free text prompting mechanism we propose has the following advantages: (1) Since only frozen weights are used for graph and textual encoders, our mechanism can easily ensemble existing graph-aware LLMs that have been pre-trained on other datasets; (2) Due to no need for training from scratch, our mechanism can avoid the additional computational overhead. 
+
+## 3.3 Curvature-Aware Graph Representation Learning 
+
+After the enhancement by our training-free textual prompt mecha-nism, we aim to learn the refined graph-textual fusion representa-tion for improving the performance for various downstream tasks. From the previous discussion in Section 2, we can learn that the ex-isting fusion mechanism only considers the node information while ignoring the edge attributes may lead to suboptimal solutions (Refer to Theorem 1 ). By discussing curvatures for edge attributes, we can know the edges with negative curvature are the main reason for the information bottleneck between the graph and textual views (Refer to Theorem 2 ). Therefore, we design a curvature-aware graph representation learning to enhance the textual and graph representation fusion. Our representation learning contains two steps: (1) the positive curvature-aware message transport and (2) the enhanced graph aggregation refining. To calculate the curvature for text and graph alignment, we first project textual and graph embeddings into the same curvature space. The above process for projected representations ˆ𝑿 𝑡𝑥𝑡 ∈ R𝑁 ×𝑑 and ˆ𝑿 𝑔𝑟𝑎 ∈ R𝑁 ×𝑑 can be written as 
+
+ˆ𝑿 𝑡𝑥𝑡 = 𝑀𝐿𝑃 (𝑿 𝑡𝑥𝑡 |𝜽 𝑡 ), ˆ𝑿 𝑔𝑟𝑎 = 𝑀𝐿𝑃 (𝑿 𝑔𝑟𝑎 |𝜽 𝑔 ). (7) Here, 𝜽 𝑡 and 𝜽 𝑔 are the learnable parameters in the specific multi-layer perceptron (MLP). Because the negative curvature may hinder the information transport, our CureLLM considers aligning the textual and graph representations based on the positive curvatures. Specifically, in our first step of positive curvature-aware message transport, we extend the concept of curvature in Equation (3) to the scenarios for graph-driven LLMs. Since the probability measure 𝒎 in curvature is used for neighbor information, we can use the one-hop graph propagation to aggregate the nodes of neighbors, where 𝒎 can be calculated by 𝒎 𝑖 = Í𝑘 ∈ N ( 𝑖 ) 𝑨 𝑖𝑘 ˆ𝑿 𝑡𝑥𝑡 𝑘 and 𝒎 𝑗 = Í𝑘 ∈ N ( 𝑗 ) 𝑨 𝑗𝑘 ˆ𝑿 𝑔𝑟𝑎 𝑘 
+
+for node 𝑖 and 𝑗 under textual and graph views, respectively. Then, the Equation (3) can be reformulated: 
+
+𝜿 𝑖 𝑗 = 1 − 𝑊 (𝒎 𝑖 , 𝒎 𝑗 )
+
+𝑑 ( ˆ𝑿 𝑡𝑥𝑡 𝑖 , ˆ𝑿 𝑔𝑟𝑎 𝑗 ) , (8) where 𝑊 (𝒎 𝑖 , 𝒎 𝑗 ) is called the Wasserstein distance (or Earth Mover distance), which is often exploited in the field of optimal transport [ 64 ] or multi-modal alignment [ 31 ]. The Wasserstein distance can MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Trovato et al. 
+
+be obtained by solving the following optimal transportation plan: 
+
+min 
+
+> 𝑀
+
+∑︁ 𝑖,𝑗 
+
+𝑑 (𝒎 𝑖 , 𝒎 𝑗 )𝑀 (𝒎 𝑖 , 𝒎 𝑗 )
+
+s.t. ∑︁ 
+
+> 𝑗
+
+𝑀 (𝒎 𝑖 , 𝒎 𝑗 ) = 1/𝑁 , ∀𝑖 ;∑︁ 
+
+> 𝑖
+
+𝑀 (𝒎 𝑖 , 𝒎 𝑗 ) = 1/𝑁 , ∀𝑗 . 
+
+(9) Here, 𝑀 (𝒙 𝑖 , 𝒙 𝑗 ) is the optimal transportation plan from textual node 𝑖 to graph node 𝑗 and 𝑑 (𝒎 𝑖 , 𝒎 𝑗 ) is the geodesic distance. In the Theorem 2 , we filter the negative curvatures and perform the inter-view message passing only when the positive curvature condition is satisfied( 𝑑 ( ˆ𝑿 𝑡𝑥𝑡 𝑖 , ˆ𝑿 𝑔𝑟𝑎 𝑗 ) > 𝑊 (𝒎 𝑖 , 𝒎 𝑗 )). Therefore, we design a novel transport mechanism while filtering the edge with negative curvatures as 
+
+𝑻 𝑖 𝑗 = 𝑅𝑒𝐿𝑈 (𝑑 ( ˆ𝑿 𝑡𝑥𝑡 𝑖 , ˆ𝑿 𝑔𝑟𝑎 𝑗 ) − 𝑊 (𝒎 𝑖 , 𝒎 𝑗 )) , (10) where 𝑻 ∈ R𝑁 ×𝑁 is the new transportation plan from textual nodes to graph nodes while filtering the negative curvatures and 𝑅𝑒𝐿𝑈 (·) 
+
+is the activation function of Rectified Linear Unit (ReLU). Then, we obtain aligned fusion representations by ˆ𝑿 = 𝜆 ˆ𝑿 𝑔𝑟𝑎 + ( 1 − 𝜆 )𝑻 ˆ𝑿 𝑡𝑥𝑡 .Although the above fusion mechanism can effectively inject pos-itive curvature information, the direct filtering of 𝑒𝑑𝑔𝑒 (𝑖, 𝑗 ) with negative curvature inevitably destroys the edge connection infor-mation between nodes 𝑖 and 𝑗 . To alleviate the problem, we propose the enhanced graph aggregation refining. Specifically, after obtain-ing the fusion representations ˆ𝑿 ∈ R𝑁 ×𝑑 , we perform the graph aggregation for each node to refine the node representations by 
+
+𝑿 𝑓 = 𝐺𝑁 𝑁 ( ˆ𝑿 , 𝑨 |𝜽 ), (11) where 𝜽 is the trainable parameter in the graph neural network (GNN). The explanation of Equation (11) is: For 𝑒𝑑𝑔𝑒 (𝑖, 𝑗 ) with neg-ative curvature, the message between 𝑖 and 𝑗 can be seen as a two-stage updating, where the node 𝑖 can first transfer the information to the intermediate node 𝑘 with positive curvature, and then the infomation may be transferred to node 𝑗 through graph convolution (𝑖 𝐸𝑞𝑢𝑎𝑡𝑖𝑜𝑛 (10) 
+
+−−−−−−−−−−→ 𝑘 𝐸𝑞𝑢𝑎𝑡𝑖𝑜𝑛 (11) 
+
+−−−−−−−−−−→ 𝑗 ). After the graph refining, we can obtain our final textual-graph fusion representation 𝑿 𝑓 ∈ R𝑁 ×𝑑 ,which is fed to the different heads for various downstream tasks. Here we take the node classification task as an example, where the head is an 𝑀𝐿𝑃 (·) function. The above process can be written as 
+
+L = 𝐶𝑟𝑜𝑠𝑠𝐸𝑛𝑡𝑟𝑜𝑝𝑦 (𝒀 , ˆ𝒀 ) 𝑠.𝑡 . ˆ𝒀 = ℎ𝑒𝑎𝑑 (𝑿 𝑓 ) = 𝜎 (𝑿 𝑓 𝑾 + 𝒃 ).
+
+(12) The prediction matrix ˆ𝒀 ∈ R𝑁 ×𝐶 is the predicted results by our CureLLM, where 𝐶 is the number of categories. 𝑾 ∈ R𝑑 ×𝐶 and 𝒃 
+
+are the learnable weight and bias in ℎ𝑒𝑎𝑑 (·) function. 
+
+## 4 Experiments 
+
+In this section, we conduct extensive experiments to validate the effectiveness of the proposed CureLLM. The experiment is mainly divided into four parts and mainly focuses on answering the fol-lowing four questions: 
+
+RQ1: How does the CureLLM perform in comparison with other state-of-the-art models for graph-aware LLMs under the graph downstream tasks? 
+
+RQ2: How does each component proposed in the CureLLM contribute to the performance improvement? 
+
+RQ3: How do the hyperparameters affect the prediction perfor-mance for the proposed CureLLM? 
+
+RQ4: How does the CureLLM improve the performance for modeling graph and textual information in graph-driven scenarios? 
+
+## 4.1 Experimental Setup 
+
+Datasets. We utilize a total of 11 real-world datasets, which are categorized according to three downstream graph learning tasks: (1) five datasets for node classification [ 22 ], including the Cora, Cite-seer, Instagram, Photo, and WikiCS datasets, to address common network relationships such as academic citations, social interac-tions, e-commerce, and encyclopedic knowledge; (2) four datasets for link prediction [ 66 ], including the Baby, Sports, ML-1M, and ML-10M datasets, which are customized for the e-commerce and entertainment recommendation domains containing user inter-action attributes; (3) two datasets for graph question-answering (graphQA) [ 19 ], namely the ExplaGraphs and WebQSP datasets, which focus on the knowledge reasoning domain and contain common-sense reasoning and large-scale multi-hop knowledge graph information requiring deep logical reasoning. These datasets have been widely adopted in previous literature [ 19 , 25 , 61 , 75 , 76 ]. For more details on dataset segmentation, feature dimensions, and relevant statistics, please refer to Appendix C.1 .
+
+Implementation details. For the classification task, following the existing settings [ 17 ], we feed our learned fusion embeddings into a MLP head to obtain the final classification predictions. The widely-used Accuracy metric is exploited to evaluate the classifica-tion performance. In link prediction task, we follow existing works [ 63 ], [ 66 ] to conduct the full-rank test for each node, where the similarity of learned fusion embeddings can be calculated to predict the edge connection. To be specific, for each node, all nodes not con-nected to it in the training set are ranked by the model. The top-𝐾 
+
+nodes are taken as positive predictions, and we calculate 𝑅𝑒𝑐𝑎𝑙𝑙 @𝐾 
+
+and 𝑃𝑟𝑒𝑐𝑖𝑠𝑖𝑜𝑛 @𝐾 scores with 𝐾 = 5, 10 . For the GraphQA task, we follow the LLM head of existing work [ 19 ]. Specifically, the primary task of ExplaGraphs dataset is to assess whether arguments are supportive or contradictory, using accuracy as the metric. For the WebQSP dataset, the ℎ𝑖𝑡 @1 metric is used to assess the precision of the top returned answer. More implementation details are provided in Appendix C.2 .
+
+Baselines. To verify the effectiveness of CureLLM, we compare it with traditional representaiton learning methods like MLP, MF, and the following representative and recent baselines, which can be mainly divided into three categories. (1) GNN-based meth-ods: We select GCN [ 24 ], GAT [ 58 ], GIN [ 68 ], SAGE [ 14 ], GraphCL [ 71 ], CGCN [ 77 ], and DSR-GNN [ 21 ] as the compared methods. 
+
+(2) Standard fine-tuned PLMs: We select four widely used LMs: BERT(bert-base-uncased) [ 10 ], DeBERTa (deberta-base) [ 16 ], Sen-tenceBERT (bert-base-nli-mean-tokens) [ 45 ], and RoBERTa (roberta-base) [ 34 ]. (3) LLM-enhanced methods: We further compare the following state-of-the-art (SOTA) methods that combine LLMs and GNNs: WalkLM [ 50 ], TAPE [ 17 ], OpenGraph [ 66 ], ENGINE [ 76 ], GraphAdapter [ 22 ], GraphToken [ 44 ], G-Retriever [ 19 ], STAG[ 3]Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil 
+
+Table 1: Accuracy(%) of all compared methods on semi-supervised node classification task, where the best and runner-up performance are highlighted in bold and underlined respectively. 
+
+Method Instagram Cora Citeseer Photo WikiCS Average 
+
+MLP 64.67 (0.31) 56.47 (0.97) 70.40 (1.08) 62.47 (0.25) 73.63 (0.35) 65.53 GCN 64.54 (0.30) 79.53 (1.36) 69.78 (0.27) 83.01 (0.28) 79.51 (0.40) 75.27 SAGE 64.76 (0.45) 81.50 (0.69) 71.22 (0.24) 83.11 (0.29) 81.85 (0.29) 76.49 CGCN 65.67 (0.08) 81.50 (0.22) 69.60 (1.07) 64.74 (0.27) 80.95 (0.13) 72.49 DSR-GNN 64.52 (0.25) 76.77 (0.36) 71.11 (0.55) OOM 78.91 (0.44) -BERT 62.42 (3.03) 62.36 (2.29) 67.02 (1.75) 73.57 (0.48) 81.18 (1.00) 69.31 DeBERTa 64.90 (1.52) 36.46 (9.55) 45.83 (17.2) 74.42 (0.38) 79.56 (2.90) 60.23 SentenceBERT 62.75 (0.90) 62.07 (3.92) 67.08 (3.05) 73.38 (0.54) 80.61 (1.35) 69.18 GraphAdapter 67.45 (0.51) 78.03 (1.46) 70.50 (0.90) OOM OOM -TAPE - 84.91 (0.90) - - - -WalkLM 66.40 (0.29) 74.45 (3.19) 69.55 (1.17) 76.19 (0.21) 84.14 (0.61) 74.15 ENGINE 66.93 (0.51) 81.75 (1.06) 72.32 (0.81) 84.64 (0.14) 84.04 (0.47) 77.94 STAG 66.98 (0.40) 82.17 (0.94) 71.09 (0.63) 83.26 (0.40) 84.08 (0.68) 77.52 MuseGraph 67.56 (0.34) 83.81 (1.14) 72.60 (0.72) 85.11 (0.25) 83.92 (0.53) 78.60 Ours 68.30 (0.01) 85.31 (0.09) 73.92 (0.29) 86.31 (0.07) 84.80 (0.05) 79.73 Table 2: Performance(%) comparison of baselines in terms of Recall@10, and Precision@10 on Baby, Sports, MovieLen-1M, and MovieLen-10M datasets. We mark the global best results on each dataset under each metric in boldface and the second best is underlined. 
+
+Dataset Baby Sports MovieLen-1M MovieLen-10M Model R@10 P@10 R@10 P@10 R@10 P@10 R@10 P@10 MF 3.76 (0.22) 0.29 (0.04) 4.81 (0.29) 0.38 (0.0) 5.63 (0.28) 9.11 (0.42) 9.34 (0.53) 9.13 (0.31) MLP 3.94 (0.24) 0.31 (0.03) 4.96 (0.25) 0.40 (0.08) 5.88 (0.28) 9.23 (0.46) 9.52 (0.55) 9.36 (0.30) GCN 4.17 (0.19) 0.34 (0.04) 5.08 (0.27) 0.41 (0.07) 6.02 (0.29) 9.32 (0.49) 9.96 (0.44) 9.55 (0.31) GAT 4.31 (0.19) 0.38 (0.04) 5.16 (0.22) 0.44 (0.08) 6.23 (0.29) 9.58 (0.49) 10.21 (0.52) 10.07 (0.32) GIN 4.21 (0.21) 0.36 (0.03) 5.09 (0.28) 0.43 (0.08) 6.14 (0.25) 9.43 (0.40) 10.24 (0.39) 9.89 (0.29) SAGE 4.67 (0.15) 0.42 (0.03) 5.46 (0.23) 0.49 (0.06) 6.47 (0.28) 9.86 (0.43) 11.33 (0.41) 10.57 (0.30) GraphCL 4.86 (0.16) 0.45 (0.03) 5.54 (0.20) 0.52 (0.05) 6.81 (0.22) 9.92 (0.36) 12.11 (0.44) 10.63 (0.28) Bert 4.03 (0.21) 0.32 (0.05) 5.09 (0.22) 0.45 (0.07) 6.10 (0.24) 9.37 (0.38) 10.06 (0.51) 9.42 (0.30) RoBERTa 4.22 (0.18) 0.36 (0.03) 5.24 (0.20) 0.51 (0.07) 6.22 (0.28) 9.42 (0.48) 10.37 (0.48) 9.92 (0.28) WalkLM 4.56 (0.12) 0.39 (0.02) 5.56 (0.23) 0.55 (0.04) 7.25 (0.21) 10.01 (0.35) 12.66 (0.42) 10.68 (0.24) GraphAdapter 4.95 (0.15) 0.48 (0.02) 5.94 (0.19) 0.59 (0.04) 7.65 (0.24) 10.18 (0.38) OOM OOM OpenGraph 5.01 (0.11) 0.49 (0.03) 5.82 (0.22) 0.53 (0.05) 7.03 (0.21) 9.98 (0.34) 12.88 (0.39) 10.74 (0.23) TAPE 5.03 (0.12) 0.52 (0.02) 6.14 (0.19) 0.61 (0.04) 7.44 (0.23) 10.12 (0.35) 13.68 (0.36) 10.81 (0.25) MuseGraph 5.09 (0.10) 0.54 (0.02) 6.25 (0.17) 0.66 (0.03) 7.58 (0.31) 10.15 (0.46) 13.81 (0.43) 11.03 (0.31) Ours 5.33 (0.11) 0.59 (0.01) 6.62 (0.16) 0.74 (0.04) 8.60 (0.19) 11.05 (0.32) 14.95 (0.33) 12.18 (0.20) 
+
+and MuseGraph[ 49 ] and . Due to TAPE needs to obtain the interpre-tation of the text graph through GPT-3.5 and only the interpretation data on Cora is published. Therefore, we only report the classifi-cation results of this method on Cora. Besides, we also extend the baselines to our experiment setting of link prediction. Detailed descriptions for the baselines can be found in Appendix C.3 .
+
+## 4.2 Overall Performance Comparison 
+
+In order to evaluate the effectiveness of the proposed method, we compare the performance of our CureLLM framework to those of the baselines on different tasks which answers the RQ1 .
+
+Node Classification. We present the comparative analysis of node classification in Table 1. As shown in Table 1, CureLLM con-sistently achieves the highest performance across all five node clas-sification datasets (Instagram, Cora, Citeseer, Photo, and WikiCS). MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Trovato et al. 
+
+With an average accuracy of 79.73%, the proposed method signifi-cantly outperforms all 14 baseline models. When compared to graph neural networks that rely on structural information, CureLLM yields substantial improvements; on the Cora dataset, for example, it elevates the accuracy from the 81.50% achieved by SAGE to 85.31%. This indicates that relying on topological structure leads to a repre-sentation bottleneck, making the incorporation of textual semantics crucial for enriching node features. Furthermore, against language models trained on node text attributes, our method secures consider-able gains. On the WikiCS dataset, CureLLM surpasses BERT by an absolute margin of 3.62%, proving that neglecting graph connectiv-ity between nodes severely restricts classification accuracy. Finally, the model maintains a definitive advantage over text-graph fusion baselines. On the Citeseer dataset, it improves upon the second-best result of 72.60% to reach 73.92%, and on the Photo dataset, it advances from 85.11% to 86.31%. These results comprehensively demonstrate the efficacy of explicitly utilizing edge attributes to align the graph and text embeddings of identical nodes. 
+
+Link Prediction. We compare the link prediction results of our CureLLM to those of the baseline models. Table 2 shows the 
+
+𝑅𝑒𝑐𝑎𝑙𝑙 @10 and 𝑃𝑟𝑒𝑐𝑖𝑠𝑖𝑜𝑛 @10 on Baby, Sports, MovieLen-1M and MovieLen-10M datasets. In addition, we also conduct the experi-ments using the 𝑅𝑒𝑐𝑎𝑙𝑙 @5 and 𝑃𝑟𝑒𝑐𝑖𝑠𝑖𝑜𝑛 @5 metrics and the results are provided in Appendix C.4 . As observed in Table 2, CureLLM outperforms all 14 baselines across all evaluation metrics on ev-ery dataset. When evaluated against graph neural networks rely-ing on structural information, the proposed method yields signif-icant improvements. For example, on the MovieLen-10M dataset, it elevates the Recall@10 of GraphCL from 12.11% to 14.95%. This demonstrates that effectively incorporating textual semantics signif-icantly broadens the expressive capabilities of the model. Similarly, CureLLM secures substantial gains over pre-trained language mod-els that rely on node textual attributes. On the MovieLen-1M dataset, for instance, it improves the Recall@10 of RoBERTa from 6.22% to 8.60%, proving that capturing higher-order topological relationships between nodes is a necessary prerequisite for accurate link pre-diction. Furthermore, when compared to the previously strongest baseline, MuseGraph, CureLLM demonstrates the most notable per-formance leap on the large-scale MovieLen-10M dataset, where Recall@10 increases from 13.81% to 14.95%, and Precision@10 rises from 11.03% to 12.18%. Unlike fusion models such as GraphAdapter, CureLLM successfully overcomes the memory constraints posed by large-scale graph data, completely avoiding out-of-memory (OOM) issues. This demonstrates the effectiveness of the proposed method in link prediction tasks. 
+
+Graph Question Answering. Table 3 presents a performance comparison across complex graph reasoning tasks. The proposed CureLLM outperforms traditional prompt tuning paradigms as well as the graph-aware baseline model GraphToken. Specifically, on the ExplaGraphs dataset, CureLLM achieves a state-of-the-art accuracy of 87.21%, representing an absolute improvement of 1.82% over the strongest baseline model, MuseGraph (85.39%). Furthermore, on the more challenging WebQSP dataset, CureLLM improved the accuracy from the second-best result of 70.61% to 72.58%. This suggests that utilizing edge attributes to align the graph and textual embeddings is also effective for graphQA task. 
+
+Table 3: Performance comparison across ExplaGraphs and WebQSP. 
+
+Method ExplaGraphs WebQSP Prompt tuning 57.63 (2.43) 48.34 (0.64) GraphToken 85.08 (5.51) 57.05 (0.74) G-Retriever 85.16 (0.92) 70.49 (1.21) MuseGraph 85.39 (0.83) 70.61 (1.09) Ours 87.21 (0.85) 72.58 (0.51) Table 4: Ablation study of CureLLM on node classification where w/o denotes the removal of a specific component.                                
+
+> Instagram Cora Citeseer Photo WikiCS
+> w/o structural information 64.51 72.88 69.28 73.25 81.46
+> w/o semantic information 64.76 81.50 71.22 83.11 81.85
+> w/o inference ability 67.33 73.25 61.91 84.92 81.25
+> w/o edge attribute 66.84 83.03 70.85 85.67 83.34 CureLLM 68.30 85.31 73.92 86.31 84.80
+
+Overall, across all datasets for the three tasks, our CureLLM outperforms all baseline models on all evaluation metrics. This answers RQ1, showing that mining edge attributes for aligning the graph and textual information is capable of learning a more effective representation. 
+
+## 4.3 Ablation Study 
+
+To answer the RQ2 and provide the performance comparison of each component in CureLLM, we ablate each component by con-tinuously adding different modules. We evaluate all components by removing each item from CureLLM in turn: (a) w/o structural infor-mation: replacing GNN with MLP; (b) w/o semantic information: removing textual embedding; (c) w/o inference ability: replacing Llama2 with DeBERTa; (d) w/o edge attribute: removing curvature-based alignment. The experiment results of node classification are presented in Table 4 and more experiment results can be found in 
+
+Appendix C.5 . From Table 4, we can observe that removing any components may lead to a decrease in performance. 
+
+## 4.4 Parameter Sensitivity 
+
+In this subsection, we will investigate how the parameter 𝜆 impact CureLLM, which can answer RQ3 . The parameter 𝜆 is chosen from 
+
+0.1 to 0.9 with step size 0.1. As shown in Figure 3, CureLLM attains optimal performance with 𝜆 = 0.3 or 𝜆 = 0.5 on most datasets. From the figure, we can observe that the proposed method is robust on photo dataset and wikics dataset. Combined with the results of the ablation experiments, it can be seen that the performance degrades when either the semantic information or the structural informa-tion is removed, indicating that the parameter is meaningful. The variations in the performance of CureLLM are evident on the Cora, Citeseer and Instagram. From the figure, we observe that whether 
+
+𝜆 is too large or too small will make the performance sub-optimal. This suggests that focusing too much on the representation of a Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Parameter Sensitivity of λ
+
+Figure 3: Parameter sensitivity analysis of 𝜆 of CureLLM. 
+
+specific domain will prevent the model from learning the optimal representation. 
+
+## 4.5 Case Study 
+
+In this section of the case study, we aim to analyze and provide the explainable cases for different large language models to answer the question about RQ4 . To further validate the extensibility and archi-tectural compatibility of the framework, we evaluated CureLLM’s performance across various combinations of large language models (LLMs) and graph neural networks (GNNs). For more details about results, please refer to Appendix C.6 .
+
+## 5 Conclusion 
+
+In this work, we alleviate the problem of partial alignment in the existing graph-aware large language model from the perspective of edge structure for the first time. We showed that current node-level alignment paradigms suffer from insufficient modeling of structural information, which leads to suboptimal information propagation across views. Through both theoretical analysis and empirical ob-servations, we identified two key factors underlying this limitation: the neglect of edge-level structural information and the informa-tion compression induced by node-level aggregation. To address the challenges, we proposed a novel CureLLM framework whose goal is to exploit the signals of edge structure to enhance the existing alignment mechanism. Specifically, we design a training-free tex-tual prompt mechanism to inject edge-aware structural information into pre-trained LLMs without introducing additional training cost. Furthermore, we develop a curvature-aware graph representation learning module, where curvature is leveraged as a geometric tool to characterize information propagation. Extensive experiments show the superiority of our proposed CureLLM. 
+
+## References 
+
+[1] Hugo Attali, Davide Buscaldi, and Nathalie Pernelle. 2024. Delaunay Graph: Addressing Over-Squashing and Over-Smoothing Using Delaunay Triangulation. In Forty-first International Conference on Machine Learning, ICML 2024, Vienna, Austria, July 21-27, 2024 .[2] Hugo Attali, Davide Buscaldi, and Nathalie Pernelle. 2024. Delaunay graph: Addressing over-squashing and over-smoothing using delaunay triangulation. In 
+
+Forty-first International Conference on Machine Learning .[3] Jianyuan Bo, Hao Wu, and Yuan Fang. 2025. Quantizing text-attributed graphs for semantic-structural integration. In Proceedings of the Thirty-First ACM SIGKDD Conference on Knowledge Discovery and Data Mining V. 2 . 107–118. [4] Jakub Bober, Anthea Monod, Emil Saucan, and Kevin N Webster. 2023. Rewiring networks for graph neural network training using discrete geometry. In In-ternational Conference On Complex Networks And Their Applications . Springer, 225–236. [5] Bing Cao, Yinan Xia, Yi Ding, Changqing Zhang, and Qinghua Hu. 2024. Predic-tive Dynamic Fusion. In Forty-first International Conference on Machine Learning, ICML 2024, Vienna, Austria, July 21-27, 2024 .[6] David Castillo-Bolado, Joseph Davidson, Finlay Gray, and Marek Rosa. 2024. Beyond Prompts: Dynamic Conversational Benchmarking of Large Language Models. In Advances in Neural Information Processing Systems 38: Annual Confer-ence on Neural Information Processing Systems 2024, NeurIPS 2024, Vancouver, BC, Canada, December 10 - 15, 2024 .[7] Zhaoliang Chen, Zhihao Wu, Zhenghong Lin, Shiping Wang, Claudia Plant, and Wenzhong Guo. 2023. AGNN: Alternating graph-regularized neural networks to alleviate over-smoothing. IEEE Transactions on Neural Networks and Learning Systems (2023). [8] Wei-Lin Chiang, Zhuohan Li, Zi Lin, Ying Sheng, Zhanghao Wu, Hao Zhang, Lianmin Zheng, Siyuan Zhuang, Yonghao Zhuang, Joseph E. Gonzalez, Ion Stoica, and Eric P. Xing. 2023. Vicuna: An Open-Source Chatbot Impressing GPT-4 with 90%* ChatGPT Quality. https://lmsys.org/blog/2023-03-30-vicuna/ [9] DeepSeek-AI. 2024. DeepSeek LLM: Scaling Open-Source Language Models with Longtermism. arXiv preprint arXiv:2401.02954 (2024). https://github.com/ deepseek-ai/DeepSeek-LLM [10] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. Bert: Pre-training of deep bidirectional transformers for language understanding. In 
+
+Proceedings of the 2019 conference of the North American chapter of the association for computational linguistics: human language technologies, volume 1 (long and short papers) . 4171–4186. [11] Mingzhe Du, Anh Tuan Luu, Bin Ji, Qian Liu, and See-Kiong Ng. 2024. Mercury: A Code Efficiency Benchmark for Code Large Language Models. In Advances in Neural Information Processing Systems 38: Annual Conference on Neural Informa-tion Processing Systems 2024, NeurIPS 2024, Vancouver, BC, Canada, December 10 -15, 2024 .[12] Zihan Fang, Zhiling Cai, Yuxuan Zheng, Shide Du, Yanchao Tan, and Shiping Wang. 2025. HiTuner: Hierarchical Semantic Fusion Model Fine-Tuning on Text-Attributed Graphs. In Proceedings of the Thirty-Fourth International Joint Conference on Artificial Intelligence .[13] Amirhossein Farzam, Allen R. Tannenbaum, and Guillermo Sapiro. 2024. From Geometry to Causality- Ricci Curvature and the Reliability of Causal Inference on Networks. In Forty-first International Conference on Machine Learning, ICML 2024, Vienna, Austria, July 21-27, 2024 (Proceedings of Machine Learning Research) .13086–13108. [14] Will Hamilton, Zhitao Ying, and Jure Leskovec. 2017. Inductive representation learning on large graphs. Advances in neural information processing systems 30 (2017). [15] Jiuzhou Han, Nigel Collier, Wray L. Buntine, and Ehsan Shareghi. 2024. PiVe: Prompting with Iterative Verification Improving Graph-based Generative Capa-bility of LLMs. In Findings of the Association for Computational Linguistics, ACL 2024, Bangkok, Thailand and virtual meeting, August 11-16, 2024 . 6702–6718. [16] Pengcheng He, Xiaodong Liu, Jianfeng Gao, and Weizhu Chen. [n. d.]. DEBERTA: DECODING-ENHANCED BERT WITH DISENTANGLED ATTENTION. In Inter-national Conference on Learning Representations .[17] Xiaoxin He, Xavier Bresson, Thomas Laurent, Adam Perold, Yann LeCun, and Bryan Hooi. 2024. Harnessing Explanations: LLM-to-LM Interpreter for Enhanced Text-Attributed Graph Representation Learning. In The Twelfth International Conference on Learning Representations .[18] Xiangnan He, Kuan Deng, Xiang Wang, Yan Li, Yong-Dong Zhang, and Meng Wang. 2020. LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation. In Proceedings of the 43rd International ACM SIGIR con-ference on research and development in Information Retrieval, SIGIR 2020, Virtual Event, China, July 25-30, 2020 , Jimmy X. Huang, Yi Chang, Xueqi Cheng, Jaap Kamps, Vanessa Murdock, Ji-Rong Wen, and Yiqun Liu (Eds.). ACM, 639–648. doi:10.1145/3397271.3401063 [19] Xiaoxin He, Yijun Tian, Yifei Sun, Nitesh Chawla, Thomas Laurent, Yann LeCun, Xavier Bresson, and Bryan Hooi. 2024. G-retriever: Retrieval-augmented gen-eration for textual graph understanding and question answering. Advances in Neural Information Processing Systems 37 (2024), 132876–132907. [20] Zhiyuan Hu, Chumin Liu, Xidong Feng, Yilun Zhao, See-Kiong Ng, Anh Tuan Luu, Junxian He, Pang Wei W Koh, and Bryan Hooi. 2024. Uncertainty of thoughts: Uncertainty-aware planning enhances information seeking in LLMs. Advances in Neural Information Processing Systems 37 (2024), 24181–24215. [21] Sujia Huang, Yueyang Pi, Tong Zhang, Wenzhe Liu, and Zhen Cui. 2025. Boosting Graph Convolution with Disparity-induced Structural Refinement. In THE WEB CONFERENCE . 1–10. [22] Xuanwen Huang, Kaiqiao Han, Yang Yang, Dezheng Bao, Quanjin Tao, Ziwei Chai, and Qi Zhu. 2024. Can GNN be Good Adapter for LLMs?. In Proceedings of the ACM Web Conference 2024 . 893–904. MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Trovato et al. 
+
+[23] Jürgen Jost and Jeurgen Jost. 2008. Riemannian geometry and geometric analysis .Vol. 42005. Springer. [24] Thomas N. Kipf and Max Welling. 2017. Semi-Supervised Classification with Graph Convolutional Networks. In Proceedings of the 5th International Conference on Learning Representations . 1–14. [25] Lecheng Kong, Jiarui Feng, Hao Liu, Chengsong Huang, Jiaxin Huang, Yixin Chen, and Muhan Zhang. 2024. Gofa: A generative one-for-all model for joint graph language modeling. arXiv preprint arXiv:2407.09709 (2024). [26] Andreas Köpf, Yannic Kilcher, Dimitri Von Rütte, Sotiris Anagnostidis, Zhi Rui Tam, Keith Stevens, Abdullah Barhoum, Duc Nguyen, Oliver Stanley, Richárd Nagyfi, et al . 2023. Openassistant conversations-democratizing large language model alignment. Advances in Neural Information Processing Systems 36 (2023), 47669–47681. [27] Jianxin Li, Xingcheng Fu, Qingyun Sun, Cheng Ji, Jiajun Tan, Jia Wu, and Hao Peng. 2022. Curvature graph generative adversarial networks. In Proceedings of the ACM web conference 2022 . 1528–1537. [28] Wanhua Li, Zibin Meng, Jiawei Zhou, Donglai Wei, Chuang Gan, and Hanspeter Pfister. 2024. SocialGPT: Prompting LLMs for Social Relation Reasoning via Greedy Segment Optimization. In Advances in Neural Information Processing Systems 38: Annual Conference on Neural Information Processing Systems 2024, NeurIPS 2024, Vancouver, BC, Canada, December 10 - 15, 2024 .[29] Yuhan Li, Peisong Wang, Xiao Zhu, Aochuan Chen, Haiyun Jiang, Deng Cai, Wai Kin (Victor) Chan, and Jia Li. 2024. GLBench: A Comprehensive Benchmark for Graph with Large Language Models. In Advances in Neural Information Processing Systems 38: Annual Conference on Neural Information Processing Systems 2024, NeurIPS 2024, Vancouver, BC, Canada, December 10 - 15, 2024 .[30] Zhenghong Lin, Wei Huang, Hengyu Zhang, Jiayu Xu, Weiming Liu, Xinting Liao, Fan Wang, Shiping Wang, and Yanchao Tan. 2024. Enhancing dual-target cross-domain recommendation with federated privacy-preserving learning. In 
+
+Proceedings of the Thirty-Third International Joint Conference on Artificial Intelli-gence, IJCAI-24 . 2153–2161. [31] Zhenghong Lin, Yanchao Tan, Yunfei Zhan, Weiming Liu, Fan Wang, Chaochao Chen, Shiping Wang, and Carl Yang. 2023. Contrastive intra-and inter-modality generation for enhancing incomplete multimedia recommendation. In Proceedings of the 31st ACM International Conference on Multimedia . 6234–6242. [32] Zhenghong Lin, Qishan Yan, Weiming Liu, Shiping Wang, Menghan Wang, Yan-chao Tan, and Carl Yang. 2023. Automatic hypergraph generation for enhancing recommendation with sparse optimization. IEEE Transactions on Multimedia 26 (2023), 5680–5693. [33] Pengfei Liu, Weizhe Yuan, Jinlan Fu, Zhengbao Jiang, Hiroaki Hayashi, and Graham Neubig. 2023. Pre-train, prompt, and predict: A systematic survey of prompting methods in natural language processing. ACM computing surveys 55, 9 (2023), 1–35. [34] Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Levy, Mike Lewis, Luke Zettlemoyer, and Veselin Stoyanov. 2019. Roberta: A robustly optimized bert pretraining approach. arXiv preprint arXiv:1907.11692 
+
+(2019). [35] Zheyuan Liu, Xiaoxin He, Yijun Tian, and Nitesh V Chawla. 2024. Can we soft prompt LLMs for graph learning tasks?. In Companion Proceedings of the ACM Web Conference 2024 . 481–484. [36] Haoran Luo, Haihong E, Zichen Tang, Shiyao Peng, Yikai Guo, Wentai Zhang, Chenghao Ma, Guanting Dong, Meina Song, Wei Lin, Yifan Zhu, and Anh Tuan Luu. 2024. ChatKBQA: A Generate-then-Retrieve Framework for Knowledge Base Question Answering with Fine-tuned Large Language Models. In Findings of the Association for Computational Linguistics ACL 2024 . Bangkok, Thailand and virtual meeting, 2039–2056. [37] Haoran Luo, Haihong E, Yuhao Yang, Tianyu Yao, Yikai Guo, Zichen Tang, Wentai Zhang, Shiyao Peng, Kaiyang Wan, Meina Song, Wei Lin, Yifan Zhu, and Anh Tuan Luu. 2024. Text2NKG: Fine-Grained N-ary Relation Extraction for N-ary relational Knowledge Graph Construction. In Advances in Neural Information Processing Systems , Vol. 37. 27417–27439. [38] Zizhuo Meng, Ke Wan, Yadong Huang, Zhidong Li, Yang Wang, and Feng Zhou. 2024. Interpretable Transformer Hawkes Processes: Unveiling Complex Interac-tions in Social Networks. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, KDD 2024, Barcelona, Spain, August 25-29, 2024 . ACM, 2200–2211. [39] M. Mohri, A. Rostamizadeh, and Talwalkar. 2018. Fundamentals of machine learning . MIT Press. [40] Chien-Chun Ni, Yu-Yao Lin, Jie Gao, Xianfeng David Gu, and Emil Saucan. 2015. Ricci curvature of the internet topology. In 2015 IEEE conference on computer communications (INFOCOM) . IEEE, 2758–2766. [41] Yann Ollivier. 2007. Ricci curvature of metric spaces. Comptes Rendus Mathema-tique 345, 11 (2007), 643–646. [42] Yann Ollivier. 2009. Ricci curvature of Markov chains on metric spaces. Journal of Functional Analysis 256, 3 (2009), 810–864. [43] Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, et al . 2022. Training language models to follow instructions with human feedback. Advances in neural information processing systems 35 (2022), 27730–27744. [44] Bryan Perozzi, Bahare Fatemi, Dustin Zelle, Anton Tsitsulin, Mehran Kazemi, Rami Al-Rfou, and Jonathan Halcrow. 2024. Let your graph do the talking: Encoding structured data for llms. arXiv preprint arXiv:2402.05862 (2024). [45] Nils Reimers, I Sentence-BERT Gurevych, et al . 1908. Sentence embeddings using siamese BERT-networks. arXiv 2019. arXiv preprint arXiv:1908.10084 10 (1908). [46] Xubin Ren, Jiabin Tang, Dawei Yin, Nitesh Chawla, and Chao Huang. 2024. A survey of large language models for graphs. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining . 6616–6626. [47] Jayson Sia, Edmond Jonckheere, and Paul Bogdan. 2019. Ollivier-ricci curvature-based method to community detection in complex networks. Scientific reports 9, 1 (2019), 9800. [48] Shichao Sun, Ruifeng Yuan, Ziqiang Cao, Wenjie Li, and Pengfei Liu. 2024. Prompt chaining or stepwise prompt? refinement in text summarization. In Findings of the Association for Computational Linguistics ACL 2024 . 7551–7558. [49] Yanchao Tan, Hang Lv, Pengxiang Zhan, Shiping Wang, and Carl Yang. 2026. Graph-Oriented Instruction Tuning of Large Language Models for Generic Graph Mining. IEEE Transactions on Pattern Analysis and Machine Intelligence 48, 1 (2026), 155–169. [50] Yanchao Tan, Zihao Zhou, Hang Lv, Weiming Liu, and Carl Yang. 2023. Walklm: A uniform language model fine-tuning framework for attributed graph embedding. 
+
+Advances in neural information processing systems 36 (2023), 13308–13325. [51] Jiabin Tang, Yuhao Yang, Wei Wei, Lei Shi, Lixin Su, Suqi Cheng, Dawei Yin, and Chao Huang. 2024. GraphGPT: Graph Instruction Tuning for Large Language Models. In Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval, SIGIR 2024, Washington DC, USA, July 14-18, 2024 . ACM, 491–500. [52] Jiabin Tang, Yuhao Yang, Wei Wei, Lei Shi, Lixin Su, Suqi Cheng, Dawei Yin, and Chao Huang. 2024. Graphgpt: Graph instruction tuning for large language models. In Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval . 491–500. [53] Jiabin Tang, Yuhao Yang, Wei Wei, Lei Shi, Long Xia, Dawei Yin, and Chao Huang. 2024. Higpt: Heterogeneous graph language model. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining . 2842–2853. [54] Jake Topping, Francesco Di Giovanni, Benjamin Paul Chamberlain, Xiaowen Dong, and Michael M Bronstein. [n. d.]. Understanding over-squashing and bottlenecks on graphs via curvature. In International Conference on Learning Representations .[55] Jake Topping, Francesco Di Giovanni, Benjamin Paul Chamberlain, Xiaowen Dong, and Michael M. Bronstein. 2022. Understanding over-squashing and bottlenecks on graphs via curvature. In The Tenth International Conference on Learning Representations, ICLR 2022, Virtual Event, April 25-29, 2022 .[56] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, et al . 2023. Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971 (2023). [57] Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yas-mine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhos-ale, et al . 2023. Llama 2: Open foundation and fine-tuned chat models. arXiv preprint arXiv:2307.09288 (2023). [58] Petar Veličković, Guillem Cucurull, Arantxa Casanova, Adriana Romero, Pietro Liò, and Yoshua Bengio. 2018. Graph Attention Networks. In International Con-ference on Learning Representations .[59] Heng Wang, Shangbin Feng, Tianxing He, Zhaoxuan Tan, Xiaochuang Han, and Yulia Tsvetkov. 2023. Can language models solve graph problems in natural language? Advances in Neural Information Processing Systems 36 (2023), 30840– 30861. [60] Yu Wang, Liang Hu, Xiaofeng Cao, Yi Chang, and Ivor W. Tsang. 2024. Enhancing Locally Adaptive Smoothing of Graph Neural Networks Via Laplacian Node Disagreement. IEEE Transactions on Knowledge and Data Engineering 36 (2024), 1099–1112. doi:10.1109/TKDE.2023.3303212 [61] Wei Wei, Chao Huang, Lianghao Xia, and Chuxu Zhang. 2023. Multi-modal self-supervised learning for recommendation. In Proceedings of the ACM Web Conference 2023 . 790–800. [62] Wei Wei, Xubin Ren, Jiabin Tang, Qinyong Wang, Lixin Su, Suqi Cheng, Jun-feng Wang, Dawei Yin, and Chao Huang. 2024. Llmrec: Large language models with graph augmentation for recommendation. In Proceedings of the 17th ACM International Conference on Web Search and Data Mining . 806–815. [63] Wei Wei, Jiabin Tang, Lianghao Xia, Yangqin Jiang, and Chao Huang. 2024. Multi-Modal Knowledge Distillation for Recommendation with Prompt-Tuning. In The Web Conference 2024 . https://openreview.net/forum?id=JG0Qa4LY3s [64] Xiaobao Wu, Thong Nguyen, Delvin Zhang, William Yang Wang, and Anh Tuan Luu. 2024. FASTopic: Pretrained Transformer is a Fast, Adaptive, Stable, and Transferable Topic Model. In Advances in Neural Information Processing Systems 38: Annual Conference on Neural Information Processing Systems 2024, NeurIPS 2024, Vancouver, BC, Canada, December 10 - 15, 2024 .Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil 
+
+[65] Zhihao Wu, Xincan Lin, Zhenghong Lin, Zhaoliang Chen, Yang Bai, and Shiping Wang. 2023. Interpretable graph convolutional network for multi-view semi-supervised learning. IEEE Transactions on Multimedia 25 (2023), 8593–8606. [66] Lianghao Xia, Ben Kao, and Chao Huang. 2024. OpenGraph: Towards Open Graph Foundation Models. In Findings of the Association for Computational Linguistics: EMNLP 2024 . 2365–2379. [67] Chengming Xu, Chen Liu, Yikai Wang, Yuan Yao, and Yanwei Fu. 2024. Towards Global Optimal Visual In-Context Learning Prompt Selection. In Advances in Neural Information Processing Systems 38: Annual Conference on Neural Informa-tion Processing Systems 2024, NeurIPS 2024, Vancouver, BC, Canada, December 10 -15, 2024 .[68] Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka. 2019. How Powerful are Graph Neural Networks?. In International Conference on Learning Representa-tions .[69] Cheng Yang, Maosong Sun, Zhiyuan Liu, and Cunchao Tu. 2017. Fast Network Embedding Enhancement via High Order Proximity Approximation. In Proceed-ings of the Twenty-Sixth International Joint Conference on Artificial Intelligence, IJCAI 2017, Melbourne, Australia, August 19-25, 2017 , Carles Sierra (Ed.). ijcai.org, 3894–3900. doi:10.24963/IJCAI.2017/544 [70] Ze Ye, Kin Sum Liu, Tengfei Ma, Jie Gao, and Chao Chen. 2019. Curvature graph network. In International conference on learning representations .[71] Yuning You, Tianlong Chen, Yongduo Sui, Ting Chen, Zhangyang Wang, and Yang Shen. 2020. Graph contrastive learning with augmentations. Advances in neural information processing systems 33 (2020), 5812–5823. [72] Xingyi Zhang, Kun Xie, Sibo Wang, and Zengfeng Huang. 2021. Learning Based Proximity Matrix Factorization for Node Embedding. In KDD ’21: The 27th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, Virtual Event, Singapore, August 14-18, 2021 , Feida Zhu, Beng Chin Ooi, and Chunyan Miao (Eds.). ACM, 2243–2253. doi:10.1145/3447548.3467296 [73] Chuang Zhao, Hui Tang, Jiheng Zhang, and Xiaomeng Li. 2025. Unveiling Discrete Clues: Superior Healthcare Predictions for Rare Diseases. In Proceedings of the ACM on Web Conference 2025, WWW 2025, Sydney, NSW, Australia, 28 April 2025-2 May 2025 . 1747–1758. [74] Haoran Zheng, Renchi Yang, Hongtao Wang, and Jianliang Xu. 2025. Cross-contrastive clustering for multimodal attributed graphs with dual graph filtering. 
+
+arXiv preprint arXiv:2511.20030 (2025). [75] Xin Zhou, Hongyu Zhou, Yong Liu, Zhiwei Zeng, Chunyan Miao, Pengwei Wang, Yuan You, and Feijun Jiang. 2023. Bootstrap latent representations for multi-modal recommendation. In Proceedings of the ACM web conference 2023 . 845–854. [76] Yun Zhu, Yaoke Wang, Haizhou Shi, and Siliang Tang. 2024. Efficient tuning and inference for large language models on textual graphs. In Proceedings of the Thirty-Third International Joint Conference on Artificial Intelligence . 5734–5742. [77] Shuman Zhuang, Sujia Huang, Wei Huang, Yuhong Chen, Zhihao Wu, and Ximeng Liu. 2024. Enhancing Multi-view Graph Neural Network with Cross-view Confluent Message Passing. In Proceedings of the 32nd ACM International Conference on Multimedia . 10065–10074. MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Trovato et al. 
+
+## A Appendix A for Proofs of Theorems and Related Work Discussion 
+
+In this section, we will provide detailed proof of all our Theorems. 
+
+Theorem 1. is to illustrate the existing paradigm for graph LLMs using only node alignment while ignoring the structural infor-mation of edges can lead to suboptimal solutions. Theorem 2. is to illustrate negatively curved edges are those causing the graph bottleneck and thus leading to the partially indistinguishable phe-nomenon. Then, we will discuss the related work and give the prompt design of our CureLLM. 
+
+## A.1 Proofs for Theorem 1 
+
+Following the definition of Generalization Error Upper Bound in [5], we can rewrite the formulation of generalization error as 
+
+𝐺𝐸 (𝑓 ) = E(𝑥,𝑦 )∼D 
+
+ℓ (𝑓 (𝑥 ), 𝑦 ), (13) where D is the selected dataset. By considering the property of the convex function as 
+
+ℓ (𝑓 (𝑥 ), 𝑦 ) = ℓ
+
+
+
+𝜔 𝑛 𝑓 𝑛 (𝑥 (𝑛 ) ) + 𝜔 𝑒 𝑓 𝑒 (𝑥 (𝑒 ) ), 𝑦 
+
+
+
+≤ 𝜔 𝑚 ℓ (𝑓 𝑚 (𝑥 (𝑚 ) ), 𝑦 ) + 𝜔 𝑚 ℓ (𝑓 𝑚 (𝑥 (𝑚 ) ), 𝑦 )
+
+(14) we can reformulate the Equation 13 as 
+
+𝐺𝐸 (𝑓 ) = E(𝑥,𝑦 )∼D 
+
+ℓ (𝑓 (𝑥 ), 𝑦 ) ≤ E(𝑥,𝑦 )∼D 
+
+𝜔 𝑛 ℓ𝑛 
+
++E(𝑥,𝑦 )∼D 
+
+𝜔 𝑒 ℓ𝑒 
+
+ .
+
+(15) Here, 𝜔 𝑛 and 𝜔 𝑒 are the confidence weights for nodes and edges, respectively. The symbols of ℓ𝑛 and ℓ𝑒 are convex logistic loss func-tions for nodes and edges. Then, we make an equivalent transfor-mation to the above Equation 15 as 
+
+𝐺𝐸 (𝑓 ) ≤ E(𝑥,𝑦 )∼D 
+
+𝜔 𝑛 ℓ𝑛 
+
+ + E(𝑥,𝑦 )∼D 
+
+𝜔 𝑒 ℓ𝑒 
+
+
+
+= 12 ·  2 · ( E(𝑥,𝑦 )∼D 
+
+𝜔 𝑛 ℓ𝑛 
+
+ + E(𝑥,𝑦 )∼D 
+
+𝜔 𝑒 ℓ𝑒 
+
+). (16) Since the weights of 𝜔 𝑛 and 𝜔 𝑒 satisfy the condition (𝜔 𝑛 + 𝜔 𝑒 = 1),we can rewrite Equation 16 as 
+
+𝐺𝐸 (𝑓 ) ≤ 12 ·  2 · ( E(𝑥,𝑦 )∼D 
+
+𝜔 𝑛 ℓ𝑛 
+
+ + E(𝑥,𝑦 )∼D 
+
+𝜔 𝑒 ℓ𝑒 
+
+)
+
+= 12 ·
+
+h 
+
+E(𝑥,𝑦 )∼D 
+
+𝜔 𝑛 ℓ𝑛 
+
+ + E(𝑥,𝑦 )∼D 
+
+(1 −𝜔 𝑒 ) ℓ𝑛 
+
+ 
+
++
+
+
+
+E(𝑥,𝑦 )∼D 
+
+𝜔 𝑒 ℓ𝑒 
+
+ + E(𝑥,𝑦 )∼D 
+
+(1 −𝜔 𝑛 ) ℓ𝑒 
+
+ i 
+
+.
+
+(17) Considering the definition of the covariance between the confi-dence weight 𝜔 and the loss ℓ by 𝐶𝑜𝑣 (𝜔, ℓ ) = E(𝑥,𝑦 )∼D 
+
+𝜔ℓ  −
+
+E(𝑥,𝑦 )∼D 
+
+𝜔  · E(𝑥,𝑦 )∼D 
+
+ℓ, we can use the covariance to reformu-late the Equation 17 as 
+
+𝐺𝐸 (𝑓 ) ≤ 12
+
+h
+
+E(𝑥,𝑦 )∼D [𝜔 𝑛 ] E(𝑥,𝑦 )∼D [ℓ𝑛 ] + Cov (𝜔 𝑛 , ℓ 𝑛 )+ E(𝑥,𝑦 )∼D [𝜔 𝑒 ] E(𝑥,𝑦 )∼D [ℓ𝑒 ] + Cov (𝜔 𝑒 , ℓ 𝑒 )−
+
+
+
+E(𝑥,𝑦 )∼D [𝜔 𝑒 ] E(𝑥,𝑦 )∼D [ℓ𝑛 ]+ Cov (𝜔 𝑒 , ℓ 𝑛 ) − E(𝑥,𝑦 )∼D [ℓ𝑛 ]
+
+
+
+−
+
+
+
+E(𝑥,𝑦 )∼D [𝜔 𝑛 ] E(𝑥,𝑦 )∼D [ℓ𝑒 ]+ Cov (𝜔 𝑛 , ℓ 𝑒 ) − E(𝑥,𝑦 )∼D [ℓ𝑒 ]
+
+i 
+
+.
+
+(18) Then, we extend Equation 18 to 
+
+𝐺𝐸 (𝑓 ) ≤ 12
+
+
+
+E[ℓ𝑛 ]  E[𝜔 𝑛 ] + [ 1 − E[𝜔 𝑒 ]] 
+
++ Cov (𝜔 𝑛 , ℓ 𝑛 ) − Cov (𝜔 𝑒 , ℓ 𝑛 )
+
+
+
++
+
+
+
+E[ℓ𝑒 ]  E[𝜔 𝑒 ] + [ 1 − E[𝜔 𝑛 ]] 
+
++ Cov (𝜔 𝑒 , ℓ 𝑒 ) − Cov (𝜔 𝑛 , ℓ 𝑒 )
+
+
+
+,
+
+(19) where we continue to simplify Equation 19 to obtain 
+
+𝐺𝐸 (𝑓 ) ≤ 12
+
+h 
+
+2E(𝑥,𝑦 )∼D [ℓ𝑛 ] E(𝑥,𝑦 )∼D [𝜔 𝑛 ]+ Cov (𝜔 𝑛 , ℓ 𝑛 ) − Cov (𝜔 𝑒 , ℓ 𝑛 )
+
+
+
++
+
+
+
+2E(𝑥,𝑦 )∼D [ℓ𝑒 ] E(𝑥,𝑦 )∼D [𝜔 𝑒 ]+ Cov (𝜔 𝑒 , ℓ 𝑒 ) − Cov (𝜔 𝑛 , ℓ 𝑒 )
+
+i 
+
+.
+
+(20) After the calculation of Equation 20, we can have the final formula-tion of our Error Upper Bound for Graph Representation Learning in LLMs, shown as 
+
+𝐺𝐸 (𝑓 ) ≤ E(𝑥,𝑦 )∼D [ℓ𝑛 ] E(𝑥,𝑦 )∼D [𝜔 𝑛 ]+ 12
+
+Cov (𝜔 𝑛 , ℓ 𝑛 ) − Cov (𝜔 𝑛 , ℓ 𝑒 )
+
++ E(𝑥,𝑦 )∼D [ℓ𝑒 ] E(𝑥,𝑦 )∼D [𝜔 𝑒 ]+ 12
+
+Cov (𝜔 𝑒 , ℓ 𝑒 ) − Cov (𝜔 𝑒 , ℓ 𝑛 ) .
+
+(21) Then, we analyze the upper bound of Equation 21. Since the weights of 𝜔 𝑛 and 𝜔 𝑒 are less than 1, where it means 0 ≤ 𝜔 𝑛 ≤ 1 and 
+
+0 ≤ 𝜔 𝑒 ≤ 1, we can obtain the inequalities E(𝑥,𝑦 )∼D [𝜔 𝑛 ] ≤ 1 and 
+
+E(𝑥,𝑦 )∼D [𝜔 𝑒 ] ≤ 1. Therefore, we can relax the upper bound of Equation 21, as shown as 
+
+𝐺𝐸 (𝑓 ) ≤ E(𝑥,𝑦 )∼D [ℓ𝑛 ] + 12 Cov (𝜔 𝑛 , ℓ 𝑛 ) − 12 Cov (𝜔 𝑛 , ℓ 𝑒 )+ E(𝑥,𝑦 )∼D [ℓ𝑒 ] + 12 Cov (𝜔 𝑒 , ℓ 𝑒 ) − 12 Cov (𝜔 𝑒 , ℓ 𝑛 ).
+
+(22) Following the previous theory in Rademacher complexity [ 39 ], the expectation of the above loss function has the following property: With a confidence level of 1 − Δ and Δ satisfies 0 < Δ < 1, we get 
+
+E(𝑥,𝑦 )∼D [ℓ𝑛 ] ≤ R 𝑁 (H ) + √︂ ln (1/Δ)
+
+2𝑁 + ˆ𝑒 (𝑓 ). (23) Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil 
+
+Here, ˆ𝑒 (𝑓 ) is the empirical error of the graph aggregation function 
+
+𝑓 (·) and H is the hypothesis set. Besides, the Rademacher com-plexity is denoted by R𝑁 (H ) . By combining the Equation 22 and Equation 23, the can obtain the final Error Upper Bound for Graph Representation Learning in LLMs with 
+
+𝐺𝐸 (𝑓 ) ≤ 2R𝑁 (H ) +√︂ 2 ln (1/Δ)
+
+𝑁 + ˆ𝑒 (𝑓 𝑛 ) + ˆ𝑒 (𝑓 𝑒 )+ 12
+
+"
+
+𝐶𝑜𝑣 (𝜔 𝑛 , ℓ 𝑛 )
+
+| {z }
+
+> Node Covariance
+
++ 𝐶𝑜𝑣 (𝜔 𝑒 , ℓ 𝑒 )
+
+| {z }
+
+> Edge Covariance
+
+−𝐶𝑜𝑣 (𝜔 𝑛 , ℓ 𝑒 ) − 𝐶𝑜𝑣 (𝜔 𝑒 , ℓ 𝑛 )
+
+| {z }
+
+> Node-Edge Covariance
+
+#
+
+.
+
+(24) Up to here, we have completed the proof of Theorem 1. 
+
+## A.2 Proofs for Theorem 2 
+
+In the Theorem 2 , our goal is to prove the following conclusion: 
+
+Theorem 2. (Negative Curvature in Graph Representation Learn-ing with LLMs) Consider message passing and curvature. Let node 𝑖 
+
+under the graph view and node 𝑗 under the textual view with 𝑑 𝑖 ≤ 𝑑 𝑗 .Assume that the derivatives of functions under graph-graph and text-text message passing are bounded with |∇ 𝜙 𝑙 | ≤ 𝛼 and |∇ 𝜓 𝑙 | ≤ 𝛽 , and the message passing functions between graph-text nodes are bounded with |∇ 𝜙 ′ 
+
+> 𝑙
+
+| ≤ 𝛼 ′ and |∇ 𝜓 ′ 
+
+> 𝑙
+
+| ≤ 𝛽 ′, for each 0 ≤ 𝑙 ≤ 𝐿 − 1, with the depth of message passing 𝐿 ≥ 2. There exists 𝛿 and 𝛾 −1 
+
+> max
+
+such that 
+
+0 < 𝛿 <  max {𝑑 𝑖 , 𝑑 𝑗 } − 12 , 𝛿 < 𝛾 −1 
+
+> max
+
+and 𝜿 𝑖 𝑗 ≤ − 2 + 𝛿 . Then given 
+
+𝑄 𝑗 ⊆ 𝑆 2 (𝑖 ) satisfying |𝑄 𝑗 | > 𝛿 −1 and for 0 ≤ 𝑙 0 ≤ 𝐿 − 2, we have 
+
+1
+
+|𝑄 𝑗 |∑︁ 𝑘 ∈𝑄 𝑗 
+
+𝜕 𝒉 (𝑙 0+2)
+
+> 𝑘
+
+𝜕 𝒉 (𝑙 0 )
+
+> 𝑖
+
+< (𝛼𝛽 )( 𝛼 ′𝛽 ′)𝛿 14 . (25) To prove the above conclusion, we need to first define the geometric sign of curvature. We let the degree of node 𝑖 and 𝑗 in curvature 
+
+𝑒𝑑𝑔𝑒 (𝑖, 𝑗 ) as 𝑑 𝑖 := 𝑑 and 𝑑 𝑗 := 𝑑 + 𝑠 with 𝑠 > 0. Then, the symbol 
+
+𝑡𝑟𝑖 (𝑖, 𝑗 ) is set of the triangles based at nodes 𝑖 and 𝑗 , where the set 
+
+𝑡𝑟𝑖 (𝑖, 𝑗 ) is defined as 𝑡𝑟𝑖 (𝑖, 𝑗 ) := 𝑆 1 (𝑖 ) ∩ 𝑆 1 ( 𝑗 ). The symbol 𝑠𝑞𝑢 (𝑖, 𝑗 )
+
+means the set of 4-cycle squares based at the edge 𝑒𝑑𝑔𝑒 (𝑖, 𝑗 ), where the set 𝑠𝑞𝑢 𝑖 (𝑖, 𝑗 ) is defined as 𝑠𝑞𝑢 𝑖 (𝑖, 𝑗 ) := { 𝑘 ∈ 𝑆 1 (𝑖 ) \ 𝑆 1 ( 𝑗 ), 𝑘 ≠
+
+𝑗 : ∃ 𝑤 ∈  𝑆 1 (𝑘 ) ∩ 𝑆 1 ( 𝑗 ) \ 𝑆 1 (𝑖 )} . Here, both 𝑡𝑟𝑖 (𝑖, 𝑗 ) and 𝑠𝑞𝑢 (𝑖, 𝑗 )
+
+are the common definitions in the curvature from the geometric perspective, e.g. [ 41 , 42 ]. Then, we introduce the Lemma 1 to help the proof for Theorem 2 :
+
+Lemma 1. Assume a graph message passing mechanism with the mechanism of 𝒉 (𝑙 +1) 
+
+> 𝑖
+
+= 𝜙 𝑙 (𝒉 (𝑙 ) 
+
+> 𝑖
+
+, Í𝑛 𝑗 =1 𝑨 𝑖 𝑗 𝜓 𝑙 (𝒉 (𝑙 ) 
+
+> 𝑖
+
+, 𝒉 (𝑙 ) 
+
+> 𝑗
+
+)) . Let 𝑖, 𝑠 ∈ 𝑉 
+
+with 𝑠 ∈ 𝑆 𝑟 +1 (𝑖 ). If ∇𝜙 ℓ ≤ 𝛼 and ∇𝜓 ℓ ≤ 𝛽 for 0 ≤ ℓ ≤ 𝑟 , then we can have: 
+
+𝜕 𝒉 (𝑟 +1)
+
+> 𝑖
+
+𝜕 𝒙 𝑠 
+
+≤ ( 𝛼𝛽 )𝑟 (𝛼 ′𝛽 ′)   ˆ𝑨 𝑟 +1  
+
+> 𝑖𝑠
+
+. (26) To prove Lemma 1 , we first calculate the derivative expansion of Equation 26. According to the chain rule of multivariate function: 
+
+𝜕 𝒉 (𝑟 +1)
+
+> 𝑖
+
+𝜕 𝒙 𝑠 
+
+= 𝜕 1𝜙 𝑟 
+
+ 𝒖 𝑖 , 𝒗 𝑖 
+
+ 𝜕 𝒖 𝑖 
+
+𝜕 𝒙 𝑠 
+
++ 𝜕 2𝜙 𝑟 
+
+ 𝒖 𝑖 , 𝒗 𝑖 
+
+ 𝜕 𝒗 𝑖 
+
+𝜕 𝒙 𝑠 
+
+, (27) the derivative expansion of Equation 26 is shown as 
+
+𝜕 𝒉 (𝑟 +1)
+
+> 𝑖
+
+𝜕 𝒙 𝑠 
+
+= 𝜕 1𝜙 𝑟 
+
+ . . .  𝜕 𝒙 𝑠 𝒉 (𝑟 )
+
+> 𝑖
+
++ 𝜕 2𝜙 𝑟 
+
+ . . .  𝑛 ∑︁  
+
+> 𝑗 𝑟 =1
+
+ˆ𝑎 𝑖 𝑗 𝑟 
+
+h
+
+𝜕 1𝜓 𝑟 
+
+ 𝒉 (𝑟 ) 
+
+> 𝑖
+
+, 𝒉 (𝑟 )
+
+> 𝑗 𝑟
+
+ 𝜕 𝒙 𝑠 ℎ(𝑟 )
+
+> 𝑖
+
++ 𝜕 2𝜓 𝑟 
+
+ 𝒉 (𝑟 ) 
+
+> 𝑖
+
+, 𝒉 (𝑟 )
+
+> 𝑗 𝑟
+
+ 𝜕 𝒙 𝑠 𝒉 (𝑟 )
+
+> 𝑗 𝑟
+
+i
+
+.
+
+(28) We can iterate the above computation and the right-hand side of Equation 28 can be expanded as 
+
+𝜕 𝒉 (𝑟 +1)
+
+> 𝑖
+
+𝜕 𝒙 𝑠 
+
+=∑︁  
+
+> 𝑗 𝑟 ,...,𝑗 0
+
+∑︁ 𝑘 𝑟 ∈ { 𝑖,𝑗 𝑟 }
+
+· · · ∑︁    
+
+> 𝑘 1∈ { 𝑖,𝑗 𝑟 ,...,𝑗 1}
+
+ˆ𝑎 𝑖 𝑗 𝑟 ˆ𝑎 𝑘 𝑟 𝑗 𝑟 −1 . . . ˆ𝑎 𝑘 1 𝑗 0 𝑍 𝑖 𝑗 𝑟 𝑘 𝑟 𝑗 𝑟 −1 ...𝑘 1 𝑗 0 (𝑿 ) 𝜕 𝒉 (0)
+
+> 𝑗 0
+
+𝜕 𝒙 𝑠 
+
+(29) where 𝑍 𝑖 𝑗 𝑟 𝑘 𝑟 𝑗 𝑟 −1 ...𝑘 1 𝑗 0 (·) means the functions of input features ob-tained as products of 𝑟 + 1 partial derivatives for the message func-tion 𝜓 𝑙 and the update function 𝜙 𝑙 . Since 𝑯 (0) = 𝑿 and we have 
+
+𝜕 𝒉 (0)
+
+> 𝑗 0
+
+𝜕 𝒙 𝑠 
+
+= 𝛿 𝑗 0𝑠 , (30) where we can we can derive the following formulation: 
+
+𝜕 𝒉 (𝑟 +1)
+
+> 𝑖
+
+𝜕 𝒙 𝑠 
+
+=∑︁  
+
+> 𝑗 𝑟 ,...,𝑗 1
+
+∑︁ 𝑘 𝑟 ∈ { 𝑖,𝑗 𝑟 }
+
+· · · ∑︁    
+
+> 𝑘 1∈ { 𝑖,𝑗 𝑟 ,...,𝑗 1}
+
+ˆ𝑎 𝑖 𝑗 𝑟 ˆ𝑎 𝑘 𝑟 𝑗 𝑟 −1 . . . ˆ𝑎 𝑘 1𝑠 𝑍 𝑖 𝑗 𝑟 𝑘 𝑟 𝑗 𝑟 −1 ...𝑘 1𝑠 (𝑿 )
+
+(31) Here, the only non-vanishing terms in the sum above are the mini-mal walks from 𝑖 to 𝑠 with 𝑑 𝐺 (𝑖, 𝑠 ) = 𝑟 + 1. Besides, 𝑍 𝑖 𝑗 𝑟 𝑘 𝑟 𝑗 𝑟 −1 ...𝑘 1𝑠 (·) 
+
+is a product of 𝑟 + 1-partial derivatives of the aggregation and up-date maps and by assumption their gradients, which are bounded by 𝛼 and 𝛽 . Note that, compared with the common graph mes-sage passing mechanism, our CureLLM is tailored for the message propagation between the graph and textual nodes. If we define the bridge node between graph and textual views as 𝑡 , due to limited assumptions that he message passing functions between graph-text nodes are bounded with |∇ 𝜙 ′ 
+
+> 𝑙
+
+| ≤ 𝛼 ′ and |∇ 𝜓 ′ 
+
+> 𝑙
+
+| ≤ 𝛽 ′, we can have the final formulation as 
+
+𝜕 𝒉 (𝑟 +1)
+
+> 𝑖
+
+𝜕 𝒙 𝑠 
+
+≤ (𝛼𝛽 ) 𝑟 (𝛼 ′𝛽 ′)∑︁  
+
+> 𝑗 𝑟 ,...,𝑗 1
+
+ˆ𝑎 𝑖 𝑗 𝑟 ˆ𝑎 𝑗 𝑟 𝑗 𝑟 −1 · · · ˆ𝑎 𝑗 𝑟 −𝑡 𝑗 𝑟 −𝑡 −1 · · · ˆ𝑎 𝑗 1𝑠 
+
+= (𝛼𝛽 )𝑟 (𝛼 ′𝛽 ′)   ˆ𝑨 𝑟 +1  
+
+> 𝑖𝑠
+
+.
+
+(32) Up to here, we have completed the proof for Lemma 1 .Here, we begin the proof of Equation 25 in Theorem 2 . From the assumption of Equation 25, we can derive 𝜿 𝑖 𝑗 ≤ − 2 + 𝛿 and 
+
+𝛿 2 (𝑑 + 𝑠 ) ≤ 1 when the condition meets 
+
+4 + 2 𝑠 𝑑 + 3|𝑡𝑟𝑖 (𝑖, 𝑗 )| + 𝑠 𝑑 |𝑡𝑟𝑖 (𝑖, 𝑗 )| + 𝛾 −1max 
+
+ |𝑠𝑞𝑢 𝑖 (𝑖, 𝑗 )| + | 𝑠𝑞𝑢 𝑗 (𝑖, 𝑗 )|  ≤ 𝛿 (𝑑 + 𝑠 ).
+
+(33) where 𝛾 −1max (𝑖, 𝑗 ) means the maximal number of 4-cycles based at nodes 𝑖 and 𝑗 traversing a common node. Then, we can drive the following formulation: 
+
+𝛿 𝑡𝑟𝑖 (𝑖, 𝑗 )
+
+
+
+3 + 𝑠 𝑑 
+
+
+
+≤ 𝛿 2 (𝑑 + 𝑠 ), (34) MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Trovato et al. 
+
+with the constraint formulation shown as 
+
+𝛿 𝑡𝑟𝑖 (𝑖, 𝑗 ) ≤ 1. (35) Following the above conditions, we let 𝑄 𝑗 denote again the com-plement 𝑆 1 ( 𝑗 ) \  𝑆 1 (𝑖 ) ∪ 𝑠𝑞𝑢 𝑗 (𝑖, 𝑗 ) ∪ { 𝑖 }, where we also set 𝑙 0 = 0
+
+and 𝒉 (0) 
+
+> 𝑖
+
+= 𝒙 𝑖 with 𝑘 ∈ 𝑄 𝑗 and 𝑘 ∈ 𝑆 2 (𝑖 ). Then, we can rewrite the Equation 32 in Lemma 1 as 
+
+𝜕 𝒉 (2)
+
+> 𝑘
+
+𝜕 𝒙 𝑖 
+
+≤ (𝛼𝛽 )( 𝛼 ′𝛽 ′)   ˆ𝑨 2 
+
+> 𝑖𝑘
+
+, (36) where the definition of the normalized adjacency matrix ˆ𝑨 is 
+
+  ˆ𝑨 2 
+
+> 𝑖𝑘
+
+= 1√︁ 
+
+(𝑑 𝑘 + 1) ( 𝑑 𝑖 + 1)∑︁ 𝑤 ∈𝑆 1 (𝑘 ) ∩ 𝑆 1 (𝑖 )
+
+1
+
+𝑑 𝑤 + 1 . (37) If we set b𝑄 𝑗 =  𝑘 ∈ 𝑄 𝑗 : 𝜎 𝑖𝑘 > 1 , we can rewrite Equation 37 as ∑︁   
+
+> 𝑘 ∈𝑄 𝑗
+
+( ˆ𝑨 )2 
+
+> 𝑖𝑘
+
+=∑︁   
+
+> 𝑘 ∈𝑄 𝑗
+
+1√︁ 
+
+(𝑑 𝑘 + 1)( 𝑑 𝑖 + 1)∑︁ 𝑤 ∈𝑆 1 (𝑘 )∩ 𝑆 1 (𝑖 )
+
+1
+
+𝑑 𝑤 + 1
+
+= 1
+
+√𝑑 𝑖 + 1 ∑︁ 𝑘 ∈𝑄 𝑗 
+
+1
+
+√𝑑 𝑘 + 11
+
+𝑑 𝑗 + 1
+
+| {z }
+
+> First term
+
++∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1∑︁ 𝑤 ∈𝑆 1 (𝑘 )∩ 𝑆 1 (𝑖 )∩ 𝑆 1 ( 𝑗 )
+
+1
+
+𝑑 𝑤 + 1
+
+| {z }
+
+> Second term
+
+!
+
+.
+
+(38) Now, we first analyze the bound of the first term, from which we can conclude that: 
+
+1
+
+√𝑑 𝑖 + 1∑︁ 𝑘 ∈𝑄 𝑗 
+
+1
+
+√𝑑 𝑘 + 11
+
+𝑑 𝑗 + 1 ≤
+
+1
+
+√𝑑 𝑖 + 1 |𝑄 𝑗 | 1
+
+𝑑 𝑗 + 1 ≤
+
+1
+
+√𝑑 𝑖 + 1 ≤ 1.
+
+(39) Through the Equation 39, we can know that the first term has a constant upper bound, and we analyze the bound of the second term. To simplify the derived mathematical symbols, we define 
+
+Ω :=
+
+
+
+𝑤 ∈ 𝑡𝑟𝑖 (𝑖, 𝑗 ) : 𝑑 𝑤 < 1
+
+𝐶 
+
+| b𝑄 𝑗 ||𝑡𝑟𝑖 (𝑖, 𝑗 )| + 2
+
+𝐶 
+
+
+
+and 𝑉 𝑘 := 𝑆 1 (𝑘 ) ∩ 𝑆 1 (𝑖 ) ∩ 𝑆 1 ( 𝑗 ).
+
+(40) Then, the second term can be split as ∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1 ∑︁ 𝑤 ∈𝑉 𝑘 ∩Ω
+
+1
+
+𝑑 𝑤 + 1 +∑︁   
+
+> 𝑤 ∈𝑉 𝑘 \Ω
+
+1
+
+𝑑 𝑤 + 1
+
+!
+
+. (41) For the left-hand side of Equation 41 with 𝑤 ∈ 𝑉 𝑘 ∩ Ω, we obtain the following inequality: ∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1
+
+∑︁   
+
+> 𝑤 ∈𝑉 𝑘 ∩Ω
+
+1
+
+𝑑 𝑤 + 1
+
+
+
+≤∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1
+
+|𝑉 𝑘 ∩ Ω|
+
+4 , (42) and the observation ∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+|𝑉 𝑘 ∩ Ω|√𝑑 𝑘 + 1 ≤∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+|𝑉 𝑘 ∩ Ω| =
+
+{( 𝑘, 𝑤 ) ∈ 𝐸 : 𝑘 ∈ b𝑄 𝑗 , 𝑤 ∈ 𝑉 𝑘 ∩ Ω} ≤  max   
+
+> 𝑤 ∈Ω
+
+𝑑 𝑤 
+
+ |Ω|.
+
+(43) Since 𝑑 𝑤 meets 𝑑 𝑤 ≤ 1      
+
+> 𝐶
+> |b𝑄 𝑗 ||𝑡𝑟𝑖 (𝑖,𝑗 ) |
+
++ 2 
+
+> 𝐶
+
+, we can conclude the left-hand side of Equation 41 can be bounded by ∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1∑︁ 𝑤 ∈𝑉 𝑘 ∩Ω
+
+1
+
+𝑑 𝑤 + 1 ≤∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1
+
+|𝑉 𝑘 ∩ Ω|
+
+4
+
+≤
+
+ 1
+
+𝐶 
+
+| b𝑄 𝑗 ||𝑡𝑟𝑖 (𝑖, 𝑗 )| + 2
+
+𝐶 
+
+ |Ω|
+
+4 ≤
+
+ 1
+
+𝐶 
+
+| b𝑄 𝑗 ||𝑡𝑟𝑖 (𝑖, 𝑗 )| + 2
+
+𝐶 
+
+ |𝑡𝑟𝑖 (𝑖, 𝑗 )| 
+
+4 .
+
+(44) Then, we analyze the right-hand side of Equation 41 with 𝑤 ∈ 𝑉 𝑘 \Ω.We can obtain the formulation ∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1∑︁ 𝑤 ∈𝑉 𝑘 \Ω
+
+1
+
+𝑑 𝑤 + 1 ≤∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1
+
+𝐶 |𝑡𝑟𝑖 (𝑖, 𝑗 )| | b𝑄 𝑗 | |𝑉 𝑘 \ Ω|,
+
+(45) where we can use the property 𝑑 −1 
+
+> 𝑤
+
+≤ 𝐶 |𝑡𝑟𝑖 (𝑖,𝑗 ) | | b𝑄 𝑗 | . Since the follow-ing inequalities 
+
+|𝑉 𝑘 \ Ω|√𝑑 𝑘 + 1 ≤ |𝑉 𝑘 |√︁ 
+
+|𝑆 1 (𝑘 )| ≤ |𝑉 𝑘 |√︁ 
+
+|𝑉 𝑘 | ≤√︁ |𝑉 𝑘 | ≤ √︁ |𝑡𝑟𝑖 (𝑖, 𝑗 )| , (46) the right-hand side of the Equation 41 can be bounded by ∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1
+
+𝐶 |𝑡𝑟𝑖 (𝑖, 𝑗 )| | b𝑄 𝑗 | 𝑉 𝑘 \ Ω ≤
+
+𝐶 |𝑡𝑟𝑖 (𝑖, 𝑗 )| | b𝑄 𝑗 |√︃ |𝑡𝑟𝑖 (𝑖, 𝑗 )| | b𝑄 𝑗 | = 𝐶 |𝑡𝑟𝑖 (𝑖, 𝑗 )| 32 .
+
+(47) we have calculated the upper bounds of all intermediate terms of Equation 38. Specifically, the Equation 38 can be termed as 
+
+1
+
+|𝑄 𝑗 |∑︁ 𝑘 ∈𝑄 𝑗 
+
+( ˆ𝑨 )2 
+
+> 𝑖𝑘
+
+≤ 1
+
+|𝑄 𝑗 | + 1
+
+|𝑄 𝑗 | ∑︁ 𝑘 ∈ b𝑄 𝑗 
+
+1
+
+√𝑑 𝑘 + 1∑︁ 𝑤 ∈𝑉 𝑘 
+
+1
+
+𝑑 𝑤 + 1
+
+!
+
+≤ 𝛿 + 1
+
+|𝑄 𝑗 | ∑︁ 𝑘 ∈ b𝑄 𝑗 
+
+1
+
+√𝑑 𝑘 + 1∑︁ 𝑤 ∈𝑉 𝑘 
+
+1
+
+𝑑 𝑤 + 1
+
+!
+
+,
+
+(48) where we use the property that the |𝑄 𝑗 | can be bounded by 𝛿 .By considering the Equation 44 and Equation 47 to estimate the second term in Equation 38, we can have 
+
+1
+
+|𝑄 𝑗 |
+
+∑︁    
+
+> 𝑘 ∈b𝑄 𝑗
+
+1
+
+√𝑑 𝑘 + 1∑︁ 𝑤 ∈𝑉 𝑘 
+
+1
+
+𝑑 𝑤 + 1
+
+
+
+≤ 1
+
+|𝑄 𝑗 |
+
+ 1
+
+𝐶 
+
+| b𝑄 𝑗 ||𝑡𝑟𝑖 (𝑖, 𝑗 )| + 2
+
+𝐶 
+
+ |𝑡𝑟𝑖 (𝑖, 𝑗 )| 
+
+4
+
+
+
++ 1
+
+|𝑄 𝑗 |
+
+ 𝐶 |𝑡𝑟𝑖 (𝑖, 𝑗 )| 32 
+
+≤ 14
+
+ 1
+
+𝐶 + 2 |𝑡𝑟𝑖 (𝑖, 𝑗 )| 
+
+𝐶 |𝑄 𝑗 |
+
+
+
++ 𝐶 |𝑡𝑟𝑖 (𝑖, 𝑗 )| |𝑄 𝑗 |√︁ |𝑡𝑟𝑖 (𝑖, 𝑗 )| .
+
+(49) Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil 
+
+Table 5: Prompts used in this work to query the CureLLM. 
+
+Dataset Prompt 
+
+Instagram Caption: <caption text> | Comment: <comment text> | Usertag: <tag text> 
+
+Category: <category text> 
+
+Question: Based on the profile of the following Instagram account, please determine which category it belongs to and explain the reasons within 256 words. Answer: 
+
+Cora Abstract: <abstract text> | Title: <title text> | Topic: <topic text> 
+
+Question: The following paper belongs to what category and explain the reasons within 256 words. Answer: 
+
+Citeseer Abstract: <abstract text> | Title: <title text> 
+
+Question: The following paper belongs to what category and explain the reasons within 256 words. Answer: 
+
+Photo Consumer: <consumer text> | Review: <review text> 
+
+Question: The following electronics products belong to what category and explain the reasons within 256 words. Answer: 
+
+WikiCS Abstract: <abstract text> | Title: <title text> 
+
+Question: The following contents of the Wikipedia article belong to what category and explain the reasons within 256 words. 
+
+Answer: 
+
+Baby Node ID: <id text> | Title: <title text> | Category: <category text> | Description: <description text> | Brand: <brand text> 
+
+Question: The following item may be bought by what kind of users and explain the reasons within 256 words. Answer: 
+
+Sports Node ID: <id text> | Title: <title text> | Category: <category text> | Description: <description text> | Brand: <brand text> 
+
+Question: The following item may be bought by what kind of users and explain the reasons within 256 words. Answer: 
+
+ML-1M MovieID: <movie id text> | Title: <title text> | Genre: <genre text> 
+
+Question: Based on the movie details, the following movie may be bought by what kind of users and explain the reasons within 256 words. Answer: 
+
+ML-10M MovieID: <movie id text> | Title: <title text> | Genre: <genre text> 
+
+Question: Based on the movie details, the following movie may be bought by what kind of users and explain the reasons within 256 words. Answer: 
+
+ExplaGraphs Node Attribute: <node attribute text> | Edge Attribute: <edge attribute text> | Argument: <argument text> 
+
+Question: Do argument 1 and argument 2 support or counter each other? Answer in one word in the form of support or counter, and explain the reasons within 256 words. Answer: 
+
+WebQSP Node Attribute: <node attribute text> | Edge Attribute: <edge attribute text> | Description: <description text> 
+
+Question: Please answer the given question based on the knowledge graph, and explain the reasons within 256 words. Answer: 
+
+Then, we continue to use the the property that the |𝑄 𝑗 | can be bounded by 𝛿 , the Equation 49 can be termed as 
+
+14
+
+ 1
+
+𝐶 + 2 |𝑡𝑟𝑖 (𝑖, 𝑗 )| 
+
+𝐶 |𝑄 𝑗 |
+
+
+
++ 𝐶 |𝑡𝑟𝑖 (𝑖, 𝑗 )| |𝑄 𝑗 |√︁ |𝑡𝑟𝑖 (𝑖, 𝑗 )| ≤ 
+
+14
+
+ 1
+
+𝐶 + 2 𝛿 𝐶 
+
+
+
++ 𝐶 𝛿 √︁ |𝑡𝑟𝑖 (𝑖, 𝑗 )| .
+
+(50) Now, we let 𝐶 = 𝛿 − 14 and perform constant multiple reduction for Equation 50, which does not affect the final conclusion. Then, we can rewrite the Equation 50 as 
+
+14
+
+ 1
+
+𝐶 + 2𝛿 𝐶 
+
+
+
++ 𝐶 𝛿 √︁ |𝑡𝑟𝑖 (𝑖, 𝑗 )| ≤ 14
+
+ 𝛿 14 + 2 𝛿 54  + 𝛿 14√︁ 𝛿 |𝑡𝑟𝑖 (𝑖, 𝑗 )| ≤ 14
+
+ 𝛿 14 + 2 𝛿 54  + 𝛿 14 .
+
+(51) By using the Equation 35, we can conclude 
+
+1
+
+|𝑄 𝑗 |∑︁ 𝑘 ∈𝑄 𝑗 
+
+( ˆ𝑨 )2 
+
+> 𝑖𝑘
+
+≤ 𝛿 + 14
+
+ 𝛿 14 + 2 𝛿 54  + 𝛿 14 ≤ 𝛿 14 . (52) 
+
+Table 6: Statistics of the datasets for node classification. 
+
+Dataset Instagram Cora Citeseer Photo WikiCS # Nodes 11,339 2,708 3,186 48,362 11,701 # Edges 144,010 5,429 4,277 500,928 216,123 # Features 384 1,433 384 768 384 Domain Social Academic Academic E-commerce Wikipedia Now, let us revisit the Equation 36, we have 
+
+𝜕 𝒉 (2)
+
+> 𝑘
+
+𝜕 𝒉 𝑖 
+
+≤ (𝛼𝛽 )( 𝛼 ′𝛽 ′)   ˆ𝑨 2 
+
+> 𝑖𝑘
+
+, (53) Finally, we combine the Equation 52 and Equation 53, we can have the following formulation: 
+
+1
+
+|𝑄 𝑗 |∑︁ 𝑘 ∈𝑄 𝑗 
+
+𝜕 𝒉 (𝑙 0+2)
+
+> 𝑘
+
+𝜕 𝒉 (𝑙 0 )
+
+> 𝑖
+
+< (𝛼𝛽 )( 𝛼 ′𝛽 ′)𝛿 14 , (54) where we have completed our proof for Theorem 2 .MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Trovato et al. 
+
+Table 7: Statistics of the datasets for link prediction. 
+
+Dataset Baby Sports ML-1M ML-10M # Nodes 26,495 53,955 9,746 80,555 # Edges 160,792 296,337 1,000,209 10,000,054 # Features 384 384 384 384 Domain E-commerce E-commerce Movie Movie 
+
+Table 8: Statistics of the datasets for graphQA. 
+
+Dataset # Nodes # Edges # Features Domain ExplaGraphs 2,766 4.25(Avg) 1,024 Common Sense WebQSP 4,737 4,252.37(Avg) 1,024 Scene Graph 
+
+## A.3 Details for Prompt Design 
+
+In this subsection, we show the detailed information of our prompts used in this work, as shown in Table 5. Note that, our work does not focus on designing various kinds of prompts, but we focus on how to transfer the knowledge from the textual domain to the specific downstream tasks. Therefore, we use the combination of prompts which have been widely used in previous work, like [ 17 , 22 ]. Besides, for the link prediction tasks, e.g., Baby, Sports, MovieLen-1M and MovieLen-10M datasets, we only show the textual contents for item nodes, following the most previous works [ 66 , 75 ], where the embedding of user nodes can be obtained by the graph aggregation by item nodes. 
+
+## B Related Work 
+
+In this subsection, we provide introductions to three related ar-eas, i.e. graph representation learning, graph curvature, and large language models with graph. 
+
+## B.1 Graph representation learning 
+
+Graph representations can be utilized in different applications, in-cluding node classification, link prediction, and graph classification. The quality of the graph representation will directly determine the performance of the downstream tasks. Therefore, graph rep-resentation learning has become a popular research area. Matrix factorization methods are the early works in graph representation learning. It generates node representations in a framework that learns the proximity measures and SVD decomposition parame-ters in an end-to-end fashion [ 69 ], [ 72 ]. Graph Neural Network (GNN)-based graph representation learning methods are the sec-ond category of graph representation learning methods, which employ GNNs to generate representations. GNN-based methods which are different from traditional methods generalize well to unseen nodes. With the good performance achieved by the clas-sical graph convolutional network [ 24 ], it has received more and more attention from researchers and many variants [ 77 ],[ 21 ] have been developed. Velickovic et al.[ 58 ] proposed an attention mech-anism by learning weights associated with neighboring nodes to distinguish the degree of node influence. He et al. [ 18 ] proposed LightGCN for recommendation tasks which focused on the cru-cial aspect of neighborhood aggregation. Wang et al.[ 60 ] utilized Laplacian disagreement to jointly assess initial features and output representations to enhance node representations. However, the above methods mainly focus on structural information ignoring the semantic information, which may lead to learn a suboptimal graph representation. 
+
+## B.2 Graph curvature 
+
+The geometric concept of curvature has been extended to environ-ments other than smooth manifolds, including on graphs. Ricci cur-vature is a geometric object which is used to measure the curvature of a Riemannian manifold [ 23 ]. Intuitively, if the Ricci curvature is positive, the curve of the manifold is more spherical. Conversely, if the Ricci curvature is negative, the curve of the manifold is more like a saddle shape. In recent years, more and more researchers have investigated graph curvature, which is a discrete analogue of Ricci curvature [ 40 ], [ 47 ]. Ollivier Ricci curvature is a commonly used curvature measurement method. It has been utilized in the study of complex networks and many works have experimented with its use in GNNs [54], [4]. 
+
+## B.3 Large language models with graph 
+
+In recent years, large language models (e.g. ChatGPT [ 43 ], Deepseek [ 9], Llama [ 57 ]) have gained widespread attention due to their re-markable capabilities in various Natuarl Language Processing (NLP) tasks. With the rise open-source LLMs, such as Llama, deepseek, and Vicuna [ 8], technologies for utilizing pre-trained LLMs to con-duct different specific tasks have been proposed, making private LLMs in specific domains possible. Due to the unique capabilities of LLMs, incorporating LLMs into graph tasks presents a promis-ing frontier. A number of studies have emerged at the intersection of graph neural networks and LLMs in recent years. Tang et al. [ 52 ] proposed a framework to align graph domain-specific struc-tural knowledge with the reasoning ability of LLMs to improve the generalization of graph learning. He et al. [ 17 ] utlized LLMs to generate pseudo labels and explanations as augmented data, and concatenated the enhancements with text feature of PLMs for down-stream GNNs. Fang et al. [ 12 ] distilled hierarchical contextualized representations and incorporated GNNs to structure-related seman-tics relatedto text-attributed graphs. Huang et al. [ 22 ] proposed a residual learning procedure to pre-train the GNN adapter with the LLMs. While there have been successful attempts to align LLMs with graphs, the alignment of text representations with graph rep-resentations remains largely unexplored. The alignment process of previous works in LLMs only consider the node information in the graph while ignoring the edge attributes, which leaves the room for improvement in the performance of downstream tasks. This presents a promising and exciting avenue for future research, and it is precisely this untapped potential that our study aims to explore. 
+
+## C Appendix B for Experiments C.1 Datasets 
+
+We use five datasets for node classification [ 22 ], [ 76 ], [ 17 ], [ 12 ], four datasets for link prediction [ 61 ], [ 75 ], and two datasets for graphQA [ 19 ]. The datasets used for node classification encompass Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil 
+
+Table 9: Performance(%) comparison of baselines in terms of Recall@5, and Precision@5 on Baby, Sports, MovieLen-1M, and MovieLen-10M datasets. We mark the global best results on each dataset under each metric in boldface and the second best is underlined. 
+
+Dataset Baby Sports MovieLen-1M MovieLen-10M Model R@5 P@5 R@5 P@5 R@5 P@5 R@5 P@5 MF 1.86 (0.18) 0.41 (0.06) 2.92 (0.20) 0.58 (0.10) 3.96 (0.19) 9.25 (0.47) 7.04 (0.36) 9.21 (0.47) MLP 1.98 (0.20) 0.44 (0.07) 3.01 (0.18) 0.61 (0.11) 4.02 (0.18) 9.49 (0.45) 7.26 (0.36) 9.43 (0.45) GCN 2.06 (0.14) 0.49 (0.06) 3.05 (0.20) 0.62 (0.09) 4.15 (0.18) 9.83 (0.49) 7.45 (0.32) 9.81 (0.45) GAT 2.24 (0.16) 0.53 (0.04) 3.11 (0.17) 0.64 (0.11) 4.28 (0.20) 10.17 (0.51) 7.78 (0.34) 10.2 (0.48) GIN 2.16 (0.14) 0.51 (0.07) 3.05 (0.19) 0.63 (0.09) 4.19 (0.17) 9.94 (0.43) 7.83 (0.30) 10.09 (0.39) SAGE 2.42 (0.11) 0.58 (0.06) 3.36 (0.18) 0.70 (0.08) 4.31 (0.20) 10.67 (0.46) 7.91 (0.30) 11.14 (0.39) GraphCL 2.78 (0.09) 0.61 (0.03) 3.43 (0.15) 0.72 (0.05) 4.33 (0.15) 10.88 (0.41) 8.16 (0.34) 11.75 (0.33) Bert 2.01 (0.15) 0.47 (0.06) 3.09 (0.19) 0.64 (0.07) 4.17 (0.18) 9.85 (0.44) 7.56 (0.33) 9.81 (0.44) RoBERTa 2.11 (0.11) 0.51 (0.06) 3.28 (0.20) 0.68 (0.09) 4.21 (0.21) 9.91 (0.49) 7.82 (0.32) 10.14 (0.40) WalkLM 2.65 (0.08) 0.58 (0.03) 3.47 (0.16) 0.74 (0.03) 4.59 (0.13) 11.05 (0.39) 8.18 (0.28) 11.97 (0.34) GraphAdapter 2.88 (0.10) 0.62 (0.04) 3.62 (0.14) 0.78 (0.02) 4.83 (0.17) 11.53 (0.43) OOM OOM OpenGraph 2.96 (0.06) 0.61 (0.04) 3.51 (0.16) 0.73 (0.04) 4.43 (0.12) 10.94 (0.40) 8.33 (0.29) 12.16 (0.35) TAPE 3.09 (0.05) 0.64 (0.01) 3.86 (0.12) 0.80 (0.05) 4.69 (0.15) 11.32 (0.43) 8.36 (0.28) 13.08 (0.32) MuseGraph 3.13 (0.07) 0.68 (0.01) 3.89 (0.10) 0.83 (0.03) 4.72 (0.15) 11.40 (0.41) 8.57 (0.32) 13.43 (0.39) Ours 3.26 (0.05) 0.72 (0.01) 4.12 (0.10) 0.91 (0.02) 5.20 (0.11) 12.89 (0.37) 9.32(0.24) 14.41(0.29) 
+
+two citation networks, including Cora and Citeseer. Along with a social network dataset (Instagram), an E-commerce dataset from Amazon (Electronics-Photography, namely Photo) and a Wikipedia-based dataset(WikiCS). The datasets used for link prediction encom-pass two E-commerce datasets, including Baby and Sports. Along with two movie datasets from MovieLens (ML-1M and ML-10M). The datasets used for graphQA encompass ExplaGraphs and We-bQSP. ExplaGraphs is a dataset for generative commonsense rea-soning and WebQSP is a large-scale multi-hop knowledge graphQA dataset. The statistics are summarized in Table 6, Table 7 and Ta-ble 8. In the node classification task, the ratio of nodes used for the train/valid/test stage is 10%/10%/80%, following the previous work [ 12 ]. In the link prediction task, the ratio of nodes used for the train/valid/test stage is 80%/10%/10%, following the previous work [ 75 ]. In the graphQA task, the ratio of nodes used for the train/valid/test stage is 60%/20%/20%, which is aligned with previ-ous work [19]. 
+
+## C.2 Implementation details 
+
+In our experiments, we employ LLaMA2 [ 57 ] as the default LLMs backbone and SAGE as an instance of GNNs. For LLMs, we specify a maximum tokenizer length of 512 and a batch size of 8 following the previous work [ 12 ]. In the case of GNNs, the number of layers is tuned in {2, 3}. Adam is adopted as the optimizer. For node clas-sification, the learning rate is tuned in {1𝑒 − 4, 5𝑒 − 4}, and weight decay is set to 0. The dropout rate is searched in {0.5, 0.6}. For link prediction, the learning rate is fixed as 1𝑒 − 3 and weight decay is searched in 0.1, 0.01 . The dropout rate is chosen from {0.3, 0.5}. For graphQA, the learning rate is fixed as 1𝑒 − 5 and weight decay is set to 0.05 . The dropout rate is set to 0.05 . For a fair comparison, we run 5 times and report the mean result and the standard deviation. Implementations of the baselines are either from open-source projects or the original authors. For the specific hyperparameters in the baselines, we use the values reported in their original literature. Additionally, we conduct our experiments on Nvidia GeForce RTX 3090 GPUs with 24GB memory. 
+
+## C.3 Baselines 
+
+In this subsection, we will provide the descriptions of the baselines: 
+
+• GCN : It extracts features by learning relationships between nodes, enabling node representations to capture the topolog-ical structure of the graph. 
+
+• GAT : It introduces a self-attention mechanism that allows each node to focus on different neighbor nodes. 
+
+• GIN : It employs a distinct graph encoding method that em-phasizes the discrimination of non-isomorphic structures to enhance the representation power of GNNs. 
+
+• SAGE : It learns an aggregation function, which learns the embedding expression of the target node itself by aggregat-ing the feature information of its neighbors. 
+
+• GraphCL : It utilizes pre-training of graph models through the application of a self-discriminative contrastive learning task on learned node embeddings. 
+
+• CGCN : It proposes a new message passing mechanism and integrates it to build an efficient and robust model. 
+
+• DSR-GNN : It proposes a disparity-induced structural refine-ment framework, which theoretically dissects the relation-ship between model capacity and homo/heterophilous ratios to enhance representation learning. 
+
+• BERT : It captures bidirectional contextual relationships in text through masked language modeling and next-sentence prediction tasks. MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil Trovato et al. (a) Instagram  (b) Cora  (c) Citeseer   
+
+> (d) Photo (f) WikiCS
+
+Figure 4: Classification accuracy of CureLLM based on different LLMs and GNNs. Table 10: Ablation study of CureLLM on link prediction task where w/o denotes the removal of a specific component. 
+
+Baby Sports MovieLen-1M MovieLen-10M R@10 P@10 R@10 P@10 R@10 P@10 R@10 P@10 w/o structural information 4.33 0.39 5.25 0.50 6.11 9.42 10.01 9.51 w/o semantic information 4.21 0.37 5.20 0.48 6.52 9.88 11.17 10.26 w/o inference ability 4.53 0.42 5.61 0.57 7.14 9.96 12.03 10.37 w/o edge attribute 4.98 0.50 6.10 0.62 7.53 10.24 13.55 11.07 CureLLM 5.33 0.59 6.62 0.74 8.60 11.05 14.95 12.18 Table 11: Ablation study of CureLLM on graph question answering (graphQA) task where w/o denotes the removal of a specific component. 
+
+w/o structural information w/o inference ability w/o edge attribute CureLLM ExplaGraphs 60.03 54.23 84.12 87.21 
+
+WebQSP 52.44 50.26 69.44 72.58 
+
+• DeBERTa : It improves BERT by decoupling content and po-sitional information in attention mechanisms. Its enhanced masked decoder refines contextual modeling. 
+
+• RoBERTa : It enhances BERT by optimizing the pre-training process: larger data, dynamic masking, and removed next-sentence prediction. 
+
+• SentenceBERT : It adapts BERT using siamese and triplet networks and contrastive learning to achieve efficient sen-tence embeddings. 
+
+• GraphAdapter : It introduces a graph neural network as an efficient adapter to learn structural information to enrich the semantic information of LLMs. 
+
+• OpenGraph : It integrates LLMs, a topology-aware graph tokenizer and a scalable graph transformer into one fram-work which captures universal and transferable structural patterns across multiple domains. 
+
+• TAPE : It uses LLMs to generate pseudo labels and explana-tions as augmented data, and concatenates the enhancements with original text for PLMs. 
+
+• WalkLM : It performs attributed random walks on the graph to compose roughly meaningful textual sequences then ex-tracts embedding vectors from the LMs. 
+
+• ENGINE : It combines LLMs and GNNs by a tunable side structure to adopt message passing at each layer of LLMs to integrate structural information. Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models MM ’26, November 10–14, 2026, Rio de Janeiro, Brazil 
+
+• GraphToken : It is a parameter-efficient encoder for struc-tured data inclusion in LLMs which is used for various rea-soning tasks. 
+
+• G-Retriever : It presents a retrieval approach for general textual graph tasks, which significantly enhances scalability and efficiency. 
+
+• STAG : It employs soft assignment and KL divergence guided quantization to address the unique challenges of graph data, which lacks natural tokenization structures. 
+
+• MuseGraph : It seamlessly integrates the strengths of GNNs and LLMs into one foundation model for graph mining across tasks and datasets. 
+
+## C.4 Additional Performance Comparison 
+
+We compare the link prediction results of our CureLLM to those of the baseline models. Table 9 shows the 𝑅𝑒𝑐𝑎𝑙𝑙 @5 and 𝑃𝑟𝑒𝑐𝑖𝑠𝑖𝑜𝑛 @5 
+
+on Baby, Sports, MovieLen-1M (ML-1M) and MovieLen-10M (ML-10M) datasets. From Table 9, we have the following observations: In general, CureLLM outperforms all 13 baselines across all eval-uation metrics on all datasets. It gains a substantial lead over the second-best models, TAPE and GraphAdapter, with performance improvements ranging from 5.5% in 𝑅𝑒𝑐𝑎𝑙𝑙 @5 on Baby to a signif-icant 11 .5% on MovieLen-10M. Baselines that combine structural and semantic information generally perform better than baselines that use one type of information alone. Compared LLM-enhanced methods, our CureLLM achieves the highest performance across all datasets, which also indicates the effectiveness of edge attributes. 
+
+## C.5 Ablation Study 
+
+We evaluate all components by removing each item from CureLLM in turn: (a) w/o structural information: replacing GNN with MLP; (b) w/o semantic information: removing textual embedding; (c) w/o 
+
+inference ability: replacing Llama2 with DeBERTa; (d) w/o edge attribute: removing curvature-based alignment. Experimental re-sults for node classification, link prediction, and graph question answering (GraphQA) are listed in Tables 4, 10, and 11, respec-tively. Notably, unlike other tasks, semantic information is crucial in graph question answering. As shown in the tables, removing any component leads to a performance degradation. Table 4 shows that removing any component leads to a performance degradation in node classification, demonstrating the indispensability of all four components to the overall model performance. Table 10 shows that the performance degradation caused by removing structural and semantic information is significantly greater than that caused by removing other components, indicating that both structural and semantic information are beneficial for link prediction. From Table 11, we can clearly observe that the performance degradation of (a) 
+
+w/o structural information and (c) w/o inference ability is partic-ularly significant, indicating that both structural information and rich semantic information play a pivotal role in the graphQA task. In addition, the performance degradation of (d) w/o edge attribute means that mining edge attributes for aligning the graph and textual information is capable of learning a more effective representation. 
+
+## C.6 Scalability Study 
+
+We conduct a scalability study focusing on different combinations of LLMs (LLama2-7B [ 57 ], Deepseek-chat-7B [ 9], Vicuna1.5-7B [ 8]) and GNNs (GCN [ 24 ], SAGE [ 14 ], GAT [ 58 ]). As depicted in Fig-ure 4, in each subplot, there is little change in color when viewed horizontally. This shows the strong compatibility of the proposed method for LLM selection. Furthermore, in each subplot, the change in color is more obvious when viewed vertically. This implies that the learning ability of structural information is key to the model performance. Overall, there is very slight change in performance for different combinations, indicating that CureLLM is a scalable framework proficient in adapting to diverse architectures.

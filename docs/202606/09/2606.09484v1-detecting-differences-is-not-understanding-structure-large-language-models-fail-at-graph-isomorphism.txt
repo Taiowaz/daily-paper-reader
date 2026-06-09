@@ -1,0 +1,145 @@
+Title: Detecting Differences Is Not Understanding Structure: Large Language Models Fail at Graph Isomorphism
+
+URL Source: https://arxiv.org/pdf/2606.09484v1
+
+Published Time: Tue, 09 Jun 2026 02:22:40 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Detecting Differences Is Not Understanding Structure: Large Language Models Fail at Graph Isomorphism 
+
+Kumar Thushalika 1 Sukumar Kishanthan 2 Asela Hevapathige 3
+
+> 1
+
+University of Ruhuna, Galle, Sri Lanka 
+
+> 2
+
+University of Moratuwa, Moratuwa, Sri Lanka 
+
+> 3
+
+University of Melbourne, Melbourne, Australia   
+
+> thushalika_k_e23@engug.ruh.ac.lk sukumar@cse.mrt.ac.lk asela.hevapathige@unimelb.edu.au
+
+Abstract 
+
+Large language models (LLMs) have shown impressive performance on diverse reasoning tasks, yet their capacity for structural reason-ing in graphs remains unclear. We investigate whether LLMs can genuinely understand graph isomorphism—a fundamental problem in graph theory. While LLMs achieve near-perfect accu-racy on isomorphism detection, we show this performance is illusory. When identical graphs are presented with permuted node labels, LLMs fail to identify their isomorphism. This find-ing suggests that LLMs exploit patterns rather than reasoning about abstract graph structure. Since permutation invariance is a fundamen-tal requirement for valid structural reasoning, these results indicate that success on graph rea-soning benchmarks should not be interpreted as evidence of genuine topological understanding. 
+
+1 Introduction 
+
+Large language models (LLMs) have been increas-ingly employed in various reasoning settings, in-cluding graph-structured tasks (Wei et al., 2022; Amayuelas et al., 2025; Ke et al., 2025; Ren et al., 2024). However, a critical question remains: Do LLMs genuinely understand graph structure, or do they exploit surface-level patterns in serialized representations? 
+
+Graph isomorphism (Zemlyachenko et al., 1985), the problem of determining whether two graphs are structurally identical, provides a deci-sive test of structural reasoning in graphs (Xu et al., 2019). It is a fundamental problem in graph the-ory and requires permutation invariance , where any model claiming to reason about graph struc-ture should preserve its judgments under arbitrary relabeling of nodes (Morris et al., 2019). Graph isomorphism also plays a central role in evaluating existing graph learning methods. The Weisfeiler– Lehman (WL) hierarchy (Weisfeiler and Leman, 1968) provides a widely used heuristic approach for distinguishing non-isomorphic graphs and serves as the basis for understanding the expressive power of graph algorithms (Huang and Villar, 2021). Sim-ilarly, graph neural networks (GNNs) (Wu et al., 2020), the dominant deep learning paradigm for graph reasoning, are commonly characterized by their ability to solve graph isomorphism analo-gously to the WL hierarchy. Moreover, GNNs achieve permutation invariance by design through the aggregation mechanism, ensuring that their out-puts depend only on topology rather than node order (Hevapathige and Wang, 2026). As LLMs are increasingly applied to graph domains such as molecular analysis, knowledge graphs, and social networks (Li et al., 2024a), the ability to distin-guish non-isomorphic graphs and maintain robust-ness under arbitrary node relabeling is not merely a desirable property, but a fundamental requirement for reliable structural reasoning. 
+
+Contributions: This work makes three contri-butions. (1.) We introduce a simple evaluation protocol for testing permutation invariance in LLM-based graph reasoning, (2.) We show that several widely used LLMs achieve high accuracy on graph isomorphism detection yet exhibit poor robustness to arbitrary node relabeling across prompting strate-gies and serialization formats, (3.) Finally, we ar-gue that invariance-based evaluations should com-plement accuracy metrics when assessing LLMs on graph-structured tasks. 
+
+2 Related Work 
+
+LLMs have shown strong performance on diverse reasoning tasks (Ning et al., 2024; Wu et al., 2025; Xie et al., 2026), but recent work highlights brittle-ness on symbolic and systematic reasoning prob-lems (Valmeekam et al., 2022; Li et al., 2024b; Agrawal et al., 2025; Zhang, 2025). Robustness studies further showed LLMs are vulnerable to in-put perturbations (Alahmari et al., 2025; Chen et al., 
+
+> arXiv:2606.09484v1 [cs.CL] 8 Jun 2026
+
+2026), suggesting potential instability on structured inputs. A recent line of work has shown that LLMs are sensitive to the order in which semantically equivalent inputs are presented, even though such reordering leaves the underlying task unchanged (Tan et al., 2024; Guan et al., 2025; Egressy and Stühmer, 2025; Herbst et al., 2025). For exam-ple, permuting the answer options in a multiple-choice question can substantially shift an LLM’s prediction, an effect attributed to positional bias un-der model uncertainty (Pezeshkpour and Hruschka, 2024). To our knowledge, however, no prior work has systematically tested whether LLMs can solve graph isomorphism or the related property of per-mutation invariance on graph tasks. We address this gap by evaluating graph isomorphism and permuta-tion invariance as a diagnostic for robust structural reasoning in LLMs. 
+
+3 Experimental Setup 
+
+3.1 Preliminaries 
+
+Let G = ( V, E ) denote a graph with node set V
+
+and edge set E. Two graphs G1 = ( V1, E 1) and 
+
+G2 = ( V2, E 2) are isomorphic , denoted by G1 ∼=
+
+G2, if there exists a bijection ϕ : V1 → V2 such that 
+
+(u, v ) ∈ E1 ⇐⇒ (ϕ(u), ϕ (v)) ∈ E2.
+
+A graph function f is permutation-invariant if 
+
+G1 ∼= G2; ⇒; f (G1) = f (G2).
+
+The output of f is invariant to node relabeling and reordering, meaning that isomorphic graphs receive identical outputs. 
+
+3.2 Large Language Models 
+
+We evaluated three LLMs from different providers in our experiments. Specifically, we used GPT-4o 
+
+(OpenAI) (Achiam et al., 2023), Gemini (Google) (Team et al., 2023), and Llama accessed through the Together AI platform (Touvron et al., 2023). The exact model versions used were GPT-4o-mini, Gemini 2.5 Flash, and Llama 3.3 70B Instruct. Our selection is based on their widespread use, strong instruction-tuning, general reasoning abilities, and accessibility through commercial APIs. 
+
+3.3 Prompting Strategies 
+
+We evaluated each model under two prompting settings. 
+
+Zero-shot prompting: We provide a graph pair and a minimal task instruction (e.g., asking whether the two graphs are isomorphic) without providing additional guidance or reasoning steps. This setting assesses the model’s inherent capability to solve the task using only its pretrained knowledge. 
+
+Instructed prompting: We provide a task de-scription with explicit instructions defining graph isomorphism and clarifying the expected reasoning process. This setting evaluates whether providing additional task-specific guidance improves perfor-mance on structural reasoning tasks. To ensure reproducibility and minimize variation in response, all experiments were conducted with the decoding temperature set to zero. 
+
+3.4 Graph Serialization Methods 
+
+We employ three standard serialisation formats in our experiments. Edge list represents a graph as simple node pairs, enumerating each connection explicitly. Edge index organises connections as source–target column vectors, the standard format in machine learning frameworks (Fey and Lenssen, 2019). Adjacency matrix encodes the full graph as a binary connectivity matrix where entry indicates whether the node pair is connected. Examples of each format are illustrated below: 
+
+Edge list Edge index Adj. matrix 
+
+0 – 1 [0, 1] 0 1 0 1 0 – 3 [0, 3] 1 0 1 0 1 – 2 [1, 2] 0 1 0 1 2 – 3 [2, 3] 1 0 1 0 These formats expose different structural properties to the model. Edge lists are compact but require sequential parsing, edge indices explicitly encode connectivity and directionality, and adjacency matrices provide a dense connectivity representation. 
+
+4 Graph Isomorphism Experiment 
+
+In our first experiment, we test LLMs for non-isomorphism on 400 pairs. We create four cate-gories of graph pairs, with 100 in each. Our graphs have number of nodes between 8-15. • Category 1: Graphs have the same edge count but different node counts, making them non-isomorphic by size. • Category 2: Graphs have the same node count but different edge counts, testing sensitivity to OpenAI Gemini Llama Format Z.S. Ins. CI 95 Z.S. Ins. CI 95 Z.S. Ins. CI 95                            
+
+> Edge list 100.0 99.8 [0.979, 1.000] 100.0 100.0 [0.987, 1.000] 98.8 99.0 [0.970, 0.998] Edge index 100.0 98.8 [0.968, 0.998] 100.0 100.0 [0.987, 1.000] 99.5 98.2 [0.981, 0.999] Adj. matrix 100.0 91.5 [0.862, 0.956] 100.0 100.0 [0.987, 1.000] 97.5 100.0 [0.950, 0.993]
+
+Table 1: Graph isomorphism accuracy by format and strategy with 95% Wilson score confidence intervals. ZS: zero-shot; Ins.: instructed prompting.                                                
+
+> OpenAI Gemini Llama Category Z.S. Ins. CI 95 Z.S. Ins. CI 95 Z.S. Ins. CI 95
+> 1: Diff nodes 100.0 100.0 [0.987, 1.000] 100.0 100.0 [0.987, 1.000] 99.7 99.3 [0.976, 0.998] 2: Diff edges 100.0 98.7 [0.966, 0.995] 100.0 100.0 [0.987, 1.000] 96.0 98.3 [0.931, 0.977] 3: Diff both 100.0 100.0 [0.987, 1.000] 100.0 100.0 [0.987, 1.000] 100.0 100.0 [0.987, 1.000] 4: 1-WL indist. 100.0 88.0 [0.838, 0.912] 100.0 100.0 [0.987, 1.000] 98.7 98.7 [0.966, 0.995]
+
+Table 2: Graph isomorphism accuracy by category and strategy with 95% Wilson score confidence intervals. ZS: zero-shot; Ins.: instructed prompting. 
+
+connectivity and degree differences. • Category 3: Graphs have different node counts and edge counts, yielding trivially non-isomorphic graph pairs. • Category 4: The graph pairs have the same node count, edge count, and degree sequences, making them indistinguishable by 1-WL. Yet, they have complex structural properties (i.e., different cycle structures and higher-order structural patterns) making them non-isomorphic. This represents the most chal-lenging category. 
+
+4.1 Observations 
+
+Table 1 and Table 2 present isomorphism detection accuracy across formats and difficulty categories. Overall, all three LLMs perform very well in all cat-egories. Gemini maintains perfect 100% accuracy across all conditions. OpenAI achieves 98–100% except for two notable drops: adjacency matrix + instructed (91.5%) and category 4 with instruction (88.0%). Llama ranges 96–100%, with a drop in category 2 zero-shot setting (96.0%). Also, it can be seen that these results are statistically robust, as the 95% confidence intervals are narrow. Remarkably, all three achieve near-perfect per-formance on category 4 (1-WL indistinguishable non-isomorphic graphs), where the 1-WL algo-rithm provably fails and standard GNNs struggle. 
+
+4.2 Interpretations 
+
+These results raise two competing interpretations of LLM behaviour on graph isomorphism detection. • Interpretation 1: Genuine structural rea-soning. LLMs succeed not only on relatively easy non-isomorphic pairs (Categories 1–3) but also on instances where 1-WL cannot dis-tinguish the graphs. This may indicate that they exploit higher-order structural cues be-yond the expressivity limits typically associ-ated with standard graph neural networks and graph algorithms. • Interpretation 2: Potential artifact. Per-fect accuracy across all categories, including theoretically difficult cases, warrants caution. If LLMs truly possess robust structural rea-soning abilities, their performance should be invariant to arbitrary node relabeling. Per-mutation invariance is a fundamental require-ment of graph reasoning, as relabeling the nodes of a graph does not change its struc-ture. Consequently, if an LLM correctly iden-tifies non-isomorphic graphs but fails to de-tect permutation-invariance, its decisions are likely driven by surface patterns matching or detecting serialization differences rather than genuine structural understanding. To disambiguate, we test whether LLMs can detect permutation-invariance in graphs. 
+
+5 Permutation Invariance Experiment 
+
+In our second experiment, we test whether LLMs preserve their isomorphism judgments when the same graphs are perturbed by random node relabel-ing. Unlike Experiment 1, all graph pairs in this test are isomorphic. We generate 400 random con-nected graphs of varying sizes (100 graphs each at 
+
+n ∈ { 5, 10 , 15 , 20 } nodes), create an isomorphic copy by random permutation, and query each LLM across three formats and two strategies. LLM Prompt Serialization Accuracy 95% CI OpenAI Zero-shot Edge list 0.0% [0.000, 0.010] Edge index 0.0% [0.000, 0.010] Adj. matrix 0.5% [0.001, 0.018] Instructed Edge list 11.2% [0.085, 0.147] Edge index 16.0% [0.127, 0.199] Adj. matrix 18.0% [0.145, 0.221] Gemini Zero-shot Edge list 0.2% [0.000, 0.014] Edge index 0.2% [0.000, 0.014] Adj. matrix 0.0% [0.000, 0.010] Instructed Edge list 0.0% [0.000, 0.010] Edge index 0.0% [0.000, 0.010] Adj. matrix 0.0% [0.000, 0.010] Llama Zero-shot Edge list 11.2% [0.085, 0.147] Edge index 6.0% [0.041, 0.088] Adj. matrix 2.0% [0.010, 0.039] Instructed Edge list 31.5% [0.271, 0.362] Edge index 39.2% [0.346, 0.441] Adj. matrix 4.5% [0.029, 0.070] 
+
+Table 3: Permutation invariance evaluation across LLMs, prompting strategies, and graph serialization formats with 95% Wilson score confidence intervals. 
+
+5.1 Observations 
+
+Table 3 presents permutation invariance accuracy across all LLMs, prompting strategies, and serial-ization formats. The results reveal complete fail-ure: all three models collapse to poor performance. OpenAI achieves 0–18% accuracy, Gemini scores 0–0.2%, and Llama ranges 2–39.2%. All condi-tions are statistically non-significant with a random-guess baseline. Within each model, performance varies consid-erably by serialization format, suggesting models exploit input patterns rather than reasoning about structure. Furthermore, while instructed prompts occasionally improve performance over zero-shot, the gains remain insufficient for reliable reason-ing, indicating that explicitly reminding models of permutation invariance does not eliminate their reliance on pattern matching. 
+
+5.2 Interpretations 
+
+The results of Experiment 2 clearly support In-terpretation 2 from Experiment 1, suggesting that LLMs do not perform robust structural reasoning on graph isomorphism. The failure mode is not ran-dom: models overwhelmingly respond not isomor-phic to relabeled isomorphic pairs, indicating that node permutation introduces serialization-level dif-ferences that LLMs treat as structural differences. This is precisely the behavior of a pattern-matcher sensitive to label conventions rather than a reasoner operating on abstract topology. The pronounced variation in accuracy across serialization formats within each model further supports this view. A genuine structural reasoner should be format-agnostic, since all formats encode identical topology. Instead, they exploit correla-tions learned during pretraining or implicit biases in how node indices co-occur with edge patterns. 
+
+6 Conclusion, and Limitations 
+
+In this work, we showed that LLMs do not per-form robust structural reasoning on graph isomor-phism. Instead, our experiments suggest that they exploit surface-level patterns in serialized represen-tations. Even explicit instruction on permutation invariance fails to improve robustness, suggesting an architectural limitation rather than a remediable prompting issue. We highlight that these findings have important implications: practitioners should not rely on LLMs for structure-critical graph rea-soning. We suggest that they focus more on devel-oping permutation-invariant serialization methods that can also capture rich topological properties in graphs. Also, we suggest that invariance-based evaluations should be employed alongside accuracy metrics when assessing LLMs on graph-structured tasks. Our study is limited to three representative LLMs and three graph serialization methods. While we believe this subset is sufficient to support the main conclusions, future work should extend the analysis to a broader range of models, prompt-ing strategies, and serialization schemes. We also observe indications that tokenization and token em-bedding choices may influence performance, but these factors were not systematically ablated and warrant further investigation. In addition, graph instances were generated randomly without explic-itly controlling for structural properties such as girth, diameter, symmetry, or automorphism struc-ture, leaving open the possibility that certain graph classes are inherently more amenable to LLM-based reasoning. Finally, our experiments cannot determine whether the observed failures arise from fundamental limitations in symbolic reasoning or from an overreliance on statistical patterns acquired during pretraining. Understanding the mechanis-tic origins of permutation invariance failure re-mains an important direction for future research. It would also be valuable to examine whether simi-lar failures emerge in other permutation-invariant domains, such as set reasoning, database querying, and knowledge graph reasoning. References 
+
+Josh Achiam, Steven Adler, Sandhini Agarwal, Lama Ahmad, Ilge Akkaya, Florencia Leoni Aleman, Diogo Almeida, Janko Altenschmidt, Sam Altman, Shyamal Anadkat, and 1 others. 2023. Gpt-4 techni-cal report. arXiv preprint arXiv:2303.08774 .Palaash Agrawal, Shavak Vasania, and Cheston Tan. 2025. Can llms perform structured graph reason-ing tasks? In International Conference on Pattern Recognition , pages 287–308. Springer. Saeed S Alahmari, Lawrence Hall, Peter R Mouton, and Dmitry Goldgof. 2025. Large language models robustness against perturbation. Scientific Reports ,16:346. Alfonso Amayuelas, Joy Prakash Sain, Simerjot Kaur, and Charese Smiley. 2025. Grounding llm reason-ing with knowledge graphs. In First Workshop on Foundations of Reasoning in Language Models .Junkai Chen, Zhenhao Li, Xing Hu, and Xin Xia. 2026. Nlperturbator: Studying the robustness of code llms to natural language variations. ACM Transactions on Software Engineering and Methodology , 35(4):1–20. Beni Egressy and Jan Stühmer. 2025. Set-llm: Apermutation-invariant llm. Advances in Neural Infor-mation Processing Systems , 38:62798–62834. Matthias Fey and Jan Eric Lenssen. 2019. Fast graph representation learning with pytorch geometric. 
+
+arXiv preprint arXiv:1903.02428 .Bryan Guan, Mehdi Rezagholizadeh, Tanya G Roosta, and Peyman Passban. 2025. The order effect: Inves-tigating prompt sensitivity to input order in llms. In 
+
+First International KDD Workshop on Prompt Opti-mization .Daniel Herbst, Lea Karbevska, Divyanshu Kumar, Akanksha Ahuja, Fatemeh Gholamzadeh Nasrabadi, and Fabrizio Frasca. 2025. Lost in serialization: In-variance and generalization of llm graph reasoners. 
+
+arXiv preprint arXiv:2511.10234 .Asela Hevapathige and Qing Wang. 2026. Permutation-invariant graph partitioning: How graph neural net-works capture structural interactions? Neural Net-works , page 108869. Ningyuan Teresa Huang and Soledad Villar. 2021. A short tutorial on the weisfeiler-lehman test and its variants. In ICASSP 2021-2021 IEEE International Conference on Acoustics, Speech and Signal Process-ing (ICASSP) , pages 8533–8537. IEEE. Zixuan Ke, Fangkai Jiao, Yifei Ming, Xuan-Phi Nguyen, Austin Xu, Do Xuan Long, Minzhi Li, Chengwei Qin, PeiFeng Wang, Caiming Xiong, and 1 others. 2025. A survey of frontiers in llm reasoning: Infer-ence scaling, learning to reason, and agentic systems. 
+
+Transactions on Machine Learning Research .Xunkai Li, Zhengyu Wu, Jiayi Wu, Hanwen Cui, Jishuo Jia, Rong-Hua Li, and Guoren Wang. 2024a. Graph learning in the era of llms: A survey from the per-spective of data, models, and tasks. arXiv preprint arXiv:2412.12456 .Zhiming Li, Yushi Cao, Xiufeng Xu, Junzhe Jiang, Xu Liu, Yon Shin Teo, Shang-Wei Lin, and Yang Liu. 2024b. Llms for relational reasoning: How far are we? In Proceedings of the 1st international workshop on large language models for code , pages 119–126. Christopher Morris, Martin Ritzert, Matthias Fey, William L Hamilton, Jan Eric Lenssen, Gaurav Rat-tan, and Martin Grohe. 2019. Weisfeiler and leman go neural: Higher-order graph neural networks. In 
+
+Proceedings of the AAAI conference on artificial in-telligence , volume 33, pages 4602–4609. Xuefei Ning, Zifu Wang, Shiyao Li, Zinan Lin, Peiran Yao, Tianyu Fu, Matthew B Blaschko, Guohao Dai, Huazhong Yang, and Yu Wang. 2024. Can llms learn by teaching for better reasoning? a preliminary study. 
+
+Advances in Neural Information Processing Systems ,37:71188–71239. Pouya Pezeshkpour and Estevam Hruschka. 2024. Large language models sensitivity to the order of op-tions in multiple-choice questions. In Findings of the Association for Computational Linguistics: NAACL 2024 , pages 2006–2017. Xubin Ren, Jiabin Tang, Dawei Yin, Nitesh Chawla, and Chao Huang. 2024. A survey of large language models for graphs. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pages 6616–6626. Zhijie Tan, Xu Chu, Weiping Li, and Tong Mo. 2024. Order matters: Exploring order sensitivity in mul-timodal large language models. arXiv preprint arXiv:2410.16983 .Gemini Team, Rohan Anil, Sebastian Borgeaud, Jean-Baptiste Alayrac, Jiahui Yu, Radu Soricut, Johan Schalkwyk, Andrew M Dai, Anja Hauth, Katie Mil-lican, and 1 others. 2023. Gemini: a family of highly capable multimodal models. arXiv preprint arXiv:2312.11805 .Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, and 1 others. 2023. Llama: Open and effi-cient foundation language models. arXiv preprint arXiv:2302.13971 .Karthik Valmeekam, Alberto Olmo, Sarath Sreedharan, and Subbarao Kambhampati. 2022. Large language models still can’t plan (a benchmark for llms on plan-ning and reasoning about change). In NeurIPS 2022 Foundation Models for Decision Making Workshop .Jason Wei, Yi Tay, Rishi Bommasani, Colin Raffel, Barret Zoph, Sebastian Borgeaud, Dani Yogatama, Maarten Bosma, Denny Zhou, Donald Metzler, and 1 others. 2022. Emergent abilities of large language models. Transactions on Machine Learning Re-search .Boris Weisfeiler and Andrei Leman. 1968. The reduc-tion of a graph to canonical form and the algebra which appears therein. nti, Series , 2(9):12–16. Xixi Wu, Yifei Shen, Fangzhou Ge, Caihua Shan, Yizhu Jiao, Xiangguo Sun, and Hong Cheng. 2025. When do llms help with node classification? a compre-hensive analysis. In International Conference on Machine Learning , pages 67623–67649. PMLR. Zonghan Wu, Shirui Pan, Fengwen Chen, Guodong Long, Chengqi Zhang, and Philip S Yu. 2020. A com-prehensive survey on graph neural networks. IEEE transactions on neural networks and learning sys-tems , 32(1):4–24. Danning Xie, Mingwei Zheng, Xuwei Liu, Jiannan Wang, Chengpeng Wang, Lin Tan, and Xiangyu Zhang. 2026. Core: Benchmarking llms’ code rea-soning capabilities through static analysis tasks. Ad-vances in Neural Information Processing Systems ,38. Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka. 2019. How powerful are graph neural net-works? In International Conference on Learning Representations .Viktor N Zemlyachenko, Nickolay M Korneenko, and Regina I Tyshkevich. 1985. Graph isomorphism problem. Journal of Soviet Mathematics , 29(4):1426– 1481. Zheng Zhang. 2025. Comprehension without compe-tence: Architectural limits of llms in symbolic com-putation and reasoning. Transactions on Machine Learning Research .

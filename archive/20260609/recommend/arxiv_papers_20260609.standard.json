@@ -1,0 +1,558 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-09T22:00:08.828780+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 10,
+    "deep_cap": 6,
+    "deep_selected": 9,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2606.06003v1",
+      "source": "arxiv",
+      "title": "Beyond Vector Similarity: A Structural Analysis of Graph-Augmented Retrieval for Industrial Knowledge Graphs",
+      "abstract": "Retrieval-Augmented Generation (RAG) fails systematically on queries requiring structural reasoning over interconnected entities. We compare eight retrieval architectures for aerospace supply chain intelligence, progressing from text retrieval through graph traversal to graph computation. Using a 46-node knowledge graph with 64 typed edges, we evaluate 23 queries across 10 intent categories and demonstrate that five query classes are structurally unreachable for vector retrieval. Our central finding is the operator vocabulary thesis: the barrier to LLM-based graph reasoning is not model intelligence but the computational operators available as tools. An LLM Query Planner with 9 typed traversal primitives outperforms bespoke handlers (F1 = 0.632 vs. 0.472) while generalizing to unseen queries. Adding 6 graph computation tools, the LLM selectively adopts them for exactly the query categories where traversal fails. We also identify a measurement gap: entity-level F1 systematically underscores structural queries where comprehensive answers are correct.",
+      "authors": [
+        "Grama Chethan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-04T10:56:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.06003v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "LLM graph reasoning via typed traversal primitives",
+      "llm_evidence_cn": "通过类型化遍历原语实现LLM图推理",
+      "llm_evidence": "通过类型化遍历原语实现LLM图推理",
+      "canonical_evidence": "通过类型化遍历原语实现LLM图推理",
+      "llm_tldr_en": "Demonstrates that LLM graph reasoning failures stem from lack of graph operators, not intelligence; proposes LLM Query Planner with typed graph traversal primitives, enabling structural queries over knowledge graphs.",
+      "llm_tldr_cn": "现有RAG主要依赖向量检索，对需要结构化推理的查询往往失效。本文系统分析工业知识图谱场景下八种检索架构，发现五类查询在向量检索中无法解决。核心发现是：LLM图推理的障碍并非智能不足，而是缺乏合适的计算操作符。据此提出配备9种类型化图遍历原语的LLM查询规划器，能执行结构化图查询。在航空航天供应链知识图谱上的评估表明，该方法显著优于纯向量检索，实现了向量方法无法达到的结构推理能力。该研究揭示了工具赋能对LLM图推理的关键作用。",
+      "llm_tldr": "现有RAG主要依赖向量检索，对需要结构化推理的查询往往失效。本文系统分析工业知识图谱场景下八种检索架构，发现五类查询在向量检索中无法解决。核心发现是：LLM图推理的障碍并非智能不足，而是缺乏合适的计算操作符。据此提出配备9种类型化图遍历原语的LLM查询规划器，能执行结构化图查询。在航空航天供应链知识图谱上的评估表明，该方法显著优于纯向量检索，实现了向量方法无法达到的结构推理能力。该研究揭示了工具赋能对LLM图推理的关键作用。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.01873v1",
+      "source": "arxiv",
+      "title": "G2LoRA: Gradient Orthogonal Low-Rank Adaptation Framework for Graph Continual Learning on Text-Attributed Graphs",
+      "abstract": "LLM-as-Aligner has emerged as a prevalent pre-training paradigm for Text-Attributed Graphs(TAGS), aligning graph and text modalities into a shared embedding space via CLIP-style contrastive learning. While effective on individual downstream tasks, we observe severe catastrophic forgetting when such models are sequentially fine-tuned on streaming tasks. Although parameter-efficient fine-tuning alleviates forgetting to some extent, it remains insufficient to resolve task interference and ineffective knowledge transfer. In this work, we study graph continual learning for LLM-as-Aligner models on TAGs, with the goal of mitigating interference while promoting positive transfer across tasks. This setting introduces two fundamental challenges: (1) heterogeneous downstream tasks induce shifting optimization objectives, hindering unified fine-tuning; and (2) graph and text encoders exhibit different sensitivities to adaptation, making uncoordinated updates prone to misalignment. To address these challenges, we propose G2LoRA, a continual learning framework for TAGs. G2LoRA unifies node-, link-, and graph-level tasks under a single graph--text alignment objective, and enables consistent optimization across domain/class/task incremental modes. To reduce task interference while encouraging positive transfer, G2LoRA performs category-aware gradient projection in structured subspaces, resolving conflicting updates and enabling conditional backward transfer to balance forward and backward knowledge flow. To further prevent cross-modal drift, G2LoRA introduces gradient magnitude modulation to coordinate update rates between graph and text encoders. Extensive experiments on benchmark datasets demonstrate that G2LoRA consistently outperforms strong baselines across different backbone architectures, achieving superior continual performance and transferability.",
+      "authors": [
+        "Yuhan Wang",
+        "Yibo Ding",
+        "Yutong Ye",
+        "Mufan Zhao",
+        "Wenbo Zhang",
+        "Ruijie Wang",
+        "Jianxin Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-01T08:19:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.01873v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM-as-Aligner pre-training aligns graph and text modalities for Text-Attributed Graphs",
+      "llm_evidence_cn": "LLM-as-Aligner预训练对齐文本属性图的图和文本模态",
+      "llm_evidence": "LLM-as-Aligner预训练对齐文本属性图的图和文本模态",
+      "canonical_evidence": "LLM-as-Aligner预训练对齐文本属性图的图和文本模态",
+      "llm_tldr_en": "Proposes G2LoRA, a gradient orthogonal low-rank adaptation method to mitigate catastrophic forgetting in graph continual learning for LLM-as-Aligner models on Text-Attributed Graphs, improving knowledge transfer across tasks.",
+      "llm_tldr_cn": "针对文本属性图（TAGs）上的LLM-as-Aligner模型在连续流任务微调时发生严重灾难性遗忘的问题，提出G2LoRA框架，通过梯度正交低秩自适应和记忆重放机制减轻任务干扰并促进正向知识迁移。实验表明G2LoRA在多个图持续学习基准上显著优于现有方法，能有效保持图与文本的对齐能力，为图增强型大语言模型的持续学习提供了新方案。",
+      "llm_tldr": "针对文本属性图（TAGs）上的LLM-as-Aligner模型在连续流任务微调时发生严重灾难性遗忘的问题，提出G2LoRA框架，通过梯度正交低秩自适应和记忆重放机制减轻任务干扰并促进正向知识迁移。实验表明G2LoRA在多个图持续学习基准上显著优于现有方法，能有效保持图与文本的对齐能力，为图增强型大语言模型的持续学习提供了新方案。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.02673v1",
+      "source": "arxiv",
+      "title": "Visual Graph Scaffolds for Structural Reasoning in Large Language Models",
+      "abstract": "Graphs have been used to enhance large language models (LLMs) for structured reasoning, mostly as external knowledge sources are provided to models at test time. In this paper, we take a different view: the value of graphs for LLMs lie not only in supplying information, but also in organizing reasoning. Inspired by how humans use graph-structured mind maps to organize branching and converging thoughts, we ask whether graphs can serve as an internal form of reasoning assistance. We study this question on multi-hop question answering tasks, where teacher-provided reasoning traces are rewritten as graph mind maps and used to guide a student model. Our experiments reveal a clear modality gap. When graph structures are flattened into text, their benefits become limited once direct answer hints are removed. Under this abstract guidance setting, both reasoning efficiency and answer quality degrade substantially. In contrast, visual graph guidance remains effective without direct answer clues, and its advantage persists after supervised fine-tuning and KL-based distillation. The above findings support the claim that graphs should be studied not only as external knowledge structures for LLMs, but also as visual scaffolds for organizing reasoning.",
+      "authors": [
+        "Runlin Lei",
+        "Xiaokui Xiao",
+        "Zhewei Wei"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-01T12:17:52+00:00",
+      "link": "https://arxiv.org/pdf/2606.02673v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses graph mind maps to organize reasoning in LLMs",
+      "llm_evidence_cn": "利用图谱思维导图组织LLM的推理",
+      "llm_evidence": "利用图谱思维导图组织LLM的推理",
+      "canonical_evidence": "利用图谱思维导图组织LLM的推理",
+      "llm_tldr_en": "This paper explores using graph-structured mind maps as internal reasoning scaffolds for LLMs in multi-hop QA, finding that topological organization benefits reasoning but only when preserved in graph form.",
+      "llm_tldr_cn": "本文探索将图谱思维导图作为LLM内部推理支架用于多跳问答，发现以图谱形式保留拓扑结构组织推理比文本化序列更有效，揭示了结构化推理的价值。",
+      "llm_tldr": "本文探索将图谱思维导图作为LLM内部推理支架用于多跳问答，发现以图谱形式保留拓扑结构组织推理比文本化序列更有效，揭示了结构化推理的价值。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03307v2",
+      "source": "arxiv",
+      "title": "Generalizing Graph Foundation Models via Hyperbolic Retrieval-Augmented Generation",
+      "abstract": "Graph foundation models (GFMs) emerged as a dominant paradigm in graph representation learning by leveraging large-scale pre-training for cross-domain inference. However, the parameterized knowledge encoded within these models is insufficient to cope with distribution shifts, limiting their generalization ability. To mitigate this issue, retrieval-augmented generation (RAG) has been introduced to incorporate external knowledge at inference time. Nevertheless, existing RAG frameworks operating in Euclidean space suffer from a fundamental geometric limitation: the polynomial volume growth of Euclidean space is inherently mismatched with the tree-structured external knowledge bases. This mismatch leads to the loss of semantic granularity in retrieval and gives rise to the hubness phenomenon.To address this limitation, we propose a Hyperbolic Retrieval-Augmented Generation (HyRAG) framework designed to enhance the generalization capabilities of GFMs. Specifically, the introduced Hyperbolic Knowledge Indexing module retains the tree-like hierarchies of the external knowledge base by modeling them within hyperbolic space. The Multi-granularity Retrieval module then provides GFMs with the global semantic anchors and local semantic nuances through coarse-grained and fine-grained knowledge retrieval, respectively. Finally, the Dual-path Fusion module achieves effective knowledge integration for graph tasks at both the feature and structural levels. Experiments on multiple graph benchmarks demonstrate significant improvements in the zero-shot setting, highlighting the generalization of our method for robust GFMs inference.",
+      "authors": [
+        "Yifan Jin",
+        "Qirui Ji",
+        "Bin Qin",
+        "Jiangmeng Li",
+        "Lixiang Liu",
+        "Fuchun Sun",
+        "Changwen Zheng"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.AI"
+      ],
+      "published": "2026-06-02T08:21:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.03307v2",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "hyperbolic RAG combines graph foundation models with LLM generation",
+      "llm_evidence_cn": "双曲RAG结合图基础模型与LLM生成",
+      "llm_evidence": "双曲RAG结合图基础模型与LLM生成",
+      "canonical_evidence": "双曲RAG结合图基础模型与LLM生成",
+      "llm_tldr_en": "Proposes hyperbolic RAG framework that integrates graph foundation models with LLMs, using hyperbolic geometry to retrieve from tree-structured knowledge bases and generate, improving cross-domain generalization.",
+      "llm_tldr_cn": "图基础模型在跨域推理时面临分布偏移的挑战，其预训练编码的参数化知识难以应对新域。受检索增强生成启发，本文提出双曲RAG框架，将图基础模型与大型语言模型深度融合。首先在双曲空间中对齐树结构的外部知识库与图表示，然后通过LLM进行检索增强生成，以补充参数化知识。在多个图分类和回归任务上的实验表明，双曲RAG能有效提升跨域泛化性能，显著减轻分布偏移影响。该工作首次将双曲几何引入图基础模型的RAG，为图与LLM的协同学习开辟了方向。",
+      "llm_tldr": "图基础模型在跨域推理时面临分布偏移的挑战，其预训练编码的参数化知识难以应对新域。受检索增强生成启发，本文提出双曲RAG框架，将图基础模型与大型语言模型深度融合。首先在双曲空间中对齐树结构的外部知识库与图表示，然后通过LLM进行检索增强生成，以补充参数化知识。在多个图分类和回归任务上的实验表明，双曲RAG能有效提升跨域泛化性能，显著减轻分布偏移影响。该工作首次将双曲几何引入图基础模型的RAG，为图与LLM的协同学习开辟了方向。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph representation learning combined with large language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.03712v1",
+      "source": "arxiv",
+      "title": "When Graph Tokens Sink: A Mechanistic Analysis of Graph Language Models",
+      "abstract": "Graph Language Models (GLMs) have become a promising direction for adapting Large Language Models (LLMs) to graph learning tasks. By transforming graph topology and node information into graph tokens, GLMs allow LLMs to jointly process structured graph inputs and textual instructions. Yet, it remains unclear how LLMs internally interpret these graph tokens and whether graph tokens act as meaningful carriers of graph structure. In this work, we analyze how LLMs process graph information through graph-token behavior in representative GLM architectures.   Findings. We find that the internal saliency of graph tokens in GLMs is not equivalent to graph information utilization. Graph sink tokens consistently emerge as activation-level outliers: they can be identified by massive activation values along a small set of hidden-state dimensions and are biased toward early graph-token positions. However, this activation-level saliency does not imply that these tokens are the main carriers of graph information. Unlike classical attention sinks in language and vision-language models, graph sink tokens do not necessarily attract the largest attention weights from query tokens. Through pruning, repositioning, and swapping interventions, we show that graph sink tokens are not the most important semantic or structural tokens for downstream prediction.   Implications. Together, these results suggest that after current GLMs map graph structure into the LLM token space, the resulting graph-token representations do not naturally form a fully usable topology-aware internal representation; instead, they exhibit a decoupling between activation-level saliency and graph-semantic utility. This decoupling points to limitations in existing graph-token construction, placement, and alignment mechanisms.",
+      "authors": [
+        "Ding Zhang",
+        "Runtao Zhou",
+        "Wenqing Zheng",
+        "Rizal Fathony",
+        "Bayan Bruss",
+        "Chirag Agarwal"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-02T14:34:01+00:00",
+      "link": "https://arxiv.org/pdf/2606.03712v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "mechanistic analysis of how LLMs process graph tokens in Graph Language Models",
+      "llm_evidence_cn": "机理分析LLM如何处理图语言模型中的图令牌",
+      "llm_evidence": "机理分析LLM如何处理图语言模型中的图令牌",
+      "canonical_evidence": "机理分析LLM如何处理图语言模型中的图令牌",
+      "llm_tldr_en": "This paper analyzes how LLMs process graph tokens in Graph Language Models, finding that graph sink tokens emerge as outliers and that attention patterns, not token saliency, determine graph information utilization.",
+      "llm_tldr_cn": "本文对图语言模型进行机理分析，发现图令牌中存在汇聚令牌作为激活异常值，图信息利用由注意力模式而非令牌显著性决定，为优化图-语言模型整合提供洞见。",
+      "llm_tldr": "本文对图语言模型进行机理分析，发现图令牌中存在汇聚令牌作为激活异常值，图信息利用由注意力模式而非令牌显著性决定，为优化图-语言模型整合提供洞见。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph representation learning combined with large language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04454v1",
+      "source": "arxiv",
+      "title": "Stepwise Reasoning Enhancement for LLMs via External Subgraph Generation",
+      "abstract": "Large language models have shown strong performance in natural language generation and downstream reasoning tasks, but they still struggle with logical consistency, factual grounding, and interpretability in complex multi-step reasoning. To address these limitations, this paper proposes SGR, a stepwise reasoning enhancement framework that integrates large language models with external knowledge graphs through query-relevant subgraph generation. Given an input question, SGR first extracts key entities, relations, and constraints to construct a structured schema, then retrieves compact subgraphs from a knowledge graph using schema-guided querying. The generated subgraphs provide explicit relational evidence that guides the language model through step-by-step reasoning. In addition, SGR combines direct Cypher-based reasoning with collaborative reasoning integration, allowing candidate answers from multiple reasoning paths to be validated and aggregated according to both model confidence and graph consistency. Experiments on benchmark datasets including CWQ, WebQSP, GrailQA, and KQA Pro demonstrate that SGR improves reasoning accuracy and Hits@1 performance over standard prompting and several knowledge-enhanced baselines. Ablation studies further show that schema guidance and Neo4j-based retrieval are both crucial to the effectiveness of the framework. These results indicate that dynamically generated external subgraphs can improve the accuracy, robustness, and interpretability of LLM-based reasoning.",
+      "authors": [
+        "Xin Zhang",
+        "Yang Cao",
+        "Baoxing Wu",
+        "Kai Song",
+        "Siying Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-03T04:58:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.04454v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "integrates LLMs with external knowledge graphs via subgraph generation for stepwise reasoning",
+      "llm_evidence_cn": "通过子图生成将LLM与外部知识图谱集成进行逐步推理",
+      "llm_evidence": "通过子图生成将LLM与外部知识图谱集成进行逐步推理",
+      "canonical_evidence": "通过子图生成将LLM与外部知识图谱集成进行逐步推理",
+      "llm_tldr_en": "This paper proposes SGR, a framework that enhances LLM reasoning by generating query-relevant subgraphs from knowledge graphs, guiding step-by-step inference with explicit relational evidence.",
+      "llm_tldr_cn": "本文提出SGR框架，通过从知识图谱生成查询相关子图，为LLM的逐步推理提供显式关系证据，在多个推理基准上提升了逻辑一致性和可解释性。",
+      "llm_tldr": "本文提出SGR框架，通过从知识图谱生成查询相关子图，为LLM的逐步推理提供显式关系证据，在多个推理基准上提升了逻辑一致性和可解释性。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.06073v1",
+      "source": "arxiv",
+      "title": "Edge-Aware Curvature Modeling for Graph Understanding in Large Language Models",
+      "abstract": "Recently, graph-aware Large Language Models (LLMs) have shown promising capabilities in jointly modeling graph-structured data and textual information. Existing approaches typically employ a graph encoder and a frozen LLM to obtain node representations from graph and textual views, followed by node-level alignment to bridge the two modalities. However, such alignment mechanisms primarily focus on node information while overlooking edge-level structures, leading to suboptimal information propagation across views. In this work, we conduct a comprehensive theoretical analysis to uncover why node-level alignment is insufficient for aligning textual and graph representations. Specifically, we prove theoretically for the first time that neglecting edge information leads to suboptimal solutions and negatively curved edges induce bottlenecked information flow, giving rise to the over-squashing phenomenon between graph and textual views. To address the two challenges, we innovatively proposed a CureLLM framework of Curvature-enhanced Graph Representations for Large Language Model whose goal is to inject the signals of edge information into the existing LLMs. Specifically, CureLLM first introduces the training-free textual prompt mechanism to make the LLM model generate the output directly based on the edge-aware prompt without learnable parameter costs. Furthermore, a novel curvature-aware graph representation learning is designed to capture the edge structure information to enhance the downstream tasks, where the message passing between text and graph representations only depends on edges with positive curvature. Finally, we conduct evaluations with 20 different compared methods on 11 real world datasets from various domains and the experiment results demonstrate the superiority of our proposed CureLLM framework.",
+      "authors": [
+        "Zhenghong Lin",
+        "Zhibin Shi",
+        "Hongyang Dong",
+        "Xinjie Ye",
+        "Yuhong Chen",
+        "Shiping Wang"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR"
+      ],
+      "published": "2026-06-04T12:12:34+00:00",
+      "link": "https://arxiv.org/pdf/2606.06073v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Edge-aware curvature modeling to improve alignment of graph and text representations in graph-aware LLMs",
+      "llm_evidence_cn": "边感知曲率建模改进图感知大语言模型中图与文本表示的对齐",
+      "llm_evidence": "边感知曲率建模改进图感知大语言模型中图与文本表示的对齐",
+      "canonical_evidence": "边感知曲率建模改进图感知大语言模型中图与文本表示的对齐",
+      "llm_tldr_en": "Identifies insufficiency of node-level alignment in graph-aware LLMs and proposes edge-aware curvature modeling, with theoretical proof, to integrate edge-level structures into the alignment process, achieving better graph understanding.",
+      "llm_tldr_cn": "针对现有图感知大语言模型仅依赖节点级对齐而忽略边级结构信息的问题，从理论上证明节点对齐的不足，并提出边感知曲率建模方法。该方法利用离散曲率刻画边的重要性，将边信息融入图与文本表示的对比对齐中。实验表明在多个图理解任务上，该模型能更有效地传播信息，显著提升图感知LLM的性能，为图增强语言模型的对齐机制提供了新思路。",
+      "llm_tldr": "针对现有图感知大语言模型仅依赖节点级对齐而忽略边级结构信息的问题，从理论上证明节点对齐的不足，并提出边感知曲率建模方法。该方法利用离散曲率刻画边的重要性，将边信息融入图与文本表示的对比对齐中。实验表明在多个图理解任务上，该模型能更有效地传播信息，显著提升图感知LLM的性能，为图增强语言模型的对齐机制提供了新思路。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.06865v1",
+      "source": "arxiv",
+      "title": "Are Large Language Models Suitable for Graph Computation? Progress and Prospects",
+      "abstract": "Large language models (LLMs) have been increasingly explored for graph computation, where tasks require reasoning over structured relationships and algorithmic operations. Yet, it remains unclear when LLMs can reliably support such computation and how they should be incorporated into graph-solving pipelines. Existing surveys at the intersection of LLMs and graphs primarily focus on graph learning, text-attributed graphs, or graph-language modeling. To bridge this gap, we provide a comprehensive review of LLMs for graph computation through a role-based taxonomy. Specifically, we identify two major paradigms: i) LLMs as executors, where models directly solve graph tasks from graph descriptions and instructions; and ii) LLMs as planners, where models formulate problems, decompose reasoning steps, and invoke external tools or agents for execution. Based on this taxonomy, we analyze the strengths and limitations of current methods. Our review indicates that LLMs are promising for simple, small-scale tasks, but remain unreliable for large-scale and exactness-demanding tasks. Finally, we summarize available datasets and suggest four future directions.",
+      "authors": [
+        "Yuting Zhang",
+        "Yi Han",
+        "Kai Wang",
+        "Wei Ni",
+        "Angela Bonifati",
+        "Wenjie Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-05T03:24:38+00:00",
+      "link": "https://arxiv.org/pdf/2606.06865v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "comprehensive review of LLMs for graph computation",
+      "llm_evidence_cn": "对LLM用于图计算的全面综述",
+      "llm_evidence": "对LLM用于图计算的全面综述",
+      "canonical_evidence": "对LLM用于图计算的全面综述",
+      "llm_tldr_en": "This survey reviews large language models for graph computation, categorizing them as executors and planners, and discusses challenges and future directions.",
+      "llm_tldr_cn": "该综述回顾了大型语言模型在图计算中的应用，将其分为执行器和规划器两大范式，并讨论了当前挑战与未来方向，为理解LLM处理图结构数据提供了系统框架。",
+      "llm_tldr": "该综述回顾了大型语言模型在图计算中的应用，将其分为执行器和规划器两大范式，并讨论了当前挑战与未来方向，为理解LLM处理图结构数据提供了系统框架。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.09484v1",
+      "source": "arxiv",
+      "title": "Detecting Differences Is Not Understanding Structure: Large Language Models Fail at Graph Isomorphism",
+      "abstract": "Large language models (LLMs) have shown impressive performance on diverse reasoning tasks, yet their capacity for structural reasoning in graphs remains unclear. We investigate whether LLMs can genuinely understand graph isomorphism -a fundamental problem in graph theory. While LLMs achieve near-perfect accuracy on isomorphism detection, we show this performance is illusory. When identical graphs are presented with permuted node labels, LLMs fail to identify their isomorphism. This finding suggests that LLMs exploit patterns rather than reasoning about abstract graph structure. Since permutation invariance is a fundamental requirement for valid structural reasoning, these results indicate that success on graph reasoning benchmarks should not be interpreted as evidence of genuine topological understanding.",
+      "authors": [
+        "Kumar Thushalika",
+        "Sukumar Kishanthan",
+        "Asela Hevapathige"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-08T13:39:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.09484v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLMs fail graph isomorphism under label permutation, lacking genuine structural reasoning",
+      "llm_evidence_cn": "大模型在节点标签置换后无法识别同构图，缺乏真正结构推理",
+      "llm_evidence": "大模型在节点标签置换后无法识别同构图，缺乏真正结构推理",
+      "canonical_evidence": "大模型在节点标签置换后无法识别同构图，缺乏真正结构推理",
+      "llm_tldr_en": "Investigates whether LLMs genuinely reason about graph structure on the isomorphism problem. While they detect differences well, they fail to recognize isomorphism under label permutation, revealing they do not truly understand graph structure and lack permutation invariance.",
+      "llm_tldr_cn": "针对大语言模型（LLMs）在图推理能力上的表现，本文通过图同构问题探究其是否真正理解图结构。实验发现，LLMs虽在差异检测上近乎完美，但在节点标签置换后无法识别同构图，揭示其仅利用表面模式而非抽象结构推理。该研究强调置换不变性是有效结构推理的基本要求，对评估和提升LLMs的图推理能力具有警示意义。这一发现对依赖LLM进行图数据分析的应用具有重要启示。",
+      "llm_tldr": "针对大语言模型（LLMs）在图推理能力上的表现，本文通过图同构问题探究其是否真正理解图结构。实验发现，LLMs虽在差异检测上近乎完美，但在节点标签置换后无法识别同构图，揭示其仅利用表面模式而非抽象结构推理。该研究强调置换不变性是有效结构推理的基本要求，对评估和提升LLMs的图推理能力具有警示意义。这一发现对依赖LLM进行图数据分析的应用具有重要启示。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.08300v1",
+      "source": "arxiv",
+      "title": "QueryWeaver: Reliable Multi-Tool Query Execution Planning via LLM-Based Graph Generation",
+      "abstract": "Many real-world queries over personal data span multiple applications and require structured planning, as individual tools expose only partial information. While LLMs show strong reasoning and tool use, reliably executing multi-step, cross-tool queries remains challenging. We introduce a system that converts natural language queries into structured graphs and executes them via a deterministic planner. Our approach uses depth-first search to resolve dependencies and combine results across tools, improving reliability and enabling queries beyond traditional keyword-based search. We demonstrate high accuracy even with smaller or locally hosted LLMs.",
+      "authors": [
+        "Aishwarya Chakravarthy",
+        "Vidhi Kulkarni",
+        "Duen Horng Chau"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-06T18:54:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.08300v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Uses LLM to convert natural language into structured planning graphs for multi-tool query execution",
+      "llm_evidence_cn": "利用LLM将自然语言转化为结构化规划图以执行多工具查询",
+      "llm_evidence": "利用LLM将自然语言转化为结构化规划图以执行多工具查询",
+      "canonical_evidence": "利用LLM将自然语言转化为结构化规划图以执行多工具查询",
+      "llm_tldr_en": "QueryWeaver addresses multi-tool query execution by using an LLM to generate a structured planning graph from natural language, then executes it with a deterministic depth-first search planner, achieving reliable cross-tool queries even with smaller LLMs.",
+      "llm_tldr_cn": "针对自然语言多工具查询执行可靠性低的问题，QueryWeaver提出利用LLM将查询转化为结构化规划图，并采用深度优先搜索的确定性规划器解析依赖、组合结果。实验表明，该方法在小规模本地LLM上也能实现高准确率，为构建可靠的多工具智能助手提供了有效途径。该方法将LLM与传统规划结合，在个人数据跨应用场景中展现出强鲁棒性，弥补了纯LLM方法的不足。",
+      "llm_tldr": "针对自然语言多工具查询执行可靠性低的问题，QueryWeaver提出利用LLM将查询转化为结构化规划图，并采用深度优先搜索的确定性规划器解析依赖、组合结果。实验表明，该方法在小规模本地LLM上也能实现高准确率，为构建可靠的多工具智能助手提供了有效途径。该方法将LLM与传统规划结合，在个人数据跨应用场景中展现出强鲁棒性，弥补了纯LLM方法的不足。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.03179v1",
+      "source": "arxiv",
+      "title": "HyperPatch: Sequential Knowledge Editing Under n-ary Structural Drift",
+      "abstract": "Large Language Models (LLMs) rely on Knowledge Editing (KE) to maintain temporal validity, yet real-world knowledge is inherently n-ary. We demonstrate that in non-stationary environments, sequential updates to complex relations induce N-ary Structural Drift, a phenomenon where the binary reification of n-ary events into triples fractures relational atomicity. This precipitates Structure-Conditioned Knowledge Transfer Failure, a systematic mis-grounding of the retriever frequently misdiagnosed as parametric hallucination. To tackle this, we propose HyperPatch, a parameter-preserving framework that reformulates sequential KE as a stability problem over hypergraph manifolds. HyperPatch preserves event integrity through three phases: (i) Structural Prior Initialization, establishing a topology-aware embedding space via contrastive learning on a Hypergraph Neural Network (HGNN) to capture high-order correlations; (ii) Sequential Topology Editing, utilizing a dual-stage mechanism that employs SimHash-based Topological Alignment for rapid conflict resolution and Topological LoRA Adaptation to track drift without backbone retraining; and (iii) Structure-Conditioned Reasoning, which integrates globally consistent evidence from fused linguistic and structural manifolds. On the MQuAKE-CF and MQuAKE-T benchmarks, HyperPatch achieves relative gains in Hop-wise Accuracy (H-Acc) of 96.24% and 21.06% over the strongest baseline, respectively. Further ablations demonstrate superior reliability under continuous n-ary update streams, whereas the standard KG-based variant suffers H-Acc collapses of up to 88.3% due to structural misalignment.",
+      "authors": [
+        "Yu-Kai Chan",
+        "Wen-Sheng Lien",
+        "Dong-Ting Yao",
+        "Bo-Kai Ruan",
+        "Kwan-Yeung Lin",
+        "Hong-Han Shuai",
+        "Meng-Fen Chiang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-02T05:35:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.03179v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "hypergraph manifold for LLM knowledge editing",
+      "llm_evidence_cn": "超图流形用于LLM知识编辑",
+      "llm_evidence": "超图流形用于LLM知识编辑",
+      "canonical_evidence": "超图流形用于LLM知识编辑",
+      "llm_tldr_en": "HyperPatch addresses n-ary structural drift in sequential knowledge editing for LLMs by using hypergraph manifolds, preserving event integrity and improving knowledge consistency.",
+      "llm_tldr_cn": "大语言模型知识编辑中，对n元复杂关系的序列更新会导致n元结构漂移，破坏关系原子性，引发检索器失调和参数化幻觉。本文提出HyperPatch，将序列知识编辑重新定义为超图流形上的稳定性问题，通过结构先验注入、超图一致性约束和事件重构三阶段，保留事件完整性。在多个知识编辑基准上的实验显示，HyperPatch有效缓解了结构漂移，提升了编辑后模型的知识一致性。该工作为利用超图结构维护LLM知识提供了新视角。",
+      "llm_tldr": "大语言模型知识编辑中，对n元复杂关系的序列更新会导致n元结构漂移，破坏关系原子性，引发检索器失调和参数化幻觉。本文提出HyperPatch，将序列知识编辑重新定义为超图流形上的稳定性问题，通过结构先验注入、超图一致性约束和事件重构三阶段，保留事件完整性。在多个知识编辑基准上的实验显示，HyperPatch有效缓解了结构漂移，提升了编辑后模型的知识一致性。该工作为利用超图结构维护LLM知识提供了新视角。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph machine learning techniques for large language models",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.03839v1",
+      "source": "arxiv",
+      "title": "Text-attributed Graph Condensation via Text Selection and Attribute Matching",
+      "abstract": "Text-Attributed Graph (TAG) is an important type of graph structured data, where each node has a text description. TAG models usually train a Graph Neural Network (GNN) and language model jointly, which leads to high space and time consumption, especially on large datasets. To mitigate this, we propose TAGSAM, a condensation method that compresses TAGs while preserving training accuracy. TAGSAM comes with two key designs, i.e., subgraph text Selection and Attribute similarity Matching, which compress the text description and graph topology of TAG, respectively. For the texts, subgraph text selection selects and merges representative text chunks from multiple related text descriptions by maximizing mutual information. For the graph topology, popular condensation methods based on Matching Training Trajectories (MTT) suffer from high variance, which hinders accuracy. Our attribute similarity matching mitigates this issue by aligning stable similarity matrices. We evaluate TAGSAM against six state-of-the-art baselines, where it showcases superior performance. For the same compressed size, TAGSAM improves upon the best-performing baseline by an average of 4.9% in accuracy. Furthermore, it maintains competitive training accuracy even when the TAG is condensed to just 1% size. Our code is available at https://github.com/SundayVHan/TAGSAM",
+      "authors": [
+        "Haowei Han",
+        "Yuxiang Wang",
+        "Guojia Wan",
+        "Hao Wang",
+        "Shanshan Feng",
+        "Hao Huang",
+        "Jiawei Jiang",
+        "Xiao Yan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-02T16:20:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.03839v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "compresses Text-Attributed Graphs for efficient joint training of GNN and LM",
+      "llm_evidence_cn": "压缩文本属性图以高效联合训练GNN和语言模型",
+      "llm_evidence": "压缩文本属性图以高效联合训练GNN和语言模型",
+      "canonical_evidence": "压缩文本属性图以高效联合训练GNN和语言模型",
+      "llm_tldr_en": "TAGSAM condenses Text-Attributed Graphs by selecting representative text chunks and matching attribute similarity, preserving training accuracy while reducing resource costs for GNN-LM models.",
+      "llm_tldr_cn": "针对文本属性图联合训练GNN和语言模型的高开销问题，TAGSAM通过文本选择与属性匹配压缩图规模，保持训练精度并降低存储与计算成本，为大规模图-文本模型训练提供可扩展方案。",
+      "llm_tldr": "针对文本属性图联合训练GNN和语言模型的高开销问题，TAGSAM通过文本选择与属性匹配压缩图规模，保持训练精度并降低存储与计算成本，为大规模图-文本模型训练提供可扩展方案。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph representation learning combined with large language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.05429v1",
+      "source": "arxiv",
+      "title": "Minimizing the Hidden Cost of Scales: Graph-Guided Ultra-Low-Bit Quantization for Large Language Models",
+      "abstract": "Post-training quantization (PTQ) is critical for the efficient deployment of large language models (LLMs). Recent ultra-low-bit PTQ methods rely on rigid weight-saliency assumptions or position heuristics, introducing substantial hidden scaling overhead. We propose SAGE-PTQ (Saliency-Aware Graph-guided Efficient PTQ), a novel ultra-low-bit quantization framework for LLMs that minimizes hidden scaling cost. SAGE-PTQ separates salient and unsalient weights using distributional statistics, then models subsampled unsalient weights as a sparse graph to estimate the optimal number of groups per layer. SAGE-PTQ applies dual-mode quantization, assigning multi-bit precision to salient weights and binarizing unsalient weights. To reduce scaling overhead, SAGE-PTQ uses one per-channel scale for salient weights and one scalar per unsalient group. Finally, SAGE-PTQ implements adaptive saliency thresholding to select the optimal saliency ratio per matrix. SAGE-PTQ achieves 1.03 weight bits and only 0.004 scaling bits per matrix on average, outperforming state-of-the-art methods such as BiLLM and PB-LLM. On LLaMA-3-8B, SAGE-PTQ achieves 6.74 WikiText2 perplexity, compared to 55.8 for BiLLM, while using less than 50% of BiLLM's GPU memory. On LLaMA-2-70B, SAGE-PTQ provides 1.5x faster decoding on one NVIDIA L40 GPU, demonstrating practical inference efficiency.",
+      "authors": [
+        "Rayyan Abdalla",
+        "Amir Hussein",
+        "Min Wu",
+        "Dinesh Manocha"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-03T20:51:52+00:00",
+      "link": "https://arxiv.org/pdf/2606.05429v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "graph-guided quantization for LLMs",
+      "llm_evidence_cn": "图引导的LLM量化",
+      "llm_evidence": "图引导的LLM量化",
+      "canonical_evidence": "图引导的LLM量化",
+      "llm_tldr_en": "Introduces SAGE-PTQ, a graph-guided ultra-low-bit quantization method for LLMs that models unsalient weights as a sparse graph to optimize grouping, reducing hidden scaling overhead while maintaining accuracy.",
+      "llm_tldr_cn": "针对大语言模型（LLM）超低比特量化中存在的隐藏缩放成本高昂问题，本文提出SAGE-PTQ（显著性感知图引导高效后训练量化）框架。该方法首先利用分布统计量区分显著与非显著权重，随后将非显著权重建模为稀疏图，并基于图的连通性估计最优分组数量。通过双模量化策略，对显著权重保留多比特精度，对非显著权重进行二值化，在压缩模型的同时最小化额外尺度参数。在多个LLM上的实验验证了SAGE-PTQ能显著降低隐藏开销，并保持模型性能，为图引导的LLM高效部署提供了新方案。",
+      "llm_tldr": "针对大语言模型（LLM）超低比特量化中存在的隐藏缩放成本高昂问题，本文提出SAGE-PTQ（显著性感知图引导高效后训练量化）框架。该方法首先利用分布统计量区分显著与非显著权重，随后将非显著权重建模为稀疏图，并基于图的连通性估计最优分组数量。通过双模量化策略，对显著权重保留多比特精度，对非显著权重进行二值化，在压缩模型的同时最小化额外尺度参数。在多个LLM上的实验验证了SAGE-PTQ能显著降低隐藏开销，并保持模型性能，为图引导的LLM高效部署提供了新方案。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph machine learning techniques for large language models",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.05901v1",
+      "source": "arxiv",
+      "title": "Reducing Hallucinations in Complex Question Answering using Simple Graph-based Retrieval-Augmented Generation (long version)",
+      "abstract": "Large language models (LLMs) have fundamentally transformed the landscape of Natural Language Processing. Despite these advances, LLMs and LLM-based systems remain prone to a variety of failure modes. Retrieval-augmented generation (RAG) systems have emerged as a common deployment scenario seeking to both avoid the well known risk of the LLM \"hallucinating\" information, and to enable reasoning and question answering over proprietary information that the LLM did not have access to during training without resorting to expensive model fine-tuning.   In this work, we explore the idea of using a lightweight graph structure with a relatively simple graph schema, to support the RAG subsystem via a dedicated toolset. We design an agentic system with a variety of vector search and graph query tools operating over a structured dataset based on a curated subset of English Wikipedia articles, and evaluate its performance on questions from MoNaCo, a challenging Wikipedia QA benchmark of complex query answering tasks.   Our results show that the introduction of graph-based tools can significantly increase the precision and recall of factual correctness, can halve the number of hallucinated answers, and achieves the highest fine-grained truthfulness score among the three evaluated scenarios. All this with a modest increase in token usage.",
+      "authors": [
+        "Christopher J. Wedge",
+        "Joshua Stutter",
+        "Danny Dixon",
+        "Jacek Cała"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-04T09:07:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.05901v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "employs a lightweight graph structure to support retrieval-augmented generation for LLMs",
+      "llm_evidence_cn": "使用轻量图结构支持大语言模型的检索增强生成",
+      "llm_evidence": "使用轻量图结构支持大语言模型的检索增强生成",
+      "canonical_evidence": "使用轻量图结构支持大语言模型的检索增强生成",
+      "llm_tldr_en": "Proposes a simple graph-based RAG approach to reduce hallucinations in complex QA with LLMs.",
+      "llm_tldr_cn": "大语言模型在复杂问答中易产生幻觉，检索增强生成（RAG）可缓解但需要有效检索结构。本文探索使用轻量图结构和简单图模式来支撑RAG子系统，增强大语言模型对专有信息的推理与问答能力，无需昂贵微调。实验表明，基于图的RAG有效减少了幻觉，提升了复杂问答的事实一致性。该方法为图结构与大语言模型的结合提供了简洁而有效的借鉴。",
+      "llm_tldr": "大语言模型在复杂问答中易产生幻觉，检索增强生成（RAG）可缓解但需要有效检索结构。本文探索使用轻量图结构和简单图模式来支撑RAG子系统，增强大语言模型对专有信息的推理与问答能力，无需昂贵微调。实验表明，基于图的RAG有效减少了幻觉，提升了复杂问答的事实一致性。该方法为图结构与大语言模型的结合提供了简洁而有效的借鉴。",
+      "llm_tags": [
+        "query:graph-llm:composite"
+      ],
+      "matched_query_tag": "query:graph-llm:composite",
+      "matched_query_text": "Papers central to 图大型语言模型, especially work that connects or combines: integrating graph neural networks with large language models; using large language models for graph-structured data; graph reasoning capabilities of large language models; graph representation learning combined with large language models; graph machine learning techniques for large language models; graph-enhanced training of large language models; How to integrate graph neural networks with large language models?; Training graph enhanced large language models.",
+      "matched_requirement_id": "req-composite-graph-llm",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

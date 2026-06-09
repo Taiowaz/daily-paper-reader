@@ -1,0 +1,632 @@
+Title: Generalizing Graph Foundation Models via Hyperbolic Retrieval-Augmented Generation
+
+URL Source: https://arxiv.org/pdf/2606.03307v2
+
+Published Time: Thu, 04 Jun 2026 00:37:21 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Generalizing Graph Foundation Models via Hyperbolic Retrieval-Augmented Generation 
+
+# Yifan Jin 
+
+jingyifan20@mails.ucas.ac.cn Institute of Software, Chinese Academy of Sciences Beijing, China University of Chinese Academy of Sciences Beijing, China 
+
+# Qirui Ji 
+
+jiqirui2022@iscas.ac.cn Institute of Software, Chinese Academy of Sciences Beijing, China University of Chinese Academy of Sciences Beijing, China 
+
+# Bin Qin 
+
+qinbin21@mails.ucas.ac.cn Institute of Software, Chinese Academy of Sciences Beijing, China University of Chinese Academy of Sciences Beijing, China 
+
+# Jiangmeng Li ∗
+
+jiangmeng2019@iscas.ac.cn Institute of Software, Chinese Academy of Sciences Beijing, China 
+
+# Lixiang Liu 
+
+lixiang@iscas.ac.cn Institute of Software, Chinese Academy of Sciences Beijing, China University of Chinese Academy of Sciences Beijing, China 
+
+# Fuchun Sun 
+
+fcsun@mail.tsinghua.edu.cn Tsinghua University Beijing, China 
+
+# Changwen Zheng 
+
+changwen@iscas.ac.cn Institute of Software, Chinese Academy of Sciences Beijing, China University of Chinese Academy of Sciences Beijing, China 
+
+## Abstract 
+
+Graph foundation models (GFMs) emerged as a dominant para-digm in graph representation learning by leveraging large-scale pre-training for cross-domain inference. However, the parameter-ized knowledge encoded within these models is insufficient to cope with distribution shifts, limiting their generalization ability. To mit-igate this issue, retrieval-augmented generation (RAG) has been introduced to incorporate external knowledge at inference time. Nevertheless, existing RAG frameworks operating in Euclidean space suffer from a fundamental geometric limitation: the polyno-mial volume growth of Euclidean space is inherently mismatched with the tree-structured external knowledge bases. This mismatch leads to the loss of semantic granularity in retrieval and gives rise to the hubness phenomenon. To address this limitation, we propose a Hy perbolic Retrieval- Augmented G eneration (HyRAG) frame-work designed to enhance the generalization capabilities of GFMs.  
+
+> ∗Corresponding Author
+> This work is licensed under a Creative Commons Attribution 4.0 International License.
+> KDD ’26, Jeju Island, Republic of Korea
+> ©2026 Copyright held by the owner/author(s). ACM ISBN 979-8-4007-2259-2/2026/08 https://doi.org/10.1145/3770855.3817750
+
+Specifically, the introduced Hyperbolic Knowledge Indexing mod-ule retains the tree-like hierarchies of the external knowledge base by modeling them within hyperbolic space. The Multi-granularity Retrieval module then provides GFMs with the global semantic anchors and local semantic nuances through coarse-grained and fine-grained knowledge retrieval, respectively. Finally, the Dual-path Fusion module achieves effective knowledge integration for graph tasks at both the feature and structural levels. Experiments on multiple graph benchmarks demonstrate significant improve-ments in the zero-shot setting, highlighting the generalization of our method for robust GFMs inference. 
+
+## CCS Concepts 
+
+• Information systems → Information retrieval ; Retrieval models and ranking .
+
+## Keywords 
+
+Hyperbolic Representation; Retrieval-Augmented Generation; Graph Foundation Model 
+
+ACM Reference Format: 
+
+Yifan Jin, Qirui Ji, Bin Qin, Jiangmeng Li, Lixiang Liu, Fuchun Sun, and Chang-wen Zheng. 2026. Generalizing Graph Foundation Models via Hyperbolic Retrieval-Augmented Generation. In Proceedings of the 32nd ACM SIGKDD   
+
+> arXiv:2606.03307v2 [cs.IR] 3 Jun 2026 KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Yifan Jin et al.
+> Conference on Knowledge Discovery and Data Mining V.2 (KDD ’26), Au-gust 09–13, 2026, Jeju Island, Republic of Korea. ACM, New York, NY, USA, 11 pages. https://doi.org/10.1145/3770855.3817750
+> Resource Availability:
+> The source code of this paper has been made publicly available at https: //doi.org/10.5281/zenodo.20501234.
+
+## 1 Introduction 
+
+Graph foundation models (GFMs) have emerged as a dominant paradigm for graph representation learning, enabling unified pre-training and transfer across diverse graph tasks such as node clas-sification [ 9 , 18 , 28 , 43 ], link prediction[ 3 , 28 ], and graph-level rea-soning [ 9, 18 ]. By leveraging pre-training on large-scale datasets, GFMs demonstrate impressive generalization capabilities. Despite these advances, the knowledge internalized by GFMs is inher-ently bounded by the distribution of the pre-training data[ 39 , 42 ]. When distributional shifts arise at inference time, the parameter-ized knowledge may fail to generalize, leading to degraded and unreliable inference performance[16]. To mitigate this limitation, recent studies have explored retrieval-augmented generation (RAG) paradigms that allow GFMs to dy-namically access external knowledge at inference time without retraining[ 14 , 34 ]. For instance, RAGRAPH [ 14 ] performs retrieval over a toy graph vector library and integrates the retrieved instances through a message-passing prompting mechanism to enrich the learning context. RAG4GFM [ 34 ] introduces a multi-level index-ing architecture together with a task-aware retriever to extract structurally and semantically relevant subgraphs. RAG-GFM [ 40 ]incorporates retrieval during pre-training to align semantic and structural priors. However, we argue that RAG frameworks op-erating in Euclidean space face an inherent geometric limitation: 
+
+the polynomial volume growth of Euclidean space is inherently mis-matched with the tree-structured external knowledge bases, leading to the following two issues: 1) Loss of semantic granularity. External knowledge bases are commonly organized as tree-structured hierarchies with expo-nential growth, where root nodes represent coarse-grained con-cepts and leaf nodes correspond to fine-grained concepts. These two levels of granularity provide complementary information for graph tasks. Specifically, for the classification of the query node in Figure 1(a), the coarse-grained concept “computational learning theory” situates the semantic context within the theoretical domain, serving as a global semantic anchor. In contrast, the fine-grained concept “PAC learning” offers local semantic nuances by specifying the concrete learning paradigm, thereby distinguishing the query from other theoretical branches. However, Euclidean representa-tion spaces exhibit only polynomial volume growth with respect to the radius, which fundamentally mismatches the exponential expansion of hierarchical knowledge and inevitably compresses concepts from different hierarchical depths into proximal regions of the embedding space. As a consequence, Euclidean-based RAG struggles to distinguish between coarse-grained and fine-grained concepts, collapsing rich hierarchical semantics into undifferenti-ated similarity signals. As illustrated in Figure 1(a), the query node may appear at similar Euclidean distances to both coarse-grained and fine-grained concepts, causing them to be treated as equally informative during retrieval and fusion. Such granularity-agnostic aggregation blurs semantic roles and weakens the reliability of downstream reasoning. In contrast, the intrinsic geometry of hy-perbolic space naturally accommodates tree-structured hierarchies, where coarse-grained concepts are embedded near the origin and fine-grained concepts reside closer to the boundary, effectively preserving granularity-sensitive semantic distinctions. 2) Emergence of hubness. Owing to the limited representa-tional capacity induced by the polynomial volume growth of Eu-clidean space, a large number of entities are forced to crowd into a relatively small region of the embedding space. This geometric crowding gives rise to the hubness phenomenon [ 24 , 37 ]: certain entities (i.e., hubs) frequently appear in the nearest neighbor sets of other entities. Such hubs tend to be repeatedly retrieved across diverse queries, leading to frequent co-occurrence across retrieval results and reducing retrieval diversity, as shown in Figure 1(b). As a consequence, Euclidean-based retrieval struggles to return query-specific and discriminative knowledge. In contrast, hyper-bolic space exhibits exponential volume growth that naturally ac-commodates the expansion of hierarchical knowledge, alleviating geometric crowding. As illustrated in Figure 1(b), the number of high-frequency entities in hyperbolic retrieval is significantly re-duced, demonstrating effective mitigation of the hubness problem. To address these limitations, we propose a Hy perbolic Retrieval-A ugmented G eneration (HyRAG) framework to enhance the gen-eralization capability of graph foundation models. Specifically, to model the tree-like hierarchies of the external knowledge base, we introduce the Hyperbolic Knowledge Indexing (HKI) module. This module pre-trains a hyperbolic semantic encoder via an unsuper-vised optimization paradigm, incorporating both the distance-based objective and the angular constraint to align with the geometric properties of hyperbolic entailment cones. To mitigate the loss of semantic granularity inherent in Euclidean-based retrieval, we de-velop a Multi-granularity Retrieval (MR) strategy, in which coarse-grained retrieval emphasizes diversity to capture global semantic anchors, whereas fine-grained retrieval focuses on capturing local semantic nuances. Subsequently, tailored to the unique topology of graph data, we propose a Dual-path Fusion (DF) mechanism to effectively integrate knowledge at both the feature and structural levels. Extensive experiments across multiple graph benchmarks demonstrate that our method yields significant improvements in the inference accuracy of GFMs in the zero-shot setting. In summary, our main contributions are as follows: 1) We identify two inherent limitations of existing Euclidean-based RAG paradigms, namely the loss of semantic granularity and the emer-gence of hubness. 2) We propose HyRAG, the first hyperbolic RAG framework tailored for graph foundation models, providing a geometry-aware redesign of the RAG pipeline encompassing knowl-edge indexing, retrieval, and fusion. 3) Extensive experiments on multiple graph benchmarks demonstrate that HyRAG consistently improves the zero-shot performance of GFMs. 
+
+## 2 Related Work 2.1 Retrieval Augmented Generation 
+
+Retrieval Augmented Generation retrieves relevant evidence from external knowledge bases at inference time and feeds it as additional Generalizing Graph Foundation Models via Hyperbolic Retrieval-Augmented Generation KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea PAC    
+
+> learning
+> Textual attribute of query node: This paper
+> study generalization bounds of query committee
+> methods under PAC learning framework.
+> computational
+> learning theory
+> 𝐀
+> 𝐀
+> Euclidean space Hyperbolic space
+> (a) (b)
+> Coarse-grained
+> Fine -grained
+
+Figure 1: Comparison of Euclidean space and hyperbolic space.(a) In Euclidean space (left), the query node exhibits similar distances to both coarse-grained and fine-grained concepts. Hyperbolic space (right) naturally embeds the tree-like hierarchies. (b) Node frequency distribution in top-𝑘 retrieval results on the Cora dataset across Euclidean space and hyperbolic space, the x-axis shows the co-occurrence frequency of the entity, and the y-axis shows the number of entities (log scale). 
+
+context to large language models, improving factual consistency and reducing hallucinations [ 15 ]. This paradigm has been widely adopted in knowledge-intensive NLP tasks, including open-domain question answering, fact verification, and multi-step reasoning [ 13 , 29 ]. More recently, GraphRAG[ 5] and its variants [ 7, 8, 19 ]make inter-evidence relationships explicit by constructing docu-ment/entity graphs or indexing graphs, and incorporate graph tra-versal and community-level aggregation into retrieval, improving interpretability and multi-step evidence integration. Beyond text-centric LLMs, recent efforts have started to bring RAG into GFMs to mitigate distribution shifts and enrich graph reasoning with external knowledge. In this line of work, retrieved evidence can come from auxiliary graphs, knowledge bases, or textual descriptions, and is injected into graph representations to support downstream tasks under few-shot or zero-shot settings [ 14 , 34 ]. Specifically, RAGraph[ 14 ] builds a key–value toy-graph database from a resource graph, retrieves the most relevant toy graphs for a given query graph, and injects the retrieved represen-tations and task signals into the query graph through a message-passing prompting mechanism. RAG4GFM[ 34 ] constructs a multi-level index over a graph corpus as an external knowledge base, retrieves task-relevant subgraphs for a given query instance, and augments the input graph with the retrieved evidence to enable plug-and-play inference with a pre-trained GFM . RAG-GFM[ 40 ]pioneers the integration of retrieval-augmented generation into the pre-training phase of graph foundation models, leveraging a dual-modal knowledge base to alleviate in-memory bottlenecks. TarDGR[ 30 ] further introduces a task-aware retrieval framework that leverages task-specific supervision to guide the selection of relevant subgraphs in dynamic recommendation scenarios. However, most existing methods perform representation learn-ing and similarity matching in Euclidean space, which is suboptimal for knowledge with hierarchical or tree-like organization. To ad-dress this, we perform retrieval in hyperbolic space, which better preserves hierarchies and improves GFM retrieval and inference. 
+
+## 2.2 Hyperbolic Representation Learning 
+
+Hyperbolic geometry has been widely adopted to model hierar-chical and scale-free structures[ 1, 4 , 23 ]. Early works, including the Poincaré ball model[ 21 ] and the Lorentz[ 22 ] model, demon-strate that hyperbolic space can represent hierarchical relations with low distortion and high representational efficiency, providing a principled alternative to Euclidean embeddings. Building upon these foundations, subsequent studies incorporate hyperbolic geometry into graph representation learning[ 4, 27 , 41 ]and knowledge graph embeddings[ 1 , 23 ] to capture hierarchical relations. Despite these advances, existing studies focus mainly on representation learning or supervised inference, while the applica-tion of hyperbolic geometry to RAG for GFMs has not been system-atically investigated. In contrast, this work investigates hyperbolic geometry from a retrieval-augmented reasoning perspective, and proposes a hyperbolic RAG framework tailored for GFMs. 
+
+## 3 Preliminary 3.1 Notation 
+
+Formally, we define the external knowledge base as K = {( 𝑒 𝑖 , 𝑟 𝑖 , 𝑒 𝑗 
+
+)| 𝑒 𝑖 , 𝑒 𝑗 ∈ E , 𝑟 𝑖 ∈ R} , where E = {𝑒 1, . . . , 𝑒 𝑖 , . . . , 𝑒 𝑁 } is the entity set and R = {𝑟 1, . . . , 𝑟 𝑖 , . . . , 𝑟 𝑀 } denotes the relation set. Each triplet 
+
+(𝑒 𝑖 , 𝑟 𝑖 , 𝑒 𝑗 ) indicates that the head entity 𝑒 𝑖 is connected to the tail entity 𝑒 𝑗 via a relation 𝑟 𝑖 . Throughout this paper, we denote discrete entities and relations by lowercase italic letters (e.g., 𝑒 𝑖 and 𝑟 𝑖 ), and their continuous vector representations by boldface counterparts (e.g., e𝑖 and r𝑖 ). 
+
+## 3.2 Hyperbolic Geometry 
+
+Hyperbolic geometry is a non-Euclidean geometry with constant negative curvature. Unlike Euclidean space, where the volume of a metric ball grows polynomially with the radius, hyperbolic space exhibits exponential volume growth. This property makes it an ideal embedding space for tree-structured external knowledge bases. 
+
+The Poincaré Ball Model. While hyperbolic space admits mul-tiple isometric models, we adopt the Poincaré ball model[ 21 ] for its conformality and geometric interpretability. In this work, we consider a 𝑑 -dimensional Poincaré ball with fixed constant negative curvature 𝑐 = −1, defined as: 
+
+B𝑑 = {x ∈ R𝑑 : ∥x∥ < 1}, (1) KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Yifan Jin et al. 
+
+where ∥ · ∥ denotes the standard Euclidean norm. The geometry of B𝑑 is determined by the Riemannian metric 𝑔 B 
+
+> x
+
+= ( 21− ∥ x∥2 )2𝑔 E,where 𝑔 E is the Euclidean metric. For notational simplicity, we omit the curvature parameter 𝑐 in all subsequent formulations. On the Poincaré ball, the Möbius addition operator ⊕ between two points 
+
+x, y ∈ B𝑑 is defined as: 
+
+x ⊕ y = (1 + 2⟨x, y⟩ + ∥ y∥2)x + ( 1 − ∥ x∥2)y
+
+1 + 2⟨x, y⟩ + ∥ x∥2 ∥y∥2 . (2) Based on this definition, the hyperbolic distance between them is calculated as: 
+
+𝑑 B (x, y) = 2 tanh −1 (∥ − x ⊕ y∥) . (3) 
+
+Tangent Space and Mappings. Given a point x ∈ B𝑑 , the tangent space 𝑇 xB is defined as the Euclidean vector space com-prising all tangent vectors at x. The exponential map, denoted as 
+
+exp x (·) : 𝑇 xB → B𝑑 , facilitates the mapping of vectors from the tangent space to the manifold B𝑑 as follows: 
+
+exp x (u) = x ⊕ tanh 
+
+ ∥u∥
+
+1 − ∥ x∥
+
+ u
+
+∥u∥ , (4) while the logarithmic map log x (·) : B𝑑 → 𝑇 xB serves as the inverse operation, projecting points from the manifold back to the tangent space: 
+
+log x (u) = (1 − ∥ x∥) · tanh −1 (∥ − x ⊕ u∥) −x ⊕ u
+
+∥ − x ⊕ u∥ . (5) 
+
+Hyperbolic Entailment Cones. Hierarchical relations in the external knowledge base naturally induce a partial order, in which coarse-grained concepts subsume more specific ones (e.g., artificial intelligence subsuming machine learning). Accordingly, to model such partial-order structures, we adopt hyperbolic entailment cones. Each entity embedding x ∈ B𝑑 \ { 0} is associated with a hyperbolic entailment cone Cx, defined as 
+
+Cx = y ∈ B𝑑 ∠xy ≤ 𝜙 (x) . (6) This formulation encodes partial ordering via geometric transitivity: if y ∈ C x, then Cy ⊆ C x, ensuring that hierarchical entailment is preserved through cone containment. ∠xy denotes the angle distance at x between the geodesic rays −→ox and −→xy , where o denotes the origin of the Poincaré ball. Thus, ∠xy can be computed as 
+
+∠xy = cos −1 ⟨x, y⟩( 1 + ∥ x∥2) − ∥ x∥2 (1 + ∥ y∥2)∥x∥ ∥ x − y∥√︁ 1 + ∥ x∥2 ∥y∥2 − 2⟨x, y⟩
+
+!
+
+. (7) The half-aperture 𝜙 (x) controls the width of the entailment cone and is defined as 
+
+𝜙 (x) = sin −1
+
+
+
+𝐾 1 − ∥ x∥2
+
+∥x∥
+
+
+
+, (8) where 𝐾 is a scaling hyper-parameter. Under this formulation, the cone aperture is inversely related to the norm ∥x∥, naturally assign-ing wider cones to coarse-grained concepts located near the origin and narrower cones to more fine-grained concepts. 
+
+## 4 Methodology 
+
+In this section, we present our proposed HyRAG, as depicted in Fig-ure 2. HyRAG consists of three key modules: Hyperbolic Knowledge Indexing (HKI), Multi-granularity Retrieval (MR), and Dual-path Fusion (DF). These components work together to improve the gen-eralization ability of GFMs by efficiently leveraging hierarchical knowledge structures via hyperbolic geometry. 
+
+## 4.1 Hyperbolic Knowledge Indexing 
+
+To address the limitation of Euclidean embeddings in capturing the inherent hierarchy of the external knowledge base, we introduce the hyperbolic knowledge indexing module. This module aims to construct a hierarchy-aware hyperbolic representation space for the external knowledge base that serves as the geometric foundation for subsequent retrieval. Concretely, the module comprises two integral phases: hyperbolic projection and hierarchy-aware optimization. 
+
+Hyperbolic projection. This phase is designed to project the semantic features of the external knowledge base into a hyperbolic manifold. Specifically, we design a hyperbolic semantic encoder. To capture the semantics, the entity 𝑒 𝑖 and relation 𝑟 𝑖 in the external knowledge base are first encoded into Euclidean space using a pre-trained language model (e.g., SBERT), yielding e′ 
+
+> 𝑖
+
+∈ R𝑑 ′
+
+and r′ 
+
+> 𝑖
+
+∈ R𝑑 ′
+
+.Furthermore, a learnable mapping network 𝑓 Θ : R𝑑 ′
+
+→ B𝑑 is learned to transform the Euclidean embeddings into a hierarchy-aware latent space prior to hyperbolic projection. The mapped representations are then projected onto the Poincaré ball model 
+
+B𝑑 via the exponential map, enabling the embeddings to reside in a negatively curved space where hierarchical structures can be naturally represented. This process can be formalized as: 
+
+e𝑖 = exp o (𝑓 Θ (e′ 
+
+> 𝑖
+
+)) , r𝑖 = exp o (𝑓 Θ (r′ 
+
+> 𝑖
+
+)) , (9) where exp o (·) denotes the exponential map at the origin. 
+
+Hierarchy-aware optimization. Inspired by [ 1 ], we adopt a hierarchy-aware objective to jointly preserve relational semantics and hierarchical entailment in hyperbolic space. Specifically, given a triplet (𝑒 𝑖 , 𝑟 𝑖 , 𝑒 𝑗 ) ∈ K , the objective encour-ages the relation-conditioned representation of the head entity to be geometrically consistent with the corresponding tail entity in hyperbolic space, i.e., 
+
+min  
+
+> Θ
+
+E(𝑒 𝑖 ,𝑟 𝑖 ,𝑒 𝑗 )∼K 
+
+𝑑 B (𝑔 (𝑒 𝑖 , 𝑟 𝑖 ), 𝑒 𝑗 ) , (10) where 𝑔 (𝑒 𝑖 , 𝑟 𝑖 ) denotes the relation-specific rotation function. For symmetric non-hierarchical relations (e.g., related to), we apply a direct rotation determined by the angle of the relation vector. For hierarchical relations (e.g., subclass-of), we adopt a rotation strategy under hyperbolic entailment cone constraints, ensuring that the transformed head entity remains within its original entailment cone after rotation along hyponym type relations. Consequently, the rotation function 𝑔 (·) is formalized as: 
+
+𝑔 (𝑒 𝑖 , 𝑟 𝑖 ) =
+
+(exp o (R(𝜃 𝑖 ) log o (e𝑖 )) if 𝑟 𝑖 is non-hierarchical ,
+
+exp e𝑖 
+
+
+
+𝑠 𝑖 · R
+
+
+
+𝜃 𝑖 𝜙 (e𝑖 )
+
+> 𝜋
+
+
+
+e𝑖 
+
+
+
+otherwise. (11) Generalizing Graph Foundation Models via Hyperbolic Retrieval-Augmented Generation KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Feature -level Fusion     
+
+> Query node (𝐡 ):
+> 𝒵 𝑎 ∪𝒵 𝑎
+
+⨁   
+
+> 𝛽
+> Ego -graph Coarse -grained
+> attribute graph 𝒢 𝑎
+> Fine -grained
+> attribute graph 𝒢 𝑠
+
+Structure -level Fusion 
+
+> Graph Foundation Model
+> Final Prediction
+
+⨁     
+
+> 𝜔 1−𝜔
+> 𝛼 ×𝐇 𝑞
+> log 𝐶
+
+⨁    
+
+> 𝑤 𝐳 𝑖 =−𝑑 𝔹 (𝐪 𝑎 ,𝐞 𝑎
+> 𝑖 )
+
+External knowledge base 𝒦 :
+
+⋯           
+
+> has context
+> artificial
+> intelligence
+> machine
+> learning algorithm
+> related to
+> artificial neural
+> network
+> related to
+> recurrent neural
+> network
+> modular neural
+> network
+> deep neural
+> network
+> subclass of
+> subclass of subclass of
+> Hyperbolic Semantic Encoder
+> Textual attribute of query node ( 𝒒 ):
+> This paper study generalization bounds of query
+> committee methods under PAC learning framework.
+> Coarse -grained Query ( 𝑞 𝑎 )Fine -grained Query ( 𝑞 𝑠 )
+> Hyperbolic Semantic Encoder
+> exp (∙)
+> exp (∙)exp (∙)
+> Query -guided Neighborhood Aggregation Scheme
+> Coarse -grained
+> Fine -grained 𝒵 𝑎 𝒵 𝑠
+> Retrieve Retrieve
+> Coarse -grained graphs {𝐺 𝑎
+> 𝑖 }𝑖 =1
+> 𝑘 Fine -grained graphs {𝐺 𝑠
+> 𝑖 }𝑖 =1
+> 𝑘
+
+Hyperbolic Knowledge Indexing  Multi -granularity Retrieval  Dual -path Fusion    
+
+> 𝐪 𝑎 𝐪 𝑠
+> 𝐩 𝑞 𝐩 𝑎 𝐩 𝑠
+> 𝐡 ′
+
+Figure 2: Overall framework of our proposed HyRAG. 
+
+where r𝑖 = (𝑠 𝑖 , 𝜃 𝑖 ), R(·) is a rotation matrix: 
+
+R(𝜃 𝑖 ) =
+
+cos (𝜃 𝑖 ) − sin (𝜃 𝑖 )
+
+sin (𝜃 𝑖 ) cos (𝜃 𝑖 )
+
+
+
+, (12) and 𝜙 (e𝑖 ) is the half aperture of the cone e𝑖 . e𝑖 is the unit vector of 
+
+e𝑖 in the tangent space of e𝑖 :
+
+e𝑖 = be𝑖 /∥ be𝑖 ∥, be𝑖 = log e𝑖 
+
+ 1 + ∥ e𝑖 ∥
+
+2∥e𝑖 ∥ e𝑖 
+
+
+
+. (13) Notably, without loss of generality, we assume that the hierarchical relations in Eq.11 correspond to hyponym type relations. Accord-ingly, to operationalize this minimization goal into a tractable train-ing objective, we define the distance loss function using negative sampling: 
+
+L𝑡 = − log 𝜎 (𝑑 B (𝑔 (𝑒 𝑖 , 𝑟 𝑖 ), 𝑒 𝑗 )) − E𝑒 ′ 
+
+> 𝑗
+
+∼T 
+
+log 𝜎 (− 𝑑 B (𝑔 (𝑒 𝑖 , 𝑟 𝑖 ), 𝑒 ′
+
+𝑗 ))  ,
+
+(14) where (𝑒 𝑖 , 𝑟 𝑖 , 𝑒 𝑗 ) represents the positive sample, and the negative samples (𝑒 𝑖 , 𝑟 𝑖 , 𝑒 ′
+
+𝑗 ) are constructed by corrupting the tail entity, where the negative entity 𝑒 ′
+
+𝑗 is uniformly sampled from a candidate set T ⊆ E \ { 𝑒 𝑗 }.To explicitly model hierarchical containment, we further impose an angle constraint based on hyperbolic entailment cones. For instance, if the relation 𝑟 𝑖 corresponds to a hyponym type relation, the hyperbolic entailment cone of the tail entity 𝑒 𝑗 is required to be geometrically contained within that of the head entity 𝑒 𝑖 . Thus, we adopt an angle loss function: 
+
+L𝑎 = max (0, ∠e𝑖 e𝑗 − 𝜙 (e𝑖 )) . (15) However, optimizing only the distance loss and the angle loss may cause embeddings to drift toward the boundary of the Poincaré ball, leading to degenerate hierarchical representations. To mitigate this effect, we penalize embeddings whose radial norms exceed a predefined threshold 𝜖 , thereby stabilizing the geometry and preserving effective representational capacity: 
+
+Lreg = max (0, ∥e𝑖 ∥ − 𝜖 )2 + max (0, ∥e𝑗 ∥ − 𝜖 )2. (16) Thus, the final objective is given by: 
+
+L = L𝑡 + 𝜆 𝑎 L𝑎 + 𝜆 reg Lreg , (17) where 𝜆 𝑎 and 𝜆 reg are hyper-parameters. By optimizing the map-ping network 𝑓 Θ through this objective function, we obtain the hyperbolic index for entities in the external knowledge base, de-noted as H = {e1, . . . , e𝑖 , . . . , e𝑁 }, where each e𝑖 ∈ B𝑑 resides in the Poincaré ball. This embedding space jointly captures rich textual semantics and the underlying hierarchical structure of the knowledge base, thereby mitigating the hubness problem. 
+
+## 4.2 Multi-granularity Retrieval 
+
+As discussed in Section 1, coarse-grained and fine-grained concepts provide distinct perspectives essential for graph tasks. To this end, we propose the multi-granularity retrieval mechanism designed to retrieve complementary knowledge at varying granularities. Rather than imposing hard geometric constraints (e.g., explicit radius thresholds), we leverage the large language model (LLM) to semantically reformulate the original textual attribute 𝑞 of the query node into two distinct variants: 1) a coarse-grained query 𝑞 𝑎 that KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Yifan Jin et al. 
+
+summarizes the core theme, and 2) a fine-grained query 𝑞 𝑠 that cap-tures fine-grained details. By leveraging the pre-trained mapping network 𝑓 Θ (·) , these reconstructed queries are naturally embedded into the hyperbolic space at positions commensurate with their semantic granularities. Consequently, they are subsequently em-ployed to retrieve relevant knowledge from the hyperbolic index 
+
+H through coarse-grained and fine-grained knowledge retrieval processes. 
+
+Coarse-grained knowledge retrieval. Given a coarse-grained query 𝑞 𝑎 , it is first processed by the pre-trained hyperbolic semantic encoder, which comprises the language model and the mapping network 𝑓 Θ, and subsequently projected into the hyperbolic space via the exponential map: 
+
+q𝑎 = exp o (𝑓 Θ (LM (𝑞 𝑎 ))) , (18) where q𝑎 is the resulting hyperbolic embedding of 𝑞 𝑎 . Based on this representation, the top-𝑘 entities with the smallest hyperbolic distances to q𝑎 are retrieved from the hyperbolic index H :
+
+Etop  
+
+> 𝑎
+
+= topk  
+
+> e𝑖 ∈ H
+
+𝑑 B (q𝑎 , e𝑖 ), (19) where Etop  
+
+> 𝑎
+
+denotes the selected set of top-𝑘 coarse-grained entities. To further enrich the retrieved context with structural informa-tion, we expand each entity 𝑒 𝑎 ∈ E top  
+
+> 𝑎
+
+by incorporating its neighbor-hood entities from the external knowledge base. Let N ( 𝑒 𝑎 ) denote the neighborhood set of 𝑒 𝑎 . Directly aggregating all neighboring entities may introduce substantial redundancy, as many neighbors tend to be semantically similar to each other. To balance relevance to the query and diversity among the selected neighbors, we apply the Maximal Marginal Relevance (MMR) criterion [ 2] to re-rank candidate entities. Specifically, at each selection step, the candidate entity 𝑒 ∗ 
+
+> 𝑎
+
+∈ N ( 𝑒 𝑎 ) \ S( 𝑒 𝑎 ) is chosen by maximizing a trade-off between its relevance to the query 𝑞 𝑎 and its dissimilarity to the already selected set S( 𝑒 𝑎 ):
+
+𝑒 ∗ 
+
+> 𝑎
+
+= arg max    
+
+> 𝑒 𝑖 ∈ N ( 𝑒 𝑎 )\S ( 𝑒 𝑎 )
+
+{− 𝛾 · 𝑑 B (e𝑖 , q𝑎 ) + ( 1 − 𝛾 ) · min    
+
+> e𝑗 ∈ S ( 𝑒 𝑎 )
+
+𝑑 B (e𝑖 , e𝑗 )} ,
+
+(20) where 𝛾 ∈ [0, 1] controls the trade-off between relevance and diversity. The selection process is iteratively performed until a predefined number of neighboring entities has been selected. As a result, the coarse-grained knowledge retrieval stage pro-duces a set of 𝑘 graphs, denoted as {𝐺 𝑖 𝑎 }𝑘 𝑖 =1. Each graph 𝐺 𝑖 𝑎 consists of a central entity 𝑒 𝑖 𝑎 ∈ E top  
+
+> 𝑎
+
+together with its neighboring entities selected via the MMR criterion. 
+
+Fine-grained knowledge retrieval. For fine-grained knowl-edge retrieval, the textual query 𝑞 𝑠 is encoded into the hyperbolic space using the same hyperbolic semantic encoder and exponential map, yielding its hyperbolic embedding q𝑠 :
+
+q𝑠 = exp o (𝑓 Θ (LM (𝑞 𝑠 ))) . (21) Subsequently, the top-𝑘 entities closest to q𝑠 in the hyperbolic space are selected based on the hyperbolic distance: 
+
+Etop  
+
+> 𝑠
+
+= topk  
+
+> e𝑖 ∈ H
+
+𝑑 B (q𝑠 , e𝑖 ), (22) where Etop  
+
+> 𝑠
+
+is the selected set of top-𝑘 fine-grained entities. Following the same hyperbolic retrieval paradigm as in the coarse-grained stage, neighborhood expansion in the fine-grained knowledge retrieval stage is also guided by geometric proximity, but employs a different selection criterion to emphasize fine-grained specificity. Instead of applying diversity-based re-ranking, we first construct a candidate pool C𝑠 by retaining entities whose hyperbolic distances to q𝑠 fall within a predefined proximity range, resulting in a relatively large set of candidate entities. Motivated by the concept of hyperbolic entailment cones, we further impose an an-gular constraint to capture hierarchical and directional consistency. Specifically, for each 𝑒 𝑠 ∈ E top  
+
+> 𝑠
+
+, an angular violation score is defined for each candidate entity according to the following formulation: score (𝑒 𝑖 ) = max (0, ∠e𝑠 e𝑖 − 𝜙 (e𝑠 )) , ∀𝑒 𝑖 ∈ C 𝑠 . (23) Under the definition of hyperbolic entailment cones, a smaller value of score (𝑒 𝑖 ) indicates that the entity 𝑒 𝑖 is more likely to be a hyponym of 𝑒 𝑠 . Accordingly, candidate entities are ranked based on this score, and the top-𝑘 ′ entities with the smallest scores are selected as neighborhood entities for 𝑒 𝑠 , thereby revealing fine-grained semantic information. The fine-grained knowledge retrieval stage ultimately produces 
+
+𝑘 graphs, denoted as {𝐺 𝑖 𝑠 }𝑘 𝑖 =1. Each graph is centered on a retrieved fine-grained entity 𝑒 𝑖 𝑠 ∈ E top  
+
+> 𝑠
+
+and augmented with neighborhood entities selected under the angular constraint. Finally, the retrieved coarse-grained and fine-grained graphs are summarized into compact graph-level representations. Given the retrieved coarse-grained graph 𝐺 𝑖 𝑎 induced by 𝑒 𝑖 𝑎 , its graph-level representation is obtained through the query-guided neighborhood aggregation scheme: 
+
+z𝑖 𝑎 = e𝑖 𝑎 +∑︁    
+
+> 𝑒 𝑖 ∈ N ∗(𝑒 𝑖 𝑎 )
+
+exp (w𝑒 𝑖 /𝜏 )
+
+Í𝑒 𝑗 ∈ N ∗ (𝑒 𝑖 𝑎 ) exp (w𝑒 𝑗 /𝜏 ) e𝑖 , (24) where N ∗ (𝑒 𝑖 𝑎 ) denotes the neighborhood of entity 𝑒 𝑖 𝑎 in graph 𝐺 𝑖 𝑎 ,and w𝑒 𝑖 = −𝑑 B (𝑞 𝑎 , 𝑒 𝑖 ) is the relevance score based on hyperbolic distance, while 𝜏 is the temperature coefficient. Following this pro-cedure, a coarse-grained knowledge set Z𝑎 = {z1
+
+> 𝑎
+
+, . . . , z𝑘 𝑎 } and a fine-grained knowledge set Z𝑠 = {z1 
+
+> 𝑠
+
+, . . . , z𝑘 𝑠 } are obtained, where 
+
+z𝑖 𝑎 denotes the representation of 𝐺 𝑖 𝑎 and 𝑧 𝑖 𝑠 denotes the representa-tion of 𝐺 𝑖 𝑠 .
+
+## 4.3 Dual-path Fusion 
+
+Motivated by the fact that graph data is defined by both node at-tributes and topological connections, our proposed dual-path fusion mechanism consists of feature-level fusion and structure-level fu-sion. This design allows the model to simultaneously augment local node semantics and enhance global structures. 
+
+Feature-level fusion. Feature-level fusion is achieved by ag-gregating both coarse-grained and fine-grained knowledge into the initial representation of the query node. The fusion weights are computed based on the hyperbolic distances between the query node representation and the central entity representations of the re-trieved graphs. Without loss of generality, we assume that z𝑖 ∈ Z 𝑎 .Then, the corresponding weight wz𝑖 is computed as the hyperbolic distance between the query embedding q𝑎 and the representation of its central entity e𝑖 𝑎 , i.e., 
+
+wz𝑖 = −𝑑 B (q𝑎 , e𝑖 𝑎 ). (25) Generalizing Graph Foundation Models via Hyperbolic Retrieval-Augmented Generation KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea 
+
+Table 1: Accuracy (%) for the node classification task in the zero-shot setting. We report the average accuracy in the last column, and the best performance is highlighted in bold. “GraphCLIP+Vanilla” denotes the original implementation of GraphCLIP.                                                                                                                                                           
+
+> Methods Cora CiteSeer WikiCS Instagram Ele-Photo Ele-Computers Books-History AVG. DGI [33] 24.03 ±1.40 18.71 ±1.22 18.86 ±0.25 61.42 ±1.12 13.96 ±0.17 27.12 ±0.03 15.77 ±0.02 25.70 GRACE [44] 13.69 ±1.27 22.88 ±1.49 16.07 ±0.32 62.23 ±0.93 10.16 ±0.13 10.94 ±0.12 32.39 ±0.11 24.05 BGRL [31] 31.99 ±1.06 26.50 ±1.22 18.35 ±0.22 61.45 ±0.82 5.21 ±0.22 24.12 ±0.22 16.28 ±0.35 26.41 GraphMAE [10] 23.25 ±1.07 20.75 ±0.88 12.14 ±0.20 62.39 ±0.84 12.53 ±0.08 8.36 ±0.06 21.76 ±0.17 23.03 G2P2 [35] 41.51 ±0.78 51.02 ±0.62 31.92 ±0.15 52.87 ±0.78 22.21 ±0.12 32.52 ±0.13 26.18 ±0.25 36.89 GraphGPT 23.25 ±1.45 18.04 ±1.45 6.30 ±0.26 45.12 ±1.16 7.62 ±0.22 29.71 ±0.83 15.92 ±0.14 20.85 LLaGA 21.44 ±0.65 16.07 ±1.15 2.65 ±0.72 41.12 ±0.94 6.50 ±0.53 23.10 ±0.33 11.17 ±0.58 17.44 OFA 37.25 ±1.38 29.64 ±0.19 45.52 ±1.06 32.71 ±0.16 33.03 ±0.64 22.09 ±0.39 16.87 ±0.93 30.87 ZeroG 62.32 ±1.91 52.55 ±1.23 54.93 ±0.06 48.97 ±0.78 45.12 ±0.65 56.20 ±0.35 40.74 ±0.65 51.40 UniGraph 69.53 ±0.00 -43.45 ±0.00 ----56.49
+> GraphCLIP+
+> Vanilla 67 .31 ±1.76 63 .13 ±1.13 70 .19 ±0.10 64 .05 ±0.34 53 .40 ±0.64 62 .04 ±0.21 53 .88 ±0.35 62.00 RAGRAPH 68 .63 ±0.75 67 .19 ±0.94 71 .40 ±0.17 63 .79 ±0.42 54 .39 ±0.35 64 .26 ±0.26 53 .70 ±0.22 63.34 HyRAG 68 .94 ±0.57 67 .24 ±0.80 72 .66 ±0.73 64 .05 ±0.31 56 .05 ±0.55 65 .04 ±0.28 55 .14 ±0.35 64.16
+
+Based on this, the feature-level fusion can be formalized as: 
+
+h′ = h + 𝛽 ∑︁   
+
+> z𝑖 ∈ Z 𝑎 ∪Z 𝑠
+
+exp (wz𝑖 /𝜏 )
+
+Íz𝑗 ∈ Z 𝑎 ∪Z 𝑠 exp (wz𝑗 /𝜏 ) z𝑖 , (26) where h represents the initial representation of the query node, and 
+
+𝛽 controls the contribution of knowledge injection. 
+
+Structure-level fusion. GFMs typically perform downstream prediction based on the ego-graph of the query node, where edges represent intrinsic interactions between nodes, such as citation links in citation networks. However, the retrieved external knowledge does not naturally conform to the ego-graph topology. Directly connecting retrieved central entities to the query node within the ego-graph would introduce edges with heterogeneous semantics, resulting in a mixed graph structure that may degrade the quality of graph encoding. To avoid structural semantic inconsistency, we construct two auxiliary graphs, namely the coarse-grained attribute graph G𝑎 and the fine-grained attribute graph G𝑠 . In both graphs, the retrieved central entities are directly connected to the query node. Then, the graph encoder in the GFM is employed to independently encode the ego-graph of the query node, the coarse-grained attribute graph, and the fine-grained attribute graph, yielding the corresponding prediction logits p𝑞 , p𝑎 , p𝑠 . To effectively integrate these multi-view predictions, we further propose an uncertainty-gated knowledge injection mechanism. Specifically, we first fuse the coarse-grained and fine-grained predictions into a unified knowledge prediction pknow as follows: 
+
+pknow = 𝜔 × p𝑎 + ( 1 − 𝜔 ) × p𝑠 , (27) where the weight 𝜔 is determined by the confidence score, defined as the exponential of the inverse entropy: 
+
+𝜔 =
+
+exp 
+
+ 11+H𝑎 
+
+
+
+exp 
+
+ 11+H𝑎 
+
+
+
++ exp 
+
+ 11+H𝑠 
+
+ , (28) where H𝑎 and H𝑠 are the entropies of p𝑎 and p𝑠 . Crucially, this mechanism serves to assign higher fusion weights to more credible knowledge sources, ensuring that the unified knowledge predic-tion relies more heavily on the granularity with lower uncertainty. Finally, we inject the unified knowledge prediction pknow into the original prediction. Crucially, this injection is gated by the uncer-tainty of the original prediction and can be formalized as: 
+
+pfinal = p𝑞 + 𝛼 × H𝑞 
+
+log 𝐶 × pknow , (29) where H𝑞   
+
+> log 𝐶
+
+denotes the normalized entropy of the original predic-tion, 𝐶 is the number of categories, and 𝛼 is a hyper-parameter. This integration mechanism acts as an adaptive switch: when the ego-graph is informative (i.e., low entropy), the model preserves its prediction to avoid noise; when the ego-graph is ambiguous (i.e., high entropy), the model actively leverages the unified knowledge prediction pknow to rectify the prediction. 
+
+## 5 Experiment 5.1 Experimental Settings 
+
+Datasets. We conduct experiments on seven widely used graph datasets spanning four domains. Specifically, Cora [ 26 ] and CiteSeer [6 ] are from the Academic domain; Ele-Photo [ 38 ], Ele-Computers [ 38 ], and Books-History [ 38 ] are from the E-commerce domain; WikiCS [ 20 ] is from the Wikipedia domain; and Instagram [ 11 ] is from the Social domain. More details about the datasets are provided in Appendix A. KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Yifan Jin et al. 2026/5/25 19:52 link.svg  
+
+> file:///C:/Users/jyf/WPSDrive/298833145/WPS 云盘/2. 科研成果/【论⽂】Hyrag/code/link.svg 1/1
+
+Figure 3: Accuracy (%) for the link prediction task in the zero-shot setting. Baselines. We conduct comparisons against 12 baseline meth-ods, categorized as follows: (i) self-supervised graph methods, in-cluding DGI [ 33 ], GRACE [ 44 ], BGRL [ 31 ], GraphMAE [ 10 ], and G2P2 [ 35 ]; (ii) state-of-the-art graph foundation models, including GraphGPT [ 28 ], LLaGA [ 3], OFA [ 18 ], ZeroG [ 17 ], UniGraph[ 9], GraphCLIP [ 43 ], and AnyGraph [ 36 ]; (iii) RAG-based approach specifically designed for graph tasks, including RAGRAPH[14]. 
+
+Experimental Details. We conduct experiments under a zero-shot setting without updating the parameters of GFMs. The ob-jective function of the HKI module is used solely to pre-train the mapping network 𝑓 Θ (·) , which is then frozen at inference time of GFMs. The external knowledge base used for retrieval is derived from a subset of the commonsense knowledge graph (CSKG)[ 12 ], comprising ConceptNet[ 12 ], WordNet[ 12 ], and Wikidata-CS[ 12 ]1.For all experimental results, we conduct three independent runs and report the mean and standard deviation. More experimental details can be found in Appendix B. 
+
+## 5.2 Generalization Performance 
+
+Performance on the node classification task. To evaluate the effectiveness of HyRAG in enhancing the generalization perfor-mance of GFMs, we integrate HyRAG with the pre-trained graph foundation model GraphCLIP as the backbone. Table 1 reports the zero-shot node classification accuracy across seven unseen datasets from diverse domains. Overall, HyRAG consistently achieves the best performance across all datasets. Compared to state-of-the-art self-supervised graph representation learning methods and graph foundation models, HyRAG yields an average improvement of up to 2.02%. This result empirically supports our analysis in Section 1, indicating that the parameterized knowledge encoded within model weights is insufficient to handle distribution shifts in the zero-shot setting. By dynamically retrieving external knowledge, HyRAG effectively enhances the generalization of GFMs. Furthermore, com-pared to the Euclidean-space retrieval method RAGRAPH, HyRAG 
+
+> 1Notably, Wikidata-CS refers to the commonsense knowledge in Wikidata, while the WikiCS dataset denotes the computer science branch within Wikidata.
+
+Table 2: The results of the ablation experiment.                                                                                                    
+
+> HKI MR DF WikiCS Ele-Photo Books-History CR FR FF SF
+> ×××××70 .19 ±0.10 53 .40 ±0.64 53 .88 ±0.35
+> ×✓✓✓✓70 .94 ±0.93 53 .60 ±0.35 53 .35 ±0.10
+> ✓×✓✓✓72 .26 ±1.08 55 .00 ±0.38 55 .10 ±0.45
+> ✓✓×✓✓71 .19 ±0.90 55 .96 ±0.52 54 .36 ±0.14
+> ✓✓✓×✓71 .85 ±0.74 54 .37 ±0.27 53 .84 ±0.31
+> ✓✓✓✓×72 .55 ±0.66 55 .79 ±0.46 54 .93 ±0.33
+> ✓✓✓✓✓72 .66 ±0.73 56 .05 ±0.55 55 .14 ±0.35
+
+achieves an average improvement of 0.82%. This gain highlights the advantage of hyperbolic geometry over Euclidean geometry for knowledge retrieval, demonstrating the effectiveness of our hyperbolic RAG framework. 
+
+Performance on the link prediction task. We additionally conduct experiments on the link prediction task, and the results are shown in Figure 3. HyRAG consistently improves the performance of the backbone model AnyGraph across all datasets. In particular, HyRAG achieves noticeable gains on Cora and CiteSeer, improv-ing the accuracy by 1.08% and 1.41%, respectively. We attribute these improvements to the multi-granularity retrieval mechanism in hyperbolic space, which better preserves semantic dependencies and alleviates the hubness issue of Euclidean retrieval. Moreover, consistent gains on WikiCS and Instagram further demonstrate that the retrieved knowledge provides complementary structural and semantic evidence for link prediction. Overall, these results verify that HyRAG generalizes effectively beyond node classification and consistently enhances the relational reasoning capability of GFMs in zero-shot settings. 
+
+## 5.3 Ablation Study 
+
+We perform ablation experiments to assess the contribution of each component in HyRAG, and present the results in Table 2. The first row shows the performance of the baseline method, i.e., GraphCLIP. The last row reports the performance of HyRAG. 
+
+5.3.1 The Effectiveness of Hyperbolic Knowledge Indexing. The sec-ond row reports the results where the hyperbolic knowledge index-ing module is replaced by the standard Euclidean index. Notably, this substitution results in the largest performance degradation among all ablation variants, with an average decline of 1.99%. This significant drop empirically validates the superiority of hyperbolic geometry over Euclidean space in preserving the hierarchical struc-ture of the external knowledge base, thereby confirming the neces-sity of our proposed hyperbolic RAG framework. 
+
+5.3.2 The Effectiveness of Multi-granularity Retrieval. The third and fourth rows show the results of removing coarse-grained knowledge retrieval (CR) and fine-grained knowledge retrieval (FR), respec-tively. Overall, removing either component leads to a noticeable performance degradation, indicating that both components are in-dispensable for downstream graph tasks. Notably, for the Ele-Photo dataset, the performance deterioration is more pronounced when removing CR. We hypothesize that this is because node attributes Generalizing Graph Foundation Models via Hyperbolic Retrieval-Augmented Generation KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea top -𝑘  top -𝑘′ 𝛾   
+
+> top -𝑘 𝛾 top -𝑘′
+
+Figure 4: Hyper-parameter sensitivity analysis of the multi-granularity retrieval module. 
+
+Figure 5: Hyper-parameter sensitivity analysis of 𝛽 and 𝛼 .
+
+in Ele-Photo are derived from user reviews, which inevitably incor-porate substantial noise. The coarse-grained retrieval mitigates this issue by capturing representative global semantic anchors, thereby enhancing the robustness of GFMs against such noise interference. For the WikiCS and Books-History datasets, removing FR leads to a larger performance drop. This is likely because these datasets contain categories with subtle distinctions and the fine-grained knowledge proves critical by providing local semantic nuances for precise discrimination. In summary, these findings confirm that coarse-grained and fine-grained knowledge benefit GFMs from distinct yet synergistic perspectives. 
+
+5.3.3 The Effectiveness of Dual-path Fusion. The ablation results in the fifth and sixth rows highlight the distinct contributions of our dual-path fusion strategy. Notably, the model exhibits higher sensitivity to the removal of feature-level fusion (FF). This suggests that, in a zero-shot setting, leveraging retrieved multi-granularity knowledge to enhance the initial node features is the fundamental driving force for achieving generalization. In parallel, structure-level fusion (SF) facilitates message passing over the graph, acting as a complementary mechanism to further boost performance on top of the enriched semantic features. 
+
+## 5.4 Hyper-parameter Study 
+
+5.4.1 Hyper-parameters in Multi-granularity Retrieval. We analyze the impact of three hyper-parameters in the multi-granularity re-trieval module on the CiteSeer and WikiCS datasets. Hyper-parameter 𝑘 controls the amount of information retrieved in the multi-granularity retrieval module. On CiteSeer (Figure 4(a)), the accuracy decreases as 𝑘 increases, indicating that CiteSeer re-quires precise retrieval and that incorporating excessive informa-tion introduces irrelevant noise. In contrast, WikiCS (Figure 4(d)) benefits from a larger 𝑘 (reaching its peak at 𝑘 = 7), which may be due to its fine-grained categories requiring broader semantic coverage to distinguish similar categories. Hyper-parameter 𝛾 controls the trade-off between relevance and diversity in the MMR algorithm. Figure 4(b) reveals a performance peak at 𝛾 = 0.5 for CiteSeer, indicating an optimal trade-off between relevance and diversity is necessary for this dataset. In contrast, WikiCS (Figure 4(e)) shows remarkable robustness to 𝛾 .The hyper-parameter 𝑘 ′ governs the number of retrieved neigh-borhood entities in fine-grained knowledge retrieval. As shown in Figure 4(c) and 4(f), performance remains consistently high. This stability confirms that the angular violation score effectively pri-oritizes semantically relevant fine-grained neighbors, making the ranking robust to an enlarged retrieval window. 
+
+5.4.2 Hyper-parameters in Dual-path Fusion. Figure 5 illustrates the classification performance as we vary the fusion weights 𝛽 
+
+and 𝛼 within the range of {0.1, 0.3, 0.5, 0.7, 0.9, 1.0}. The heatmap results indicate that feature-level fusion (controlled by 𝛽 ) serves as the primary factor. In particular, WikiCS benefits from substantial knowledge injection, corresponding to larger values of 𝛽 , whereas CiteSeer favors a more conservative degree of knowledge integra-tion. In contrast, structure-level fusion (controlled by 𝛼 ) consistently improves performance across a wide range of values. The presence of broad high-performance regions further demonstrates the ro-bustness of HyRAG with respect to hyper-parameter variations. 
+
+## 6 Conclusion 
+
+By analyzing the geometric properties of Euclidean space, we iden-tify two fundamental limitations of Euclidean-based RAG frame-works: the loss of semantic granularity and the emergence of hub-ness. To overcome these limitations, we propose HyRAG, a hy-perbolic retrieval-augmented generation framework that enhances the generalization capability of GFMs. By integrating hyperbolic knowledge indexing, multi-granularity retrieval, and dual-path fu-sion, HyRAG enables geometry-aware utilization of global semantic anchors and local semantic nuances. Extensive experiments on mul-tiple graph benchmarks demonstrate that HyRAG consistently im-proves zero-shot inference performance without any task-specific fine-tuning, suggesting hyperbolic RAG as a promising direction for building robust and generalizable graph foundation models. 
+
+## Acknowledgments 
+
+This work is supported by National Natural Science Foundation of China No. 62406313, Postdoctoral Fellowship Program of China Postdoctoral Science Foundation, Grant No. YJB20250283. KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Yifan Jin et al. 
+
+## References 
+
+[1] Yushi Bai, Zhitao Ying, Hongyu Ren, and Jure Leskovec. 2021. Modeling hetero-geneous hierarchies with relation-specific hyperbolic cones. Advances in Neural Information Processing Systems 34 (2021), 12316–12327. [2] Jaime Carbonell and Jade Goldstein. 1998. The use of MMR, diversity-based reranking for reordering documents and producing summaries. In Proceedings of the 21st annual international ACM SIGIR conference on Research and development in information retrieval . 335–336. [3] Runjin Chen, Tong Zhao, Ajay Jaiswal, Neil Shah, and Zhangyang Wang. 2024. Llaga: Large language and graph assistant. arXiv preprint arXiv:2402.08170 (2024). [4] Yuntao Du, Xinjun Zhu, Lu Chen, Baihua Zheng, and Yunjun Gao. 2022. HAKG: Hierarchy-aware knowledge gated network for recommendation. In Proceedings of the 45th international ACM SIGIR conference on Research and development in Information Retrieval . 1390–1400. [5] Darren Edge, Ha Trinh, Newman Cheng, Joshua Bradley, Alex Chao, Apurva Mody, Steven Truitt, Dasha Metropolitansky, Robert Osazuwa Ness, and Jonathan Larson. 2024. From local to global: A graph rag approach to query-focused summarization. arXiv preprint arXiv:2404.16130 (2024). [6] C Lee Giles, Kurt D Bollacker, and Steve Lawrence. 1998. CiteSeer: An automatic citation indexing system. In Proceedings of the third ACM conference on Digital libraries .[7] Zirui Guo, Lianghao Xia, Yanhua Yu, Tu Ao, and Chao Huang. 2024. Lightrag: Simple and fast retrieval-augmented generation. arXiv preprint arXiv:2410.05779 
+
+(2024). [8] Bernal Jiménez Gutiérrez, Yiheng Shu, Weijian Qi, Sizhe Zhou, and Yu Su. 2025. From rag to memory: Non-parametric continual learning for large language models. arXiv preprint arXiv:2502.14802 (2025). [9] Yufei He, Yuan Sui, Xiaoxin He, and Bryan Hooi. 2025. Unigraph: Learning a unified cross-domain foundation model for text-attributed graphs. In Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining V. 1. 448–459. [10] Zhenyu Hou, Xiao Liu, Yukuo Cen, Yuxiao Dong, Hongxia Yang, Chunjie Wang, and Jie Tang. 2022. Graphmae: Self-supervised masked graph autoencoders. In 
+
+Proceedings of the 28th ACM SIGKDD conference on knowledge discovery and data mining . 594–604. [11] Xuanwen Huang, Kaiqiao Han, Yang Yang, Dezheng Bao, Quanjin Tao, Ziwei Chai, and Qi Zhu. 2024. Can GNN be Good Adapter for LLMs? (WWW ’24) .Association for Computing Machinery, New York, NY, USA, 893–904. doi:10. 1145/3589334.3645627 [12] Filip Ilievski, Pedro Szekely, and Bin Zhang. 2021. Cskg: The commonsense knowledge graph. In European Semantic Web Conference . Springer, 680–696. [13] Gautier Izacard and Edouard Grave. 2021. Leveraging Passage Retrieval with Generative Models for Open Domain Question Answering. In Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume, EACL 2021, Online, April 19 - 23, 2021 , Paola Merlo, Jörg Tiedemann, and Reut Tsarfaty (Eds.). Association for Computational Linguistics, 874–880. doi:10.18653/V1/2021.EACL-MAIN.74 [14] Xinke Jiang, Rihong Qiu, Yongxin Xu, Yichen Zhu, Ruizhe Zhang, Yuchen Fang, Chu Xu, Junfeng Zhao, and Yasha Wang. 2024. Ragraph: A general retrieval-augmented graph learning framework. Advances in Neural Information Processing Systems 37 (2024), 29948–29985. [15] Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, et al . 2020. Retrieval-augmented generation for knowledge-intensive nlp tasks. 
+
+Advances in neural information processing systems 33 (2020), 9459–9474. [16] Haoyang Li, Haibo Chen, Xin Wang, and Wenwu Zhu. 2026. Out-of-Distribution Generalization in Graph Foundation Models. arXiv preprint arXiv:2601.21067 
+
+(2026). [17] Yuhan Li, Peisong Wang, Zhixun Li, Jeffrey Xu Yu, and Jia Li. 2024. Zerog: Investigating cross-dataset zero-shot transferability in graphs. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining .1725–1735. [18] Hao Liu, Jiarui Feng, Lecheng Kong, Ningyue Liang, Dacheng Tao, Yixin Chen, and Muhan Zhang. 2023. One for all: Towards training one graph model for all classification tasks. arXiv preprint arXiv:2310.00149 (2023). [19] Haoran Luo, Guanting Chen, Yandan Zheng, Xiaobao Wu, Yikai Guo, Qika Lin, Yu Feng, Zemin Kuang, Meina Song, Yifan Zhu, et al . 2025. HyperGraphRAG: Retrieval-Augmented Generation via Hypergraph-Structured Knowledge Repre-sentation. arXiv preprint arXiv:2503.21322 (2025). [20] Péter Mernyei and Cătălina Cangea. 2020. Wiki-cs: A wikipedia-based benchmark for graph neural networks. arXiv preprint arXiv:2007.02901 (2020). [21] Maximillian Nickel and Douwe Kiela. 2017. Poincaré embeddings for learning hierarchical representations. Advances in neural information processing systems 
+
+30 (2017). [22] Maximillian Nickel and Douwe Kiela. 2018. Learning continuous hierarchies in the lorentz model of hyperbolic geometry. In International conference on machine learning . PMLR, 3779–3788. [23] Zhe Pan and Peng Wang. 2021. Hyperbolic hierarchy-aware knowledge graph embedding for link prediction. In Findings of the Association for Computational Linguistics: EMNLP 2021 . 2941–2948. [24] Miloš Radovanović, Alexandros Nanopoulos, and Mirjana Ivanović. 2009. Nearest neighbors in high-dimensional data: The emergence and influence of hubs. In 
+
+Proceedings of the 26th Annual International Conference on Machine Learning .865–872. [25] Nils Reimers and Iryna Gurevych. 2020. Making monolingual sentence embed-dings multilingual using knowledge distillation. arXiv preprint arXiv:2004.09813 
+
+(2020). [26] Prithviraj Sen, Galileo Namata, Mustafa Bilgic, Lise Getoor, Brian Galligher, and Tina Eliassi-Rad. 2008. Collective classification in network data. AI magazine 
+
+(2008). [27] Bin Shang, Yinliang Zhao, Jun Liu, and Di Wang. 2024. Mixed geometry message and trainable convolutional attention network for knowledge graph completion. In Proceedings of the AAAI conference on artificial intelligence , Vol. 38. 8966–8974. [28] Jiabin Tang, Yuhao Yang, Wei Wei, Lei Shi, Lixin Su, Suqi Cheng, Dawei Yin, and Chao Huang. 2024. Graphgpt: Graph instruction tuning for large language models. In Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval . 491–500. [29] Yixuan Tang and Yi Yang. 2024. MultiHop-RAG: Benchmarking Retrieval-Augmented Generation for Multi-Hop Queries. CoRR abs/2401.15391 (2024). arXiv:2401.15391 doi:10.48550/ARXIV.2401.15391 [30] Zhen Tao, Xinke Jiang, Qingshuai Feng, Haoyu Zhang, Lun Du, Yuchen Fang, Hao Miao, Bangquan Xie, and Qingqiang Sun. 2026. Task-Aware Retrieval Aug-mentation for Dynamic Recommendation. In Proceedings of the AAAI Conference on Artificial Intelligence , Vol. 40. 15779–15787. [31] Shantanu Thakoor, Corentin Tallec, Mohammad Gheshlaghi Azar, Rémi Munos, Petar Veličković, and Michal Valko. 2021. Bootstrapped representation learning on graphs. In ICLR 2021 workshop on geometrical and topological representation learning .[32] Raja Vavekanand and Kira Sam. 2024. Llama 3.1: An in-depth analysis of the next-generation large language model. [33] Petar Velickovic, William Fedus, William L Hamilton, Pietro Liò, Yoshua Bengio, and R Devon Hjelm. 2019. Deep graph infomax. ICLR (poster) 2, 3 (2019), 4. [34] Xingliang Wang, Zemin Liu, Junxiao Han, and Shuiguang Deng. [n. d.]. RAG4GFM: Bridging Knowledge Gaps in Graph Foundation Models through Graph Retrieval Augmented Generation. In The Thirty-ninth Annual Conference on Neural Information Processing Systems .[35] Zhihao Wen and Yuan Fang. 2023. Augmenting low-resource text classification with graph-grounded pre-training and prompting. In Proceedings of the 46th International ACM SIGIR Conference on Research and Development in Information Retrieval . 506–516. [36] Lianghao Xia and Chao Huang. 2024. AnyGraph: Graph Foundation Model in the Wild. CoRR abs/2408.10700 (2024). arXiv:2408.10700 doi:10.48550/ARXIV. 2408.10700 [37] Zheming Xu, He Liu, Congyan Lang, Tao Wang, Yidong Li, and Michael C. Kampffmeyer. 2025. A Hubness Perspective on Representation Learning for Graph-Based Multi-View Clustering. In IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2025, Nashville, TN, USA, June 11-15, 2025 . Com-puter Vision Foundation / IEEE, 15528–15537. doi:10.1109/CVPR52734.2025.01447 [38] Hao Yan, Chaozhuo Li, Ruosong Long, Chao Yan, Jianan Zhao, Wenwen Zhuang, Jun Yin, Peiyan Zhang, Weihao Han, Hao Sun, et al . 2023. A Comprehensive Study on Text-attributed Graphs: Benchmarking and Rethinking. In Proc. of NeurIPS .[39] Xingtong Yu, Zechuan Gong, Chang Zhou, Yuan Fang, and Hui Zhang. 2025. Samgpt: Text-free graph foundation model for multi-domain pre-training and cross-domain adaptation. In Proceedings of the ACM on Web Conference 2025 .1142–1153. [40] Haonan Yuan, Qingyun Sun, Jiacheng Tao, Xingcheng Fu, and Jianxin Li. 2026. RAG-GFM: Overcoming In-Memory Bottlenecks in Graph Foundation Models via Retrieval-Augmented Generation. arXiv e-prints (2026), arXiv–2601. [41] Yifei Zhang, Hao Zhu, Menglin Yang, Jiahong Liu, Rex Ying, Irwin King, and Piotr Koniusz. 2025. Understanding and mitigating hyperbolic dimensional collapse in graph contrastive learning. In Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining V. 1 . 1984–1995. [42] Haihong Zhao, Aochuan Chen, Xiangguo Sun, Hong Cheng, and Jia Li. 2024. All in one and one for all: A simple yet effective method towards cross-domain graph pretraining. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining . 4443–4454. [43] Yun Zhu, Haizhou Shi, Xiaotang Wang, Yongchao Liu, Yaoke Wang, Boci Peng, Chuntao Hong, and Siliang Tang. 2025. GraphCLIP: Enhancing Transferability in Graph Foundation Models for Text-Attributed Graphs. In Proceedings of the ACM on Web Conference 2025, WWW 2025, Sydney, NSW, Australia, 28 April 2025- 2 May 2025 , Guodong Long, Michale Blumestein, Yi Chang, Liane Lewin-Eytan, Zi Helen Huang, and Elad Yom-Tov (Eds.). ACM, 2183–2197. doi:10.1145/3696410.3714801 [44] Yanqiao Zhu, Yichen Xu, Feng Yu, Qiang Liu, Shu Wu, and Liang Wang. 2020. Deep graph contrastive representation learning. arXiv preprint arXiv:2006.04131 
+
+(2020). Generalizing Graph Foundation Models via Hyperbolic Retrieval-Augmented Generation KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea 
+
+## A Datasets 
+
+In this paper, we employ seven widely used graph datasets, as summarized in Table 3. A detailed introduction to these datasets is provided below. 
+
+Table 3: Statistics of the datasets. 
+
+Dataset #Nodes #Edges Domain #Category Cora 2,708 5,429 Academic 7CiteSeer 3,186 4,277 Academic 6Ele-Photo 48,362 500,928 E-commerce 12 Ele-Computers 87,229 721,081 E-commerce 10 Books-History 41,551 358,574 E-commerce 12 WikiCS 11,701 215,863 Wikipedia 10 Instagram 11,339 144,010 Social 2
+
+Cora [ 26 ] is a citation network consisting of 2,708 nodes and 5,429 edges, where each node represents a scientific publication and each edge indicates a citation between publications. The tex-tual attribute of each node includes the title and abstract of the corresponding publication. Node categories span seven research areas: case-based reasoning, genetic algorithms, neural networks, probabilistic methods, reinforcement learning, rule learning, and theory. 
+
+CiteSeer [6] is also a citation network, consisting of 3,186 nodes and 4,277 edges. Each node represents a scientific publication, cate-gorized into one of six research areas: Agents, Machine Learning, Information Retrieval, Database, Human-Computer Interaction, and Artificial Intelligence. 
+
+Ele-Photo [38 ] is derived from the Amazon Electronics dataset, where each node represents an electronic product and each edge denotes frequent co-purchases or co-views. The text attribute of each node comes from the most upvoted user review or a random review if no such votes are available. The classification task involves assigning each product to one of 12 categories. 
+
+Ele-Computers [ 38 ], also from Amazon Electronics, shares the same structure but classifies products into 10 categories. Text attributes follow the same rule as Ele-Photo. 
+
+Books-History [38 ] extracted from the Amazon-Books dataset, focuses on history books. Nodes represent books with edges indi-cating co-purchases or co-views. Text attributes include titles and descriptions. The classification involves 12 categories. 
+
+WikiCS [20] dataset is a Wikipedia-based dataset designed for benchmarking Graph Neural Networks. It comprises 10 classes, each corresponding to a branch of computer science. 
+
+Instagram [ 11 ] is a social network dataset where nodes rep-resent users and edges indicate the following relationships. The prediction task is to classify each user as either commercial or normal. 
+
+## B Implementation Details 
+
+We adopt the pre-trained GraphCLIP model as the backbone, which has been trained on the ogbn-ArXiv, ArXiv_2023, PubMed, ogbn-Products, and Reddit datasets. All experiments are conducted with a batch size of 32 on one NVIDIA V100 GPU. In the HKI module, we employ all-MiniLM-L6-v2 [ 25 ] as the language model, and the hyper-parameters are configured as follows: 𝜖 = 0.2, 𝜆 𝑎 = 0.5, and 
+
+𝜆 reg = 0.1. For the MR module, we utilize LLaMA-3.1-8B-Instruct [ 32 ] as the LLM to generate the corresponding coarse-grained and fine-grained queries. The number of retrieved central enti-ties 𝑘 is selected from {1, 3, 5, 7, 9}, the diversity factor 𝛾 is tuned within {0.1, 0.3, 0.5, 0.7, 0.9, 1}, and the number of retrieved neigh-borhood entities in fine-grained knowledge retrieval 𝑘 ′ is chosen from {5, 10 , 15 , 20 }. Finally, in the DF module, the temperature co-efficient 𝜏 is set to 5, while the feature-level fusion hyperparameter 
+
+𝛽 and the structure-level fusion hyperparameter 𝛼 are both tuned within {0.1, 0.3, 0.5, 0.7, 0.9, 1}. We report the mean accuracy and standard deviation over three runs with different random seeds.
