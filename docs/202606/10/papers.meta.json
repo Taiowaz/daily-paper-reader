@@ -1,0 +1,69 @@
+{
+  "label": "2026-06-10",
+  "date": "2026-06-10",
+  "generated_at": "2026-06-10T22:39:42",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202606/10/2606.10461v1-eralign-energy-based-representation-alignment-of-gnns-and-llms-on-text-attributed-graphs",
+      "section": "deep",
+      "title_en": "ERAlign: Energy-based Representation Alignment of GNNs and LLMs on Text-attributed Graphs",
+      "authors": "Xianlin Zeng, Fan Xia, Xiangyu Chen",
+      "date": "2026-06-09",
+      "pdf": "https://arxiv.org/pdf/2606.10461v1",
+      "score": "9.0",
+      "evidence": "通过能量模型对齐GNN和LLM在文本属性图上的表示",
+      "tldr": "针对文本属性图（TAGs）上GNN与LLM整合中存在的粗粒度匹配与分布忽视导致表示漂移的问题，提出基于能量模型的ERAlign框架。该框架将图结构嵌入与文本嵌入投影至共享潜空间，通过最小化距离度量的EBM目标实现层对齐与分布一致性，并引入能量差异训练避免高采样成本。在八个TAG数据集上的实验表明，ERAlign在不同监督水平和跨任务迁移场景中均取得领先性能。这项工作为TAG学习中的表示对齐提供了一种有效且高效的解决方案。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Text-attributed Graphs (TAGs) incorporate textual node attributes with graph structures to describe rich relational semantics. Recent efforts to integrate Graph Neural Networks (GNNs) and Large Language Models (LLMs) have shown promise for learning on TAGs, yet achieving well-aligned representations remains challenging. Prior studies largely rely on heuristics that perform coarse-grained matching. They lack sufficient constraints and ignore distributional alignment, leading to representation drift and limited generalization. Building on Energy-based Models (EBMs), we propose an Energy-based Representation Alignment (ERAlign) framework that projects GNN-encoded graph structure and LLM-derived text embeddings in a shared latent space to achieve distribution consistency. Concretely, layer-wise alignment is quantified by a distance metric and optimized via an EBM objective. By decreasing energy values, our framework yields well-aligned representations for downstream tasks. During training, we introduce Energy Discrepancy (ED) to avoid high sampling costs associated with intractable normalization. ED also carries theoretical guarantees of higher training efficiency and reduced energy landscape distortion. Empirical evaluations on eight TAG datasets demonstrate that ERAlign obtains state-of-the-art performance across varying levels of supervision and cross-task transfer scenarios.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/10/2606.08831v1-inference-time-conformal-reasoning-with-valid-factuality-control-for-large-language-models",
+      "section": "deep",
+      "title_en": "Inference-Time Conformal Reasoning with Valid Factuality Control for Large Language Models",
+      "authors": "Ting Wang, Yuanjie Shi, Yan Yan, Huan Zhang",
+      "date": "2026-06-07",
+      "pdf": "https://arxiv.org/pdf/2606.08831v1",
+      "score": "8.0",
+      "evidence": "将LLM多步推理建模为隐式有向无环图并应用共形预测进行结构事实性控制，直接探索LLM的图推理能力。",
+      "tldr": "大语言模型多步推理中，中间声明的正确性受结构依赖，事实性不确定性为结构性，而目前共形预测方法仅能在生成后进行控制。本文提出推理时间共形推理(ITCR)框架，通过图级事实性不确定性函数和校准阈值，在生成过程中决定停止时机，从而实现了有效的事实性控制。理论证明生成过程嵌套可获得覆盖率保证，实验验证了经验有效覆盖，且在下游任务中，推理时间校准图比事后剪枝图更准确。该工作弥合了共形预测的灵活性与事后局限，开拓了推理时事实性控制的新途径。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Large language models (LLMs) increasingly perform multi-step reasoning, where intermediate claims form implicit directed acyclic graphs whose node correctness is structurally conditioned on their ancestors. This makes factuality uncertainty structural, rather than a trivial accumulation of node-wise errors, and necessitates inference-time uncertainty quantification over the reasoning structure. While conformal prediction (CP) offers flexible user-specified factuality control, existing work remains post-hoc and cannot intervene during generation. To fill the gap between CP's flexibility and its post-hoc limitation, we propose an \\emph{Inference-Time Conformal Reasoning (ITCR)} framework that integrates CP directly into reasoning graph generation. ITCR learns a structure-level factuality uncertainty function that aggregates claim-level factuality signals over reasoning graphs without complex modeling assumptions. We then design the non-conformity score based on graph-level factuality uncertainty and calibrate the conformal threshold to decide when to stop generation. We theoretically show such generation is nested, yielding valid coverage guarantees for factuality control. Experiments over multiple datasets and coverage objectives demonstrate empirically valid coverage. In downstream reasoning tasks, inference-time calibrated graphs yield more accurate generation than post-hoc pruned graphs.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/10/2606.03867v1-a-training-free-mixture-of-agents-framework-for-multi-document-summarization-using-llms-and-knowledge-graphs",
+      "section": "quick",
+      "title_en": "A Training-Free Mixture-of-Agents Framework for Multi-Document Summarization using LLMs and Knowledge Graphs",
+      "authors": "Cuong Vuong Tuan, Trang Mai Xuan, Tien-Cuong Nguyen, Vu-Duc Ngo, Thien Van Luong",
+      "date": "2026-06-02",
+      "pdf": "https://arxiv.org/pdf/2606.03867v1",
+      "score": "7.0",
+      "evidence": "通过混合代理框架融合LLM和知识图谱进行多文档摘要，将图结构知识融入LLM工作流。",
+      "tldr": "多文档摘要旨在从文本集合中提取关键信息，但现有方法难以捕获文档间复杂关系，依赖大量标注数据且跨域跨语言泛化能力不足。本文提出无训练的混合智能体框架，借助大语言模型与知识图谱的互补优势，将任务分解为抽取式选择、知识感知抽象和迭代精炼，各智能体无需任务特定微调，并通过LLM指导的多视角一致性机制统一结果。在四个英越数据集上取得了最优或具竞争力的性能，证明该模块化设计具有良好适应性和有效性。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Multi-Document Summarization (MDS) plays a critical role in distilling essential information from collections of textual data. Existing approaches often struggle to capture complex inter-document relationships, rely heavily on large amounts of labeled data for supervised training, or exhibit limited generalization across domains and languages. To address these limitations, we present a training-free mixture-of-agents framework for MDS that leverages the complementary strengths of large language models (LLMs) and knowledge graphs. Our approach decomposes summarization into specialized agent tasks: extractive selection, knowledge-aware abstraction, and iterative refinement, each operating without task-specific fine-tuning. We unify their outputs using a multi-perspective consistency mechanism guided by LLMs. Experiments across four datasets in English and Vietnamese demonstrate state-of-the-art or competitive performance, validating the effectiveness and adaptability of our modular design.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/10/2606.05901v1-reducing-hallucinations-in-complex-question-answering-using-simple-graph-based-retrieval-augmented-generation-long-version",
+      "section": "quick",
+      "title_en": "Reducing Hallucinations in Complex Question Answering using Simple Graph-based Retrieval-Augmented Generation (long version)",
+      "authors": "Christopher J. Wedge, Joshua Stutter, Danny Dixon, Jacek Cała",
+      "date": "2026-06-04",
+      "pdf": "https://arxiv.org/pdf/2606.05901v1",
+      "score": "6.0",
+      "evidence": "利用基于图的检索结构增强LLM问答，融合图索引与LLM生成以降低幻觉。",
+      "tldr": "大语言模型在处理复杂问答时频繁出现幻觉，传统检索增强生成（RAG）仍难以完全避免。本文设计了一个基于轻量级图结构的RAG增强系统，通过代理结合向量搜索与图查询工具，操作结构化维基数据。在MoNaCo复杂问答基准上，该系统显著提升了事实正确性的精度与召回率，将幻觉答案减少一半，并且在三个评估场景中细粒度真实性得分最高。这验证了引入图结构能有效抑制幻觉，且计算成本可控，为实际部署提供了可行方案。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Large language models (LLMs) have fundamentally transformed the landscape of Natural Language Processing. Despite these advances, LLMs and LLM-based systems remain prone to a variety of failure modes. Retrieval-augmented generation (RAG) systems have emerged as a common deployment scenario seeking to both avoid the well known risk of the LLM \"hallucinating\" information, and to enable reasoning and question answering over proprietary information that the LLM did not have access to during training without resorting to expensive model fine-tuning.   In this work, we explore the idea of using a lightweight graph structure with a relatively simple graph schema, to support the RAG subsystem via a dedicated toolset. We design an agentic system with a variety of vector search and graph query tools operating over a structured dataset based on a curated subset of English Wikipedia articles, and evaluate its performance on questions from MoNaCo, a challenging Wikipedia QA benchmark of complex query answering tasks.   Our results show that the introduction of graph-based tools can significantly increase the precision and recall of factual correctness, can halve the number of hallucinated answers, and achieves the highest fine-grained truthfulness score among the three evaluated scenarios. All this with a modest increase in token usage.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
