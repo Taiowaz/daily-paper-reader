@@ -1,0 +1,578 @@
+Title: Hubs or Fringes: Pretraining Data Selection via Web Graph Centrality
+
+URL Source: https://arxiv.org/pdf/2606.11499v1
+
+Published Time: Thu, 11 Jun 2026 00:18:30 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+# Hubs or Fringes: Pretraining Data Selection via Web Graph Centrality 
+
+Vedant Badoni Danqi Chen Xinyi Wang 
+
+{vedantbadoni, danqic}@princeton.edu wangxinyilinda@gmail.com 
+
+Princeton Language and Intelligence 
+
+Project Page Code Hugging Face 
+
+## Abstract 
+
+The performance of modern language models depends critically on pretraining data composition. Yet existing data selection methods rely on auxiliary classifiers for document scoring or mixture optimization, adding computational overhead and dependence on labeled data. We propose WEB GRAPH MIX , a lightweight data selection framework that computes structural centrality scores over the Com-mon Crawl host-level web graph and uses them to vary the proportion of central versus peripheral documents in the pretraining mixture. We hypothesize that cen-tral hosts expose models to reusable abstractions, while peripheral hosts encode specialized, long-tail knowledge. WEB GRAPH MIX computes centrality scores efficiently at web scale, requiring no model training, labeled data, or downstream supervision. We integrate WEB GRAPH MIX into the DataComp-LM pipeline and train models at 400M and 1B parameter scales with 8B and 28B tokens re-spectively, evaluating on 23 tasks ranging from factual knowledge to symbolic reasoning. Our experiments show that central and peripheral web regions encode complementary capabilities. Mixture combining both at a ratio of 1:1 achieves 41.4% on average, compared to 39.8% for uniform sampling. Combining structural scores with document-level quality classifier scores further improves performance to 43.8%. These findings demonstrate that web graph topology is a meaningful axis for pretraining data curation, capturing information that is largely orthogonal to existing content-based approaches. 
+
+## 1 Introduction 
+
+The performance of modern language models (LMs) depends critically on the composition of their pretraining data. While neural scaling laws (Kaplan et al., 2020; Hoffmann et al., 2022) characterize how data size affects performance, far less is understood about how the structure of large-scale web corpora should influence data selection. In practice, modern pretraining pipelines rely on massive web dumps that are filtered, deduplicated, and sampled at the document level (Albalak et al., 2024). These pipelines implicitly treat documents as independent units, applying heuristic quality filters or domain classifiers without considering relationships between documents (Soldaini et al., 2024). As a result, existing approaches largely ignore how information is organized across the web. However, the web is fundamentally a graph. Webpages and hosts are connected through hyperlinks, forming a large-scale network that encodes topical structure, citation patterns, and information flow. We hypothesize that a document’s structural position in this graph may correlate with the type and transferability of knowledge it provides during pretraining. Structurally central documents—those that lie on many shortest paths or connect diverse regions—act as hubs or bridges between otherwise weakly connected communities, and are more likely to co-occur with heterogeneous contexts and expose models to reusable abstractions. In contrast, peripheral documents may encode specialized or long-tail content that is less broadly shared. From a language modeling perspective, this suggests that 
+
+> Preprint.
+> arXiv:2606.11499v1 [cs.CL] 9 Jun 2026
+
+graph structure may influence the diversity and overlap of token-level learning signals, and therefore shape the capabilities learned during pretraining. 
+
+Figure 1: Subgraph of the Common Crawl host-level web graph. Node size is proportional to their Betweenness centrality score. In this work, we introduce WEB GRAPH MIX ,a graph-based data selection framework that leverages web-scale structural signals to con-struct pretraining mixtures. WEB GRAPH MIX 
+
+operates directly on the hyperlink graph and is fully unsupervised. We compute centrality measures over a large Common Crawl host-level graph and use these scores to partition data into structurally distinct subsets. We then construct training mixtures that emphasize (i) structurally central data, (ii) structurally pe-ripheral data, and (iii) combinations of the two, enabling controlled investigation of how graph position affects downstream model be-havior. We test mainly two ways of com-puting graph centrality: Betweenness central-ity (Freeman, 1977) and Katz centrality (Katz, 1953). We also tried PageRank-based (Page et al., 1999) scoring but failed to show improve-ment, which is consistent with the observation from DCLM (Li et al., 2024). 
+
+WEB GRAPH MIX differs from the prior domain-based and quality-based approaches. Domain-based methods construct semantic taxonomies (e.g., topic and format categories) (Wet-tig et al., 2025) or optimize coarse-grained domain mixtures (e.g., arXiv, GitHub, Common Crawl) through regression or proxy training (Xie et al., 2023; Liu et al., 2025), while quality-based methods score documents by abstract qualities (e.g., educational value, difference between raw web and curated high-quality data) (Penedo et al., 2024; Sachdeva et al., 2026; Wettig et al., 2024; Li et al., 2024; Gunasekar et al., 2023). In contrast, WEB GRAPH MIX does not require a taxonomy, classifier, or regression model—only structural signals intrinsic to the web graph—making it lightweight and directly transferable across corpora that expose hyperlink structure. We integrate WEB GRAPH MIX into the standardized DataComp-LM (DCLM) pipeline (Li et al., 2024) and train models at 400M and 1B parameter scales with 8B and 28B tokens, respectively. Centrality scores for the full Common Crawl host graph (13.9M nodes, 439.6M edges) take fewer than 9 GPU hours to compute in total and can then be reused across all downstream experiments. All training runs use identical tokenization, shuffling, and optimization procedures to isolate the effect of data selection, and we evaluate on a wide range of 23 tasks from the DCLM CORE v2 benchmark (Li et al., 2024). Our results show that graph structure provides a meaningful and complementary signal for pretraining data curation. At 1B scale, selecting documents from structurally central hosts improves performance on Symbolic & Algorithmic Reasoning by +1.4% over uniform sampling, while selecting from peripheral hosts improves Science & Factual Knowledge and Commonsense & Reasoning. These opposing effects indicate that different regions of the web graph encode distinct capability-relevant signals, and motivate mixture sampling: combining 50% central and 50% peripheral documents with betweenness centrality reaches 41.4% average across all 23 tasks, compared to 39.8% for uniform sampling. Combining the centrality signal with the DCLM-fasttext quality classifier through multiplicative & divisive scoring further improves performance to 43.8%, indicating that web graph topology captures information that is largely orthogonal to content-based quality signals. Together, our results suggest that treating the web as a structured graph—rather than an un-ordered corpus—opens a new direction for studying the relationship between data distribution and model capabilities. 22 Related Work 
+
+Heuristic filtering & deduplication. Existing approaches to data curation largely operate at the document level and treat documents as independent units. The first stage of curation usually applies heuristic filtering and deduplication. Rule-based filters remove boilerplate, spam, and malformed text (Raffel et al., 2020; Rae et al., 2021; Penedo et al., 2023), while deduplication techniques such as MinHash (Broder, 1997; Lee et al., 2022) and Bloom-filter-based methods (Soldaini et al., 2024) eliminate near-duplicate documents to reduce memorization. Frameworks such as DataComp-LM (DCLM) (Li et al., 2024) standardize these preprocessing steps and enable compute-controlled comparisons. While effective at improving data cleanliness and diversity, these methods do not model relationships between documents. 
+
+Document quality scoring. The second stage of curation usually assigns scalar quality scores to documents and selects data based on ranking. FineWeb-Edu (Penedo et al., 2024), DCLM-fasttext (Li et al., 2024), QuRating (Wettig et al., 2024), and Ask-LLM (Sachdeva et al., 2026) estimate properties such as educational value or difference between curated high-quality corpora and low-quality corpora. Benchmark-Targeted Ranking (BETR) (Mizrahi et al., 2025) explicitly aligns pretraining data with downstream tasks by selecting documents similar to benchmark examples, achieving substantial gains under scaling-law analysis. Other approaches use perplexity (Wenzek et al., 2020), n-gram overlap (Xie et al., 2023), or attention-based signals (Hua et al., 2025) to identify useful data. Despite their diversity, these methods share a common formulation: data selection is treated as a ranking problem over independently scored documents. 
+
+Domain mixture optimization. The third stage of curation usually introduces higher-level struc-ture by partitioning web data into domains and optimizing mixture weights. Most of the work like DoReMi (Xie et al., 2023), RegMix (Liu et al., 2025), TiKMiX (Wang et al., 2025), DoGE (Fan et al., 2024), and Aioli (Chen et al., 2025) use a coarse-grained, pre-defined domain categorization and optimize over the weights of mixtures using proxy models, regression, or influence-based techniques. To demystify the domain taxonomy of pretraining data, work like Skill-it (Chen et al., 2023), WebOr-ganizer (Wettig et al., 2025), Nemotron-CLIMB (Diao et al., 2026), and Group-MATES (Yu et al., 2026) defines their own data domains before optimizing the mixture, by either clustering or construct-ing a compact and interpretable domain taxonomy. These approaches can yield strong empirical gains, but typically require substantial computation, model training, or downstream supervision. Underlying all these approaches is a shared assumption: documents are evaluated primarily based on their content or similarity, rather than on how they relate to one another. Even when structure is introduced (e.g., domains or clusters), it is derived from semantic similarity or learned representations, not from the native connectivity of the web. 
+
+Useful web graph structure. In contrast, The web is fundamentally a graph: hyperlinks connect pages and hosts into a large-scale network encoding citation, topical proximity, and information flow. Graph-based methods such as PageRank (Page et al., 1999) and HITS (Kleinberg, 1999) have long exploited this structure for ranking and retrieval. Recent work, Craw4LLM (Yu et al., 2025), introduces quality-aware crawling to improve crawler efficiency—using webpage quality as the crawler scheduler’s priority score rather than graph connectivity, reducing crawled pages to 21% of the baseline while matching its performance. While Craw4LLM incorporates quality signals during crawling, we reintroduce web graph structure after crawling for data selection. A complementary direction leverages web metadata at training time: MeCo (Gao et al., 2025) conditions on URL information to improve data efficiency and enable controllable inference, with gains persisting even under URL anonymization—suggesting that grouping documents by source provides useful structural signal. Unlike these approaches, our method operates purely at the data selection stage. To the best of our knowledge, prior work has not used graph-theoretic position as a direct signal for selecting and weighting documents within an already-crawled corpus for pretraining. 
+
+## 3 Our Method: W EB GRAPH MIX 
+
+We introduce WEB GRAPH MIX , a lightweight pretraining data selection framework that leverages structural signals from the web graph. Rather than scoring documents independently based on 3content, our method assigns centrality scores based on each document’s position in the global hyperlink network and uses these scores to guide sampling. 
+
+3.1 Web Graph Construction 
+
+We operate on the Common Crawl host-level graph 1, where each node represents a web host (e.g., 
+
+wikipedia.org ) and directed edges correspond to hyperlinks between hosts. Formally, we define a directed graph G = ( V, E ), where v ∈ V denotes a host and (u, v ) ∈ E indicates that host u links to host v. This host-level representation aggregates all documents from the same domain into a single node, yielding a large-scale graph with 13.9M nodes and 439.6M edges. The raw pretraining corpus we use, Corpus-200B 2 from Wettig et al. (2025), is a pre-processed version of the 1b-1x CommonCrawl pool from DataComps-LM (Li et al., 2024) cleaned with RefinedWeb filters (Penedo et al., 2023) and BFF deduplication (Dirk Groeneveld, 2024). Each document in the preprocessed corpus is mapped to its corresponding host via its URL. We discard about 5% of the documents in the corpus without a host in the web graph. Centrality scores are computed at the host level and inherited by all associated documents. Specifically, if a host v has centrality score c(v),then each document di from that host is assigned score si = c(v).
+
+3.2 Centrality Score 
+
+We quantify structural importance using classical graph centrality measures that capture complemen-tary aspects of connectivity. 
+
+Betweenness centrality (Freeman, 1977) measures how frequently a node lies on shortest paths between other nodes: 
+
+cB (v) = X 
+
+> s̸=v̸=t
+
+σ(s, t | v)
+
+σ(s, t ) , (1) where s, t, v ∈ E, σ(s, t ) is the number of shortest paths from node s to node t, and σ(s, t | v)
+
+counts those passing through node v. Nodes with high betweenness act as bridges between otherwise weakly connected regions. Representated crawled content from the hosts with the highest and lowest betweenness centrality scores are shown in Table 1. 
+
+Katz centrality (Katz, 1953) captures recursive influence by aggregating contributions from all walks in the graph: 
+
+cK (vi) = η X
+
+> j
+
+Aij cK (vj ) + τ, (2) where A is the adjacency matrix, vi, v j ∈ E, i and j both index all nodes in the graph, 0 < η < 
+
+1/λ max ensures convergence, and τ is a bias term. This assigns higher scores to nodes connected to other influential nodes, while attenuating longer paths. These measures capture complementary notions of structural importance: Betweenness emphasizes cross-community connectivity, while Katz centrality reflects global influence. 
+
+PageRank (Page et al., 1999) is a specific variant of eigenvector centrality. Prior work has shown that eigenvector centrality can be used in place of PageRank in directed networks with lower computational cost while preserving rank correlation (Chandrashekhar et al., 2022). We ran ablations using eigenvector centrality but found it did not yield improvements over the baseline. A similar conclusion was reached by DCLM (Li et al., 2024): they find varying the top quantile data selection based on PageRank scores does not outperform uniform sampling. Thus we focus on Betweenness and Katz centrality in the main paper instead as they are shown to be effective and capture distinct and complementary notions of structural importance—bridging versus weighted influence. 
+
+Efficiency and scalability. A key advantage of WEB GRAPH MIX is that centrality scores can be computed efficiently at web scale using distributed graph algorithms. We implement centrality computation over the host graph using GPU-parallelized primitives and graph partitioning with the cuGraph library 3. In practice, computing Katz centrality (Foster et al., 2001) for the full    
+
+> 1We use cc-main-2023-24-sep-nov-feb-host from https://commoncrawl.org/web-graphs .
+> 2https://huggingface.co/datasets/WebOrganizer/Corpus-200B
+> 3https://github.com/rapidsai/cugraph
+
+4Table 1: Host centrality reflects different types of web content. High-betweenness hosts tend to contain broadly reusable, cross-domain patterns, whereas low-betweenness hosts more often contain specialized or long-tail information. Examples are based on representative URLs observed in the crawl. For actually text crawled from these URLs, see Appendix C.   
+
+> Host (score) Representative crawled content Knowledge tendency High betweenness / central hosts
+> facebook.com
+> (1.98 ×10 −1)
+> Public social/profile/community content, including posts, pages, groups, photos, and videos. Broad social and common-sense language patterns.
+> google.com
+> (1.18 ×10 −1)
+> Aggregated search- and finance-style information, including market summaries, entities, and linked news. Cross-domain reference and retrieval-style knowledge.
+> youtube.com
+> (1.07 ×10 −1)
+> Video pages, titles, descriptions, transcripts, comments, and media metadata. Instructional, cultural, and explanatory content.
+> linkedin.com
+> (3.64 ×10 −2)
+> Professional profiles, companies, roles, skills, recommendations, and work histories. Occupational and organizational knowledge.
+> en.wikipedia.org
+> (2.46 ×10 −2)
+> Encyclopedia-style articles covering scientific, historical, cultural, and technical topics. High-coverage factual and conceptual knowledge.
+> Low betweenness / peripheral hosts
+> hammarsdrama.com
+> (4.41 ×10 −20 )
+> Performing-arts and dance-film production company information. Narrow institutional and arts-domain knowledge.
+> ontoma.com
+> (3.86 ×10 −20 )
+> FinTech platform responding to a specific financial-services regulatory context. Specialized industry and regulatory information.
+> bluepenstrokes.com
+> (3.28 ×10 −20 )
+> Personal creative writing, daily reflections, and artistic prose. Individual voice and long-tail expressive content.
+> abcsofsex-ed.org
+> (1.98 ×10 −20 )
+> Workshop material for a specific sex-education and public-health setting. Specialized educational and local-program knowledge.
+> riomardesigns.com
+> (6.82 ×10 −21 )
+> Small-site travel-health advice and informational content. Niche advice and domain-specific long-tail information.
+
+Common Crawl host graph took us < 3 hours on one H100 GPU and computing Betweenness centrality (Brandes, 2001) took us < 6 hours on 4 H100 GPUs, after which the scores can be reused across all downstream experiments. Unlike prior data selection methods that require repeated model training, gradient computation, or proxy evaluation, this is a compute-efficient one-time preprocessing step . Once computed, centrality scores incur negligible overhead during data sampling. 
+
+3.3 Centrality-Guided Data Sampling 
+
+Each host can be viewed as a subdomain embedded within the global web graph. Hosts differ substantially in their structural roles: some connect multiple regions of the graph and act as hubs or bridges, while others lie in sparsely connected or peripheral regions. We hypothesize that these structural differences correspond to differences in the type of knowledge encoded: Structurally central hosts are more likely to expose models to broadly reusable and cross-domain patterns, whereas peripheral hosts tend to contain specialized or long-tail information. This can qualitatively observed from Table 1, where we show crawled content of central hosts and peripheral hosts. To study this effect, we construct data mixtures that vary systematically across the centrality spectrum. Given host-level centrality scores c(v), each document inherits a score si = c(vi) based on its host vi.We then construct training datasets under a fixed token budget using the following sampling strategies .
+
+Top-K (Central) sampling : We select documents whose hosts fall within the top percentile of the centrality distribution (e.g., top 25%, or 75%), emphasizing structurally central regions of the web. 
+
+Bottom-K (Peripheral) sampling : We select documents from the lowest percentile of the centrality distribution, focusing on peripheral or long-tail regions. 
+
+Mixed sampling : To test whether central and peripheral regions provide complementary signals, we construct mixtures combining both strata: 
+
+α · Top-K + (1 − α) · Bottom-K, (3) 5where the mixture ratio α ∈ { 0, 0.25 , 0.5, 0.75 , 1}. Documents are sampled proportionally until the token budget is reached. 
+
+3.4 Combining Structural and Quality Signals 
+
+In addition to pure structural selection, we explore combining centrality scores with document-level quality scores. We use the quality scores produced by DCLM-fasttext (Li et al., 2024), a bigram model trained to classify high quality text sampled from different sources and low quality text sampled from RefinedWeb (Penedo et al., 2023) reproduction. We normalize both the centrality scores and the quality scores by: 
+
+ˆsi = exp( si − max  
+
+> j
+
+sj ), (4) where i and j both index all hosts in the web graph. This gives us a score within (0 , 1] . After normalizing both signals, we combine graph centrality and document quality in two complementary ways. For Top-K selection, we use additive and multiplicative scores, 
+
+ˆsadd  
+
+> i
+
+= ˆ scentrality  
+
+> i
+
++ ˆ squality  
+
+> i
+
+, ˆsmult  
+
+> i
+
+= ˆ scentrality  
+
+> i
+
+· ˆsquality  
+
+> i
+
+,
+
+which favor documents that are both central in the web graph and high quality. For Bottom-K
+
+selection, we instead use contrastive scores, 
+
+ˆssub  
+
+> i
+
+= ˆ scentrality  
+
+> i
+
+− ˆsquality  
+
+> i
+
+, ˆsdiv  
+
+> i
+
+= ˆ scentrality  
+
+> i
+
+/ˆsquality  
+
+> i
+
+,
+
+and select documents with the lowest scores, thereby prioritizing high-quality documents that are less central. Documents are ranked by the corresponding combined score and selected under the same token budget. These strategies allow us to test whether graph structure provides a signal complementary to document quality. 
+
+## 4 Experiments 
+
+4.1 Experimental Setup 
+
+All experiments are conducted using the official DataComp - LM (DCLM) framework, which provides standardized data pools, fixed model architectures, compute-optimal token budgets, and a fully reproducible training and evaluation pipeline. We evaluate two compute scales: 400m-1x , which trains a 412M-parameter model on approximately 8.2B tokens, and 1b-1x , which trains a 1.4B-parameter model on approximately 28B tokens. We mainly report 1B model results in the main paper as they are more significant. Full 400M model results can be found in Appendix B. We report task-level and average accuracy on DCLM CORE v2 benchmark (Li et al., 2024), which consists of 23 tasks. As described in Table 5 in Appendix A, the eval tasks are classified into 5 categories 4: Commonsense & Reasoning, QA & Comprehension, Science & Factual Knowledge, Symbolic & Algo Reasoning, and Language Understanding. In the following paper, we will use 
+
+Commonsense , Comprehension , Knowledge , Reasoning , and Language as abbreviations. We also look into each category of tasks to get a better understanding of the distinct effect of Top-K (central) and Bottom-K (peripheral) sampling. We consider the following baselines: Random : uniformly randomly select from the data pool; Qual-ity : select documents with top K quality score produced by DCLM-fasttext; WebOrganizer (Wettig et al., 2025): topic and format domain pairs mixture predicted from RegMix (Liu et al., 2025) pipelines; WebOrganizer+ (Wettig et al., 2025): the WebOrganizer domain mixture combined with DCLM-fasttext quality filter; PageRank : select documents with top K eigenvector centrality which can be used in place of the classical PageRank algorithm (Chandrashekhar et al., 2022). 
+
+4.2 Main Results 
+
+Recall that WEB GRAPH MIX selects pretraining data by computing host-level centrality scores over the Common Crawl web graph and constructing a mixed dataset that combines documents from the  
+
+> 4As marked in meta data: https://github.com/mlfoundations/dclm/blob/main/eval/eval_meta_data.csv
+
+6Table 2: Accuracy on DCLM CORE v2 benchmark at 1B scale, averaged by task cate-gory. WEB GRAPH MIX uses betweenness centrality with α = 0 .5 Top-K/Bottom-K mixture; 
+
+WEB GRAPH MIX + additionally combines centrality with the DCLM-fasttext quality score via multi-plication and division. Note that while our WEB GRAPH MIX is close to WebOrganizer baseline, our method is significantly cheaper and more transferable. Per-task results are reported in Appendix B.                                                 
+
+> Method Commons. Compreh. Knowl. Reason. Lang. Average
+> Random 57.3 37.9 34.2 19.0 39.9 39.8 Quality 59.8 38.1 38.9 20.7 42.8 42.3 WebOrganizer 59.6 39.2 38.0 22.5 38.3 42.1 WebOrganizer+ 61.9 41.4 39.1 21.9 38.8 43.4 PageRank 56.9 37.4 34.8 19.3 38.1 39.6
+> WEB GRAPH MIX 59.5 39.4 35.4 21.4 40.2 41.4
+> WEB GRAPH MIX +60.8 42.6 39.7 22.6 41.9 43.8
+
+top (central) and bottom (peripheral) quantiles of the centrality distribution, with mixture ratio α
+
+controlling the balance between the two strata (see Equation (3)). Among the two centrality measures explored, we find betweenness centrality most effective; it identifies hosts that bridge otherwise weakly connected regions of the web, yielding documents with broadly reusable, cross-domain patterns. WEB GRAPH MIX + further incorporates document-level quality scores from DCLM-fasttext: for the Top-K stratum, documents are ranked by the multiplicative combination of centrality and quality scores; for the Bottom-K stratum, documents are ranked by the division of centrality by quality, thereby surfacing high-quality documents that are structurally peripheral. Table 2 shows the overall benchmark performance comparison between our best methods and baselines, averaged over task categories. When mixing Top-K and Bottom-K documents with 
+
+α = 0 .5 ranked by Betweenness centrality score, our method improves upon the random selection baseline by 1.6% on average and improves upon the Top-K quality score selection baseline by 1.5% on average. Note that using quality score alone would improve upon the random selection baseline by 2.5%, so our method combining with quality score improves upon random selection baseline by 4% in total. WEB GRAPH MIX improves over the random selection baseline on all task categories, while WEB GRAPH MIX + improves over the Quality baseline on 4 out of 5 categories. The WebOrganizer baseline requires significant human effort for proposing the domain tax-onomies. It also substantial computation: training 512 proxy models of 50M parameters and fitting a gradient-boosted regression model to optimize domain weights toward specific target tasks, namely MMLU (Hendrycks et al., 2021) and HellaSwag (Zellers et al., 2019). This explains WebOrganizer+’s strong performance on Commonsense—HellaSwag is a commonsense sentence-completion benchmark—but limits the method’s generalizability to other capability categories. 
+
+WEB GRAPH MIX + slightly outperforms WebOrganizer+ on overall average while requiring no proxy training, no labeled targets, and no benchmark-specific tuning. The effectiveness of WEB GRAPH MIX scales with model size. As shown in Table 3, the gain from the best mixture strategy over baseline grows from 0.1% at 400M parameters to 1.6% at 1B parameters, and the gain from combining quality scores grows from 0.6% at 400M parameters to 1.5% at 1B parameters. This is consistent with the scaling behavior observed in other data selection work (Mizrahi et al., 2025; Yu et al., 2026) and suggests that our method may provide larger gains at larger scales. 
+
+## 5 Analysis 
+
+5.1 Structural Position Differentially Affects Capability Categories 
+
+Table 4 breaks down performance by capability category for Top-K (central) and Bottom-K (periph-eral) sampling strategies at the 1B scale. The results show that the effect of structural position is highly capability-dependent, and that central and peripheral regions of the web encode different types of useful information. 
+
+Bottom-K sampling consistently improves factual and commonsense knowledge. The clearest and most consistent pattern appears in Knowledge and Commonsense task categories. In Knowledge ,7Table 3: Best average accuracy by strategy category at 400M and 1B scale. Gain is computed relative to either the Random baseline or the Quality baseline. +- means combining with addition for Top-K
+
+and subtraction for Bottom-K. */ means combining with multiplication for Top-K and division for Bottom-K. Full per-task results are in Appendix B. 
+
+Strategy Best variant 400M 1B 
+
+Random — 32.5 39.8 Best pure centrality Katz Bottom-K 32.5 +0.0 40.5 +0.7 
+
+Best mixture Katz α = 0 .25 / Betw. α = 0 .5 32.6 +0.1 41.4 +1.6 
+
+Quality — 34.5 42.3 Best additive Katz ( +-) α = 1 / Betw. ( +-) α = 0 .25 35.1 +0.6 43.7 +1.4 
+
+Best multiplicative Betw. ( */ ) α = 1 / Betw. ( */ ) α = 0 .5 34.5 +0.0 43.8 +1.5 
+
+Table 4: Average accuracy across different task categories for Top-K and Bottom-K sampling at 1B scale. Betw. denotes Betweenness centrality scores. Katz denotes Katz centrality scores. 
+
+Method Commonsense Comprehension Knowledge Reasoning Language 
+
+Random 57.3 37.9 34.2 19.0 39.9 Betw. Top-K 56.7 -0.6 37.1 -0.8 33.9 -0.3 19.9 +0.9 39.2 -0.7 
+
+Betw. Bottom-K 57.4 +0.1 36.9 -1.0 35.4 +1.2 19.8 +0.8 39.5 -0.4 
+
+Katz Top-K 56.1 -1.2 35.5 -2.4 34.4 +0.2 20.4 +1.4 39.1 -0.8 
+
+Katz Bottom-K 57.8 +0.5 38.6 +0.7 35.3 +1.1 20.2 +1.2 40.2 +0.3 
+
+both Bottom-K strategies outperform the random baseline: Betweenness Bottom-K improves from 34.2% to 35.4% ( +1.2% ), while Katz Bottom-K reaches 35.3% ( +1.1% ). In contrast, Betweenness Top-K slightly hurts performance ( -0.3% ). A similar trend appears for Commonsense . Katz Bottom-K achieves the best score (57.8%, +0.5% ), while Katz Top-K substantially underperforms the baseline (56.1%, -1.2% ). Betweenness Bottom-K
+
+is roughly neutral ( +0.1% ), while Betweenness Top-K again slightly decreases performance ( -0.6% ). These results suggest that peripheral regions of the web contain useful long-tail and diverse knowledge signals that are beneficial for factual recall and commonsense reasoning tasks. 
+
+Structured reasoning benefits from both Top-K and Bottom-K sampling. Unlike the knowledge-oriented categories, Reasoning improves under all centrality-based sampling strategies. Katz Top-K achieves the strongest result (20.4% +1.4% ), followed closely by Katz Bottom-K (+1.2% ). Betweenness Top-K and Bottom-K produce similar gains ( +0.9% and +0.8% respectively). This indicates that reasoning tasks benefit from structural selection in general. However, the relatively stronger gains from Top-K sampling methods suggest that highly influential hosts may contain more structured or procedural content useful for these tasks. 
+
+Comprehension and language understanding exhibit asymmetric behavior. For Comprehension ,Bottom-K and Top-K behave very differently. Katz Bottom-K improves over baseline ( +0.7% ), while Katz Top-K substantially hurts performance ( -2.4% ), the largest degradation in the table. A similar but weaker pattern appears for Language Understanding , with only Katz Bottom-K improving. These results suggest that aggressive concentration on structurally central hosts may reduce linguistic diversity or contextual variability, which are important for comprehension-oriented tasks. 
+
+Centrality metric matters. The two centrality measures also behave differently. Katz centrality generally produces larger, less stable positive and negative shifts than Betweenness centrality, such as the strongest gains on Reasoning (+1.4% ) but also the largest degradation on Comprehension (-2.4% ), suggesting that recursive influence captures a stronger structural signal than shortest-path bridging. 
+
+5.2 Centrality Score Distribution 
+
+Figure 2 shows the distributions of Betweenness and Katz centrality scores at three levels of aggre-gation: hosts only, weighted by documents per host, and weighted by tokens per host. The latter 8Figure 2: Histograms of Betweenness centrality scores and Katz centrality scores distribution, with respect to hosts, documents, and tokens. two reflect the effective score distribution over the training corpus, since each document inherits its host’s centrality score. The two metrics exhibit very different shapes. On a log scale, Betweenness (Fig. 2a–c) is bell-shaped and roughly symmetric, with the bulk of mass between 10 −15 and 10 −5. A discrete spike at zero reflects a structural artifact of the Common Crawl host graph: it consists of roughly a dozen weakly connected components, and hosts in the smaller components receive near-zero betweenness because the shortest paths through them are bounded by their component size. Katz centrality (Fig. 2d–f) is instead sharply right-skewed: most hosts cluster near the low end of the score range ( ∼ 2.75 × 10 −4), with a long, sparse tail of high-scoring hosts that are recursively linked to other influential hosts. Document- and token-weighting shifts mass slightly toward higher scores in both cases, since central hosts contribute more content to the corpus, but the qualitative shapes are preserved. 
+
+5.3 Mixture Sampling 
+
+We investigate the effect of mixing Top-K and Bottom-K sampling by varying the proportion of Top-K and Bottom-K documents in the sampled data. We find a mixture at around 1:1 yields the strongest performance. Figure 3(a) summarizes the 23-task averages across mixture ratios and centrality metrics. 
+
+Mixing outperforms pure sampling. Neither pure Top-K nor pure Bottom-K achieves the gain of α = 0 .5 mixture. This confirms our central hypothesis: central and peripheral web regions encode complementary capabilities, and balancing them yields better data mixture than either extreme alone. 
+
+The optimal ratio is roughly balanced. Across betweenness mixtures, α = 0 .5 outperforms both 
+
+α = 0 .25 (40.5%) and α = 0 .75 (41.0%). This suggests that neither central nor peripheral documents should dominate—the best pretraining data draws roughly equally from both structural extremes of the web graph. Betweenness mixtures are consistently stronger than or equal to Katz mixtures at the 1B scale, with the gap largest at α = 0 .5 (+0.6% ). There is a clear non-monotonic pattern for betweenness: performance peaks at α = 0 .5 and declines on either side. This inverted-U shape supports the complementarity hypothesis—too much of either extreme hurts. Katz mixtures also support this trend, with performance improving as the proportion of central documents increases (39.5% to 40.8% to 41.0%), but then decreasing to 39.2% when there are too many (Katz Top-K). This may reflect the different nature of Katz centrality, which emphasizes local connectivity rather than global bridging. 90 0.25 0.5 0.75 1      
+
+> Mixture ratio α
+> 39.0
+> 39.5
+> 40.0
+> 40.5
+> 41.0
+> 41.5
+> Average accuracy
+> (a) Centrality score only
+> Random (baseline)
+> Betweenness
+> Katz
+> 00.25 0.5 0.75 1
+> Mixture ratio α
+> 42.5
+> 43.0
+> 43.5
+> 44.0
+> Average accuracy
+> (b) Centrality + quality score
+> Quality (baseline)
+> Betw. (+-)
+> Betw. (x/)
+> Katz (+-)
+> Katz (x/)
+
+Figure 3: Average accuracy of mixture sampling with Betweenness centrality score and Katz centrality score at 1B scale, varying ratio of Top-K and Bottom-K tokens. (a) is centrality score only. (b) is centrality score combined with quality score. +- means combining with addition for Top-K and subtraction for Bottom-K. */ means combining with multiplication for Top-K and division for Bottom-K.At 400M, mixture improvements are smaller but present. Katz α = 0 .25 improves 0.1% over the baseline while Betweenness α = 0 .75 makes gains on specific tasks like ARC Easy (2.6%), Winogrande (2.4%), and ARC Challenge (2.5%). This weaker signal is expected: smaller models have less capacity to leverage the complementary information from different web regions. 
+
+5.4 Combining with Quality Scores 
+
+Figure 3(b) reports results for combining centrality with quality scores at 1B scale. The headline finding is that centrality extracts robustly positive value on top of the quality filter: every one of the 18 reported configurations exceeds the quality-only baseline of 42.3%, with gains ranging from 0.5% to 1.5%. The strongest configuration, Multiply Betweenness 50% Top, achieves an average of 43.8% —a 1.5% improvement over quality-only and a 4.0% improvement over random sampling. This indicates that web graph centrality is not merely competitive with content-based quality scoring but consistently complementary to it. The signal centrality captures (structural position in the hyperlink graph) appears largely orthogonal to what DCLM-fasttext captures, so combining the two yields broadly compounding gains. 
+
+## 6 Conclusion 
+
+We introduced WEB GRAPH MIX , a lightweight pretraining data selection framework that uses structural position in the Common Crawl web graph as a signal for sampling documents. Our results show that different regions of the web graph encode complementary capabilities: structurally central hosts improve symbolic and procedural reasoning more, while peripheral hosts improve commonsense and factual knowledge more. Mixing these regions outperforms either extreme alone, and combining centrality with quality-based filtering yields further gains. Unlike prior data selection methods that require auxiliary model training, influence estimation, or domain taxonomy construction, 
+
+WEB GRAPH MIX computes centrality scores once over publicly available web graph using standard graph algorithms, requiring less than 9 GPU-hours. The resulting signal is lightweight, reusable, and complementary to existing content-based approaches, suggesting that web graph topology is a promising new axis for pretraining data curation. 
+
+## Acknowledgments 
+
+This research is partially funded by the National Science Foundation (IIS-2211779) and a Sloan Research Fellowship. This research is also supported by Princeton Language and Intelligence (PLI) and Princeton AI Lab. The experiments in this work were conducted on the Della high-performance computing cluster, as a part of Princeton Research Computing resources. 10 References 
+
+Alon Albalak, Yanai Elazar, Sang Michael Xie, Shayne Longpre, Nathan Lambert, Xinyi Wang, Niklas Muennighoff, Bairu Hou, Liangming Pan, Haewon Jeong, Colin Raffel, Shiyu Chang, Tatsunori Hashimoto, and William Yang Wang. A survey on data selection for language models. 
+
+arXiv preprint arXiv:2402.16827 , 2024. doi: 10.48550/arXiv.2402.16827. URL https://arxiv. org/abs/2402.16827 .Ulrik Brandes. A faster algorithm for betweenness centrality. Journal of Mathematical Sociology , 25 (2):163–177, 2001. doi: 10.1080/0022250X.2001.9990249. Andrei Z. Broder. On the resemblance and containment of documents. Proceedings. Compression and Complexity of SEQUENCES 1997 (Cat. No.97TB100171) , pp. 21–29, 1997. URL https: //api.semanticscholar.org/CorpusID:11748509 .Suvarna Saumya Chandrashekhar, Mashrin Srivastava, B Jaganathan, and Pankaj Shukla. Pagerank algorithm using eigenvector centrality–new approach. arXiv preprint arXiv:2201.05469 , 2022. Mayee F Chen, Nicholas Roberts, Kush Bhatia, Jue WANG, Ce Zhang, Frederic Sala, and Christopher Re. Skill-it! a data-driven skills framework for understanding and training language models. In Thirty-seventh Conference on Neural Information Processing Systems , 2023. URL https: //openreview.net/forum?id=IoizwO1NLf .Mayee F Chen, Michael Y. Hu, Nicholas Lourie, Kyunghyun Cho, and Christopher Re. Aioli: A unified optimization framework for language model data mixing. In The Thirteenth International Conference on Learning Representations , 2025. URL https://openreview.net/forum?id= sZGZJhaNSe .Shizhe Diao, Yu Yang, Yonggan Fu, Xin Dong, Dan SU, Markus Kliegl, ZIJIA CHEN, Peter Belcak, Yoshi Suhara, Hongxu Yin, Mostofa Patwary, Yingyan Celine Lin, Jan Kautz, and Pavlo Molchanov. Nemotron-CLIMB: Clustering-based iterative data mixture bootstrapping for language model pre-training. In The Thirty-ninth Annual Conference on Neural Information Processing Systems Datasets and Benchmarks Track , 2026. URL https://openreview.net/forum?id= aBlqKPkc4a .Dirk Groeneveld. BFF: The big friendly filter. https://github.com/allenai/bff , 2024. Bloom filter-based n-gram deduplication tool for language model pretraining data. Simin Fan, Matteo Pagliardini, and Martin Jaggi. Doge: Domain reweighting with generalization estimation. In International Conference on Machine Learning , pp. 12895–12915. PMLR, 2024. Kurt C. Foster, Stephen Q. Muth, John J. Potterat, and Richard B. Rothenberg. A faster Katz status score algorithm. Computational & Mathematical Organization Theory , 7(4):275–285, 2001. ISSN 1572-9346. doi: 10.1023/A:1013470632383. URL https://doi.org/10.1023/A: 1013470632383 .Linton C. Freeman. A set of measures of centrality based on betweenness. Sociometry , 40(1):35–41, 1977. ISSN 00380431, 23257938. URL http://www.jstor.org/stable/3033543 .Tianyu Gao, Alexander Wettig, Luxi He, Yihe Dong, Sadhika Malladi, and Danqi Chen. Metadata conditioning accelerates language model pre-training. In Forty-second International Conference on Machine Learning , 2025. URL https://openreview.net/forum?id=DdMMzlI5YE .Suriya Gunasekar, Yi Zhang, Jyoti Aneja, Caio César Teodoro Mendes, Allie Del Giorno, Sivakanth Gopi, Mojan Javaheripi, Piero Kauffmann, Gustavo de Rosa, Olli Saarikivi, et al. Textbooks are all you need. arXiv preprint arXiv:2306.11644 , 2023. Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and Jacob Steinhardt. Measuring massive multitask language understanding. In International Conference on Learning Representations , 2021. URL https://openreview.net/forum?id=d7KBjmI3GmQ .11 Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford, Diego de Las Casas, Lisa Anne Hendricks, Johannes Welbl, Aidan Clark, Tom Hennigan, Eric Noland, Katie Millican, George van den Driessche, Bogdan Damoc, Aurelia Guy, Simon Osindero, Karen Simonyan, Erich Elsen, Jack W. Rae, Oriol Vinyals, and Laurent Sifre. Training compute-optimal large language models. arXiv preprint arXiv:2203.15556 , 2022. doi: 10.48550/arXiv.2203.15556. URL https://arxiv.org/abs/2203.15556 .Kai Hua, Steven Wu, Ge Zhang, and Ke Shen. Attentioninfluence: Adopting attention head influence for weak-to-strong pretraining data selection. arXiv preprint arXiv:2505.07293 , 2025. Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B. Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models. arXiv preprint arXiv:2001.08361 , 2020. doi: 10.48550/arXiv.2001.08361. URL https: //arxiv.org/abs/2001.08361 .Leo Katz. A new status index derived from sociometric analysis. Psychometrika , 18(1):39–43, 1953. doi: 10.1007/BF02289026. Jon M. Kleinberg. Authoritative sources in a hyperlinked environment. Journal of the ACM , 46(5): 604–632, 1999. doi: 10.1145/324133.324140. Katherine Lee, Daphne Ippolito, Andrew Nystrom, Chiyuan Zhang, Douglas Eck, Chris Callison-Burch, and Nicholas Carlini. Deduplicating training data makes language models better. In Smaranda Muresan, Preslav Nakov, and Aline Villavicencio (eds.), Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) ,pp. 8424–8445, Dublin, Ireland, May 2022. Association for Computational Linguistics. doi: 10.18653/v1/2022.acl-long.577. URL https://aclanthology.org/2022.acl-long.577/ .Jeffrey Li, Alex Fang, Georgios Smyrnis, Maor Ivgi, Matt Jordan, Samir Gadre, Hritik Bansal, Etash Guha, Sedrick Keh, Kushal Arora, et al. Datacomp-lm: In search of the next generation of training sets for language models. Advances in Neural Information Processing Systems , 37:14200–14282, 2024. Qian Liu, Xiaosen Zheng, Niklas Muennighoff, Guangtao Zeng, Longxu Dou, Tianyu Pang, Jing Jiang, and Min Lin. Regmix: Data mixture as regression for language model pre-training. In 
+
+The Thirteenth International Conference on Learning Representations , 2025. URL https:// openreview.net/forum?id=5BjQOUXq7i .David Mizrahi, Anders Boesen Lindbo Larsen, Jesse Allardice, Suzie Petryk, Yuri Gorokhov, Jeffrey Li, Alex Fang, Josh Gardner, Tom Gunter, and Afshin Dehghan. Language models improve when pretraining data matches target tasks. arXiv preprint arXiv:2507.12466 , 2025. Lawrence Page, Sergey Brin, Rajeev Motwani, and Terry Winograd. The pagerank citation ranking: Bringing order to the web. Technical report, Stanford InfoLab, 1999. Guilherme Penedo, Quentin Malartic, Daniel Hesslow, Ruxandra Cojocaru, Hamza Alobeidli, Alessandro Cappelli, Baptiste Pannier, Ebtesam Almazrouei, and Julien Launay. The refinedweb dataset for falcon LLM: Outperforming curated corpora with web data only. In Thirty-seventh Conference on Neural Information Processing Systems Datasets and Benchmarks Track , 2023. URL https://openreview.net/forum?id=kM5eGcdCzq .Guilherme Penedo, Hynek Kydlíˇ cek, Anton Lozhkov, Margaret Mitchell, Colin Raffel, Leandro Von Werra, Thomas Wolf, et al. The fineweb datasets: Decanting the web for the finest text data at scale. Advances in Neural Information Processing Systems , 37:30811–30849, 2024. Jack W Rae, Sebastian Borgeaud, Trevor Cai, Katie Millican, Jordan Hoffmann, Francis Song, John Aslanides, Sarah Henderson, Roman Ring, Susannah Young, et al. Scaling language models: Methods, analysis & insights from training gopher. arXiv preprint arXiv:2112.11446 , 2021. Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, and Peter J Liu. Exploring the limits of transfer learning with a unified text-to-text transformer. Journal of machine learning research , 21(140):1–67, 2020. 12 Noveen Sachdeva, Benjamin Coleman, Wang-Cheng Kang, Jianmo Ni, Lichan Hong, Ed H. Chi, James Caverlee, Julian McAuley, and Derek Zhiyuan Cheng. How to train data-efficient LLMs. In The Fourteenth International Conference on Learning Representations , 2026. URL https: //openreview.net/forum?id=yKUbw7q1IA .Luca Soldaini, Rodney Kinney, Akshita Bhagia, Dustin Schwenk, David Atkinson, Russell Authur, Ben Bogin, Khyathi Chandu, Jennifer Dumas, Yanai Elazar, Valentin Hofmann, Ananya Harsh Jha, Sachin Kumar, Li Lucy, Xinxi Lyu, Nathan Lambert, Ian Magnusson, Jacob Morrison, Niklas Muennighoff, Aakanksha Naik, Crystal Nam, Matthew E. Peters, Abhilasha Ravichander, Kyle Richardson, Zejiang Shen, Emma Strubell, Nishant Subramani, Oyvind Tafjord, Pete Walsh, Luke Zettlemoyer, Noah A. Smith, Hannaneh Hajishirzi, Iz Beltagy, Dirk Groeneveld, Jesse Dodge, and Kyle Lo. Dolma: an open corpus of three trillion tokens for language model pretraining research. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (ACL) , 2024. doi: 10.48550/arXiv.2402.00159. URL https://arxiv.org/abs/2402.00159 .Yifan Wang, Binbin Liu, Fengze Liu, Yuanfan Guo, Jiyao Deng, Xuecheng Wu, Weidong Zhou, Xiaohuan Zhou, and Taifeng Wang. Tikmix: Take data influence into dynamic mixture for language model pre-training. arXiv preprint arXiv:2508.17677 , 2025. Guillaume Wenzek, Marie-Anne Lachaux, Alexis Conneau, Vishrav Chaudhary, Francisco Guzmán, Armand Joulin, and Edouard Grave. CCNet: Extracting high quality monolingual datasets from web crawl data. In Nicoletta Calzolari, Frédéric Béchet, Philippe Blache, Khalid Choukri, Christopher Cieri, Thierry Declerck, Sara Goggi, Hitoshi Isahara, Bente Maegaard, Joseph Mariani, Hélène Mazo, Asuncion Moreno, Jan Odijk, and Stelios Piperidis (eds.), Proceedings of the Twelfth Language Resources and Evaluation Conference , pp. 4003–4012, Marseille, France, May 2020. European Language Resources Association. ISBN 979-10-95546-34-4. URL https: //aclanthology.org/2020.lrec-1.494/ .Alexander Wettig, Aatmik Gupta, Saumya Malik, and Danqi Chen. QuRating: Selecting high-quality data for training language models. In Proceedings of the 41st International Conference on Machine Learning (ICML) , 2024. doi: 10.48550/arXiv.2402.09739. URL https://arxiv.org/abs/ 2402.09739 .Alexander Wettig, Kyle Lo, Sewon Min, Hannaneh Hajishirzi, Danqi Chen, and Luca Soldaini. Organize the web: Constructing domains enhances pre-training data curation. In Proceedings of the 42nd International Conference on Machine Learning (ICML) , 2025. doi: 10.48550/arXiv.2502. 10341. URL https://arxiv.org/abs/2502.10341 .Sang Michael Xie, Hieu Pham, Xuanyi Dong, Nan Du, Hanxiao Liu, Yifeng Lu, Percy Liang, Quoc V Le, Tengyu Ma, and Adams Wei Yu. Doremi: Optimizing data mixtures speeds up language model pretraining. In Thirty-seventh Conference on Neural Information Processing Systems , 2023. URL 
+
+https://openreview.net/forum?id=lXuByUeHhd .Shi Yu, Zhiyuan Liu, and Chenyan Xiong. Craw4LLM: Efficient web crawling for LLM pretraining. In Wanxiang Che, Joyce Nabende, Ekaterina Shutova, and Mohammad Taher Pilehvar (eds.), 
+
+Findings of the Association for Computational Linguistics: ACL 2025 , pp. 13843–13851, Vienna, Austria, July 2025. Association for Computational Linguistics. ISBN 979-8-89176-256-5. doi: 10.18653/v1/2025.findings-acl.712. URL https://aclanthology.org/2025.findings-acl. 712/ .Zichun Yu, Fei Peng, Jie Lei, Arnold Overwijk, Wen tau Yih, and Chenyan Xiong. Group-level data selection for efficient pretraining. In The Thirty-ninth Annual Conference on Neural Information Processing Systems , 2026. URL https://openreview.net/forum?id=uX4dyc7Z5Z .Rowan Zellers, Ari Holtzman, Yonatan Bisk, Ali Farhadi, and Yejin Choi. Hellaswag: Can a machine really finish your sentence? In Proceedings of the 57th annual meeting of the association for computational linguistics , pp. 4791–4800, 2019. 13 A Experiment Details 
+
+After selecting documents according to our graph-based sampling strategy, we construct an untok-enized dataset in JSONL format consistent with DCLM specifications. Tokenization and shuffling are performed using DCLM’s official Rust-based tokshuf pipeline. Specifically, we tokenize with the GPT -NeoX tokenizer at sequence length 2049, following DCLM’s standard configuration. The Rust pipeline produces WebDataset shards and generates the corresponding manifest file required by the DCLM training script. For each experiment, we create a dataset reference JSON to integrate seamlessly with the DCLM workflow. We do not modify tokenizer settings, sequence length, sharding configuration, or preprocessing logic. By using the official tokenize-and-shuffle implementation, we maintain identical preprocessing behavior to prior DCLM submissions and eliminate potential implementation-induced variation. Model training is executed using DCLM’s training.train entrypoint, which builds upon the OpenLM framework. All experiments follow fixed DCLM scale-specific recipes. We evaluate two compute scales: 400M - 1x, which trains a 412M-parameter model on approximately 8.2B tokens, and 1B - 1x, which trains a 1.4B-parameter model on approximately 28B tokens. For each scale, DCLM specifies the model architecture, number of layers, hidden size, attention heads, learning rate schedule, warmup steps, batch size, weight decay, gradient accumulation, and total number of training tokens. We use these configurations exactly as provided, without modification. In practice, we train with slightly more raw tokens than the nominal DCLM target to account for token loss during shuffling and padding, ensuring the effective training token count matches the intended compute budget. The 400M model takes around 20 hours on 4 H100 GPUs while the 1B model takes around 90 hours on 4 H100 GPUs. Table 5: DCLM CORE v2 evaluation tasks used in our experiments, along with their categories. 
+
+Task Category Few-shot Description 
+
+HellaSwag Commonsense & Reasoning 0/10 Sentence completion, grounded commonsense CommonsenseQA Commonsense & Reasoning 10 5-choice commonsense QA COPA Commonsense & Reasoning 0 Causal reasoning, cause/effect PIQA Commonsense & Reasoning 10 Physical commonsense (2-choice) Winograd Commonsense & Reasoning 0 Pronoun resolution, commonsense Winogrande Commonsense & Reasoning 0 Large-scale Winograd-style BoolQ QA & Comprehension 10 Binary yes/no QA from passages SQuAD (v2) QA & Comprehension 10 Extractive QA; may be unanswerable CoQA QA & Comprehension 0 Conversational QA OpenBookQA QA & Comprehension 0 Multi-step reasoning + commonsense ARC Easy Science & Factual Knowledge 10 Grade-school science (easy), 4-choice ARC Challenge Science & Factual Knowledge 10 Grade-school science (hard), 4-choice Jeopardy Science & Factual Knowledge 10 Diverse trivia, generative QA Wikidata Science & Factual Knowledge 10 Big-Bench factual completions MMLU Science & Factual Knowledge 5 57-subject academic QA (aggregate) LSAT-AR Science & Factual Knowledge 3 Analytical reasoning from LSAT CS Algorithms Symbolic & Algo Reasoning 10 Big-Bench: recursion, DP execution Dyck Languages Symbolic & Algo Reasoning 10 Big-Bench: balanced bracket completion Operators Symbolic & Algo Reasoning 10 Big-Bench: novel operator definitions Repeat Copy Logic Symbolic & Algo Reasoning 10 Big-Bench: words repeating and ordering LAMBADA Language Understanding 0 Last-word prediction, long context Language Identification Language Understanding 10 Big-Bench: identify written language Table 6: Licenses for existing assets used in this paper.                            
+
+> Asset Type License URL
+> Common Crawl Web Graph Data Custom ToU †https://commoncrawl.org/web-graphs
+> cc-webgraph tools Code Apache 2.0 https://github.com/commoncrawl/cc-webgraph
+> DCLM framework Code MIT https://github.com/mlfoundations/dclm
+> DCLM data pool Data MIT ‡https://github.com/mlfoundations/dclm
+> WebOrganizer Corpus-200B Data Not specified §https://huggingface.co/datasets/WebOrganizer/Corpus-200B
+> RefinedWeb filters Code Apache 2.0 https://huggingface.co/datasets/tiiuae/falcon-refinedweb
+> BFF deduplication Code Apache 2.0 ¶https://github.com/allenai/bff
+> cuGraph (RAPIDS) Code Apache 2.0 https://github.com/rapidsai/cugraph
+
+14 B Full Results 
+
+Pure centrality sampling at 1B scale tells a nuanced story. Bottom-K outperforms Top-K on average: Katz Bottom-K achieves 0.405 (+0.4pp over baseline), while Katz Top-K achieves only 0.392 (−0.9pp). This pattern holds across both centrality metrics. At the smaller 400M scale, the pattern is weaker. The baseline (0.325) ties with Katz Bottom-K
+
+(0.325) as the best average. Pure centrality strategies show less consistent improvement, likely because the 400M model has less capacity to exploit the structural signal. However, the same task-level asymmetry exists: Katz Top-K achieves 0.601 on BoolQ (+7.3pp over baseline) while the baseline wins on bigbench_qa_wikidata (0.444 vs. 0.387, +5.7pp). Table 7: Accuracy on 23 tasks from DCLM CORE v2 benchmark. All 1.4B models are trained on 28B tokens selected by baseline methods and our WEB GRAPH MIX method. Our methods use the betweenness centrality scores with a Top-K and Bottom-K mixture of 1:1. We use multiplication for combining with the quality scores, denoted as Ours+ . Note that while our WEB GRAPH MIX is close to WebOrganizer baseline, our method is significantly cheaper and more transferable.                                                                                                                                                                                
+
+> Task Random Quality WebOrg WebOrg+ PageRank Ours Ours+
+> MMLU 24.6 23.7 25.0 24.4 25.1 25.4 24.0 HellaSwag (zero-shot) 55.1 57.3 59.2 61.2 51.9 55.4 57.0 Jeopardy 15.3 26.8 19.4 24.6 15.0 13.0 27.1
+> QA Wikidata 58.9 60.2 58.9 59.0 58.4 60.2 59.8 ARC Easy 56.9 66.2 64.9 67.0 57.3 57.6 66.2 ARC Challenge 28.3 36.7 34.5 36.7 28.8 29.4 35.9 COPA 68.0 73.0 69.0 69.0 67.0 70.0 70.0 CommonsenseQA 24.1 21.9 22.5 32.3 29.2 31.8 32.5
+> PIQA 72.6 73.1 75.0 75.5 71.7 73.4 74.2 OpenBookQA 35.0 38.2 35.8 39.4 35.8 37.8 39.6
+> LAMBADA 55.3 60.3 51.4 52.2 51.5 55.0 58.9 HellaSwag 55.9 58.0 59.7 61.9 52.4 56.4 57.5 Winograd 71.4 76.9 73.6 77.3 70.7 72.2 76.6 Winogrande 54.1 58.4 57.9 56.3 55.6 57.4 58.1 Dyck Languages 15.8 21.2 19.1 22.5 16.8 23.1 25.4
+> LSAT-AR 21.3 20.0 25.2 22.6 23.9 27.0 25.2 CS Algorithms 42.3 42.7 44.9 42.9 41.3 41.2 44.9
+> Operators 17.1 19.0 19.5 19.0 19.0 18.1 20.0
+> Repeat Copy Logic 3.1 06.3 3.1 03.1 0SQuAD 32.5 33.7 36.4 36.4 29.3 33.3 37.4
+> CoQA 26.0 29.5 27.8 29.7 24.2 26.3 30.8
+> BoolQ 58.0 50.8 56.9 59.9 60.2 60.2 62.4
+> Language Identification 24.5 25.2 25.2 25.3 24.7 25.4 24.8
+> Average 39.8 42.3 42.1 43.4 39.6 41.4 43.8
+
+15 Table 8: Pure centrality sampling at 1B scale (1.4B parameters, 28B tokens). Each column selects documents whose hosts fall in the highest (Top-K) or lowest (Bottom-K) centrality stratum. Katz Bottom-K achieves the highest average, suggesting peripheral web regions encode complementary capabilities at this scale. 
+
+Task Baseline Betw. Top-K Betw. Bottom-K Katz Top-K Katz Bottom-K
+
+mmlu_fewshot 0.246 0.245 0.257 0.248 0.250 hellaswag_zeroshot 0.551 0.535 0.549 0.524 0.548 jeopardy 0.153 0.101 0.145 0.120 0.165 
+
+bigbench_qa_wikidata 0.589 0.596 0.595 0.608 0.612 
+
+arc_easy 0.569 0.574 0.584 0.573 0.583 arc_challenge 0.283 0.288 0.298 0.305 0.301 copa 0.680 0.660 0.670 0.660 0.650 commonsense_qa 0.241 0.242 0.243 0.207 0.284 
+
+piqa 0.726 0.728 0.737 0.719 0.726 openbook_qa 0.350 0.338 0.358 0.346 0.370 
+
+lambada_openai 0.553 0.538 0.544 0.534 0.549 hellaswag 0.559 0.539 0.557 0.531 0.552 winograd 0.714 0.696 0.714 0.733 0.725 winogrande 0.541 0.578 0.551 0.554 0.560 bigbench_dyck_languages 0.158 0.213 0.195 0.165 0.181 agi_eval_lsat_ar 0.213 0.226 0.248 0.213 0.204 bigbench_cs_algorithms 0.423 0.380 0.426 0.456 0.414 bigbench_operators 0.171 0.171 0.171 0.195 0.181 bigbench_repeat_copy_logic 0.031 0.031 0 0 0.031 
+
+squad 0.325 0.294 0.316 0.286 0.321 coqa 0.260 0.249 0.256 0.240 0.236 boolq 0.580 0.602 0.547 0.548 0.616 
+
+bigbench_language_id 0.245 0.247 0.247 0.247 0.254 Average 0.398 0.394 0.400 0.392 0.405 
+
+Table 9: Mixture sampling at 1B scale (1.4B parameters, 28B tokens). Each column combines a specified percentage of Top-K (central) documents with the remainder drawn from Bottom-K
+
+(peripheral) documents. Betweenness 50% Top achieves the highest average (0.414), outperforming both the uniform baseline (0.398) and all pure sampling strategies from Table 8. 
+
+Task Baseline Betw. 25% Betw. 50% Betw. 75% Katz 25% Katz 50% Katz 75% 
+
+mmlu_fewshot 0.246 0.251 0.254 0.252 0.233 0.252 0.241 hellaswag_zeroshot 0.551 0.567 0.554 0.543 0.542 0.557 0.547 jeopardy 0.153 0.153 0.130 0.137 0.175 0.156 0.149 bigbench_qa_wikidata 0.589 0.599 0.602 0.614 0.604 0.608 0.613 arc_easy 0.569 0.585 0.576 0.574 0.600 0.585 0.578 arc_challenge 0.283 0.295 0.294 0.294 0.303 0.288 0.304 
+
+copa 0.680 0.670 0.700 0.660 0.670 0.720 0.700 commonsense_qa 0.241 0.201 0.318 0.342 0.201 0.229 0.279 piqa 0.726 0.734 0.734 0.733 0.731 0.738 0.736 openbook_qa 0.350 0.352 0.378 0.358 0.340 0.336 0.360 lambada_openai 0.553 0.555 0.550 0.530 0.552 0.554 0.553 hellaswag 0.559 0.577 0.564 0.551 0.557 0.561 0.554 winograd 0.714 0.769 0.722 0.751 0.751 0.736 0.733 winogrande 0.541 0.561 0.574 0.574 0.557 0.566 0.571 bigbench_dyck_languages 0.158 0.159 0.231 0.272 0.183 0.158 0.174 agi_eval_lsat_ar 0.213 0.243 0.270 0.204 0.196 0.230 0.287 
+
+bigbench_cs_algorithms 0.423 0.448 0.412 0.417 0.457 0.442 0.446 bigbench_operators 0.171 0.157 0.181 0.190 0.167 0.176 0.162 bigbench_repeat_copy_logic 0.031 0.031 0.031 0 0.031 0.063 0.031 squad 0.325 0.328 0.333 0.322 0.307 0.329 0.351 
+
+coqa 0.260 0.268 0.263 0.255 0.259 0.244 0.272 
+
+boolq 0.580 0.563 0.602 0.610 0.430 0.593 0.554 bigbench_language_id 0.245 0.250 0.254 0.255 0.251 0.253 0.243 
+
+Average 0.398 0.405 0.414 0.410 0.395 0.408 0.410 
+
+16 Table 10: Pure centrality sampling at 400M scale (412M parameters, 8.2B tokens). The base-line (uniform sampling) achieves the highest average (0.325), with pure centrality strategies per-forming comparably. At this smaller scale, the signal from centrality alone does not consistently outperform uniform sampling. 
+
+Task Baseline Betw. Top-K Betw. Bottom-K Katz Top-K Katz Bottom-K
+
+mmlu_fewshot 0.247 0.255 0.242 0.248 0.255 hellaswag_zeroshot 0.366 0.344 0.381 0.342 0.377 jeopardy 0.016 0.020 0.014 0.008 0.008 bigbench_qa_wikidata 0.444 0.421 0.392 0.387 0.380 arc_easy 0.449 0.452 0.455 0.448 0.443 arc_challenge 0.232 0.222 0.240 0.244 0.235 copa 0.620 0.580 0.570 0.620 0.670 
+
+commonsense_qa 0.268 0.267 0.224 0.252 0.367 
+
+piqa 0.670 0.670 0.680 0.659 0.675 openbook_qa 0.312 0.314 0.302 0.314 0.330 
+
+lambada_openai 0.384 0.354 0.378 0.357 0.386 hellaswag 0.368 0.344 0.379 0.344 0.381 winograd 0.612 0.586 0.608 0.593 0.626 
+
+winogrande 0.519 0.521 0.517 0.507 0.502 bigbench_dyck_languages 0.123 0.137 0.126 0.147 0.092 agi_eval_lsat_ar 0.222 0.252 0.239 0.222 0.252 
+
+bigbench_cs_algorithms 0.396 0.430 0.355 0.352 0.355 bigbench_operators 0.148 0.105 0.110 0.110 0.110 bigbench_repeat_copy_logic 0.063 0.031 0.031 0 0.031 squad 0.107 0.057 0.091 0.047 0.082 coqa 0.124 0.120 0.133 0.117 0.131 boolq 0.528 0.439 0.563 0.601 0.529 bigbench_language_id 0.253 0.254 0.250 0.244 0.246 
+
+Average 0.325 0.311 0.316 0.312 0.325 
+
+Table 11: Mixture sampling at 400M scale (412M parameters, 8.2B tokens). Katz 25% Top achieves the highest average (0.326), marginally outperforming the uniform baseline (0.325). Betweenness 75% Top also shows gains on several individual tasks, indicating that the complementary signal from mixing central and peripheral documents is present even at smaller model scales. 
+
+Task Baseline Betw. 25% Betw. 50% Betw. 75% Katz 25% Katz 50% Katz 75% 
+
+mmlu_fewshot 0.247 0.238 0.244 0.242 0.241 0.259 0.235 hellaswag_zeroshot 0.366 0.368 0.359 0.358 0.370 0.361 0.352 jeopardy 0.016 0.021 0.012 0.021 0.016 0.016 0.018 bigbench_qa_wikidata 0.444 0.433 0.447 0.421 0.415 0.428 0.421 arc_easy 0.449 0.461 0.463 0.475 0.450 0.458 0.453 arc_challenge 0.232 0.230 0.235 0.257 0.255 0.233 0.244 copa 0.620 0.660 0.630 0.650 0.680 0.580 0.610 commonsense_qa 0.268 0.239 0.215 0.292 0.259 0.272 0.270 piqa 0.670 0.667 0.678 0.665 0.669 0.660 0.666 openbook_qa 0.312 0.306 0.296 0.302 0.308 0.310 0.320 
+
+lambada_openai 0.384 0.387 0.376 0.383 0.396 0.380 0.380 hellaswag 0.368 0.369 0.362 0.356 0.368 0.359 0.355 winograd 0.612 0.582 0.608 0.582 0.630 0.623 0.601 winogrande 0.519 0.494 0.502 0.543 0.500 0.501 0.515 bigbench_dyck_languages 0.123 0.136 0.152 0.165 0.149 0.108 0.161 agi_eval_lsat_ar 0.222 0.235 0.170 0.213 0.265 0.222 0.226 bigbench_cs_algorithms 0.396 0.429 0.361 0.393 0.389 0.436 0.394 bigbench_operators 0.148 0.105 0.133 0.124 0.143 0.124 0.110 bigbench_repeat_copy_logic 0.063 0.031 0 0.031 0 0 0squad 0.107 0.112 0.071 0.062 0.089 0.081 0.083 coqa 0.124 0.133 0.127 0.133 0.137 0.123 0.120 boolq 0.528 0.528 0.559 0.554 0.524 0.594 0.546 bigbench_language_id 0.253 0.253 0.247 0.245 0.247 0.249 0.247 
+
+Average 0.325 0.323 0.315 0.325 0.326 0.321 0.319 
+
+17 Table 12: Additive quality–centrality combination at 400M scale (412M parameters, 8.2B tokens). Normalized quality and centrality scores are summed, and documents are ranked by the combined score. Add Katz Top-K achieves the highest average (0.351), substantially outperforming both the uniform baseline (0.325) and the quality-only filter (0.345), demonstrating that structural centrality provides an additive signal on top of content-based quality scoring. 
+
+Task Baseline Quality Add Betw. Top Add Betw. Bot. Add Katz Top Add Katz Bot. 
+
+mmlu_fewshot 0.247 0.253 0.244 0.252 0.250 0.245 hellaswag_zeroshot 0.366 0.372 0.369 0.344 0.373 0.342 jeopardy 0.016 0.060 0.050 0.007 0.050 0.004 bigbench_qa_wikidata 0.444 0.400 0.396 0.391 0.399 0.394 arc_easy 0.449 0.562 0.546 0.398 0.546 0.389 arc_challenge 0.232 0.285 0.285 0.225 0.289 0.216 copa 0.620 0.600 0.600 0.560 0.600 0.610 commonsense_qa 0.268 0.360 0.202 0.280 0.368 0.251 piqa 0.670 0.663 0.672 0.653 0.664 0.668 openbook_qa 0.312 0.318 0.324 0.292 0.332 0.272 lambada_openai 0.384 0.419 0.413 0.291 0.417 0.294 hellaswag 0.368 0.374 0.369 0.342 0.376 0.338 winograd 0.612 0.619 0.615 0.560 0.637 0.549 winogrande 0.519 0.515 0.507 0.523 0.507 0.540 
+
+bigbench_dyck_languages 0.123 0.259 0.226 0.132 0.278 0.104 agi_eval_lsat_ar 0.222 0.248 0.183 0.191 0.274 0.191 bigbench_cs_algorithms 0.396 0.366 0.361 0.396 0.412 0.364 bigbench_operators 0.148 0.171 0.167 0.133 0.157 0.148 bigbench_repeat_copy_logic 0.063 0 0.031 0 0.031 0squad 0.107 0.126 0.136 0.066 0.148 0.047 coqa 0.124 0.163 0.156 0.106 0.165 0.092 boolq 0.528 0.560 0.565 0.581 0.554 0.580 bigbench_language_id 0.253 0.247 0.261 0.250 0.254 0.251 
+
+Average 0.325 0.345 0.334 0.303 0.351 0.300 
+
+Table 13: Multiplicative quality–centrality combination at 400M scale (412M parameters, 8.2B tokens). Normalized quality and centrality scores are multiplied, and documents are ranked by the product. Both Multiply Betweenness Top-K and Multiply Katz Top-K achieve a tied best average of 0.345, matching the quality-only baseline. Bottom-K variants underperform, confirming that multiplicative combination is most effective when selecting structurally central documents. 
+
+Task Baseline Quality Mult. Betw. Top Mult. Betw. Bot. Mult. Katz Top Mult. Katz Bot. 
+
+mmlu_fewshot 0.247 0.253 0.242 0.251 0.258 0.248 hellaswag_zeroshot 0.366 0.372 0.370 0.340 0.370 0.337 jeopardy 0.016 0.060 0.055 0.008 0.058 0.002 bigbench_qa_wikidata 0.444 0.400 0.420 0.359 0.402 0.371 arc_easy 0.449 0.562 0.544 0.386 0.567 0.388 arc_challenge 0.232 0.285 0.270 0.228 0.276 0.206 copa 0.620 0.600 0.590 0.560 0.600 0.590 commonsense_qa 0.268 0.360 0.229 0.276 0.304 0.268 piqa 0.670 0.663 0.667 0.647 0.671 0.657 openbook_qa 0.312 0.318 0.314 0.286 0.340 0.278 lambada_openai 0.384 0.419 0.425 0.297 0.419 0.294 hellaswag 0.368 0.374 0.370 0.342 0.368 0.338 winograd 0.612 0.619 0.630 0.590 0.634 0.601 winogrande 0.519 0.515 0.519 0.530 0.520 0.523 bigbench_dyck_languages 0.123 0.259 0.251 0.124 0.238 0.136 agi_eval_lsat_ar 0.222 0.248 0.265 0.204 0.283 0.178 bigbench_cs_algorithms 0.396 0.366 0.465 0.362 0.418 0.364 bigbench_operators 0.148 0.171 0.162 0.162 0.148 0.152 bigbench_repeat_copy_logic 0.063 0 0 0.031 0 0.063 
+
+squad 0.107 0.126 0.150 0.064 0.152 0.046 coqa 0.124 0.163 0.158 0.114 0.158 0.122 boolq 0.528 0.560 0.592 0.546 0.462 0.598 
+
+bigbench_language_id 0.253 0.247 0.251 0.258 0.248 0.251 
+
+Average 0.325 0.345 0.345 0.303 0.343 0.305 
+
+18 Table 14: Additive quality–betweenness centrality combination at 1B scale (1.4B parameters, 28B tokens). Normalized quality and betweenness centrality scores are summed, and documents are ranked by the combined score. Add Betw. 25% achieves the highest average (0.437), outperforming both the uniform baseline (0.398) and the quality-only filter (0.423), demonstrating that betweenness centrality provides an additive signal on top of content-based quality scoring. 
+
+Task Baseline Quality Add Betw. 25% Add Betw. 50% Add Betw. 75% Add Betw. Bot. 
+
+mmlu_fewshot 0.246 0.237 0.251 0.251 0.257 0.258 hellaswag_zeroshot 0.551 0.573 0.569 0.570 0.572 0.572 jeopardy 0.153 0.268 0.268 0.286 0.279 0.252 bigbench_qa_wikidata 0.589 0.602 0.588 0.600 0.592 0.595 arc_easy 0.569 0.662 0.675 0.670 0.665 0.647 arc_challenge 0.283 0.367 0.378 0.372 0.361 0.360 copa 0.680 0.730 0.660 0.710 0.710 0.710 commonsense_qa 0.241 0.219 0.310 0.244 0.313 0.291 piqa 0.726 0.731 0.752 0.740 0.743 0.740 openbook_qa 0.350 0.382 0.382 0.376 0.388 0.384 lambada_openai 0.553 0.603 0.598 0.592 0.598 0.607 
+
+hellaswag 0.559 0.580 0.577 0.579 0.579 0.577 winograd 0.714 0.769 0.784 0.747 0.733 0.766 winogrande 0.541 0.584 0.597 0.573 0.593 0.577 bigbench_dyck_languages 0.158 0.212 0.196 0.159 0.167 0.201 
+
+agi_eval_lsat_ar 0.213 0.200 0.243 0.243 0.239 0.217 bigbench_cs_algorithms 0.423 0.427 0.377 0.455 0.373 0.447 bigbench_operators 0.171 0.190 0.200 0.210 0.210 0.214 bigbench_repeat_copy_logic 0.031 0 0.094 0.031 0 0.063 squad 0.325 0.337 0.365 0.380 0.413 0.373 coqa 0.260 0.295 0.307 0.307 0.305 0.300 boolq 0.580 0.508 0.622 0.572 0.628 0.513 bigbench_language_id 0.245 0.252 0.249 0.254 0.255 0.254 Average 0.398 0.423 0.437 0.431 0.434 0.431 
+
+Table 15: Additive quality–Katz centrality combination at 1B scale (1.4B parameters, 28B tokens). Normalized quality and Katz centrality scores are summed, and documents are ranked by the com-bined score. All Katz variants achieve comparable average scores around 0.431–0.432, outperforming the uniform baseline (0.398) and approaching the quality-only filter (0.423), demonstrating that Katz centrality provides a consistent additive signal across sampling thresholds. 
+
+Task Baseline Quality Add Katz 25% Add Katz 75% Add Katz Bot. Add Katz Top 
+
+mmlu_fewshot 0.246 0.237 0.248 0.242 0.244 0.266 
+
+hellaswag_zeroshot 0.551 0.573 0.572 0.569 0.576 0.573 jeopardy 0.153 0.268 0.274 0.268 0.260 0.253 bigbench_qa_wikidata 0.589 0.602 0.590 0.587 0.577 0.598 arc_easy 0.569 0.662 0.665 0.681 0.650 0.653 arc_challenge 0.283 0.367 0.364 0.362 0.366 0.348 copa 0.680 0.730 0.700 0.670 0.700 0.670 commonsense_qa 0.241 0.219 0.202 0.265 0.321 0.271 piqa 0.726 0.731 0.729 0.734 0.735 0.748 
+
+openbook_qa 0.350 0.382 0.392 0.384 0.394 0.378 lambada_openai 0.553 0.603 0.596 0.594 0.598 0.595 hellaswag 0.559 0.580 0.578 0.576 0.581 0.579 winograd 0.714 0.769 0.769 0.777 0.736 0.747 winogrande 0.541 0.584 0.586 0.581 0.598 0.602 
+
+bigbench_dyck_languages 0.158 0.212 0.161 0.188 0.179 0.194 agi_eval_lsat_ar 0.213 0.200 0.287 0.183 0.200 0.213 bigbench_cs_algorithms 0.423 0.427 0.412 0.421 0.451 0.447 bigbench_operators 0.171 0.190 0.214 0.238 0.186 0.210 bigbench_repeat_copy_logic 0.031 0 0 0.031 0.063 0.031 squad 0.325 0.337 0.389 0.391 0.358 0.384 coqa 0.260 0.295 0.309 0.305 0.300 0.317 
+
+boolq 0.580 0.508 0.593 0.610 0.615 0.580 bigbench_language_id 0.245 0.252 0.250 0.250 0.247 0.249 
+
+Average 0.398 0.423 0.430 0.431 0.432 0.431 
+
+19 Table 16: Multiplicative quality–betweenness centrality combination at 1B scale (1.4B parameters, 28B tokens). Normalized quality and betweenness centrality scores are multiplied, and documents are ranked by the product. Mult. Betw. 50% achieves the highest average (0.438), outperforming both the uniform baseline (0.398) and the quality-only filter (0.423). Bottom-K variants remain competitive at this scale, unlike the 400M setting. 
+
+Task Baseline Quality Mult. Betw. 25% Mult. Betw. 50% Mult. Betw. 75% Mult. Betw. Bot. Mult. Betw. Top 
+
+mmlu_fewshot 0.246 0.237 0.248 0.240 0.236 0.236 0.250 hellaswag_zeroshot 0.551 0.573 0.574 0.570 0.576 0.572 0.573 jeopardy 0.153 0.268 0.278 0.271 0.272 0.245 0.257 bigbench_qa_wikidata 0.589 0.602 0.586 0.598 0.599 0.597 0.606 
+
+arc_easy 0.569 0.662 0.672 0.662 0.662 0.650 0.647 arc_challenge 0.283 0.367 0.376 0.359 0.371 0.340 0.345 copa 0.680 0.730 0.680 0.700 0.680 0.680 0.710 commonsense_qa 0.241 0.219 0.265 0.325 0.258 0.342 0.220 piqa 0.726 0.731 0.725 0.742 0.736 0.743 0.742 openbook_qa 0.350 0.382 0.376 0.396 0.398 0.388 0.388 lambada_openai 0.553 0.603 0.592 0.589 0.595 0.594 0.592 hellaswag 0.559 0.580 0.580 0.575 0.581 0.577 0.582 
+
+winograd 0.714 0.769 0.777 0.766 0.769 0.744 0.769 winogrande 0.541 0.584 0.574 0.581 0.594 0.590 0.581 bigbench_dyck_languages 0.158 0.212 0.204 0.254 0.180 0.285 0.235 agi_eval_lsat_ar 0.213 0.200 0.239 0.252 0.239 0.226 0.243 bigbench_cs_algorithms 0.423 0.427 0.398 0.449 0.399 0.431 0.357 bigbench_operators 0.171 0.190 0.186 0.200 0.200 0.205 0.224 
+
+bigbench_repeat_copy_logic 0.031 0 0.031 0 0.031 0.031 0.063 
+
+squad 0.325 0.337 0.381 0.374 0.393 0.373 0.375 coqa 0.260 0.295 0.302 0.308 0.320 0.293 0.303 boolq 0.580 0.508 0.617 0.624 0.608 0.631 0.549 bigbench_language_id 0.245 0.252 0.255 0.248 0.248 0.255 0.245 
+
+Average 0.398 0.423 0.431 0.438 0.432 0.436 0.428 
+
+Table 17: Multiplicative quality–Katz centrality combination at 1B scale (1.4B parameters, 28B tokens). Normalized quality and Katz centrality scores are multiplied, and documents are ranked by the product. All Katz variants achieve comparable average scores around 0.430–0.432, outperforming the uniform baseline (0.398) and the quality-only filter (0.423). Bottom-K variants remain competitive at this scale, unlike the 400M setting. 
+
+Task Baseline Quality Mult. Katz 25% Mult. Katz 50% Mult. Katz 75% Mult. Katz Bot. Mult. Katz Top 
+
+mmlu_fewshot 0.246 0.237 0.249 0.254 0.260 0.253 0.264 hellaswag_zeroshot 0.551 0.573 0.572 0.570 0.572 0.574 0.572 jeopardy 0.153 0.268 0.286 0.273 0.270 0.263 0.261 bigbench_qa_wikidata 0.589 0.602 0.586 0.581 0.567 0.600 0.591 arc_easy 0.569 0.662 0.669 0.668 0.666 0.648 0.656 arc_challenge 0.283 0.367 0.369 0.353 0.378 0.346 0.356 copa 0.680 0.730 0.680 0.690 0.770 0.690 0.680 commonsense_qa 0.241 0.219 0.261 0.363 0.382 0.216 0.277 piqa 0.726 0.731 0.744 0.736 0.740 0.737 0.733 openbook_qa 0.350 0.382 0.388 0.396 0.408 0.384 0.382 lambada_openai 0.553 0.603 0.594 0.599 0.594 0.600 0.589 hellaswag 0.559 0.580 0.581 0.576 0.580 0.583 0.580 winograd 0.714 0.769 0.755 0.762 0.740 0.791 0.758 winogrande 0.541 0.584 0.601 0.560 0.578 0.582 0.572 bigbench_dyck_languages 0.158 0.212 0.195 0.182 0.209 0.223 0.175 agi_eval_lsat_ar 0.213 0.200 0.204 0.213 0.230 0.283 0.243 bigbench_cs_algorithms 0.423 0.427 0.455 0.355 0.372 0.386 0.439 bigbench_operators 0.171 0.190 0.210 0.181 0.190 0.190 0.162 bigbench_repeat_copy_logic 0.031 0 0 0.031 0.031 0.031 0.094 
+
+squad 0.325 0.337 0.391 0.383 0.365 0.383 0.376 coqa 0.260 0.295 0.313 0.310 0.316 0.304 0.300 boolq 0.580 0.508 0.593 0.606 0.464 0.607 0.625 
+
+bigbench_language_id 0.245 0.252 0.240 0.246 0.253 0.254 0.254 Average 0.398 0.423 0.432 0.430 0.432 0.432 0.432 
+
+Best combination strategy shifts with scale. As a secondary observation, we note that the best combination strategy reverses between the two scales: at 400M, Add Katz Top was strongest, while at 1B, Multiply Betweenness 50% takes over. This may partially be attributed to the differing selectivity of the two strategies. Multiplicative scoring strongly suppresses documents that are low on either signal, while additive scoring is more permissive. At 400M, where the model has limited capacity, the broader signal from additive combination appears more useful; at 1B, the sharper selectivity of multiplicative combination yields better results. While interesting, this reversal is less practically important than the broader finding that both combination strategies, in nearly all configurations, extract real value from centrality on top of quality filtering. 20 C Example Pretraining Documents 
+
+Table 18: Top hosts by betweenness centrality score. The ten highest-scoring hosts from the web graph, with a representative URL snippet for each. Scores are computed over the host-level graph and reported in scientific notation. 
+
+Host Score Representative Snippet 
+
+facebook.com 1.98 × 10 −1 Saving your new profile picture . . . Wassup guys! At last we’ve prepared for you some cool stuff! Tacit Fury’s brand new merch! 
+
+google.com 1.18 × 10 −1 Kellogg Company (Public, NYSE:K) Watch this stock Find more results for k +1.48 (2.18%) Real-time: 3:21PM EST NYSE real-time data . . . 
+
+youtube.com 1.07 × 10 −1 Oval Office Underdogs: The Poet Prophet. The interac-tive transcript could not be loaded. Rating is available when the video has been rented. 
+
+instagram.com 5.94 × 10 −2 Enter the Lane Bryant Makeover My Mom Contest thru May 4 for your chance to win a head-to-toe Lane Bryant Makeover . . . 
+
+toptohigh.com 4.10 × 10 −2 Business to business marketing, commonly known as b2b marketing, refers to the interaction and marketing methods used to connect various businesses . . . 
+
+linkedin.com 3.64 × 10 −2 Kristi Kaylor, Beverly Hills, California. 1. 6126 LLC, 2. 2 LOVE, 3. Mblem by Mandy Moore. Recommenda-tions: 3 people have recommended Kristi. 
+
+articlement.com 3.58 × 10 −2 Silver Mountain Express is a private shuttle & car service from Denver to Vail, Colorado that offers the perfect transportation solution . . . 
+
+gmpg.org 3.54 × 10 −2 XFN: Getting Started. Join the XHTML Friends Net-work in four easy steps. 1. Pick one or more pages to make XFN Friendly . . . 
+
+kingranks.com 2.73 × 10 −2 From crux gammata to swastika. What was possibly the most significant event of the 20th century, the Second World War, would not have occurred without the power of branding . . . 
+
+en.wikipedia.org 2.46 × 10 −2 Telluric contamination is contamination of the astronom-ical spectra by the Earth’s atmosphere. Interference . . . 
+
+21 Table 19: Bottom hosts by betweenness centrality score. The ten lowest-scoring hosts from the web graph, with a representative URL snippet for each. Scores are computed over the host-level graph and reported in scientific notation. 
+
+Host Score Representative Snippet 
+
+hammarsdrama.com 4.41 × 10 −20 Hammars Drama Productions AB. We are Stockholm-based executive producers of performing art and of dance movement films. Board of Directors: Ingmar Bergman jr, Chairman. 
+
+easternfirst.applicantpro.com 4.09 × 10 −20 Eastern Industrial Supplies, Inc. 25-Jun-2018 to 24-Aug-2018 (EST). Greenville, SC, USA. Full Time. Medical, Dental, Disability, Life, 401k + Employer Match . . . 
+
+swadharma.myshopify.com 4.07 × 10 −20 “Hey Julia, how are you and your belly? So do you know what you’re having?” 10 reasons why I enjoyed receiving my prenatal care from my midwife. 
+
+ontoma.com 3.86 × 10 −20 An industry-willed response to the Royal Commission into Misconduct in the Financial Services Industry. New FinTech platform Ontoma set to foster cooperation . . . 
+
+bluepenstrokes.com 3.28 × 10 −20 Daily Grind. Sublime requests of my creative mind overturned by demands of a cerebral strife. Shackled to cubicles, paints and brushes, paper and ink . . . 
+
+walkertonkinsmen.ca 2.78 × 10 −20 Walkerton Kinsmen Raffle Draw & Novelty Casino Of-ficial Rules, Regulations and Draw Procedures. The following are the rules, regulations and draw procedures . . . 
+
+grindstone.agency 2.74 × 10 −20 Harmony Honeybush. Packaging design. Brand Devel-opment. Our agency was approached to assist with the Brand Development of this new specialist company . . . 
+
+bmscg.com 2.09 × 10 −20 BMS Commercial and Consulting Group. BMSCG leads you to success. We know the right way. The economic power of Asia at your service. 
+
+abcsofsex-ed.org 1.98 × 10 −20 Teaching an All-Day Workshop for 20 Teachers and Staff. Starkids Academy and Rescue Center, in Kiambu just outside the Nairobi city limits . . . 
+
+riomardesigns.com 6.82 × 10 −21 Don’t get sick on your next trip! Get your list. 5 Tips for Healthy Travel. There are many things you can do to avoid getting sick next time you travel. 
+
+## D Limitations and future work 
+
+Our experiments are conducted at 400M and 1B parameter scales with 8B and 28B training tokens respectively, following the DCLM 1b-1x reference setting. The scaling pattern we observe—gains that grow with model size—suggests that further improvements may be achievable at larger scales, but verifying this requires substantially more compute. Our centrality scores are also computed at the host level and inherited by all documents from a given host; a finer-grained page-level graph could capture intra-host structural variation that is currently averaged out. We focused on betweenness and Katz centrality because they capture distinct notions of structural importance (cross-community bridging vs. recursive influence), but other graph-theoretic measures—including hierarchical decomposition (k-core, k-truss), random-walk-based methods beyond Katz, and motif-based scores—remain unexplored. Finally, combining WebGraphMix with domain-based methods such as WebOrganizer is a natural next step: graph centrality and semantic taxonomies operate on independent axes, and combining them may yield further compounding gains in the same way that combining centrality with content-based quality does. 
+
+## E Broader Impact 
+
+This work introduces a graph-based framework for pretraining data selection that operates on the structural topology of the web rather than on document content. We discuss both potential positive and negative societal implications. 22 Positive impacts. WebGraphMix offers a computationally lightweight alternative to data selection methods that require training auxiliary models, running proxy evaluations, or constructing domain taxonomies. By replacing these resource-intensive steps with a one-time centrality computation (fewer than 9 GPU-hours total), our approach lowers the barrier to principled data curation, particularly for resource-constrained research groups. More broadly, improving the efficiency of pretraining data selection reduces the total compute—and therefore energy—spent on training language models, since better data can substitute for additional training steps or larger model sizes. 
+
+Potential risks and limitations. Graph-based selection introduces a new axis of bias that differs from content-based filtering. Web graph centrality reflects the linking behavior of web publishers, which is shaped by commercial incentives, language demographics, and historical web development patterns. Structurally central hosts tend to be large, English-dominant platforms (e.g., social media sites, major reference sites), while peripheral hosts include small organizations, non-English content, and niche communities. Selecting data based on centrality scores therefore risks amplifying the structural inequalities already present in the web’s link topology—for example, systematically underrepresenting content from regions or languages with less interconnected web infrastructure. Our mixture-based approach partially mitigates this concern by explicitly including peripheral documents alongside central ones, and our results show that peripheral regions contribute valuable capabilities that central regions lack. However, we do not conduct a systematic analysis of how centrality-based selection affects demographic, linguistic, or geographic representation in the resulting training data, and we encourage future work in this direction. Finally, the centrality scores and selection scripts we plan to release are metadata annotations on an already-public corpus and do not introduce new privacy risks beyond those inherent in Common Crawl itself. The models trained in this work are small-scale research artifacts (up to 1.4B parameters) not intended for deployment. 23
