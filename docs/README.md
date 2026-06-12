@@ -6,35 +6,31 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-11
-- 运行时间：2026-06-11 21:15:00 UTC
+- 最新运行日期：2026-06-12
+- 运行时间：2026-06-12 21:51:30 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：4
-- 速读区：1
+- 本次总论文数：3
+- 精读区：1
+- 速读区：2
 
 ### 今日简报（AI）
-今日精读两篇满分论文，聚焦大模型与图协同学习新范式。最值得关注的是图原生AI系统和LLM-GNN互教机制，有望突破知识推理与结构化理解的融合瓶颈。建议读者从“图增强问答”这类落地场景入手，保持对图与语言模型交叉前沿的每日跟进。
-- 详情：[/202606/11/README](/202606/11/README)
+今日精读满分论文揭示图原生LLM协同系统的未来图景，速读则审视了药物发现中大模型是否越大越好，以及用图检索增强减轻幻觉的方案。  
+最值得关注：图与LLM的深度融合正从“外挂式”走向原生协同，挑战现有范式；同时，大模型在分子预测中并非一味碾压小模型，任务特性与评估基准至关重要。  
+想跟上趋势，不妨从图增强可信问答和领域模型基准入手，别盲目追求参数规模，多关注架构如何真正理解结构化知识。
+- 详情：[/202606/12/README](/202606/12/README)
 
 ### 精读区论文标签
-1. [LLMs+Graphs: Toward Graph-Native, Synergistic AI Systems](/202606/11/2606.11560v1-llmsgraphs-toward-graph-native-synergistic-ai-systems)  
+1. [LLMs+Graphs: Toward Graph-Native, Synergistic AI Systems](/202606/12/2606.11560v1-llmsgraphs-toward-graph-native-synergistic-ai-systems)  
    标签：评分：10.0/10、query:graph-llm
-   evidence：本文直接探讨大语言模型与图的融合，提出图原生协同AI系统。
-2. [Beyond the Golden Teacher: Enhancing Graph Learning through LLM-GNN Co-teaching](/202606/11/2606.11583v1-beyond-the-golden-teacher-enhancing-graph-learning-through-llm-gnn-co-teaching)  
-   标签：评分：10.0/10、query:graph-llm
-   evidence：提出LLM与GNN共教学，用于文本属性图的少样本学习。
-3. [GraspLLM: Towards Zero-Shot Generalization on Text-Attributed Graphs with LLMs](/202606/11/2606.11898v1-graspllm-towards-zero-shot-generalization-on-text-attributed-graphs-with-llms)  
-   标签：评分：10.0/10、query:graph-llm
-   evidence：结合图结构理解与LLM语义能力实现文本属性图上的零样本泛化
-4. [Hubs or Fringes: Pretraining Data Selection via Web Graph Centrality](/202606/11/2606.11499v1-hubs-or-fringes-pretraining-data-selection-via-web-graph-centrality)  
-   标签：评分：8.0/10、query:graph-llm
-   evidence：利用Web图中心性引导大语言模型预训练数据配比。
+   evidence：概述LLM与图的协同作用，包括推理、检索和双向集成
 
 ### 速读区论文标签
-1. [Reducing Hallucinations in Complex Question Answering using Simple Graph-based Retrieval-Augmented Generation (long version)](/202606/11/2606.05901v1-reducing-hallucinations-in-complex-question-answering-using-simple-graph-based-retrieval-augmented-generation-long-version)  
+1. [Do Larger Models Really Win in Drug Discovery?A Benchmark Assessment of Model Scaling in AI-Driven Molecular Property and Activity Prediction](/202606/12/biorxiv-10-64898-2026-04-29-721568-v4-do-larger-models-really-win-in-drug-discoverya-benchmark-assessment-of-model-scaling-in-ai-driven-molecular-property-and-activity-prediction)  
    标签：评分：7.0/10、query:graph-llm
-   evidence：使用轻量级图结构为LLM的检索增强生成提供支撑，以减少问答中的幻觉
+   evidence：在分子图结构数据上评估大型语言模型进行分子性质预测，并与图神经网络比较
+2. [Reducing Hallucinations in Complex Question Answering using Simple Graph-based Retrieval-Augmented Generation (long version)](/202606/12/2606.05901v1-reducing-hallucinations-in-complex-question-answering-using-simple-graph-based-retrieval-augmented-generation-long-version)  
+   标签：评分：6.0/10、query:graph-llm
+   evidence：使用轻量级图结构进行检索增强生成以减少LLM幻觉
 
 
 <div class="dpr-home-promo-card">

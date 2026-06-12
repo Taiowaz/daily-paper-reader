@@ -1,0 +1,54 @@
+{
+  "label": "2026-06-12",
+  "date": "2026-06-12",
+  "generated_at": "2026-06-12T21:51:36",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202606/12/2606.11560v1-llmsgraphs-toward-graph-native-synergistic-ai-systems",
+      "section": "deep",
+      "title_en": "LLMs+Graphs: Toward Graph-Native, Synergistic AI Systems",
+      "authors": "Arijit Khan, Longxu Sun, Xin Huang",
+      "date": "2026-06-10",
+      "pdf": "https://arxiv.org/pdf/2606.11560v1",
+      "score": "10.0",
+      "evidence": "概述LLM与图的协同作用，包括推理、检索和双向集成",
+      "tldr": "大语言模型（LLMs）在结构化与多跳推理方面存在局限，而图数据在众多领域至关重要。本教程提出三种互补协同方式：用图计算增强LLMs的检索与推理，将LLMs与知识图谱双向集成以强化语义一致性，以及利用图算法助力AI智能体进行规划与多步推理。同时探索了LLMs在图数据管理与图机器学习中的新能力。这为构建下一代图原生、协同AI系统提供了统一的设计原则与算法框架。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Large Language Models (LLMs) have advanced rapidly, but their limitations in structured and multi-hop reasoning underscore the need for graph-native, synergistic artificial intelligence (AI) systems. Graph-structured data underpins critical applications across social, biological, financial, transportation, web, and knowledge domains, making it essential to understand how LLMs can leverage graph computation for grounded, context-rich inference. Three complementary synergies are emerging: LLMs augmented with graph computation for retrieval and reasoning; bidirectional integration between LLMs and knowledge graphs (KGs), where LLMs support KG construction and curation while KGs enforce semantic constraints and factual consistency; and AI agents strengthened by graph algorithms for planning, decision making, and multi-step reasoning. In parallel, LLMs introduce new capabilities for graph data management and graph machine learning (ML) through natural language interfaces and hybrid LLM-graph neural network (GNN) pipelines. This tutorial synthesizes the algorithms, systems, and design principles driving these converging directions, offering data science and data mining researchers a unified perspective on integrating LLMs, graph data management, graph mining, graph ML, and agentic computation into next-generation graph-native AI systems.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/12/biorxiv-10-64898-2026-04-29-721568-v4-do-larger-models-really-win-in-drug-discoverya-benchmark-assessment-of-model-scaling-in-ai-driven-molecular-property-and-activity-prediction",
+      "section": "quick",
+      "title_en": "Do Larger Models Really Win in Drug Discovery?A Benchmark Assessment of Model Scaling in AI-Driven Molecular Property and Activity Prediction",
+      "authors": "Guo, J., Ding, S.",
+      "date": "2026-06-08",
+      "pdf": "https://www.biorxiv.org/content/10.64898/2026.04.29.721568v4.full.pdf",
+      "score": "7.0",
+      "evidence": "在分子图结构数据上评估大型语言模型进行分子性质预测，并与图神经网络比较",
+      "tldr": "随着药物发现中大规模分子基础模型兴起，是否模型越大预测越好？本研究构建涵盖26个ADME/毒性/活性端点、三种分割协议的基准，系统对比经典ML、GNN、预训练序列模型与LLM-SAR方法。结果显示经典ML在47.4%的比较中获胜，大模型仅在困难分割与低数据场景展现推理价值，且优势依赖训练配置。表明预测性能取决于模型-任务-验证场景的匹配，而非单纯规模扩展。",
+      "tags": "query:graph-llm",
+      "abstract_en": "The rapid growth of molecular foundation models and large language models (LLMs) has encouraged a scale centred view of AI in drug discovery, in which larger pretrained models are expected to supersede compact cheminformatics models based on classical machine learning (classical ML) and graph neural networks (GNNs) trained for individual tasks. We test this assumption across 26 endpoints grouped into ADME, toxicity and bioactivity classes, covering 165,541 endpoint level compound label records. The benchmark contains 78 endpoint and split entries, corresponding to 26 endpoints evaluated under three split protocols: random, Murcko scaffold and structure separated 5-fold cross validation (CV). Ordered from easiest to hardest, these splits approximate retrospective evaluation on a closed library, scaffold expansion in hit to lead, and library expansion on novel chemotypes. Each entry contributes two task and metric comparisons, giving 156 comparisons in total. Across these comparisons, classical ML provides the largest share of best performing entries (47.4%), followed by pretrained molecular sequence models (28.8%), GNNs (21.8%) and LLM based SAR baselines (1.9%). Classical ML dominates random split interpolation and remains the largest winner family overall. GNN and sequence models are competitive in selected harder split protocols under the primary optimal held-out readout, but their strict winner shares decrease under a fixed final-window readout, indicating that some of these gains depend on training settings and model selection. Paired bootstrap analyses indicate that small numerical differences between individual models should not be read as decisive victories. SAR knowledge from training folds improves many GPT5.5-SAR and Opus4.7-SAR metrics but does not make rule based reasoning a universal substitute for supervised predictors. Compact specialized models remain highly effective for molecular property and activity prediction. Larger models add value for SAR interpretation and reasoning in low data settings, but predictive performance depends on the fit among model, task and validation scenario, not on scale alone.",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/12/2606.05901v1-reducing-hallucinations-in-complex-question-answering-using-simple-graph-based-retrieval-augmented-generation-long-version",
+      "section": "quick",
+      "title_en": "Reducing Hallucinations in Complex Question Answering using Simple Graph-based Retrieval-Augmented Generation (long version)",
+      "authors": "Christopher J. Wedge, Joshua Stutter, Danny Dixon, Jacek Cała",
+      "date": "2026-06-04",
+      "pdf": "https://arxiv.org/pdf/2606.05901v1",
+      "score": "6.0",
+      "evidence": "使用轻量级图结构进行检索增强生成以减少LLM幻觉",
+      "tldr": "大型语言模型在复杂问答中易产生幻觉，检索增强生成虽可缓解但仍需改进。本文提出用轻量级图结构支持RAG子系统，设计代理系统整合向量搜索与图查询工具，操作于结构化维基数据。在MoNaCo基准上，图增强方法使事实精确率与召回率显著提升，幻觉答案数量减半，细粒度真实性得分最高，且仅适度增加Token消耗。该工作证明了简单图模式可有效减少幻觉，为可信问答系统提供高效方案。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Large language models (LLMs) have fundamentally transformed the landscape of Natural Language Processing. Despite these advances, LLMs and LLM-based systems remain prone to a variety of failure modes. Retrieval-augmented generation (RAG) systems have emerged as a common deployment scenario seeking to both avoid the well known risk of the LLM \"hallucinating\" information, and to enable reasoning and question answering over proprietary information that the LLM did not have access to during training without resorting to expensive model fine-tuning.   In this work, we explore the idea of using a lightweight graph structure with a relatively simple graph schema, to support the RAG subsystem via a dedicated toolset. We design an agentic system with a variety of vector search and graph query tools operating over a structured dataset based on a curated subset of English Wikipedia articles, and evaluate its performance on questions from MoNaCo, a challenging Wikipedia QA benchmark of complex query answering tasks.   Our results show that the introduction of graph-based tools can significantly increase the precision and recall of factual correctness, can halve the number of hallucinated answers, and achieves the highest fine-grained truthfulness score among the three evaluated scenarios. All this with a modest increase in token usage.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
