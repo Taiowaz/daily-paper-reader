@@ -1,0 +1,54 @@
+{
+  "label": "2026-06-13",
+  "date": "2026-06-13",
+  "generated_at": "2026-06-13T21:12:39",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202606/13/2606.11560v1-llmsgraphs-toward-graph-native-synergistic-ai-systems",
+      "section": "deep",
+      "title_en": "LLMs+Graphs: Toward Graph-Native, Synergistic AI Systems",
+      "authors": "Arijit Khan, Longxu Sun, Xin Huang",
+      "date": "2026-06-10",
+      "pdf": "https://arxiv.org/pdf/2606.11560v1",
+      "score": "10.0",
+      "evidence": "探讨三种LLM-图协同：图增强LLM检索推理、LLM与知识图谱双向集成、图对齐AI智能体",
+      "tldr": "大模型(LLMs)在多跳推理和结构化理解上仍存瓶颈，催生图原生AI系统的需求。图结构化数据遍布社交网络、生物医学、金融交易等关键场景，因此LLMs与图计算的深度融合至关重要。本教程系统梳理了三个协同方向：LLMs借助图计算增强检索与推理；LLMs与知识图谱(KGs)双向互动，LLM辅助KG构建，KG约束LLM事实一致性；图算法赋能AI代理进行规划与多步决策。此外，LLMs还为图数据管理和图神经网络(GNN)引入自然语言交互与混合流水线。通过整合算法、系统与设计原则，为构建下一代图原生AI系统提供统一视角。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Large Language Models (LLMs) have advanced rapidly, but their limitations in structured and multi-hop reasoning underscore the need for graph-native, synergistic artificial intelligence (AI) systems. Graph-structured data underpins critical applications across social, biological, financial, transportation, web, and knowledge domains, making it essential to understand how LLMs can leverage graph computation for grounded, context-rich inference. Three complementary synergies are emerging: LLMs augmented with graph computation for retrieval and reasoning; bidirectional integration between LLMs and knowledge graphs (KGs), where LLMs support KG construction and curation while KGs enforce semantic constraints and factual consistency; and AI agents strengthened by graph algorithms for planning, decision making, and multi-step reasoning. In parallel, LLMs introduce new capabilities for graph data management and graph machine learning (ML) through natural language interfaces and hybrid LLM-graph neural network (GNN) pipelines. This tutorial synthesizes the algorithms, systems, and design principles driving these converging directions, offering data science and data mining researchers a unified perspective on integrating LLMs, graph data management, graph mining, graph ML, and agentic computation into next-generation graph-native AI systems.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/13/2606.10392v1-instruction-finetuning-deepseek-r1-8b-model-using-lora-and-neftune",
+      "section": "deep",
+      "title_en": "Instruction Finetuning DeepSeek-R1-8B Model Using LoRA and NEFTune",
+      "authors": "Wu Yuerong, Mingni Luo",
+      "date": "2026-06-09",
+      "pdf": "https://arxiv.org/pdf/2606.10392v1",
+      "score": "8.0",
+      "evidence": "利用大语言模型微调进行实体抽取以构建知识图谱",
+      "tldr": "针对通用大模型在金融NER中误分类问题，本文提出基于LoRA和NEFTune的指令微调方法，将1693条金融文本转换为指令三元组训练DeepSeek-R1-8B。该方法在7类实体上micro-F1达到0.912，比仅LoRA提升0.011，并超越Llama3-8B等基线，为低资源金融信息抽取提供高效方案。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Financial named-entity recognition (NER) is essential for translating unstructured financial reports and news into structured knowledge graphs. However, general-purpose large language models (LLMs) often misclassify financial entities or ignore domain-specific patterns. This paper investigates the use of DeepSeek-R1-8B, a recent open-source large language model, combined with Low-Rank Adaptation (LoRA) and Noisy Embedding Fine-Tuning (NEFTune) for financial NER. Each annotated sentence in our corpus of 1693 samples is converted into an instruction-input-output triple. We insert lightweight LoRA matrices into the Transformer layers and apply NEFTune to improve generalisation by adding uniform noise to embedding vectors during training. Experiments show that the LoRA-adapted DeepSeek-R1-8B achieves a micro-F1 of 0.901 on seven entity types (Company, Date, Location, Money, Person, Product and Quantity), and adding NEFTune further boosts the micro-F1 to 0.912, outperforming Llama3-8B, Qwen3-8B, Baichuan2-7B, T5 and BERT-Base baselines.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/13/biorxiv-10-64898-2026-04-29-721568-v3-do-larger-models-really-win-in-drug-discoverya-benchmark-assessment-of-model-scaling-in-ai-driven-molecular-property-and-activity-prediction",
+      "section": "deep",
+      "title_en": "Do Larger Models Really Win in Drug Discovery?A Benchmark Assessment of Model Scaling in AI-Driven Molecular Property and Activity Prediction",
+      "authors": "Guo, J., Ding, S.",
+      "date": "2026-06-08",
+      "pdf": "https://www.biorxiv.org/content/10.64898/2026.04.29.721568v3.full.pdf",
+      "score": "8.0",
+      "evidence": "在分子性质预测中基准测试LLM与图神经网络，评估LLM在图结构分子数据上的表现。",
+      "tldr": "随着分子基础模型和大语言模型（LLMs）的快速发展，药物发现中兴起“规模中心”观点，认为更大预训练模型将优于紧凑的化学信息学模型。我们在26个端点（ADME、毒性、生物活性）上，采用从易到难的随机、Murcko骨架和结构分离三种数据划分，进行156项模型比较。结果：经典机器学习在47.4%比较中取得最佳，预训练分子序列模型占28.8%，图神经网络占21.8%，LLM仅1.9%；在更难划分下，GNN和序列模型在最优读出设置下具有竞争力，但固定窗口读出时优势减弱。结论：预测性能取决于模型、任务和验证场景的契合度，而非单纯规模；紧凑专用模型仍高度有效，大模型在低数据推理中有增值。",
+      "tags": "query:graph-llm",
+      "abstract_en": "The rapid growth of molecular foundation models and large language models (LLMs) has encouraged a scale centred view of AI in drug discovery, in which larger pretrained models are expected to supersede compact cheminformatics models based on classical machine learning (classical ML) and graph neural networks (GNNs) trained for individual tasks. We test this assumption across 26 endpoints grouped into ADME, toxicity and bioactivity classes, covering 165,541 endpoint level compound label records. The benchmark contains 78 endpoint and split entries, corresponding to 26 endpoints evaluated under three split protocols: random, Murcko scaffold and structure separated 5-fold cross validation (CV). Ordered from easiest to hardest, these splits approximate retrospective evaluation on a closed library, scaffold expansion in hit to lead, and library expansion on novel chemotypes. Each entry contributes two task and metric comparisons, giving 156 comparisons in total. Across these comparisons, classical ML provides the largest share of best performing entries (47.4%), followed by pretrained molecular sequence models (28.8%), GNNs (21.8%) and LLM based SAR baselines (1.9%). Classical ML dominates random split interpolation and remains the largest winner family overall. GNN and sequence models are competitive in selected harder split protocols under the primary optimal held-out readout, but their strict winner shares decrease under a fixed final-window readout, indicating that some of these gains depend on training settings and model selection. Paired bootstrap analyses indicate that small numerical differences between individual models should not be read as decisive victories. SAR knowledge from training folds improves many GPT5.5-SAR and Opus4.7-SAR metrics but does not make rule based reasoning a universal substitute for supervised predictors. Compact specialized models remain highly effective for molecular property and activity prediction. Larger models add value for SAR interpretation and reasoning in low data settings, but predictive performance depends on the fit among model, task and validation scenario, not on scale alone.",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
