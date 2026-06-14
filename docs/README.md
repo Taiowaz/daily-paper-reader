@@ -6,29 +6,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-13
-- 运行时间：2026-06-13 21:12:32 UTC
+- 最新运行日期：2026-06-14
+- 运行时间：2026-06-14 21:03:46 UTC
 - 运行状态：成功
 - 本次总论文数：3
 - 精读区：3
 - 速读区：0
 
 ### 今日简报（AI）
-今日精读两篇前沿论文，聚焦大语言模型与图结构的深度融合及高效指令微调。  
-最高分研究揭示图形原生AI系统的协同潜力，而LoRA+NEFTune方法让DeepSeek-R1-8B指令跟随能力大幅提升。  
-建议开发者优先关注图形增强LLM的落地路径，并尝试用轻量微调方案优化开源模型的任务表现。
-- 详情：[/202606/13/README](/202606/13/README)
+今日精读两篇满分论文，聚焦大模型与图的深度协同及机制增强推理在药物重定位中的突破。  
+图原生AI正重塑逻辑与知识的融合范式，而语义感知的因果路径则为老药新用提供了可解释的发现引擎。  
+想上手实践？不妨先从知识图谱结合大模型的推理链路入手，医疗场景是绝佳的验证场。
+- 详情：[/202606/14/README](/202606/14/README)
 
 ### 精读区论文标签
-1. [LLMs+Graphs: Toward Graph-Native, Synergistic AI Systems](/202606/13/2606.11560v1-llmsgraphs-toward-graph-native-synergistic-ai-systems)  
+1. [LLMs+Graphs: Toward Graph-Native, Synergistic AI Systems](/202606/14/2606.11560v1-llmsgraphs-toward-graph-native-synergistic-ai-systems)  
    标签：评分：10.0/10、query:graph-llm
-   evidence：探讨三种LLM-图协同：图增强LLM检索推理、LLM与知识图谱双向集成、图对齐AI智能体
-2. [Instruction Finetuning DeepSeek-R1-8B Model Using LoRA and NEFTune](/202606/13/2606.10392v1-instruction-finetuning-deepseek-r1-8b-model-using-lora-and-neftune)  
-   标签：评分：8.0/10、query:graph-llm
-   evidence：利用大语言模型微调进行实体抽取以构建知识图谱
-3. [Do Larger Models Really Win in Drug Discovery?A Benchmark Assessment of Model Scaling in AI-Driven Molecular Property and Activity Prediction](/202606/13/biorxiv-10-64898-2026-04-29-721568-v3-do-larger-models-really-win-in-drug-discoverya-benchmark-assessment-of-model-scaling-in-ai-driven-molecular-property-and-activity-prediction)  
-   标签：评分：8.0/10、query:graph-llm
-   evidence：在分子性质预测中基准测试LLM与图神经网络，评估LLM在图结构分子数据上的表现。
+   evidence：LLM与图计算结合增强检索推理
+2. [CAREPath: Semantic Context-Aware Reasoning Paths with Mechanism-Augmented Embeddings for Drug Repurposing](/202606/14/biorxiv-10-64898-2026-06-09-731247-v1-carepath-semantic-context-aware-reasoning-paths-with-mechanism-augmented-embeddings-for-drug-repurposing)  
+   标签：评分：10.0/10、query:graph-llm
+   evidence：知识图谱-LLM框架用于药物重定位推理
+3. [GraspLLM: Towards Zero-Shot Generalization on Text-Attributed Graphs with LLMs](/202606/14/2606.11898v2-graspllm-towards-zero-shot-generalization-on-text-attributed-graphs-with-llms)  
+   标签：评分：9.0/10、query:graph-llm
+   evidence：利用大语言模型提升文本属性图的跨图跨任务泛化能力
 
 ### 速读区论文标签
 - 本次无速读推荐。

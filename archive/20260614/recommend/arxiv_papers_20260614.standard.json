@@ -1,0 +1,131 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-14T21:02:07.021988+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2606.11560v1",
+      "source": "arxiv",
+      "title": "LLMs+Graphs: Toward Graph-Native, Synergistic AI Systems",
+      "abstract": "Large Language Models (LLMs) have advanced rapidly, but their limitations in structured and multi-hop reasoning underscore the need for graph-native, synergistic artificial intelligence (AI) systems. Graph-structured data underpins critical applications across social, biological, financial, transportation, web, and knowledge domains, making it essential to understand how LLMs can leverage graph computation for grounded, context-rich inference. Three complementary synergies are emerging: LLMs augmented with graph computation for retrieval and reasoning; bidirectional integration between LLMs and knowledge graphs (KGs), where LLMs support KG construction and curation while KGs enforce semantic constraints and factual consistency; and AI agents strengthened by graph algorithms for planning, decision making, and multi-step reasoning. In parallel, LLMs introduce new capabilities for graph data management and graph machine learning (ML) through natural language interfaces and hybrid LLM-graph neural network (GNN) pipelines. This tutorial synthesizes the algorithms, systems, and design principles driving these converging directions, offering data science and data mining researchers a unified perspective on integrating LLMs, graph data management, graph mining, graph ML, and agentic computation into next-generation graph-native AI systems.",
+      "authors": [
+        "Arijit Khan",
+        "Longxu Sun",
+        "Xin Huang"
+      ],
+      "primary_category": "cs.DB",
+      "categories": [
+        "cs.DB",
+        "cs.AI"
+      ],
+      "published": "2026-06-10T01:39:41+00:00",
+      "link": "https://arxiv.org/pdf/2606.11560v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "LLMs augmented with graph computation for retrieval and reasoning",
+      "llm_evidence_cn": "LLM与图计算结合增强检索推理",
+      "llm_evidence": "LLM与图计算结合增强检索推理",
+      "canonical_evidence": "LLM与图计算结合增强检索推理",
+      "llm_tldr_en": "This paper discusses three synergies between LLMs and graphs: graph-augmented LLMs for reasoning, bidirectional LLM-KG integration, and graph-strengthened AI agents, aiming for graph-native synergistic AI.",
+      "llm_tldr_cn": "LLMs在结构化推理上存在局限，图数据关键但LLMs难以直接利用。本文提出LLMs与图的三种协同方式：图计算增强LLM检索推理、LLMs与知识图谱双向整合、图谱强AI智能体。这些协同有望构建原生图协同AI系统，实现更可靠、可解释的推理。",
+      "llm_tldr": "LLMs在结构化推理上存在局限，图数据关键但LLMs难以直接利用。本文提出LLMs与图的三种协同方式：图计算增强LLM检索推理、LLMs与知识图谱双向整合、图谱强AI智能体。这些协同有望构建原生图协同AI系统，实现更可靠、可解释的推理。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "biorxiv-10-64898-2026-06-09-731247-v1",
+      "source": "biorxiv",
+      "title": "CAREPath: Semantic Context-Aware Reasoning Paths with Mechanism-Augmented Embeddings for Drug Repurposing",
+      "abstract": "Biomedical knowledge graphs (BKGs) that include drugs, genes, and diseases support drug repurposing by connecting drugs to diseases through gene-mediated multi-hop paths, thereby enabling mechanism-of-action reasoning. However, deeper traversal does not necessarily improve mechanistic reasoning: long paths grow combinatorially and frequently pass through hub genes, producing irrelevant gene regulatory signals, whereas overly constrained or sparse paths may miss broader biological context. We propose CAREPath, a KG-LLM framework inspired by depth-first search (DFS)-like and breadth-first search (BFS)-like reasoning to balance mechanistic specificity, scalability, and context recovery. The DFS-like module constrains traversal to short disease-gene-drug paths, converts each path into a structured prompt, and encodes it with a biomedical language model to generate semantic path embeddings. Complementarily, the BFS-like module constructs entity-level mechanism-context embeddings from one-hop gene neighborhoods and enriches them through similarity-guided augmentation using pharmacologically related drugs and gene-signature-similar diseases. Across five biomedical KGs, CAREPath achieves the best overall AUPRC among 18 baselines, improving performance by up to 3.8%. Additional analyses show that semantic short-path encoding contributes most to performance, while mechanism-context augmentation improves robustness under sparse evidence and strengthens Gene Ontology functional agreement. Case studies and recently FDAapproved indications further demonstrate its practical relevance, positioning CAREPath as an interpretable framework for scalable and mechanism-aware drug repurposing. Source code is available at https://github.com/hamppy-song/CAREPath.",
+      "authors": [
+        "song, h.",
+        "bang, d.",
+        "koo, b.",
+        "Kim, S.",
+        "lee, s."
+      ],
+      "primary_category": "bioinformatics",
+      "categories": [
+        "bioinformatics"
+      ],
+      "published": "2026-06-12T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.06.09.731247v1.full.pdf",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "KG-LLM framework using knowledge graph reasoning with LLM for drug repurposing",
+      "llm_evidence_cn": "知识图谱-LLM框架用于药物重定位推理",
+      "llm_evidence": "知识图谱-LLM框架用于药物重定位推理",
+      "canonical_evidence": "知识图谱-LLM框架用于药物重定位推理",
+      "llm_tldr_en": "CAREPath proposes a KG-LLM framework combining DFS- and BFS-like reasoning to balance mechanistic specificity, scalability, and context recovery for gene-mediated drug repurposing.",
+      "llm_tldr_cn": "在药物重定位中，生物医学知识图谱上的多跳路径推理随长度增加易产生组合爆炸及无关信号。CAREPath框架受深度优先和广度优先搜索启发，通过约束与扩展路径并结合LLM，有效平衡机制特异性、可扩展性和上下文恢复。实验表明该方法能识别更具机制的药物-疾病关联。",
+      "llm_tldr": "在药物重定位中，生物医学知识图谱上的多跳路径推理随长度增加易产生组合爆炸及无关信号。CAREPath框架受深度优先和广度优先搜索启发，通过约束与扩展路径并结合LLM，有效平衡机制特异性、可扩展性和上下文恢复。实验表明该方法能识别更具机制的药物-疾病关联。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.11898v2",
+      "source": "arxiv",
+      "title": "GraspLLM: Towards Zero-Shot Generalization on Text-Attributed Graphs with LLMs",
+      "abstract": "Research on Text-Attributed Graphs (TAGs) has gained significant attention recently due to its broad applications across various real-world data scenarios, such as citation networks, e-commerce platforms, social media, and web pages. Inspired by the remarkable semantic understanding ability of Large Language Models (LLMs), there have been numerous attempts to integrate LLMs into TAGs. However, existing methods still struggle to generalize across diverse graphs and tasks, and their ability to capture transferable graph structural patterns remains limited. To address this, we introduce the GraspLLM, a framework that combines Graph structural comprehension with semantic understanding prowess of LLMs to enhance the cross-dataset and cross-task generalizability. Specifically, we represent node texts from different graphs in a unified semantic space with a frozen general embedding model, on top of which we perform motif-aware contrastive learning across multiple motif-induced adjacency matrices to extract dataset-agnostic structural information. Then, with our proposed optimal contextual subgraph, we extract the most contextually relevant subgraph for each target node and align these subgraphs to the token space of LLM via an alignment projector. Extensive experiments on TAG benchmark datasets spanning diverse domains reveal that GraspLLM consistently outperforms previous LLM-based methods for TAGs, especially in zero-shot scenarios, highlighting its strong generalizability across different datasets and tasks. Our code is available at https://github.com/Heinz217/GraspLLM.",
+      "authors": [
+        "Hengyi Feng",
+        "Zeang Sheng",
+        "Meiyi Qiang",
+        "Li Yang",
+        "Wentao Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-10T10:25:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.11898v2",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "enhances cross-graph cross-task generalization on text-attributed graphs with LLMs",
+      "llm_evidence_cn": "利用大语言模型提升文本属性图的跨图跨任务泛化能力",
+      "llm_evidence": "利用大语言模型提升文本属性图的跨图跨任务泛化能力",
+      "canonical_evidence": "利用大语言模型提升文本属性图的跨图跨任务泛化能力",
+      "llm_tldr_en": "GraspLLM combines graph structural patterns with LLM semantic understanding to enable zero-shot generalization across diverse text-attributed graphs and tasks, overcoming limited transferability.",
+      "llm_tldr_cn": "为突破图大模型在跨数据跨任务泛化上的局限，GraspLLM框架融合图结构理解与大语言模型的语义能力，通过在多个TAG基准上实验，验证了零样本泛化性能的显著提升，为通用图学习提供了新路径。",
+      "llm_tldr": "为突破图大模型在跨数据跨任务泛化上的局限，GraspLLM框架融合图结构理解与大语言模型的语义能力，通过在多个TAG基准上实验，验证了零样本泛化性能的显著提升，为通用图学习提供了新路径。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}
