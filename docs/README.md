@@ -6,32 +6,37 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-14
-- 运行时间：2026-06-14 21:03:46 UTC
+- 最新运行日期：2026-06-15
+- 运行时间：2026-06-15 22:53:34 UTC
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：5
 - 精读区：3
-- 速读区：0
+- 速读区：2
 
 ### 今日简报（AI）
-今日精读两篇满分论文，聚焦大模型与图的深度协同及机制增强推理在药物重定位中的突破。  
-图原生AI正重塑逻辑与知识的融合范式，而语义感知的因果路径则为老药新用提供了可解释的发现引擎。  
-想上手实践？不妨先从知识图谱结合大模型的推理链路入手，医疗场景是绝佳的验证场。
-- 详情：[/202606/14/README](/202606/14/README)
+今日聚焦LLM智能体工具依赖症与长文本记忆机制，精读发现更强模型反而更盲从图神经网络工具，结构感知超图记忆则让长文档问答精准溯源。  
+最值得关注：工具决策中“强大骨干模型更盲目”的反直觉结论，以及按需追踪的超图记忆如何解决长上下文信息丢失。  
+建议开发者近期重点审计智能体工具链的盲信风险，并将结构感知记忆融入长文档或对话系统设计。
+- 详情：[/202606/15/README](/202606/15/README)
 
 ### 精读区论文标签
-1. [LLMs+Graphs: Toward Graph-Native, Synergistic AI Systems](/202606/14/2606.11560v1-llmsgraphs-toward-graph-native-synergistic-ai-systems)  
+1. [When the Tool Decides: LLM Agents Defer Blindly to Graph Neural Network Tools, and Stronger Backbones Defer More](/202606/15/2606.14476v1-when-the-tool-decides-llm-agents-defer-blindly-to-graph-neural-network-tools-and-stronger-backbones-defer-more)  
    标签：评分：10.0/10、query:graph-llm
-   evidence：LLM与图计算结合增强检索推理
-2. [CAREPath: Semantic Context-Aware Reasoning Paths with Mechanism-Augmented Embeddings for Drug Repurposing](/202606/14/biorxiv-10-64898-2026-06-09-731247-v1-carepath-semantic-context-aware-reasoning-paths-with-mechanism-augmented-embeddings-for-drug-repurposing)  
-   标签：评分：10.0/10、query:graph-llm
-   evidence：知识图谱-LLM框架用于药物重定位推理
-3. [GraspLLM: Towards Zero-Shot Generalization on Text-Attributed Graphs with LLMs](/202606/14/2606.11898v2-graspllm-towards-zero-shot-generalization-on-text-attributed-graphs-with-llms)  
+   evidence：直接研究LLM智能体配备GNN工具，属于GNN与LLM的集成
+2. [Trace Only What You Need: Structure-Aware On-Demand Hypergraph Memory for Long-Document Question Answering](/202606/15/2606.10921v1-trace-only-what-you-need-structure-aware-on-demand-hypergraph-memory-for-long-document-question-answering)  
    标签：评分：9.0/10、query:graph-llm
-   evidence：利用大语言模型提升文本属性图的跨图跨任务泛化能力
+   evidence：利用结构感知的超图记忆增强LLM在长文档上的推理，将图表示与LLM集成用于结构化数据
+3. [Achieving Precise Text-To-Cypher Via Grounded Knowledge Graph Data Generation](/202606/15/2606.14325v1-achieving-precise-text-to-cypher-via-grounded-knowledge-graph-data-generation)  
+   标签：评分：9.0/10、query:graph-llm
+   evidence：使用合成数据微调LLM进行Text-to-Cypher以查询属性图
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [Knowledge Graph Enhanced Memory-Augmented Retrieval for Long Context Modeling](/202606/15/2606.14047v1-knowledge-graph-enhanced-memory-augmented-retrieval-for-long-context-modeling)  
+   标签：评分：7.0/10、query:graph-llm
+   evidence：从文本动态构建知识图谱并集成图结构嵌入以增强长上下文LLM检索
+2. [G-Long: Graph-Enhanced Memory Management for Efficient Long-Term Dialogue Agents](/202606/15/2606.13115v1-g-long-graph-enhanced-memory-management-for-efficient-long-term-dialogue-agents)  
+   标签：评分：6.0/10、query:graph-llm
+   evidence：提出用于LLM对话智能体的图增强记忆管理
 
 
 <div class="dpr-home-promo-card">

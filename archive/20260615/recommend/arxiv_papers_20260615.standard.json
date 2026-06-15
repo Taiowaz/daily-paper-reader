@@ -1,0 +1,212 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-15T22:49:45.847350+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.14476v1",
+      "source": "arxiv",
+      "title": "When the Tool Decides: LLM Agents Defer Blindly to Graph Neural Network Tools, and Stronger Backbones Defer More",
+      "abstract": "A growing line of work equips large language model (LLM) agents with graph neural networks (GNNs) as callable tools, assuming the agent exercises judgment over when and how much to rely on such a tool. We test this directly. We expose a frozen GNN to a ReAct-style LLM agent as an explicit tool and measure, on node classification over a text-attributed graph (ogbn-arxiv, replicated on WikiCS), whether the agent uses the tool or merely obeys it. We find the agent does not exercise judgment: its predictions agree with the raw GNN's 97.6-99.2% of the time (5 seeds), collapsing into a GNN parrot that adopts the tool's output wholesale and bypasses its own reasoning. Sweeping backbone capability (Qwen2.5 0.5B-7B), the deference is not a weak-model artifact: among models able to invoke the tool, agreement rises with capability (0.60 to 0.98 from 1.5B to 7B). Crucially, the cost of deference does not shrink as capability grows and grows where alternatives emerge: a per-node oracle over the available actions beats the parrot by 0.09-0.18 at 3B and 0.12-0.22 at 7B, roughly doubling at high homophily, because the parrot is pinned to the frozen GNN while the agent's alternatives improve; at 7B a simple neighbour-label tool overtakes the GNN at high homophily (0.81 vs 0.71) yet the agent still defers. A simple selective-invocation gate recovers about half of that high-homophily gap (0.71 to 0.83) but yields no net global gain, and held-out estimates bound the best achievable gate over standard test-time features to at most a third of the oracle headroom: reliable selective invocation looks limited by available information, not merely router design. Our results are a cautionary measurement: evaluations of agent+tool systems cannot assume the agent adds judgment on top of the tool, and selective invocation must be designed in rather than expected to emerge from scale.",
+      "authors": [
+        "Zhongyuan Wang",
+        "Pratyusha Vemuri"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-12T14:13:19+00:00",
+      "link": "https://arxiv.org/pdf/2606.14476v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Directly studies LLM agents equipped with GNN tools, a form of integrating GNNs with LLMs",
+      "llm_evidence_cn": "直接研究LLM智能体配备GNN工具，属于GNN与LLM的集成",
+      "llm_evidence": "直接研究LLM智能体配备GNN工具，属于GNN与LLM的集成",
+      "canonical_evidence": "直接研究LLM智能体配备GNN工具，属于GNN与LLM的集成",
+      "llm_tldr_en": "LLM agents with GNN tools blindly follow the GNN's predictions instead of exercising judgment, becoming GNN parrots.",
+      "llm_tldr_cn": "该研究揭示了当前LLM智能体在集成GNN工具时过度盲从的问题：智能体在节点分类任务中几乎完全复制GNN输出，丧失自身推理能力，即使模型能力增强也未能改善。这一发现对图神经网络与大语言模型的有效集成提出了关键挑战。",
+      "llm_tldr": "该研究揭示了当前LLM智能体在集成GNN工具时过度盲从的问题：智能体在节点分类任务中几乎完全复制GNN输出，丧失自身推理能力，即使模型能力增强也未能改善。这一发现对图神经网络与大语言模型的有效集成提出了关键挑战。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.10921v1",
+      "source": "arxiv",
+      "title": "Trace Only What You Need: Structure-Aware On-Demand Hypergraph Memory for Long-Document Question Answering",
+      "abstract": "Long-document question answering (QA) requires large language models (LLMs) to reason over evidence scattered across lengthy documents, where answers often depend on event order, section-level context, and cross-part evidence connections. Although retrieval-augmented generation (RAG) reduces the input context by retrieving relevant evidence, existing structured RAG methods still face three limitations: costly query-agnostic knowledge organization, insufficient use of original document structure, and no reuse of historical reasoning experience. To address these limitations, we propose DocTrace, a multi-agent RAG framework for long-document QA that supports query-triggered knowledge organization, document-structure-aware and experience-guided reasoning. DocTrace preserves document hierarchy with a lightweight document structural tree index, constructs agent-shared hypergraph-structured working memory on demand during reasoning, and stores successful reasoning plans in graph-structured experience memory for future reuse, enabling adaptive exploration across related long-document questions. Experiments on four long-document QA datasets show that DocTrace achieves the best performance on three datasets, surpassing the strongest baseline, ComoRAG, by up to 8.85% in F1 and 4.40% in EM, while reducing the overall computational cost by 53.32%",
+      "authors": [
+        "Xiangjun Zai",
+        "Xingyu Tan",
+        "Chen Chen",
+        "Xiaoyang Wang",
+        "Wenjie Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-09T14:29:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.10921v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Uses structure-aware hypergraph memory to enhance LLM reasoning over long documents, integrating graph representation with LLMs for structured data",
+      "llm_evidence_cn": "利用结构感知的超图记忆增强LLM在长文档上的推理，将图表示与LLM集成用于结构化数据",
+      "llm_evidence": "利用结构感知的超图记忆增强LLM在长文档上的推理，将图表示与LLM集成用于结构化数据",
+      "canonical_evidence": "利用结构感知的超图记忆增强LLM在长文档上的推理，将图表示与LLM集成用于结构化数据",
+      "llm_tldr_en": "DocTrace, a multi-agent RAG framework, leverages hypergraph memory triggered by queries to efficiently reason over document structure for long-document QA.",
+      "llm_tldr_cn": "DocTrace提出查询触发的超图记忆框架，通过多智能体协同，在长文档问答中利用文档结构构建超图，有效聚合跨部分证据，提升推理效率与准确性。",
+      "llm_tldr": "DocTrace提出查询触发的超图记忆框架，通过多智能体协同，在长文档问答中利用文档结构构建超图，有效聚合跨部分证据，提升推理效率与准确性。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14325v1",
+      "source": "arxiv",
+      "title": "Achieving Precise Text-To-Cypher Via Grounded Knowledge Graph Data Generation",
+      "abstract": "Property Graphs are rapidly being adopted as database frameworks for representing heterogeneous data sources. To enable precise access to the information contained in them we need conversational interfaces based on Text-To-Cypher (Text2Cypher) parsers. This paper presents an automatic synthetic data generation method that can be leveraged to fine-tune small LLMs for this task. We conduct experiments on all the major Text-To-Cypher benchmarks, demonstrating that with our synthetic data generation approach we can significantly increase the performance of small LLMs, allowing them to compete with much larger proprietary models. This means that in settings in which models must be locally deployed we can ensure data-sovereignty without sacrificing accuracy and without costly annotation campaigns.",
+      "authors": [
+        "Francesco Cazzaro",
+        "Jessica Lennon",
+        "Ariadna Quattoni"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-12T10:08:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.14325v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Uses LLMs fine-tuned on synthetic data for Text-to-Cypher to query property graphs",
+      "llm_evidence_cn": "使用合成数据微调LLM进行Text-to-Cypher以查询属性图",
+      "llm_evidence": "使用合成数据微调LLM进行Text-to-Cypher以查询属性图",
+      "canonical_evidence": "使用合成数据微调LLM进行Text-to-Cypher以查询属性图",
+      "llm_tldr_en": "This paper presents an automatic synthetic data generation method to fine-tune small LLMs for Text-to-Cypher tasks, enabling precise natural language access to property graph databases. Experiments show that fine-tuned small models can match the performance of large proprietary models, ensuring data sovereignty without accuracy loss.",
+      "llm_tldr_cn": "该论文针对属性图数据库的精确查询需求，提出一种基于知识图谱的自动合成数据生成方法，用于微调小型大语言模型执行文本到Cypher查询转换。在多个主流Text-to-Cypher基准上，微调后的小模型性能显著提升，可与更大规模的专有模型竞争，从而在需本地部署的场景下，既能保证数据主权，又不牺牲查询准确性，为资源受限环境下的图数据库查询提供了高效解决方案。",
+      "llm_tldr": "该论文针对属性图数据库的精确查询需求，提出一种基于知识图谱的自动合成数据生成方法，用于微调小型大语言模型执行文本到Cypher查询转换。在多个主流Text-to-Cypher基准上，微调后的小模型性能显著提升，可与更大规模的专有模型竞争，从而在需本地部署的场景下，既能保证数据主权，又不牺牲查询准确性，为资源受限环境下的图数据库查询提供了高效解决方案。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.14047v1",
+      "source": "arxiv",
+      "title": "Knowledge Graph Enhanced Memory-Augmented Retrieval for Long Context Modeling",
+      "abstract": "Long-context language modeling requires not only extending context windows but maintaining coherent understanding of entity states and relationships across thousands of tokens -- a challenge that semantic similarity alone cannot address. KGERMAR addresses this by constructing dynamic, context-specific knowledge graphs from input text during inference, enabling domain-adaptive retrieval that leverages both semantic similarity and explicit entity relationships. The framework performs real-time entity and relation extraction to build contextual knowledge graphs, then integrates graph-structural embeddings with textual semantics through a multi-component memory architecture. Three memory banks -- contextual, semantic, and structural -- are maintained with retrieval signals fused via learned weights to capture both surface-level semantics and deeper relational patterns. Evaluated on SlimPajama (84.7K training examples), WikiText-103 (4,358 examples), PG-19 (100 examples), and Proof-pile (46.3K examples), KGERMAR achieves up to 8.5\\% lower perplexity and 2--2.5x better memory efficiency than memory-augmented baselines across context lengths from 1K to 32K tokens, with superior in-context learning performance across five NLU tasks. The dynamic knowledge graph construction approach advances memory-augmented language modeling by enabling domain-specific knowledge representation that adapts to input contexts rather than relying on fixed knowledge bases.",
+      "authors": [
+        "Ghadir Alselwi",
+        "Basem Suleiman",
+        "Hao Xue",
+        "Shoaib Jameel",
+        "Hakim Hacid",
+        "Flora D. Salim",
+        "Imran Razzak"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-12T02:48:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.14047v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "constructs dynamic knowledge graphs from text and integrates graph-structural embeddings to augment long-context LLM retrieval",
+      "llm_evidence_cn": "从文本动态构建知识图谱并集成图结构嵌入以增强长上下文LLM检索",
+      "llm_evidence": "从文本动态构建知识图谱并集成图结构嵌入以增强长上下文LLM检索",
+      "canonical_evidence": "从文本动态构建知识图谱并集成图结构嵌入以增强长上下文LLM检索",
+      "llm_tldr_en": "KGERMAR dynamically builds context-specific knowledge graphs during inference and integrates graph-structural memory to improve entity-aware long-context modeling in LLMs.",
+      "llm_tldr_cn": "针对长上下文语言建模中实体语义理解不足的问题，KGERMAR在推理时动态构建上下文知识图谱，通过结构、语义、上下文三记忆库融合图嵌入与文本语义，提升LLM的实体感知检索与连贯性。实验表明，该方法有效改善了长文档理解中的实体状态跟踪。",
+      "llm_tldr": "针对长上下文语言建模中实体语义理解不足的问题，KGERMAR在推理时动态构建上下文知识图谱，通过结构、语义、上下文三记忆库融合图嵌入与文本语义，提升LLM的实体感知检索与连贯性。实验表明，该方法有效改善了长文档理解中的实体状态跟踪。",
+      "llm_tags": [
+        "query:graph-llm:composite"
+      ],
+      "matched_query_tag": "query:graph-llm:composite",
+      "matched_query_text": "Papers central to 图大型语言模型, especially work that connects or combines: integrating graph neural networks with large language models; using large language models for graph-structured data; graph reasoning capabilities of large language models; graph representation learning combined with large language models; graph machine learning techniques for large language models; graph-enhanced training of large language models; How to integrate graph neural networks with large language models?; Training graph enhanced large language models.",
+      "matched_requirement_id": "req-composite-graph-llm",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.13115v1",
+      "source": "arxiv",
+      "title": "G-Long: Graph-Enhanced Memory Management for Efficient Long-Term Dialogue Agents",
+      "abstract": "While Large Language Models (LLMs) have advanced open-domain dialogue systems, maintaining long-term consistency remains a challenge due to inherent limitations in long-context reasoning and the inefficiency of processing extensive raw text. Existing approaches typically rely on either unstructured memory storage, which is prone to information loss, or computationally expensive LLMs that incur high latency. To address these limitations, we propose G-Long, a graph-enhanced framework that utilizes a fine-tuned small Language Model (sLM) for structured triplet extraction and associative retrieval, significantly reducing operational costs. Furthermore, we introduce the novel attention-aware importance scoring mechanism that leverages the intrinsic cross-attention signals of a T5 summarizer to identify salient memories. Extensive experiments across diverse benchmarks demonstrate that G-Long achieves state-of-the-art performance in both response generation and memory retrieval, yielding performance gains of up to 9.8% in response quality on MSC and 40.8% in retrieval recall on LME, while significantly minimizing computational overhead.",
+      "authors": [
+        "Minjun Choi",
+        "Yoonjin Jang",
+        "Sangwon Youn",
+        "Youngjoong Ko"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-11T09:42:13+00:00",
+      "link": "https://arxiv.org/pdf/2606.13115v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Proposes graph-enhanced memory management for LLM dialogue agents",
+      "llm_evidence_cn": "提出用于LLM对话智能体的图增强记忆管理",
+      "llm_evidence": "提出用于LLM对话智能体的图增强记忆管理",
+      "canonical_evidence": "提出用于LLM对话智能体的图增强记忆管理",
+      "llm_tldr_en": "G-Long uses a fine-tuned small LM to extract structured triplets and build a graph memory for efficient and associative retrieval, reducing operational cost and improving long-term dialogue consistency.",
+      "llm_tldr_cn": "针对大语言模型在长程对话中一致性维持的挑战，本文提出G-Long框架，利用微调的小语言模型进行结构化三元组抽取与关联检索，引入基于注意力的重要性评分机制，有效降低计算开销并提升长期记忆效率。实验表明，该方法在保持对话连贯性的同时显著减少了资源消耗，为图结构增强的对话智能体提供了新思路。",
+      "llm_tldr": "针对大语言模型在长程对话中一致性维持的挑战，本文提出G-Long框架，利用微调的小语言模型进行结构化三元组抽取与关联检索，引入基于注意力的重要性评分机制，有效降低计算开销并提升长期记忆效率。实验表明，该方法在保持对话连贯性的同时显著减少了资源消耗，为图结构增强的对话智能体提供了新思路。",
+      "llm_tags": [
+        "query:graph-llm:composite"
+      ],
+      "matched_query_tag": "query:graph-llm:composite",
+      "matched_query_text": "Papers central to 图大型语言模型, especially work that connects or combines: integrating graph neural networks with large language models; using large language models for graph-structured data; graph reasoning capabilities of large language models; graph representation learning combined with large language models; graph machine learning techniques for large language models; graph-enhanced training of large language models; How to integrate graph neural networks with large language models?; Training graph enhanced large language models.",
+      "matched_requirement_id": "req-composite-graph-llm",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
