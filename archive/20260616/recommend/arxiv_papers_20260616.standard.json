@@ -1,0 +1,260 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-16T21:59:40.499885+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.15633v1",
+      "source": "arxiv",
+      "title": "Formalizing and Mitigating Structural Distortion in LLM Attention for Zero-Shot Graph Reasoning",
+      "abstract": "Large Language Models (LLMs) have shown promise for reasoning over Text-Attributed Graphs (TAGs). However, applying LLMs to graphs requires linearizing their structure into sequences, introducing distortion rooted in the graph bandwidth problem. While this distortion has been shown to degrade performance, it is often attributed to prompt design or model scale, leaving the underlying mechanism unclear. In this work, we show \\textit{how} rotary positional embeddings turn graph linearization into bandwidth-dependent attention decay, suppressing attention between graph-adjacent nodes that are forced far apart in the serialized sequence. This shifts the focus of LLM-based graph reasoning from prompt engineering and scaling toward correcting attention misalignment. Motivated by this analysis, we propose \\textbf{G}raph-\\textbf{a}ligned \\textbf{L}anguage \\textbf{A}ttention (\\textbf{GaLA}), a lightweight, inference-time modification for LLMs. GaLA biases attention toward graph-adjacent nodes while preserving the LLM's sequential inductive biases. Across TAG benchmarks, GaLA improves performance with negligible overhead, demonstrating that distortion is a correctable bottleneck in LLM-based graph reasoning.",
+      "authors": [
+        "Donald Loveland",
+        "Puja Trivedi",
+        "Ari Weinstein",
+        "Edward W Huang",
+        "Danai Koutra"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-14T06:50:28+00:00",
+      "link": "https://arxiv.org/pdf/2606.15633v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Analyzes and mitigates attention distortion in LLMs for zero-shot graph reasoning",
+      "llm_evidence_cn": "分析并缓解LLM在零样本图推理中的注意力扭曲问题",
+      "llm_evidence": "分析并缓解LLM在零样本图推理中的注意力扭曲问题",
+      "canonical_evidence": "分析并缓解LLM在零样本图推理中的注意力扭曲问题",
+      "llm_tldr_en": "This paper identifies that rotary positional embeddings in LLMs cause bandwidth-dependent attention decay when linearizing graphs for reasoning, and proposes targeted interventions to mitigate structural distortion, improving zero-shot graph reasoning performance.",
+      "llm_tldr_cn": "本文专注于使用大型语言模型进行零样本图推理时面临的序列化结构扭曲问题。研究发现，旋转位置编码导致注意力随图带宽衰减，严重抑制了图中相邻但序列中远离的节点间的信息交互。为此，作者形式化了这一扭曲机制，并提出干预措施来校正注意力分布，恢复正确的图拓扑感知能力。在多个文本属性图数据集上的实验表明，该方法显著提高了推理性能，并揭示了模型注意力机制本身的结构适应性比单纯的提示工程或扩大规模更为关键。这项工作为LLM在图数据上的应用奠定了更坚实的理论基础，并指明了新的优化方向。",
+      "llm_tldr": "本文专注于使用大型语言模型进行零样本图推理时面临的序列化结构扭曲问题。研究发现，旋转位置编码导致注意力随图带宽衰减，严重抑制了图中相邻但序列中远离的节点间的信息交互。为此，作者形式化了这一扭曲机制，并提出干预措施来校正注意力分布，恢复正确的图拓扑感知能力。在多个文本属性图数据集上的实验表明，该方法显著提高了推理性能，并揭示了模型注意力机制本身的结构适应性比单纯的提示工程或扩大规模更为关键。这项工作为LLM在图数据上的应用奠定了更坚实的理论基础，并指明了新的优化方向。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14047v1",
+      "source": "arxiv",
+      "title": "Knowledge Graph Enhanced Memory-Augmented Retrieval for Long Context Modeling",
+      "abstract": "Long-context language modeling requires not only extending context windows but maintaining coherent understanding of entity states and relationships across thousands of tokens -- a challenge that semantic similarity alone cannot address. KGERMAR addresses this by constructing dynamic, context-specific knowledge graphs from input text during inference, enabling domain-adaptive retrieval that leverages both semantic similarity and explicit entity relationships. The framework performs real-time entity and relation extraction to build contextual knowledge graphs, then integrates graph-structural embeddings with textual semantics through a multi-component memory architecture. Three memory banks -- contextual, semantic, and structural -- are maintained with retrieval signals fused via learned weights to capture both surface-level semantics and deeper relational patterns. Evaluated on SlimPajama (84.7K training examples), WikiText-103 (4,358 examples), PG-19 (100 examples), and Proof-pile (46.3K examples), KGERMAR achieves up to 8.5\\% lower perplexity and 2--2.5x better memory efficiency than memory-augmented baselines across context lengths from 1K to 32K tokens, with superior in-context learning performance across five NLU tasks. The dynamic knowledge graph construction approach advances memory-augmented language modeling by enabling domain-specific knowledge representation that adapts to input contexts rather than relying on fixed knowledge bases.",
+      "authors": [
+        "Ghadir Alselwi",
+        "Basem Suleiman",
+        "Hao Xue",
+        "Shoaib Jameel",
+        "Hakim Hacid",
+        "Flora D. Salim",
+        "Imran Razzak"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-12T02:48:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.14047v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Constructs dynamic knowledge graphs from text and integrates graph-structural embeddings with LLM memory for long-context reasoning.",
+      "llm_evidence_cn": "从文本构建动态知识图谱，将图结构嵌入与大语言模型记忆结合，提升长上下文推理能力。",
+      "llm_evidence": "从文本构建动态知识图谱，将图结构嵌入与大语言模型记忆结合，提升长上下文推理能力。",
+      "canonical_evidence": "从文本构建动态知识图谱，将图结构嵌入与大语言模型记忆结合，提升长上下文推理能力。",
+      "llm_tldr_en": "KGERMAR constructs contextual knowledge graphs during inference and combines graph embeddings with semantic memory to enhance long-context language modeling, outperforming retrieval-only approaches.",
+      "llm_tldr_cn": "该论文针对长上下文语言模型在实体状态和关系理解上的不足，提出KGERMAR框架。该框架在推理时动态构建知识图谱，提取实体与关系，并通过多组件记忆架构将图结构嵌入与文本语义融合。三个记忆库——上下文、语义和结构——协同工作，提升了模型对长文本中实体关联的把握。实验表明，该方法优于仅依赖语义相似度的检索方案，显著改善了长上下文理解能力。主要贡献在于展示了如何将图表示学习与大语言模型有效结合，以增强推理过程。",
+      "llm_tldr": "该论文针对长上下文语言模型在实体状态和关系理解上的不足，提出KGERMAR框架。该框架在推理时动态构建知识图谱，提取实体与关系，并通过多组件记忆架构将图结构嵌入与文本语义融合。三个记忆库——上下文、语义和结构——协同工作，提升了模型对长文本中实体关联的把握。实验表明，该方法优于仅依赖语义相似度的检索方案，显著改善了长上下文理解能力。主要贡献在于展示了如何将图表示学习与大语言模型有效结合，以增强推理过程。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph representation learning combined with large language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15277v1",
+      "source": "arxiv",
+      "title": "Guiding Federated Graph Recommendation with LLM-encoded knowledge",
+      "abstract": "Graph-based recommender systems are highly effective at extracting collaborative signals from user--item interactions, and federated learning (FL) allows these models to be trained while preserving user privacy. However, aggregating graph representations across distributed, non-IID clients remains a challenge; structural embeddings learned locally often misalign, and naive averaging fails to capture meaningful cross-client relationships. Most existing federated graph methods rely exclusively on structural aggregation, neglecting the rich, global semantic context available in large language models (LLMs). In this paper, we propose a novel framework that uses LLM-encoded knowledge to guide federated graph recommendation. Specifically, clients learn structural representations from local graphs while simultaneously summarizing their typical interaction patterns into compact semantic vectors via a frozen LLM. The central server then uses these LLM-encoded semantic signals to discover related preference patterns across clients, guiding the selective aggregation of their structural representations. This enables semantically informed cross-client collaboration without exposing raw data. Extensive experiments on standard benchmarks show that guiding structural alignment with LLM-encoded knowledge consistently improves recommendation accuracy over existing federated graph baselines.",
+      "authors": [
+        "Thi Minh Chau Nguyen",
+        "Hien Trang Nguyen",
+        "Duc Anh Nguyen",
+        "Van Ho-Long",
+        "Thanh Trung Huynh",
+        "Zhao Ren"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.AI",
+        "cs.DB",
+        "cs.ET",
+        "cs.LG"
+      ],
+      "published": "2026-06-13T12:30:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.15277v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses LLM-encoded knowledge to guide federated graph recommendation, integrating GNNs with LLMs",
+      "llm_evidence_cn": "利用LLM编码知识引导联邦图推荐训练，将GNN与LLM结合",
+      "llm_evidence": "利用LLM编码知识引导联邦图推荐训练，将GNN与LLM结合",
+      "canonical_evidence": "利用LLM编码知识引导联邦图推荐训练，将GNN与LLM结合",
+      "llm_tldr_en": "This paper addresses misaligned local embeddings in federated graph recommendation by using LLM-encoded semantic knowledge to guide aggregation, improving accuracy without compromising privacy.",
+      "llm_tldr_cn": "联邦图推荐中，客户端图嵌入对齐困难，简单平均无法捕捉跨客户端关系。本文提出利用LLM编码的全局语义知识引导联邦图表示学习，使客户端学习结构嵌入并借助LLM知识对齐。实验表明该方法有效提升推荐性能，增强跨客户端图嵌入一致性。为联邦图学习引入LLM知识，解决数据异构下的图表示聚合难题，保护隐私同时提升准确度。",
+      "llm_tldr": "联邦图推荐中，客户端图嵌入对齐困难，简单平均无法捕捉跨客户端关系。本文提出利用LLM编码的全局语义知识引导联邦图表示学习，使客户端学习结构嵌入并借助LLM知识对齐。实验表明该方法有效提升推荐性能，增强跨客户端图嵌入一致性。为联邦图学习引入LLM知识，解决数据异构下的图表示聚合难题，保护隐私同时提升准确度。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15778v1",
+      "source": "arxiv",
+      "title": "DYNA : Dynamic Episodic Memory Networks for Augmenting Large Language Models with Temporal Knowledge Graphs in Continuous Learning",
+      "abstract": "Large Language Models (LLMs) struggle to incorporate new knowledge without forgetting or costly retraining. We propose DYNA, a lightweight framework that augments a frozen LLM with a temporal knowledge graph where events are nodes and temporal relations are directed, timestamped edges. The graph serves as an external, updatable memory. At query time, DYNA retrieves relevant nodes via random walks and centrality measures, then augments the LLM's response. Evaluated on three temporal recall tasks, DYNA reduces catastrophic forgetting by ~7% compared to fine-tuning and improves temporal ordering by ~5% over standard RAG. Higher graph clustering coefficients correlate with better retrieval, showing that graph structure matters. Contributions: (1) episodic memory as temporal KG, (2) retraining-free LLM augmentation, (3) graph properties as predictors of retrieval performance.",
+      "authors": [
+        "Ali Sarabadani",
+        "Mahtab Tajvidiyan"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG",
+        "cs.SI"
+      ],
+      "published": "2026-06-14T12:27:26+00:00",
+      "link": "https://arxiv.org/pdf/2606.15778v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Augments LLMs with temporal knowledge graph retrieval for continuous learning",
+      "llm_evidence_cn": "使用时态知识图谱检索增强大语言模型的持续学习",
+      "llm_evidence": "使用时态知识图谱检索增强大语言模型的持续学习",
+      "canonical_evidence": "使用时态知识图谱检索增强大语言模型的持续学习",
+      "llm_tldr_en": "DYNA augments frozen LLMs with a temporal knowledge graph as updatable memory, retrieving context via random walks and centrality; it reduces forgetting by ~7% over fine-tuning and improves temporal ordering by ~5% over RAG.",
+      "llm_tldr_cn": "大型语言模型难以在不遗忘或昂贵重训练下融入新知识。DYNA提出轻量框架，冻结大语言模型，使用时态知识图谱作为外部动态记忆，查询时通过随机游走和中心度检索相关事件节点增强响应。在三次时序召回任务上，相比微调减少约7%灾难性遗忘，比标准RAG提升约5%的时序排序，且较高图谱聚类系数与更好检索相关，表明图谱结构影响性能。该方法为大语言模型持续学习提供了有效的图谱增强途径。",
+      "llm_tldr": "大型语言模型难以在不遗忘或昂贵重训练下融入新知识。DYNA提出轻量框架，冻结大语言模型，使用时态知识图谱作为外部动态记忆，查询时通过随机游走和中心度检索相关事件节点增强响应。在三次时序召回任务上，相比微调减少约7%灾难性遗忘，比标准RAG提升约5%的时序排序，且较高图谱聚类系数与更好检索相关，表明图谱结构影响性能。该方法为大语言模型持续学习提供了有效的图谱增强途径。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.16328v1",
+      "source": "arxiv",
+      "title": "AdaSTORM: Scaling LLM Reasoning on Dynamic Graphs via Adaptive Spatio-Temporal Multi-Agent Collaboration",
+      "abstract": "Large Language Models (LLMs) demonstrate remarkable potential in dynamic graph reasoning, but suffer from a scaling bottleneck: current models can only handle graphs with tens of nodes, constrained by exponential reasoning overhead and finite context windows. While multi-agent systems (MAS) offer collective reasoning and topology-aware orchestration, capabilities naturally suited for graph-structured tasks, their application to dynamic graphs remains unexplored. This paper presents Scaling LLM Reasoning on Dynamic Graphs via Adaptive Spatio-Temporal Multi-Agent Collaboration (AdaSTORM), a framework that reformulates large-scale dynamic graph reasoning into two stages: (i) Adaptive Partitioning, partitioning large-scale dynamic graphs into subregions that match the model's reasoning capacity while minimizing inference cost; and (ii) Collaborative Reasoning, aligning graph partition topologies with a spatio-temporal decoupled multi-agent architecture. AdaSTORM is the first multi-agent framework tailored for dynamic graph reasoning. Extensive experiments show that AdaSTORM successfully breaks through the scaling bottleneck, scaling reasoning to thousand-node graphs with over 90% accuracy across several large-scale dynamic graph settings without external tools, significantly outperforms seven competitive baselines. Furthermore, it achieves state-of-the-art accuracy on existing benchmarks and generalizes robustly to real-world datasets. The source code is available at: https://github.com/irisorchid107/AdaSTORM/.",
+      "authors": [
+        "Bing Hao",
+        "Ruijie Wang",
+        "Haodong Qian",
+        "Yunlong Chu",
+        "Yuhang Liu",
+        "Yumeng Lin",
+        "Minglai Shao",
+        "Jianxin Li"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-15T07:32:44+00:00",
+      "link": "https://arxiv.org/pdf/2606.16328v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "scales LLM reasoning on dynamic graphs via adaptive spatio-temporal multi-agent collaboration",
+      "llm_evidence_cn": "通过自适应时空多智能体协作扩展LLM在动态图上的推理能力",
+      "llm_evidence": "通过自适应时空多智能体协作扩展LLM在动态图上的推理能力",
+      "canonical_evidence": "通过自适应时空多智能体协作扩展LLM在动态图上的推理能力",
+      "llm_tldr_en": "AdaSTORM partitions large dynamic graphs and uses multi-agent LLM collaboration to scale reasoning beyond context window limits, enabling processing of graphs with many nodes.",
+      "llm_tldr_cn": "现有LLM在动态图推理中受限于上下文窗口，仅能处理数十节点。本文提出AdaSTORM框架，通过自适应图划分将大图分解为子图，并利用多智能体系统协作推理，从而突破规模瓶颈。实验表明该方法能有效扩展动态图推理规模，为LLM在图任务上的应用提供可扩展方案。",
+      "llm_tldr": "现有LLM在动态图推理中受限于上下文窗口，仅能处理数十节点。本文提出AdaSTORM框架，通过自适应图划分将大图分解为子图，并利用多智能体系统协作推理，从而突破规模瓶颈。实验表明该方法能有效扩展动态图推理规模，为LLM在图任务上的应用提供可扩展方案。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.13115v1",
+      "source": "arxiv",
+      "title": "G-Long: Graph-Enhanced Memory Management for Efficient Long-Term Dialogue Agents",
+      "abstract": "While Large Language Models (LLMs) have advanced open-domain dialogue systems, maintaining long-term consistency remains a challenge due to inherent limitations in long-context reasoning and the inefficiency of processing extensive raw text. Existing approaches typically rely on either unstructured memory storage, which is prone to information loss, or computationally expensive LLMs that incur high latency. To address these limitations, we propose G-Long, a graph-enhanced framework that utilizes a fine-tuned small Language Model (sLM) for structured triplet extraction and associative retrieval, significantly reducing operational costs. Furthermore, we introduce the novel attention-aware importance scoring mechanism that leverages the intrinsic cross-attention signals of a T5 summarizer to identify salient memories. Extensive experiments across diverse benchmarks demonstrate that G-Long achieves state-of-the-art performance in both response generation and memory retrieval, yielding performance gains of up to 9.8% in response quality on MSC and 40.8% in retrieval recall on LME, while significantly minimizing computational overhead.",
+      "authors": [
+        "Minjun Choi",
+        "Yoonjin Jang",
+        "Sangwon Youn",
+        "Youngjoong Ko"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-11T09:42:13+00:00",
+      "link": "https://arxiv.org/pdf/2606.13115v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "graph-enhanced memory management uses structured triplet graphs and retrieval",
+      "llm_evidence_cn": "图增强记忆管理利用结构化三元组图与检索",
+      "llm_evidence": "图增强记忆管理利用结构化三元组图与检索",
+      "canonical_evidence": "图增强记忆管理利用结构化三元组图与检索",
+      "llm_tldr_en": "Proposes G-Long, a graph-enhanced memory framework for efficient long-term dialogue agents, using a fine-tuned small LM for structured triplet extraction and associative retrieval with a novel attention-aware importance scoring mechanism to reduce computational costs and improve consistency.",
+      "llm_tldr_cn": "针对长期对话系统中长上下文推理低效和信息丢失问题，提出图增强框架G-Long。该框架利用微调小语言模型从对话历史中抽取结构化知识三元组构建图记忆，并通过注意力感知的重要性评分进行关联检索。实验表明，该方法在降低计算开销的同时，有效提升了对话的长期一致性。G-Long为在资源受限场景下实现持久、连贯的对话代理提供了一条新路径。",
+      "llm_tldr": "针对长期对话系统中长上下文推理低效和信息丢失问题，提出图增强框架G-Long。该框架利用微调小语言模型从对话历史中抽取结构化知识三元组构建图记忆，并通过注意力感知的重要性评分进行关联检索。实验表明，该方法在降低计算开销的同时，有效提升了对话的长期一致性。G-Long为在资源受限场景下实现持久、连贯的对话代理提供了一条新路径。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph machine learning techniques for large language models",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

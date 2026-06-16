@@ -6,37 +6,40 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-15
-- 运行时间：2026-06-15 22:53:34 UTC
+- 最新运行日期：2026-06-16
+- 运行时间：2026-06-16 22:03:55 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：3
-- 速读区：2
+- 本次总论文数：6
+- 精读区：5
+- 速读区：1
 
 ### 今日简报（AI）
-今日聚焦LLM智能体工具依赖症与长文本记忆机制，精读发现更强模型反而更盲从图神经网络工具，结构感知超图记忆则让长文档问答精准溯源。  
-最值得关注：工具决策中“强大骨干模型更盲目”的反直觉结论，以及按需追踪的超图记忆如何解决长上下文信息丢失。  
-建议开发者近期重点审计智能体工具链的盲信风险，并将结构感知记忆融入长文档或对话系统设计。
-- 详情：[/202606/15/README](/202606/15/README)
+今日精读6篇前沿论文，聚焦大模型注意力机制的结构性缺陷与知识图谱驱动的记忆增强检索。  
+最值得关注：LLM零样本图推理中存在被忽略的结构失真（满分论文），以及用知识图谱加强长上下文记忆的检索新范式。  
+建议读者从“图结构如何修正注意力失真”切入，理解提升模型推理可靠性的底层思路。
+- 详情：[/202606/16/README](/202606/16/README)
 
 ### 精读区论文标签
-1. [When the Tool Decides: LLM Agents Defer Blindly to Graph Neural Network Tools, and Stronger Backbones Defer More](/202606/15/2606.14476v1-when-the-tool-decides-llm-agents-defer-blindly-to-graph-neural-network-tools-and-stronger-backbones-defer-more)  
+1. [Formalizing and Mitigating Structural Distortion in LLM Attention for Zero-Shot Graph Reasoning](/202606/16/2606.15633v1-formalizing-and-mitigating-structural-distortion-in-llm-attention-for-zero-shot-graph-reasoning)  
    标签：评分：10.0/10、query:graph-llm
-   evidence：直接研究LLM智能体配备GNN工具，属于GNN与LLM的集成
-2. [Trace Only What You Need: Structure-Aware On-Demand Hypergraph Memory for Long-Document Question Answering](/202606/15/2606.10921v1-trace-only-what-you-need-structure-aware-on-demand-hypergraph-memory-for-long-document-question-answering)  
+   evidence：分析并缓解LLM在零样本图推理中的注意力扭曲问题
+2. [Knowledge Graph Enhanced Memory-Augmented Retrieval for Long Context Modeling](/202606/16/2606.14047v1-knowledge-graph-enhanced-memory-augmented-retrieval-for-long-context-modeling)  
    标签：评分：9.0/10、query:graph-llm
-   evidence：利用结构感知的超图记忆增强LLM在长文档上的推理，将图表示与LLM集成用于结构化数据
-3. [Achieving Precise Text-To-Cypher Via Grounded Knowledge Graph Data Generation](/202606/15/2606.14325v1-achieving-precise-text-to-cypher-via-grounded-knowledge-graph-data-generation)  
+   evidence：从文本构建动态知识图谱，将图结构嵌入与大语言模型记忆结合，提升长上下文推理能力。
+3. [Guiding Federated Graph Recommendation with LLM-encoded knowledge](/202606/16/2606.15277v1-guiding-federated-graph-recommendation-with-llm-encoded-knowledge)  
    标签：评分：9.0/10、query:graph-llm
-   evidence：使用合成数据微调LLM进行Text-to-Cypher以查询属性图
+   evidence：利用LLM编码知识引导联邦图推荐训练，将GNN与LLM结合
+4. [DYNA : Dynamic Episodic Memory Networks for Augmenting Large Language Models with Temporal Knowledge Graphs in Continuous Learning](/202606/16/2606.15778v1-dyna--dynamic-episodic-memory-networks-for-augmenting-large-language-models-with-temporal-knowledge-graphs-in-continuous-learning)  
+   标签：评分：9.0/10、query:graph-llm
+   evidence：使用时态知识图谱检索增强大语言模型的持续学习
+5. [AdaSTORM: Scaling LLM Reasoning on Dynamic Graphs via Adaptive Spatio-Temporal Multi-Agent Collaboration](/202606/16/2606.16328v1-adastorm-scaling-llm-reasoning-on-dynamic-graphs-via-adaptive-spatio-temporal-multi-agent-collaboration)  
+   标签：评分：9.0/10、query:graph-llm
+   evidence：通过自适应时空多智能体协作扩展LLM在动态图上的推理能力
 
 ### 速读区论文标签
-1. [Knowledge Graph Enhanced Memory-Augmented Retrieval for Long Context Modeling](/202606/15/2606.14047v1-knowledge-graph-enhanced-memory-augmented-retrieval-for-long-context-modeling)  
-   标签：评分：7.0/10、query:graph-llm
-   evidence：从文本动态构建知识图谱并集成图结构嵌入以增强长上下文LLM检索
-2. [G-Long: Graph-Enhanced Memory Management for Efficient Long-Term Dialogue Agents](/202606/15/2606.13115v1-g-long-graph-enhanced-memory-management-for-efficient-long-term-dialogue-agents)  
+1. [G-Long: Graph-Enhanced Memory Management for Efficient Long-Term Dialogue Agents](/202606/16/2606.13115v1-g-long-graph-enhanced-memory-management-for-efficient-long-term-dialogue-agents)  
    标签：评分：6.0/10、query:graph-llm
-   evidence：提出用于LLM对话智能体的图增强记忆管理
+   evidence：图增强记忆管理利用结构化三元组图与检索
 
 
 <div class="dpr-home-promo-card">
