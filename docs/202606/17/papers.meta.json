@@ -1,0 +1,54 @@
+{
+  "label": "2026-06-17",
+  "date": "2026-06-17",
+  "generated_at": "2026-06-17T21:20:20",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202606/17/biorxiv-10-64898-2026-06-09-731113-v1-research-process-graph-llm-driven-extraction-and-hierarchical-organization-of-research-logic",
+      "section": "deep",
+      "title_en": "Research Process Graph: LLM-Driven Extraction and Hierarchical Organization of Research Logic",
+      "authors": "Yang, J., Itharajula, M., Mutwil, M.",
+      "date": "2026-06-10",
+      "pdf": "https://www.biorxiv.org/content/10.64898/2026.06.09.731113v1.full.pdf",
+      "score": "10.0",
+      "evidence": "利用LLM流水线从科学文章中提取研究逻辑图（节点和边）",
+      "tldr": "植物生物学论文核心研究逻辑（问题、方法、发现）深埋文本，难以系统分析。我们采用LLM流水线，将《植物细胞》20年2633篇文章转换为研究过程图（RPG），提取Q、M、F节点及边。恢复了超11万节点和12.6万条有向链，精度>98%，并归纳层级类别，揭示七种论文配方、方法核心稳定及引用关键因素。公开的图谱数据库使文献成为可查询资源，助力研究逻辑梳理。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Plant biology now publishes thousands of experimental research articles each year, but their core research logic, namely what questions are being asked, with what methods, and what is being found, remains locked inside free text and invisible to systematic analysis. Here we present a structured, 20-year atlas of The Plant Cell in which every paper is converted into a typed, directed Research Process Graph (RPG) of Question (Q), Method (M) and Finding (F) nodes connected by Q[-&gt;]M and M[-&gt;]F edges. A benchmarked large language model pipeline applied to 2,633 Plant Cell research articles published 2005-2026 recovered >110,000 Q/M/F nodes and >126,000 directed Q[-&gt;]M[-&gt;]F chains with>98% precision. A second LLM pass generalises each node into a paper-independent canonical form and assigns it to one of 10 top-level (L1) and [~]90 sub-level (L2) categories for each node type, producing the first comprehensive map of plant-biology research logic at the resolution of individual research questions. The atlas reveals that Plant Cell papers fall into seven canonical paper recipes with characteristic Q[-&gt;]M[-&gt;]F sub-structures, that peripheral experimental techniques have largely turned over while a stable methodological core persisted, and that the strongest correlate of per-PI citation impact is methodological breadth, not productivity or topical breadth. We release the atlas as a public, browsable database with five complementary interfaces: paper views, an LLM-powered research assistant, expert profiles, a taxonomy browser, and a method explorer. The database, available at https://rpg.connectome.tools/, turns the literature into a queryable community resource.",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/17/2606.18075v1-a-unified-framework-for-context-aware-and-relation-aware-graph-retrieval-augmented-generation",
+      "section": "deep",
+      "title_en": "A Unified Framework for Context-Aware and Relation-Aware Graph Retrieval-Augmented Generation",
+      "authors": "Haoyang Zhong, Yifei Sun, Antong Zhang, Chunping Wang, Lei Chen, Yang Yang",
+      "date": "2026-06-16",
+      "pdf": "https://arxiv.org/pdf/2606.18075v1",
+      "score": "9.0",
+      "evidence": "提出分层图RAG框架，融合上下文和关系进行知识整合，用图结构化检索增强LLM生成。",
+      "tldr": "现有图检索增强生成方法多依赖实体或文本块的独立检索，上下文与关系信息未能融合，导致推理时缺乏综合理解。本文提出统一框架HyGRAG，通过构建块与实体节点交织的层次混合图，并迭代聚类利用大语言模型生成跨粒度的上下文与关系融合摘要。进一步设计感知检索机制，可跨越不同抽象层次并借助社区成员扩展，以实现对综合知识的访问。此外，采用基于附加的局部更新策略，仅需重新生成受影响的摘要，支持动态语料库高效更新。在多跳推理任务上，HyGRAG将平均准确率提升9.7%，并保持合理效率。该框架为统一融合上下文与关系的图增强生成及动态知识管理开辟了新途径。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Retrieval-Augmented Generation (RAG) has emerged as a paradigm for enhancing large language models (LLMs) with external knowledge, yet existing graph-based methods face a fundamental limitation: entity-centric and chunk-centric approaches operate on representations anchored to original text without true knowledge fusion. While entity-centric methods connect logically related content and chunk-centric methods preserve context, both retrieve information separately through similarity search, missing emergent understanding from their synthesis. In this paper, we propose HyGRAG, a hierarchical graph RAG framework that transcends source documents by addressing three core challenges: constructing summaries that genuinely integrate contextual and relational information, leveraging these synthesized representations to access emergent knowledge during retrieval, and efficiently updating hierarchical structures for dynamic corpora. Specifically, we design hierarchical index structures over hybrid graphs with both chunk and entity nodes, then iteratively cluster them and generate LLM-based summaries. Then, we design context and relation-aware retrieval that searches across all abstraction levels while expanding through community membership. Moreover, we enable dynamic knowledge update through attachment-based algorithms with only local re-summarization. Experimental results show that HyGRAG improves the average accuracy of multi-hop reasoning tasks by 9.7%, while maintaining reasonable efficiency.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/17/2606.17856v1-flowrag-synergizing-explicit-reasoning-via-frequency-aware-multi-granularity-graph-flow",
+      "section": "quick",
+      "title_en": "FlowRAG: Synergizing Explicit Reasoning via Frequency-Aware Multi-Granularity Graph Flow",
+      "authors": "Bihao Zhan, Zongsheng Cao, Jie Zhou, Bo Zhang, Liang He",
+      "date": "2026-06-16",
+      "pdf": "https://arxiv.org/pdf/2606.17856v1",
+      "score": "7.0",
+      "evidence": "提出GraphRAG框架，利用异构图提升大语言模型的检索与多跳推理",
+      "tldr": "现有基于图的检索增强生成方法依赖实体图隐式传播语义，在抽象查询时检索不充分，多跳推理易受噪声干扰而失败。FlowRAG构建包含段落、摘要、句子、实体的四层异构图，以摘要为粗粒度语义枢纽，通过双重粒度激活模块结合查询与摘要、句子的匹配，稳健激活实体；频率感知加权流利用词频剪枝噪声链接，提取高置信度推理路径作为显式逻辑骨架。实验表明FlowRAG在复杂推理基准上取得最优性能，为图增强生成提供了可靠、可解释的显式推理范式。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Graph-based retrieval-augmented generation (GraphRAG) is effective for knowledge-intensive and multi-hop query tasks; however, many existing methods primarily seed entity-based graphs and rely on implicit semantic relevance propagation. This often (i) under-retrieves when user queries are abstract and semantically sparse at the entity level, and (ii) suffers from brittle multi-hop reasoning, where noisy activations can derail entity-to-entity transitions and corrupt the inferred relation chain, yielding unreliable conclusions. To this end, we propose \\texttt{FlowRAG}, a semantic-aware retrieval framework that improves both semantic recall and explicit reasoning. Specifically, \\texttt{FlowRAG} constructs a quad-level heterogeneous graph over passages, summaries, sentences, and entities, where summary nodes serve as a coarse semantic hub. At retrieval time, a dual-granularity activation module combines summary--query alignment with sentence-level matching to activate relevant entities under paraphrase and abstraction robustly. We then introduce a frequency-aware weighted flow module that routes relevance through entity--passage links weighted by within-passage term frequency, pruning noisy connections and extracting high-confidence reasoning paths as an explicit logic skeleton for generation. Extensive experiments show that \\texttt{FlowRAG} obtains state-of-the-art performance on complex reasoning benchmarks.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

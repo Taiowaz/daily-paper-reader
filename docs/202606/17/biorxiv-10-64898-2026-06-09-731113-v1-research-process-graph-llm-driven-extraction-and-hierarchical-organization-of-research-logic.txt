@@ -1,0 +1,2226 @@
+Title: 91128950
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.06.09.731113v1.full.pdf
+
+Number of Pages: 32
+
+Markdown Content:
+1
+
+Title: Research Process Graph: LLM-Driven Extraction and Hierarchical Organization of 1Research Logic 23Jing Yang¹*, Manoj Itharajula 2,3 *, Marek Mutwil¹ #4
+
+5¹Department of Plant and Environmental Sciences, University of Copenhagen, Denmark 6 2 Interdisciplinary Graduate Programme (AI-X), Graduate College, Nanyang Technological 7University, Singapore 8 3 School of Biological Sciences, Nanyang Technological University, Singapore 9
+
+10 *shared co-authorship 11 # corresponding author: Mutwil@plen.ku.dk 12 13 
+
+Abstract 14 Plant biology now publishes thousands of experimental research articles each year, but their 15 core research logic, namely what questions are being asked, with what methods, and what is 16 being found, remains locked inside free text and invisible to systematic analysis. Here we 17 present a structured, 20-year atlas of The Plant Cell in which every paper is converted into a 18 typed, directed Research Process Graph (RPG) of Question (Q), Method (M) and Finding (F) 19 nodes connected by Q →M and M →F edges. A benchmarked large language model pipeline 20 applied to 2,633 Plant Cell research articles published 2005-2026 recovered >110,000 Q/M/F 21 nodes and >126,000 directed Q→M→F chains with>98% precision. A second LLM pass 22 generalises each node into a paper-independent canonical form and assigns it to one of 10 top-23 level (L1) and ~90 sub-level (L2) categories for each node type, producing the first 24 comprehensive map of plant-biology research logic at the resolution of individual research 25 questions. The atlas reveals that Plant Cell papers fall into seven canonical paper recipes with 26 characteristic Q →M→F sub-structures, that peripheral experimental techniques have largely 27 turned over while a stable methodological core persisted, and that the strongest correlate of per-28 PI citation impact is methodological breadth, not productivity or topical breadth. We release the 29 atlas as a public, browsable database with five complementary interfaces: paper views, an LLM-30 powered research assistant, expert profiles, a taxonomy browser, and a method explorer. The 31 database, available at https://rpg.connectome.tools/, turns the literature into a queryable 32 community resource. 33 34 
+
+35 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+2
+
+Introduction 36 Plant biology has entered an era of genuine multi-scale productivity. The community publishes 37 thousands of experimental research articles per year, each combining genetics, biochemistry, 38 imaging, omics and physiology in increasingly intricate combinations, part of a scientific 39 literature that has expanded near-exponentially for decades (Bornmann and Mutz 2015). The 40 Plant Cell alone has published more than 6,000 research articles since its founding, and the 41 broader plant-biology corpus adds tens of thousands more. As a result, individual researchers 42 can follow only a thin slice of the literature (Landhuis 2016), and the field as a whole lacks any 43 structured, machine-readable view of what is being asked, with what methods, and what is 44 being found across its accumulated work. 45 The plant community has built powerful curated resources, including TAIR (Lamesch et 46 al. 2012), Araport (Krishnakumar et al. 2015), Phytozome (Goodstein et al. 2012), the Plant 47 Reactome (Fabregat et al. 2018) and plant ontologies (PO, TO and GO)(Ashburner et al. 2001; 48 Cooper et al. 2018),, that organise genes, pathways, traits and organisms. Sequencing 49 repositories (ENA, SRA and GEO)(Leinonen et al. 2011; Clough et al. 2024) and method 50 registries (e.g. protocols.io)(Teytelman et al. 2016) organise data and protocols. But none of 51 these capture what a paper actually did: the research (Q)uestion that motivated each 52 experiment, the (M)ethod chosen to address it, and the (F)inding it produced. This experimental 53 logic, the directed Q → M → F chain that defines each piece of work, is currently locked inside 54 free-text articles and unavailable for systematic analysis. 55 Large language models (LLMs) have matured to the point where they can read scientific 56 articles and produce structured, typed output with high precision (Lim et al. 2025). Recent 57 applications have extracted gene-function descriptions (Hu et al. 2025), materials data and 58 synthesis methods (Dagdelen et al. 2024; Polak and Morgan 2024), drug-target pairs (Luo et al. 59 2022) and disease-phenotype links (Yang et al., 2024), and entity-relation mining now spans 60 tens of millions of articles (Wei et al., 2024). Plant biology has begun to adopt the same tools: 61 PlantConnectome used large language models to mine over 71,000 plant articles into a62 knowledge graph of nearly 5 million functional relationships between genes, metabolites, tissues 63 and other entities (Lim et al., 2025), retrieval-augmented agents such as PlantGPT now answer 64 functional-genomics questions grounded in the literature (Zhang et al., 2025), and the promise 65 of combining language models with knowledge graphs to accelerate gene-function discovery 66 has been set out in recent reviews (Lam et al., 2024; Sunil et al., 2024). A parallel effort uses 67 LLM agents to conduct research end-to-end: formulating hypotheses, running experiments and 68 drafting the paper as in The AI Scientist (Lu et al., 2024) and AI Scientist-v2 (Yamada et al., 69 2025). Yet all of these efforts capture entities and pairwise relations rather than the directed 70 research logic of a paper. 71 Here, we use LLMs to extract a more demanding object: the Research Process Graph 72 (RPG) for each paper, composed of typed Question (Q), Method (M), and Finding (F) nodes 73 connected by directed Q →M and M →F edges. Each RPG is a small, machine-readable map of 74 the experimental reasoning of one paper. We applied this pipeline to 2,633 Plant Cell research 75 articles spanning 2005–2026, recovering 110,295 typed Q/M/F nodes and 126,388 directed 76 Q→M→F chains at >98% precision against a manually annotated gold standard. A second LLM 77 pass then generalised and organised every node into a hierarchical Q/M/F taxonomy. The 78 resulting atlas, to our knowledge the first structured map of research logic, lets us characterise 79 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+3the field on its own terms: which types of questions are asked, how they couple to the methods 80 used and the findings produced, how papers fall into a small set of recurring research "recipes", 81 and how a principal investigator's methodological breadth relates to research impact. 82 We release the atlas as a public, browsable database with complementary interfaces for 83 exploring papers, researchers, techniques and the taxonomy, including an LLM-powered 84 assistant that returns literature-grounded research prospectuses for any natural-language 85 question. Because the RPG framework is journal- and field-agnostic, The Plant Cell serves here 86 as a proof of concept that an entire branch of biology can now be mapped at the resolution of its 87 individual research questions. 88 89 
+
+Results 90 
+
+An LLM pipeline extracts Question/Method/Finding knowledge graphs from 2,633 Plant 91 
+
+Cell papers with >98% precision 92 To capture the experimental logic of a paper in a structured form, we designed a pipeline that 93 represents each article as a knowledge graph of Research Questions (Q), Methods (M) and 94 Findings (F) connected by directed Q →M and M →F edges (Figure 1A). Full-text articles were 95 filtered to retain experimental research papers (Table S1), then processed with GPT-5 via the 96 OpenAI Batch API using a structured extraction prompt, producing one JSON record of typed 97 nodes and edges per paper. A representative Q →M→F triple from a rice leaf-angle study 98 illustrates the output (Figure 1A, inset). 99 Before applying the pipeline at scale, we benchmarked its accuracy against five 100 manually annotated papers and compared three OpenAI models that span a range of capability 101 and cost: the frontier GPT-5, the lower-cost GPT-5-mini and the open-source GPT-OSS-120B. 102 All three were evaluated under an identical prompt and structured-output interface, so that any 103 differences in performance and costs can be attributed to the models themselves rather than to 104 variation in prompting or implementation. All three models extracted most nodes correctly in 105 terms of both number of nodes and edges and precision (Table S2-11), but GPT-5 performed 106 best, reaching approximately 100% precision for Q, M and F nodes while also recovering the 107 most nodes overall (95 Q, 86 M and 196 F across the five papers; Figure 1, B and C)(Table S2-108 6). The advantage of GPT-5 was clearest at the level of edges (Table S7-11), where it produced 109 at least 98% correct Q →M, M →F and full Q →M→F chains, whereas GPT-5-mini fell to 78% 110 correct for full chains (Figure 1D). We therefore selected GPT-5 for corpus-wide extraction. 111 Applying the GPT-5 pipeline to the full set of 2,633 Plant Cell papers yielded 110,235 112 nodes (28,015 Q, 25,645 M and 56,575 F). Papers contained, on average, approximately 10 Q 113 and 10 M nodes, but roughly twice as many F nodes, confirming that Findings are the most 114 numerous node type and that each question or method typically supports multiple findings 115 (Figure 1E). The same asymmetry was evident among edges: M→F edges (63,006) 116 outnumbered Q →M edges (38,174), indicating that a single method generally supports more 117 findings than a single question recruits methods (Figure 1F). Composing the two edge types 118 produced 126,805 complete Q →M→F chains, which serve as the basic units for all downstream 119 analyses. 120 The resulting per-paper graphs capture the non-linear structure of real studies. In an 121 example RPG from a study of duplicated-gene expression in soybean (Fattorini 2026), some 122 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+4questions are addressed by multiple methods, a single method is shared across several 123 questions, and individual findings integrate evidence from more than one method (Figure 1G). 124 
+
+125 
+
+126 
+
+127 
+
+Figure 1. Q/M/F extraction from experimental plant biology papers. (A) Overview of the 128 extraction pipeline. Plain-text paper files (step 1) are filtered to keep experimental research 129 articles only (step 2). Each paper is sent through GPT-5 via the OpenAI Batch API together with 130 
+
+4ral 
+
+he ch ith 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+5an extraction prompt (step 3) that asks the model to identify the paper's Research Questions 131 (Q), Methods (M) and Findings (F) and the directed edges between them (step 4). The output is 132 a structured JSON record per paper containing typed nodes, their original text, and Q →M and 133 M→F edges (step 5). The boxed example illustrates a single Q →M→F chain drawn from one 134 rice leaf-angle study. (B) Node coverage: number of Q, M and F nodes extracted by GPT-OSS-135 120B, GPT-5-mini and GPT-5, summed across the five benchmark papers. The red hatched 136 fraction shows incorrect nodes. (C) Node-level precision: percent of extracted nodes judged 137 correct by manual review; dots indicate per-paper precision. (D) Edge quality across the same 138 five papers for GPT-5-mini and GPT-5: precision of Q→M edges, M→F edges, and full 139 Q→M→F chains. (E, F) Corpus statistics across the full set of 2,633 Plant Cell papers extracted 140 with GPT-5. (E) Total node counts by type. (F) Total edge. (G) Example knowledge graph from 141 a representative paper on gene duplicate expression. Q nodes (blue) are research questions, M 142 nodes (green) are the experimental methods used to address them, and F nodes (orange) are 143 the findings supported by those methods. Each method node carries a short list of recognised 144 technique tags (in square brackets), and each F node a category tag. Arrows indicate the 145 directed Q →M and M →F edges extracted by the model. 146 
+
+147 
+
+Generalising and clustering Q/M/F nodes produces a hierarchical taxonomy of plant 148 
+
+biology research 149 The per-paper graphs use the specific language of each study, which makes the corpus difficult 150 to analyse as a whole. To uncover the categories of questions, methods and findings recurring 151 across papers, we developed a second pipeline that converts each Q/M/F text into a152 generalised form: a paraphrase that removes paper-specific entities such as gene names, 153 organisms and experimental scales while preserving the underlying scientific intent (Figure 2A). 154 Because this task is simpler than constructing the RPG itself, we used the less expensive GPT-155 5-mini with a normalisation prompt, supplying each paper's extracted list of abbreviations as 156 side input so that acronyms such as cryo-EM and MET1 were resolved before generalization. 157 Each record retains the original text, its generalised form and the modifications applied. 158 To organise the generalized nodes per type into a navigable structure, we applied a two-159 stage LLM categorisation pipeline (Figure 2B). An LLM first proposed top-level (L1) categories 160 from the generalised nodes, and then, in a second call, proposed sub-categories (L2) within 161 each L1 category. Every generalised node was then assigned to a single L1 by L2 cell, and the 162 procedure was iterated until the assignments stabilised. 163 Across the 23,456 Question nodes, this procedure produced 10 L1 categories that 164 summarise what the field asks (Figure 2C, the L1 and L2 categories per paper are found in 165 Table S1). Proteins and molecular interactions was the most studied category (17.6%), followed 166 by Gene regulation and epigenetics (15.9%), Signaling, stress and immunity (14.8%) and 167 Development and morphology (12.9%); together, the long tail of methods, computation and 168 evolution questions accounted for less than 8% of the corpus. The L2 sub-structure of the 169 largest categories recapitulated familiar research programmes. Within Proteins and molecular 170 interactions (n = 4,132), protein-protein interaction questions dominated (937 nodes), followed 171 by enzymatic activity and protein function, post-translational modifications, protein structure and 172 dynamics, and protein localisation, capturing the classic biochemistry questions (Figure 2D). 173 Gene regulation and epigenetics questions (n = 3,722) were led by developmental and tissue-174 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+6specific expression, gene expression regulation, and chromatin and epigenetic modifications, 175 with environmental and stress responses and regulatory-network questions making up the 176 remainder (Figure 2E). Within Signaling, stress and immunity (n = 3,467), pathogen interaction 177 and immune responses formed by far the largest L2 (792 nodes), identifying plant pathology as 178 a defining sub-field (Figure 2F). Thus, this analysis reveals the major categories and sub-179 categories for Q (Figure S1), M (Figure S2) and F (Figure S3) nodes. 180 
+
+181 
+
+Figure 2. Generalisation and hierarchical taxonomy of Q/M/F nodes across the Plant Cell 182 
+
+corpus. (A) Generalisation pipeline. Each paper's raw Q/M/F nodes are passed through GPT-5-183 mini with a normalisation prompt that strips paper-specific entities while preserving scientific 184 intent. A per-paper abbreviation file (extracted from the original text) is supplied as side input so 185 
+
+6s, he on as -
+
+ell 
+
+-fic so 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+7acronyms are resolved before generalisation. The output JSON keeps the original text (orig), 186 the generalised form (general) and a note of the modifications applied. (B) Two-stage taxonomy 187 construction. Unique generalised nodes of each type are fed to an LLM that proposes top-level 188 categories (L1); a second LLM call within each L1 proposes sub-categories (L2). Generalised 189 nodes are then assigned to one L1 × L2 cell. (C) L1 distribution of Question nodes (n = 23,456). 190 (D–F) L2 sub-structure within the three largest Q-L1 categories, showing the number of Q nodes 191 per L2 and one representative generalised question (italic): (D) Proteins & molecular 192 interactions (n = 4,132), (E) Gene regulation & epigenetics (n = 3,722), (F) Signaling, stress & 193 immunity (n = 3,467). (G, H) L1 coupling matrices, computed at the paper level. Rows are Q-L1 194 categories; columns are matched M-L1 categories in (G) and F-L1 categories in (H). Cells show 195 the enrichment ratio (observed/expected under independence); black-outlined cells indicate 196 statistically over- or under-represented pairings. Row labels include the marginal share of 197 papers touching each Q-L1. 198 199 With questions, methods and findings placed in a shared taxonomy, we could ask how 200 they combine within papers. Comparing Question-L1 and Method-L1 categories co-occurring in 201 the same paper by enrichment analysis (observed over expected co-occurrence under 202 independence) revealed strong, expected coupling along the diagonal: Metabolism and 203 transport questions paired with metabolite and chemistry methods (ratio 2.00), Evolution and 204 comparative genomics questions with genomics and sequence methods (2.18), and Cell biology 205 and localisation questions with microscopy and imaging methods (1.47)(Figure 2G). The 206 depleted cells were equally informative, marking method-question incompatibilities: Signaling, 207 stress and immunity questions were systematically under-coupled to genomics and sequence 208 methods (0.71); Cell biology and localisation questions avoided genomics and sequence 209 methods (0.73) and chromatin methods (0.69); and Metabolism and transport questions showed 210 the most asymmetric profile, strongly enriched for metabolite methods but depleted for 211 chromatin and epigenomics (0.77). 212 The same analysis applied to Question-L1 and Finding-L1 categories showed that 213 questions generally produce findings in the same domain (Metabolism and transport questions 214 to Metabolism findings, ratio 1.75; RNA biology and translation to RNA processing, 1.82; 215 Signaling, stress and immunity to Stress and signalling, 1.54), alongside some productive cross-216 talk, such as RNA biology & translation questions and Chromatin and epigenetics findings (1.64) 217 (Figure 2H). Conversely, certain domain boundaries were rarely crossed: Cell biology and 218 localisation questions almost never produced Chromatin and epigenetics findings (0.70); 219 Methods and computation questions were decoupled from most biology-flavoured findings 220 (ratios 0.70 to 0.86); and Proteins and molecular interactions questions were notably depleted in 221 Chromatin and epigenetics findings (0.81). Taken together, the enriched diagonal and the 222 depleted off-diagonal define the implicit experimental boundaries of the field, mapping which 223 question types are addressed by which methods and which findings are unlikely to follow. 224 
+
+225 
+
+Seven research recipes structure the Plant Cell corpus and predict per-PI impact 226 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+8227 
+
+Figure 3. Paper recipes, PI specialisation and predictors of impact. (A) UMAP projection of 228 2,558 Plant Cell papers, each represented as a 28-dimensional L1 composition vector (block-229 normalised Q-L1, M-L1, F-L1 shares). Colour and R-label mark the k-means cluster (k = 7); 230 legend gives the dominant Q-L1 → M-L1 → F-L1 triad and the cluster size. (B–E) Chain 231 networks for four representative recipes: (B) R2, (C) R4, (D) R1, (E) R6, built from real Q →M232 and M →F edges in the paper JSONs and projected onto L2 sub-categories. Nodes are the top 5 233 Q-L2 (blue), M-L2 (orange) and F-L2 (green) within the recipe; node size is proportional to the 234 
+
+8
+
+of 
+
+-
+
+7); 
+
+in 
+
+M
+
+5
+
+he 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+9number of chains touching that L2; edge thickness is proportional to the chain count between 235 connected L2 pairs. Panel headers list the recipe ID, paper count, total chain count, and the 236 defining Q-L1 → M-L1 → F-L1 triad. (F) PI specialisation by dominant recipe (n = 218 PIs with 237 
+
+> ≥
+
+3 corpus papers). Each dot is one PI, placed along the x-axis by the Shannon entropy of their 238 recipe distribution (0 = pure specialist, log ₂(7) ≈ 2.81 = full generalist). PIs are stacked in seven 239 horizontal bands by their dominant recipe; the most extreme specialist and most generalist of 240 each band are labelled. (G) Spearman correlations between PI median cohort-percentile citation 241 score and six candidate predictors. Light bars: direct ρ; dark bars: partial ρ (each predictor 242 controlling for all five others). Asterisks on the direct ρ indicate significance (* p < 0.05, ** p < 243 0.01, *** p < 0.001). 244 
+
+245 If questions, methods and findings couple in predictable ways, papers as a whole should occupy 246 a limited region of the possible space. To test this, we represented each paper as a 28-247 dimensional L1 composition vector of block-normalised Q-L1, M-L1, and F-L1 shares, clustered 248 the 2,558 papers using k-means (k = 7), and projected the results with UMAP (Figure 3A). The 249 papers resolved into seven well-separated clusters, which we term paper recipes, each defined 250 by a dominant Q-L1 to M-L1 to F-L1 triad: gene regulation through transcriptomics to gene 251 expression (R1), protein interactions through protein biochemistry to protein biochemistry (R2), 252 development through microscopy to developmental phenotypes (R3), signaling and stress 253 through phenotyping to stress signalling (R4), metabolism through metabolites to metabolism 254 (R5), genetics through computational methods to genetics and evolution (R6), and cell biology 255 through microscopy to cell biology (R7). 256 To resolve the experimental substructure within each recipe, we mapped the real 257 Q→M→F edges from the per-paper records to their L2 subcategories. R2 (Proteins; 497 258 papers, 13,351 chains) was anchored by protein-interaction questions answered with protein-259 protein interaction and abundance or stability assays, yielding findings dominated by protein 260 interactions and modifications (Figure 3B). R4 (Signalling and stress; 326 papers, 9,750 chains) 261 showed a strong pathogen-interaction spine, in which pathogen-related questions were 262 answered by pathogen and infection assays, running alongside a narrower environmental-stress 263 branch (Figure 3C). R1 (Gene regulation; 556 papers, 14,785 chains) contained two distinct 264 sub-flavours within a single recipe: a chromatin and epigenetics branch, in which chromatin and 265 epigenetic modification questions were addressed by epigenetic and chromatin analyses, and 266 an RNA-biology branch, in which RNA-processing questions were addressed by small-RNA and 267 RNA-processing methods (Figure 3D). R6 (Genetics and comparative genomics; 242 papers, 268 4,640 chains) consistently routed questions in phylogenetics and evolution through phylogenetic 269 and comparative methods to produce genomic variation findings, recapitulating the canonical 270 comparative genomics workflow (Figure 3E, Figure S4 for all chain networks). 271 We next asked how individual researchers distribute their work across these recipes. 272 Computing the Shannon entropy of each principal investigator's recipe distribution for the 218 273 PIs with at least three corpus papers, and stratifying by dominant recipe, showed that every 274 recipe contained both pure specialists (entropy = 0, for example Kazuki Saito in R5 and Ji ří275 Friml in R7) and broad generalists (entropy > 2, for example Nitin Uttam Kamble in R2 and 276 Chengcai Chu in R4)(Table S12); neither extreme was absent from any recipe (Figure 3F). 277 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+10 Finally, we asked which PI-level features predict research impact, as measured by 278 citations their papers accumulated. Correlating each PI's median cohort-percentile citation score 279 with six candidate predictors revealed that the number of distinct techniques a PI used was the 280 strongest positive predictor (direct Spearman ρ = +0.30, partial ρ = +0.44), whereas the number 281 of papers was significantly negative (partial ρ = −0.26), and recipe entropy had almost no 282 unique effect once the number of papers and number of techniques were controlled (partial ρ =283 −0.08) (Figure 3G). Thus, methodological breadth, rather than productivity or topical breadth, is 284 therefore the feature most closely associated with per-paper impact in this corpus. 285 286 
+
+Method composition turns over, but methodological breadth per paper stays constant 287 The recipes capture the methodological identity of papers, but not how that identity has changed 288 over time. To identify which techniques have entered or left plant biology, we extracted the 289 methodological vocabulary of every paper from its M-node text using a curated dictionary of 290 approximately 305 techniques (Table S1), and compared the share of papers using each 291 technique in an early window (2005 to 2010) and a recent window (2020 to 2024) (Figure 4A). 292 The shifts were pronounced. Several techniques rose sharply: RNA-seq increased from 0.3% to 293 34% of papers, CRISPR from 0 to 21%, and ChIP-seq, IP-MS, GWAS, split-luciferase, BiFC, 294 Y1H/Y2H and small-RNA-seq each rose at least two-fold. Others declined just as steeply: PCR 295 fell from 70% to 24%, RT-PCR from 49% to 7%, Northern blot from 21% to 2%, microarray from 296 18% to 1%, with T-DNA and GUS reporter assays also dropping sharply. A core set of 297 techniques, however, remained in use throughout, each appearing in more than 25% of papers 298 across the full 20 years: Western blot, RT-qPCR, GFP and fluorescent tagging, confocal 299 microscopy and overexpression. 300 To summarise the methodological signature of each of the 17 method categories, we 301 generated per-category word clouds in which the size of each technique is proportional to the 302 number of papers using it (Figure 4B). The largest category, Molecular Biology (2,061 papers), 303 was dominated by qPCR, RT-qPCR, PCR and CRISPR; Cell Biology by GFP tagging and 304 subcellular localisation; Microscopy by confocal microscopy; Metabolomics by LC-MS, LC-305 MS/MS and metabolite profiling; and Gene Regulation by GUS reporter, luciferase assay, ChIP 306 and transactivation assays, giving each category a recognisable identity. 307 We next asked whether this turnover was accompanied by an increase in 308 methodological complexity. Counting the distinct techniques per paper across 2005 to 2024 309 revealed only a modest increase, from a median of 13 in 2005 to 2010 to 15 in 2020 to 2024 310 (mean 13.4 to 14.7, a 10% rise, trend +0.10 techniques per year), indicating that Plant Cell 311 papers have always been methodologically dense and have broadened only slightly (Figure 312 4C). The same was true at the level of method categories: papers consistently spanned roughly 313 7 of the 17 categories with little change over two decades (median 7 throughout; mean 6.7 to 314 7.1, a 6% rise, trend +0.04 categories per year) (Figure 4D). Taken together, these panels show 315 that the defining trend of the past 20 years in plant science has been compositional turnover 316 rather than expansion: each generation of papers replaced old techniques with new ones at 317 nearly a one-to-one rate, while the core toolkit and the overall breadth of methods per paper 318 remained largely stable. 319 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+11 
+
+320 
+
+Figure 4. Twenty years of methodological change in Plant Cell papers. (A) Technique 321 adoption shift, 2005-2010 vs 2020-2024. Each dot represents one technique ( ≥30 corpus 322 papers); x and y show the share of papers using the technique in each window, on a log scale. 323 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint 12 Point size is proportional to the total number of papers using the technique; colour indicates the 324 method category. The diagonal indicates no change; the two parallel dotted lines indicate 2- and 325 10-fold changes. (B) Per-category technique word-clouds for the 17 method categories. Within 326 each box, font size is proportional to the number of corpus papers that use the technique; the 327 category-level paper count is shown in the box header. (C) Distinct techniques per paper, 2005-328 2024. Lines show the per-year median (blue), per-year mean (orange), and a linear trend fit to 329 the mean (red, dashed). Inset gives the median, mean and percent change between the two 330 reference windows. (D) Distinct method categories per paper (of 17 possible), 2005-2024, with 331 the same conventions as in (C). (E) Technique co-occurrence network. Nodes are techniques 332 used in ≥30 papers; edges connect technique pairs whose paper-level co-occurrence 333 enrichment (log ₂(observed/expected)) exceeds a chosen threshold. Node size is proportional to 334 the number of corpus papers using the technique; node colour denotes the method category. 335 336 Finally, we asked how individual techniques relate to one another. We built a technique 337 co-occurrence network in which nodes are techniques used in at least 30 papers, and edges 338 connect techniques that appear together more often than expected by chance. Edges are 339 weighted by the paper-level log2 enrichment of observed over expected co-occurrence, with 340 nodes coloured by method category (Figure 4E). Several biologically coherent modules 341 emerged from the data alone: a biochemistry and enzymology core (NMR, X-ray 342 crystallography, molecular docking, size-exclusion chromatography and enzyme kinetics), a 343 plant pathology and phenotyping cluster (disease resistance, infection assays, bacterial growth 344 and hypersensitive-response assays), a cell-biology imaging hub (live imaging, FM4-64, 345 confocal microscopy, immunofluorescence and cytoskeleton imaging), a comparative-genomics 346 cluster (GWAS, whole-genome sequencing, PacBio, OrthoFinder and phylogenetics) and a 347 gene-regulation cluster (ChIP, EMSA, transactivation assays, luciferase, Y1H, ChIP-seq and 348 bisulfite-seq). The techniques bridging these modules, such as mass spectrometry linking 349 biochemistry to proteomics and scanning electron microscopy linking imaging to phenotyping, 350 identify the methods that span multiple research traditions. 351 352 
+
+353 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+13 
+
+A public RPG database exposes the corpus through five complementary interfaces: 354 
+
+paper views, an AI research assistant, expert profiles, taxonomy browser and method 355 
+
+explorer 356 To make our findings usable by the community, we built a public, browsable database that 357 exposes the RPG data through five complementary interfaces. To make the project concepts 358 more easily accessible to the public and their AI agents, we developed an Obsidian wiki 359 containing the project description at 360 https://publish.obsidian.md/mutwillab/Homepage/Publication+Vaults/RPG/README. 361 362 
+
+363 Paper panel. The paper view presents each article as a structured record, tabulating its 364 extracted Research Questions, Methods, and Findings in three colour-coded columns, 365 illustrated here for a wheat study of the Puccinia striiformis races CYR23 and CYR31 (Figure 366 5A)(Ma et al. 2023). The same nodes are also rendered as a compact Q →M→F graph, making 367 the paper's internal logic explicit and showing which method addresses which question and 368 which finding it supports (Figure 5B). To help users locate functionally related work, the 369 database computes paper-to-paper similarity based on shared Q-L2, M-L2, and F-L2 tags; 370 users can reweight the Q, M, and F contributions and the specificity of the L2 tags to bias the 371 ranking and retrieve related papers along with their overlap profile (Figure 5C). 372 Digital Professor. The Digital Professor lets users enter a natural-language research question, 373 for example, "How does my transporter affect nitrogen or phosphate uptake?", and returns a 374 data-driven research prospectus grounded in our paper corpus (Figure 5D). The prospectus 375 begins with recommended methods, ranked by the number of supporting papers (Figure 5E). 376 Each recommendation is anchored to concrete examples drawn from real papers, including their 377 inputs and outputs, the method nodes used and the supporting findings, with DOI links back to 378 the source articles (Figure 5F). Alongside the user's question, the system displays the most 379 similar questions already asked in the corpus, ranked by similarity, here recovering a complete 380 match to a question on CK2 and phosphate uptake from the original literature (Figure 5G). It 381 also proposes follow-up questions with suggested methods, allowing users to plan a multi-step 382 study rather than a single experiment (Figure 5H). Finally, an office-hours mode lets users 383 iterate conversationally, imposing practical constraints such as the absence of confocal 384 microscopy or Xenopus oocytes, to which the assistant adapts its recommendations (Figure 5I). 385 Experts. For any author in the corpus, an expert card summarises the author's career span, 386 paper count, and the numbers of Q, M, and F nodes the author contributed, together with their 387 leading L1 question topics (Figure 5J). A three-column speciality breakdown then lists the 388 principal investigator's most frequent L2 question topics, the techniques they actually run (sized 389 by number of papers) and the finding tags they accumulate (Figure 5K). A methodological-390 similarity network places each PI next to peers with a comparable technique signature, with 391 edges labelled by the shared techniques, for example linking Ally Fernie and Kazuki Saito 392 through metabolite profiling, GC-MS and PCR (Figure 5L). 393 QMF taxonomy. The full Q/M/F taxonomy is navigable as a hierarchical tree. Selecting an L1 394 category, such as Gene regulation, chromatin and epigenetics, exposes its L2 sub-categories 395 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+14 with the number of generalised sentences in each and offers two pivots, "Show papers asking 396 these questions" and "Show researchers strong here", linking the taxonomy directly back to the 397 paper and expert views (Figure 5M). 398 
+
+399 
+
+Figure 5. Public RPG database for browsing and reusing the Plant Cell corpus. (A–C) 400 Paper panel. (A) Tabular Q/M/F view of a single paper. (B) Q →M→F graph view of the same 401 paper. (C) Related-paper recommender, ranked by shared L2 Q/M/F tags; sliders allow user re-402 weighting of Q, F, M and L2 specificity. (D–I) Digital Professor. (D) Free-text question input that 403 
+
+14 ng he C) e-at 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+15 generates a research prospectus. (E) Ranked list of recommended methods with hypothesis 404 class tags. (F) Per-method detail with input/output specification, real example M/F nodes and 405 source DOI. (G) Corpus questions matched to the user's query. (H) Suggested follow-up 406 questions, each paired with its suggested method. (I) Conversational refinement of the 407 prospectus under user constraints. (J–L) Experts. (J) Per-PI summary card (papers, Q/M/F 408 counts, top L1 topics, top techniques). (K) Three-column speciality breakdown (Q-L2 topics, 409 techniques, finding tags). (L) Methodological-similarity network connecting the PI to peers with 410 overlapping technique signatures. (M) QMF taxonomy. Hierarchical browser of L1 → L2 411 categories with per-L2 sentence counts and links to matching papers and researchers. (N–P) 412 Methods. (N) Method catalogue grouped by category. (O) Co-occurrence neighbourhood of a 413 selected technique, ranked by log ₂ enrichment. (P) Force-directed similarity graph of techniques 414 sharing paper context with the selected one. 415 416 Methods. The method explorer groups all 304 techniques observed in the corpus by method 417 category, with paper counts for each (Figure 5N). Selecting a technique, here scanning electron 418 microscopy, returns its network neighbourhood of co-occurring methods, ranked by log2 419 enrichment with paper counts (Figure 5O), and renders the same neighbourhood as a420 technique-similarity graph so users can move from one technique to those typically used 421 alongside it, such as from SEM to transmission electron microscopy and in situ hybridisation 422 (Figure 5P). 423 Together, these interfaces turn the static atlas into a queryable resource, letting any researcher 424 see in seconds what has been asked about their gene, process or organism, who works on it, 425 and which methods the field uses to address it. 426 
+
+Discussion 427 We have shown that the experimental logic of a research paper, the directed chain linking the 428 Research Question asked, the Method chosen to address it, and the Finding it produced, can be 429 extracted at scale and with high precision using large language models. Processing 2,633 Plant 430 Cell research articles spanning two decades, we recovered typed Q, M and F nodes and 431 assembled them into directed Q→M→F chains at greater than 98% precision against a432 manually annotated gold standard (Figure 1, B to D). Unlike entity-and-relation knowledge 433 graphs, which record which biological objects are mentioned together, the RPG captures why 434 each experiment was conducted and what it established, turning a paper's unstructured 435 reasoning into a machine-readable object. To our knowledge, this is the first structured map of 436 research logic for any scientific discipline. 437 Beyond cataloguing individual papers, the RPG atlas allows the field itself to be studied 438 quantitatively. We find that plant biology asks a structured rather than arbitrary set of questions, 439 that questions are tightly coupled to particular methods and findings, and that the enriched and 440 depleted cells of these couplings define the implicit experimental boundaries of the field (Figure 441 2, G and H). At the level of whole papers, this structure collapses into only seven recurring 442 research recipes (Figure 3, A to E), within which individual investigators range from pure 443 specialists to broad generalists (Figure 3F). Perhaps most strikingly, the strongest correlate of 444 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+16 per-paper impact is not productivity or topical breadth but the number of distinct techniques an 445 investigator (or their collaborative network) commands (Figure 3G), suggesting that 446 methodological versatility, more than output volume, accompanies influential work. We 447 emphasise that this relationship is correlational and measured across 218 investigators, and 448 that the technique count may partly reflect laboratory size, resources, and the collaborative 449 network; it should therefore be read as a hypothesis about how impactful research is conducted 450 rather than as a prescription. The atlas also revises a common intuition about methodological 451 progress: across twenty years, plant biology has turned over its peripheral techniques, replacing 452 PCR, Northern blot and microarray with RNA-seq, CRISPR and ChIP-seq, while a stable core of 453 methods persisted and the number of techniques and method categories per paper barely 454 increased (Figure 4, A to D). Plant biology has therefore re-tooled its bench without broadening 455 it. 456 As with any LLM-based extraction, the RPG atlas is accurate but not infallible, and it 457 inherits limitations that warrant attention. The pipeline can occasionally misunderstand a node 458 or attach an edge between unrelated QMF nodes. These errors could be reduced by fine-tuning 459 the models on curated examples of the expected output, and users are encouraged to follow the 460 DOI links provided in every interface to verify a node or chain against the source article. A more 461 fundamental limitation is one of scope. Our atlas rests on a single journal, thus reflects Plant 462 Cell´s editorial focus, model-organism emphasis and methodological culture. The recipes, 463 couplings and trends reported here should accordingly be read as properties of this corpus 464 rather than of plant science as a whole. The pipeline is also currently restricted to the 465 information contained in the analysed text, so questions, methods, and findings reported only in 466 figures, supplementary materials, or full-text sections beyond our input may be 467 underrepresented. 468 The central strength of the RPG framework, however, is that it is journal- and field-469 agnostic, and our future efforts will focus on testing it across the entire plant-science literature. 470 By extending the pipeline to all plant science papers, drawing on other plant journals, and by 471 incorporating full-text articles rather than abstracts alone, we aim to build a comprehensive, 472 cross-journal atlas of plant biology. Such a resource would let us ask whether research recipes 473 and question-method-finding couplings are conserved across the field or are specific to 474 individual communities, track how questions and techniques propagate between sub-fields over 475 time, and surface understudied questions and underused methods that no single journal makes 476 visible. As the corpus grows, the accompanying public database and its literature-grounded 477 Digital Professor will become an increasingly complete map of what plant biology has asked, 478 how it has answered, and where its open questions remain. We anticipate that the RPG atlas 479 will become a valuable resource for the plant science community, supporting activities ranging 480 from orienting a newcomer to an unfamiliar topic to planning the next experiment in an 481 established research programme. 482 483 
+
+Materials and methods 484 
+
+Procurement of full-text research articles 485 Full-text Plant Cell articles (2005–2026) were scraped as html files organised by year and 486 month, and each file's header was parsed to extract its DOI, title, and source URL (n = 3,366 487 articles). To restrict the corpus to primary research, every DOI was resolved to a PubMed PMID 488 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+17 via NCBI E-utilities esearch, and the corresponding MEDLINE record was retrieved with efetch. 489 Articles whose publication-type (PT) lines included Review, Editorial, Comment, Letter, News, 490 Biography, Case Reports, Historical Article, Congresses, or Consensus Development 491 Conference were excluded, retaining 2,301 experimental papers (68.4% of the scraped set; 316 492 articles without a resolvable PMID were dropped). The corpus was subsequently expanded with 493 more recent issues to yield the final 2,633 experimental Plant Cell papers used in this study. Of 494 these, 2,499 have a last-author PI identified (94.9%) and 2,583 have a citation count from 495 OpenAlex (98.1%) 496 
+
+497 
+
+Construction of the RPG database 498 The RPG was built from the full text of every research article in The Plant Cell via a four-stage 499 LLM pipeline: (1) per-paper        graph extraction, (2) generalisation of paper-specific 500 labels into corpus-comparable statements, (3) bottom-up L1 taxonomy induction, and (4) per-L1 501 L2 sub-taxonomy induction. 502 503 
+
+Per-paper       graph extraction 504 For each paper, the cleaned experimental text was submitted to the Responses endpoint of 505 GPT-5 (reasoning effort = “high”). A single prompt instructed the model to return a JSON object 506 containing the paper title, a list of nodes labelled   (Research Question),  (Method), or 507 (Finding), and a list of directed edges restricted to      and    . Node labels were 508 required to be near-verbatim,  25  words, and uniquely identified (Q1, Q2, …, M1, M2, …, F1, 509 F2, …). Prompt-level instructions enforced edge-building rules that favour aggregation: (i) any 510 single method shared across multiple questions reuses one -node rather than spawning 511 duplicates, producing many-to-one      fan-in; (ii) one method that yields multiple findings 512 produces one-to-many     fan-out; (iii) the same assay, software pipeline, or sequential wet-513 lab protocol block is grouped into a single -node; (iv) every -node must point back to at least 514 one -node and every -node must originate from at least one  -node; (v) the final graph must 515 be acyclic. Negative results were retained as valid -nodes. Outputs were validated as JSON 516 and saved one file per paper. 517 518 
+
+Generalisation of node labels 519 To enable cross-paper comparison, each per-paper node JSON was passed through a second 520 GPT-5-mini call (reasoning effort = “high”) together with that paper’s abbreviation glossary. The 521 prompt converted the paper-specific verbatim label of each  , , or  into a generalised form : a 522 stand-alone scientific statement intelligible without the source paper’s gene names, sample 523 identifiers, or local abbreviations. The output of this stage is a parallel JSON tree containing, for 524 every node, both the original label and its corpus-comparable generalisation. 525 526 
+
+L1 taxonomy induction 527 A top-level taxonomy was induced bottom-up for each node type (  , , ) independently. All 528 generalised statements of a given type were collected across the entire corpus, randomly 529 shuffled (seed = 42 for reproducibility), and partitioned into batches of 120. Each batch was 530 submitted to GPT-5.2 (temperature = 0.2, JSON-mode) with instructions to propose 6–12 top-531 level categories and assign every input sentence to exactly one category id. The resulting per-532 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+18 batch taxonomies were merged hierarchically: batches were grouped into “super” chunks of 10, 533 each super-merge produced 6–15 categories, and a final super-to-final LLM call yielded the 534 canonical L1 taxonomy. At every merge level the model was required to return a535 merged_to_inputs mapping such that each input category appears in exactly one output 536 category, which is a constraint we verified programmatically against the universe of all batch-537 local category ids. Categories missed by the merge were collected into recovery buckets 538 (C_RECOVERED and C_RECOVERED_BATCH) and re-assigned to an existing final category 539 in a separate GPT-4o pass (temperature = 0.0); any final mapping with zero missing entries 540 passed the audit. The output of this stage is, per node type, a final taxonomy 541 ( :  ,  ,   ), a final-to-batch index, and an enriched table that joins 542 each final category to all its supporting generalised sentences along with paper-level 543 provenance. 544 545 
+
+L2 taxonomy induction 546 For each pair (node type, L1 category) the procedure above was repeated at finer granularity. 547 Generalised sentences assigned to the parent L1 were partitioned into batches of 200 and 548 classified with GPT-4o (temperature = 0.2) into exactly 10 L2 sub-categories per batch. Per-549 batch taxonomies were merged hierarchically (chunk size = 10, target 6–12 final categories) 550 using GPT-4o at temperature 0.0. The same merged_to_inputs completeness constraint, batch-551 level coverage validation, and recovered-category patch step were applied at L2. Batch 552 classification calls were parallelised across 50 concurrent workers within each L1 category. The 553 procedure yields, per (type, L1) pair, a final L2 taxonomy with sentence-level provenance and a 554 per-category sentence count. Table S4 lists the model, temperature, batch unit, and 555 concurrency mode of every pipeline stage. 556 557 
+
+Similarity measures 558 The RPG database employs four distinct similarity or association measures, each tuned to the 559 granularity of the entities being compared. 560 561 
+
+Paper-to-paper similarity 562 Each paper  is represented as a categorical fingerprint formed by aggregating its  , , and 563 nodes into six sets, 564 565 
+
+>        !,"     !,"    !,"    !,"    !,"    !,
+
+566 where #   !  is the set of L1 (or L2) taxonomy categories assigned to nodes of type # $ 567 
+
+>  , , 
+
+in paper . Pairwise similarity between papers and % is a weighted average of 568 dimension-wise Jaccard coefficients, 569 
+
+>   , %! &  1∑ )
+> *
+> 
+> )"+ #  !, #  %!!, + ,, -! & |, / -| |, 0 -| ,
+
+570 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint 19 with 1 indexing the six dimensions. Default weights are ),   & 2.0 , ),   & 1.5 , ) ,   & 1.0 , all 571 multiplied by an L2-specificity bonus ℓ & 2.0  to obtain the L2 weights ( ) ,   & )  ,  "ℓ ). The four 572 parameters are exposed as user-tunable sliders. 573 574 
+
+Researcher-to-researcher similarity 575 Each researcher  is represented by three sparse non-negative count vectors over the 576 taxonomy, 577 578 
+
+> 5 ! $ 6 | ㊕㊐㊑㊄㉸㊔ |,  ! $ 6  | ㊕㊀㉸㊃ |, 7 ! $ 6  | ㉡ㄗ |,
+
+579 where 5 is the contribution count of researcher  to Q-topic  (sum across the researcher’s 580 papers of  -nodes mapped to that L2 topic),  is the number of the researcher’s papers 581 tagged with technique , and 7 is the contribution count to F L1 category . Pairwise similarity for 582 each modality is the weighted Jaccard (Ruzicka) index, 583 584 
+
+> + , %! &  ∑    , %  !∑  8   , %  ! $ 0,1.
+
+585 The combined score is the arithmetic mean of the three modal Jaccards, 586 587 
+
+>     , %! & 13 "+  5 , 5 ! : +  ,   ! : +  7, 7 !".
+
+588 
+
+Method co-occurrence enrichment 589 For each unordered pair of techniques , %! , observed and expected co-occurrence counts are 590 
+
+> ;,  & |"   ! /   %!"|, < ,  & |   !| " = " |  %!| > ,
+
+591 where > is the size of the union of all papers carrying any method tag. The pairwise enrichment 592 is the base-2 log-ratio with Laplace smoothing ( ? & 0.5 ) to bound variance on rare pairs, 593 
+
+> ,  & @  A;,  : ? <,  : ? B.
+
+Edges with ;,  C 2  are discarded as noise. Positive ,  indicates over-representation 594 (methods co-occur more often than expected by chance); negative values indicate avoidance. 595 The same statistic powers both the global method co-occurrence network on the Methods tab 596 and the per-method “Network neighbourhood” panel on each method’s detail page. 597 598 
+
+Implementation 599 All similarity structures are pre-computed once at server start-up and held in memory. The 600 researcher-similarity tensor across > D 1,500  authors and E 305  techniques is constructed in 601 under five seconds on a single core using inverted-index lookups over Python dict/set primitives. 602 The method co-occurrence network is recomputed live on request from the technique-to-papers 603 index. All endpoint paths and source files are documented in the project repository. 604 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint 20 
+
+605 
+
+Data availability 606 RPG database source code and scripts to generate the RPG is available at: 607 https://github.com/manojitharaju016/rpg_project. The Obsidian wiki descripting the RPG 608 concepts are available at: 609 https://publish.obsidian.md/mutwillab/Homepage/Publication+Vaults/RPG/README 610 611 
+
+612 
+
+Funding 613 M.M. acknowledges Novo Nordisk Starting Grant. 614 615 
+
+Acknowledgments 616 The authors wish to thank the members of the Mutwil lab for their support, encouragement and 617 comments on the manuscript. 618 
+
+619 
+
+Author Contributions 620 Jing Yang led the RPG construction, evaluation, and taxonomy identification. Manoj Itharajula 621 led web development, cloud deployment, user interface enhancement and co-supervised Jing 622 Yang. The project was conceptualised and supervised by Marek Mutwil. 623 
+
+Supplemental Data 624 
+
+Supplemental Tables 625 
+
+Table S1. Each row corresponds to one paper from The Plant Cell included in the 626 
+
+Research Process Graph (RPG). Columns are organised in four blocks: (i) Paper metadata: 627 paper_id (internal 12-character hash), title, year, month, doi, corresponding_authors (semicolon-628 separated "Given Family" list, last authors as reported by Crossref), and citation_count 629 (Crossref is-referenced-by-count at the time of retrieval; blank if unavailable, not_in_crossref if 630 the DOI returned HTTP 404). (ii) L1 taxonomy assignment (32 columns): one binary indicator 631 per top-level (L1) category of the Question (Q), Method (M), and Finding (F) taxonomies. 632 Column names follow <X>_L1__<categoryID>__<slug>, where X ∈ {Q, M, F}. A cell is 1 if at 633 least one Q/M/F node of paper p was assigned to that L1 category by the asymmetric token-634 coverage classifier (top-2 L1 per node, threshold cov > 0), and 0 otherwise. (iii) L2 taxonomy 635 assignment (271 columns): one binary indicator per L2 sub-category, with column names 636 <X>_L2__<parentL1>__<slug>. Encoded analogously to (ii) using top-2 L2 assignments per 637 node; any L2 hit additionally propagates its parent L1 into block (ii). (iv) Technique fingerprint 638 (305 columns): one binary indicator per generalised laboratory/computational technique 639 (tech__<slug>), derived from the M-node technique index (m_node_techniques_v2.json). A cell 640 is 1 if the paper contains at least one M-node tagged with that technique. Totals: 7 metadata + 641 32 L1 + 271 L2 + 305 technique = 615 columns × 2,633 rows. The full algorithmic definition of 642 node →taxonomy assignment and the four-stage construction pipeline are described in the 643 Materials and Methods. 644 645 
+
+Table S2. Node-level evaluation of LLM-extracted Q/M/F nodes from a representative 646 
+
+artificial intelligence paper. Each row corresponds to a single node extracted by one of three 647 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+21 LLMs (GPT-5, GPT-5-mini, GPT-OSS-120B). Columns report the node type identifier (Q/M/F 648 with index), the semantic subtype (e.g., research question, experimental aim, core method, 649 specific result), the extracted text, a correctness score (1 = correct, 0.5 = uncertain, 0 = 650 incorrect), an explicitness score (1 = explicitly stated in the paper, 0.5 = ambiguous, 0 = implicit 651 or inferred by the model), the LLM that produced the node, and optional evaluator comments. 652 Correctness was assessed by comparing each extracted node against the original paper text: a 653 node was scored as correct if its content could be directly traced to a statement in the paper, 654 incorrect if it contained factual errors or hallucinated content, and uncertain if it had a plausible 655 semantic association with the paper content but could not be unambiguously confirmed or 656 rejected. The winner column indicates the best-performing model for this paper. 657 658 
+
+Table S3. Node-level evaluation for a representative computational biology paper. Format 659 and scoring criteria as in Table S2. 660 661 
+
+Table S4. Node-level evaluation for a representative cell biology paper. Format and scoring 662 criteria as in Table S2. 663 664 
+
+Table S5. Node-level evaluation for a representative genomics paper. Format and scoring 665 criteria as in Table S2. 666 667 
+
+Table S6. Node-level evaluation for a representative metabolism and physiology paper. 668 Format and scoring criteria as in Table S2. 669 670 
+
+Table S7. Edge-level evaluation of Q→M→F chains from a representative artificial 671 
+
+intelligence paper. Each row corresponds to a single Q →M→F chain extracted by one of two 672 LLMs (GPT-5, GPT-5-mini). Columns report the chain number, the full text of the Q, M, and F 673 nodes forming the chain, and three relationship scores: Q →M (1 = correct, 0.5 = uncertain, 0 = 674 incorrect), M →F (same scale), and Q →M→F (same scale), along with the LLM name and 675 optional evaluator comments. The Q →M relationship was scored as correct if the method was 676 logically applied to address the stated question in the original paper; the M →F relationship was 677 scored as correct if the finding was a direct or clearly supported outcome of the stated method. 678 A complete Q →M→F chain was scored as correct only when both the Q →M and M →F679 relationships were independently correct; if either was uncertain or incorrect, the full chain 680 received the lower score. Edge evaluation results are reported as proportions (fraction of 681 correct, uncertain, and incorrect edges per model) rather than raw counts, because one-to-682 many connections in the DAG structure cause the number of chains to vary substantially 683 between papers, and proportions enable fairer cross-model comparison. 684 685 
+
+Table S8. Edge-level evaluation for a representative computational biology paper. Format 686 and scoring criteria as in Table S7. 687 688 
+
+Table S9. Edge-level evaluation for a representative cell biology paper. Format and scoring 689 criteria as in Table S7. 690 691 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+22 
+
+Table S10. Edge-level evaluation for a representative genomics paper. Format and scoring 692 criteria as in Table S7. 693 694 
+
+Table S11. Edge-level evaluation for a representative metabolism and physiology paper. 695 Format and scoring criteria as in Table S7. 696 697 
+
+Table S12. One row per principal investigator (last-author) of at least one corpus paper. 698 Researcher identity and paper assignment are inherited from the Crossref-derived last-author 699 cache and the corresponding OpenAlex records. The seven research recipes (R1–R7) are the 700 k-means clusters defined in Figure 3A; the dominant recipe and recipe entropy summarise how 701 each PI's papers distribute across them. Q/M/F L1 and L2 categories follow the hierarchical 702 taxonomy in Figure 2; cells list the top categories together with their node counts in the format 703 "Category (count)", with multiple entries separated by semicolons. Columns are: researcher_id, 704 internal identifier; name, family, given, orcid, author identity; paper_count, number of corpus 705 papers for which the researcher is last-author; year_first, year_last, span of those papers; 706 n_Q_nodes, n_M_nodes, n_F_nodes, total Question, Method and Finding nodes contributed; 707 recipe_entropy, Shannon entropy (log ₂) of the PI's recipe distribution, ranging from 0 (pure 708 specialist) to log ₂(7) ≈ 2.81 (full generalist); dominant_recipe, most frequent recipe (R1–R7) with 709 its Q-L1 → M-L1 → F-L1 triad; recipe_distribution, paper counts per recipe, sorted from most to 710 least frequent; Q_L1, top 5 Question L1 categories; Q_L2, top 8 Question L2 categories shown 711 as "L1 > L2"; M_L1, M_L2, F_L1, F_L2, the equivalent breakdowns for Method and Finding 712 nodes; method_categories, top 5 high-level method categories from the curated technique 713 dictionary; techniques, top 10 specific techniques (e.g. RT-qPCR, Western blot, confocal 714 microscopy) the PI employs across their corpus papers. 715 
+
+716 
+
+Table S13. Models, temperatures, and concurrency modes used by the RPG construction 717 
+
+pipeline. 718 
+
+719 
+
+Supplemental Figures 720 
+
+Figure S1. Full L1 + L2 taxonomy of Question nodes across the Plant Cell corpus. (A) L1 721 overview: number of Question (Q) nodes assigned to each of the 10 L1 categories (n = 23,456 722 Q nodes after removing "Recovered Batch/Miscellaneous"), with absolute counts and 723 percentages annotated to the right of each bar. (B–K) Per-L1 zoom panels showing the L2 sub-724 category breakdown of every L1 category, ordered by L1 size. Within each panel, bars give the 725 percentage of Q nodes within that L1 falling into each L2 sub-category; the absolute node count 726 is shown next to each bar. A single representative generalised question is printed in grey italics 727 below every L2 bar to illustrate the kind of sentence that the L2 category collects. Panel colours 728 match the corresponding L1 bar in (A). 729 
+
+730 
+
+Figure S2. Full L1 + L2 taxonomy of Method nodes across the Plant Cell corpus. (A) L1 731 overview: number of Method (M) nodes assigned to each of the 10 L1 categories (n = 21,776 M 732 nodes after removing "Recovered Batch/Miscellaneous"), with absolute counts and percentages 733 annotated to the right of each bar. (B–K) Per-L1 zoom panels showing the L2 sub-category 734 breakdown of every L1 category. 735 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+23 
+
+736 
+
+Figure S3. Full L1 + L2 taxonomy of Finding nodes across the Plant Cell corpus. (A) L1 737 overview: number of Finding (F) nodes assigned to each of the 10 L1 categories (n = 45,698 F 738 nodes after removing "Recovered Batch/Miscellaneous"), with absolute counts and percentages 739 annotated to the right of each bar. B–K) Per-L1 zoom panels showing the L2 sub-category 740 breakdown of every L1 category. 741 742 
+
+Figure S4. Recipes for the seven major paper categories. 743 744 
+
+745 
+
+References 746 Ashburner, M., Ball, C.A., Blake, J.A., Botstein, D., Butler, H., Cherry, J.M., Davis, A.P., 747 Dolinski, K., Dwight, S.S., Eppig, J.T., et al. (2000). Gene Ontology: tool for the unification of 748 biology. Nat. Genet. 25: 25–29. doi:10.1038/75556. 749 Barrett, T., Wilhite, S.E., Ledoux, P., Evangelista, C., Kim, I.F., Tomashevsky, M., Marshall, 750 K.A., Phillippy, K.H., Sherman, P.M., Holko, M., et al. (2013). NCBI GEO: archive for functional 751 genomics data sets, update. Nucleic Acids Res. 41: D991–D995. doi:10.1093/nar/gks1193. 752 Berardini, T.Z., Reiser, L., Li, D., Mezheritsky, Y., Muller, R., Strait, E., and Huala, E. (2015). 753 The Arabidopsis Information Resource: making and mining the "gold standard" annotated 754 reference plant genome. Genesis 53: 474–485. doi:10.1002/dvg.22877. 755 Bornmann, L., and Mutz, R. (2015). Growth rates of modern science: a bibliometric analysis 756 based on the number of publications and cited references. J. Assoc. Inf. Sci. Technol. 66: 2215– 757 2222. doi:10.1002/asi.23329. 758 Cooper, L., Walls, R.L., Elser, J., Gandolfo, M.A., Stevenson, D.W., Smith, B., Preece, J., 759 Athreya, B., Mungall, C.J., Rensing, S., et al. (2013). The Plant Ontology as a tool for 760 comparative plant anatomy and genomic analyses. Plant Cell Physiol. 54: e1. 761 doi:10.1093/pcp/pcs163. 762 Cooper, L., Meier, A., Laporte, M.-A., Elser, J.L., Mungall, C., Sinn, B.T., Cavaliere, D., Carbon, 763 S., Dunn, N.A., Smith, B., et al. (2018). The Planteome database: an integrated resource for 764 reference ontologies, plant genomics and phenomics. Nucleic Acids Res. 46: D1168–D1180. 765 doi:10.1093/nar/gkx1152. 766 Dagdelen, J., Dunn, A., Lee, S., Walker, N., Rosen, A.S., Ceder, G., Persson, K.A., and Jain, A. 767 (2024). Structured information extraction from scientific text with large language models. Nat. 768 Commun. 15: 1418. doi:10.1038/s41467-024-45563-x. 769 Goodstein, D.M., Shu, S., Howson, R., Neupane, R., Hayes, R.D., Fazo, J., Mitros, T., Dirks, 770 W., Hellsten, U., Putnam, N., and Rokhsar, D.S. (2012). Phytozome: a comparative platform for 771 green plant genomics. Nucleic Acids Res. 40: D1178–D1186. doi:10.1093/nar/gkr944. 772 Hu, M., Alkhairy, S., Lee, I., Pillich, R.T., Fong, D., Smith, K., Bachelder, R., Ideker, T., and 773 Pratt, D. (2025). Evaluation of large language models for discovery of gene set function. Nat. 774 Methods 22: 82–91. doi:10.1038/s41592-024-02525-x. 775 Krishnakumar, V., Hanlon, M.R., Contrino, S., Ferlanti, E.S., Karamycheva, S., Kim, M., Rosen, 776 B.D., Cheng, C.-Y., Moreira, W., Mock, S.A., et al. (2015). Araport: the Arabidopsis Information 777 Portal. Nucleic Acids Res. 43: D1003–D1009. doi:10.1093/nar/gku1200. 778 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+24 Lam, H.Y.I., Ong, X.E., and Mutwil, M. (2024). Large language models in plant biology. Trends 779 Plant Sci. 29: 1145–1155. doi:10.1016/j.tplants.2024.04.013. 780 Landhuis, E. (2016). Scientific literature: information overload. Nature 535: 457–458. 781 doi:10.1038/nj7612-457a. 782 Leinonen, R., Akhtar, R., Birney, E., Bower, L., Cerdeno-Tárraga, A., Cheng, Y., Cleland, I., 783 Faruque, N., Goodgame, N., Gibson, R., et al. (2011a). The European Nucleotide Archive. 784 Nucleic Acids Res. 39: D28–D31. doi:10.1093/nar/gkq967. 785 Leinonen, R., Sugawara, H., and Shumway, M.; International Nucleotide Sequence Database 786 Collaboration (2011b). The Sequence Read Archive. Nucleic Acids Res. 39: D19–D21. 787 doi:10.1093/nar/gkq1019. 788 Lim, S.C., Itharajula, M., Møller, M.H., Sunil, R.S., Fo, K., Chuah, Y.S., Foo, H., Davey, E.E., 789 Fullwood, M., Thibault, G., and Mutwil, M. (2025). PlantConnectome: a knowledge graph 790 database encompassing >71,000 plant articles. Plant Cell 37: koaf169. 791 doi:10.1093/plcell/koaf169. 792 Lu, C., Lu, C., Lange, R.T., Foerster, J., Clune, J., and Ha, D. (2024). The AI Scientist: towards 793 fully automated open-ended scientific discovery. arXiv:2408.06292. 794 doi:10.48550/arXiv.2408.06292. 795 Luo, R., Sun, L., Xia, Y., Qin, T., Zhang, S., Poon, H., and Liu, T.-Y. (2022). BioGPT: generative 796 pre-trained transformer for biomedical text generation and mining. Brief. Bioinform. 23: bbac409. 797 doi:10.1093/bib/bbac409. 798 Naithani, S., Preece, J., D'Eustachio, P., Gupta, P., Amarasinghe, V., Dharmawardhana, P.D., 799 Wu, G., Fabregat, A., Elser, J.L., Weiser, J., et al. (2017). Plant Reactome: a resource for plant 800 pathways and comparative analysis. Nucleic Acids Res. 45: D1029–D1039. 801 doi:10.1093/nar/gkw932. 802 Polak, M.P., and Morgan, D. (2024). Extracting accurate materials data from research papers 803 with conversational language models and prompt engineering. Nat. Commun. 15: 1569. 804 doi:10.1038/s41467-024-45914-8. 805 Sunil, R.S., Lim, S.C., Itharajula, M., and Mutwil, M. (2024). The gene function prediction 806 challenge: large language models and knowledge graphs to the rescue. Curr. Opin. Plant Biol. 807 82: 102665. doi:10.1016/j.pbi.2024.102665. 808 Teytelman, L., Stoliartchouk, A., Kindler, L., and Hurwitz, B.L. (2016). Protocols.io: virtual 809 communities for protocol development and discussion. PLoS Biol. 14: e1002538. 810 doi:10.1371/journal.pbio.1002538. 811 The Gene Ontology Consortium (2023). The Gene Ontology knowledgebase in 2023. Genetics 812 224: iyad031. doi:10.1093/genetics/iyad031. 813 Wei, C.-H., Allot, A., Lai, P.-T., Leaman, R., Tian, S., Luo, L., Jin, Q., Wang, Z., Chen, Q., and 814 Lu, Z. (2024). PubTator 3.0: an AI-powered literature resource for unlocking biomedical 815 knowledge. Nucleic Acids Res. 52: W540–W546. doi:10.1093/nar/gkae235. 816 Yamada, Y., Lange, R.T., Lu, C., Hu, S., Lu, C., Foerster, J., Clune, J., and Ha, D. (2025). The 817 AI Scientist-v2: workshop-level automated scientific discovery via agentic tree search. 818 arXiv:2504.08066. doi:10.48550/arXiv.2504.08066. 819 Yang, J., Liu, C., Deng, W., Wu, D., Weng, C., Zhou, Y., and Wang, K. (2024). Enhancing 820 phenotype recognition in clinical notes using large language models: PhenoBCBERT and 821 PhenoGPT. Patterns 5: 100887. doi:10.1016/j.patter.2023.100887. 822 
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+25 Zhang, et al. (2025). PlantGPT: an Arabidopsis-based intelligent agent that answers questions 823 about plant functional genomics. Adv. Sci. doi:10.1002/advs.202503926. 824 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint EF1. Paper Corpus (TXT Files) Plain text extracted from papers One paper = one .txt file 2. Experimental Paper Selection Filter experimental papers Exclude reviews, opinions, etc. 3. LLM Extraction (GPT-5Batch API) + Prompt) Input: paper text + extraction prompt Model: GPT-5 4. Q / M / F Nodes + DirectedEdges Q: Question node M: Method node F: Finding node Edges: Q - M - F (may include multiple Q/M/F nodes) 5. Structured JSON Output Nodes with type and text Directededges(from,to) Paper-level structured data for downstream analysis TXT Batch API QMFJSON 
+
+# DCBAExample Paper Snippet (TXT) “We tested whether the high expression of gene Os04g54900 leads to enlarged leaf angle of the ii1-D mutant. Transgenic lines were generated with constitutive overexpression of Os04g54900 and leaf angles were measured. Overexpression lines showed a significantly larger leaf angle compared to the wild type.” Extracted Q / M / F Nodes Q1Does high expressionofOs04g54900 lead to enlarged leaf angle of the ii1-D mutant? M1Generate transgenic lines with constitutive overexpression of Os04g54900 and measure leaf angles. F1Overexpression lines showed a significantly larger leaf angle compared to the wild type. Graph View Q1M1F1JSON Output (Simplified) {"paper_id": "P001", "nodes": [ {"id": "Q1", "type": "Q", "text": "Does high expression of Os04g54900 lead to enlarged leaf angle of the ii1-D mutant?"}, {"id": "M1", "type": "M", "text": "Generate transgenic lines with constitutive overexpression of Os04g54900 and measure leaf angles."}, {"id": "F1", "type": "F", "text": "Overexpression lines showed a significantly larger leaf angle compared to the wild type."} ], "edges": [ {"from": "Q1", "to": "M1"}, {"from": "M1", "to": "F1"} ]}
+
+# Q - Research Question M - Method F - Finding 
+
+# G
+
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+# E FDCBA
+
+# G H.General Form Generation for Extracted Q/M/F Nodes {.} JSON Q/M/F JSON Output Extracted nodes and edges from each paper. LLM-based Generalization (GPT-5mini, Batch API + Prompt) Generate reusablegeneralforms from extracted nodes. QMFGeneralized Q/M/F Nodes Generalized Question / Method / Finding nodes. {.} JSON Input for Taxonomy Construction "orig": "Q1:What is the cryo-EM structure of SAH-bound (apo) Arabidopsis MET1??", "general": "To determine the three-dimensional structure of a protein in a ligand-bound apo state.", "modifications": "Removed organism and method names; generalized to structure determination of a protein in ligand-bound apo form." ABBR AbbreviationFile Example HierarchicalTaxono myBiological Process Gene Regulation Transcription Translation Stress Response Drought Salt Generalized NodesLLM: Generate TopCategories LLM: Generate SubcategoriesGenerating Q/M/F Taxonomies 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint EFDCBAG
+
+# R1: Q=Gene regulation • M=Transcriptomics • F=Gene expression (n = 556) R2: Q=Protein interactions • M=Protein biochem. • F=Protein biochem. (n = 497) R3: Q=Development • M=Microscopy • F=Dev. phenotypes (n = 446) R4: Q=Signaling & stress • M=Phenotyping • F=Stress & signaling (n = 326) R5: Q=Metabolism • M=Metabolites • F=Metabolism (n = 290) R6: Q=Genetics • M=Computational • F=Genetics & evol. (n = 242) R7: Q=Cell biology • M=Microscopy • F=Cell biology (n = 236) 
+
+> Recipes PI properties
+> .CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
+
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 
+
+% of Question nodes 
+
+Proteins & molecular interactions Gene regulation, chromatin & epigenetics Signaling, stress, immunity & host interactions Development, morphology & organismal phenotypes Metabolism, transport & bioenergetics Cell biology, localization & trafficking Genetics, genome variation, mapping & genome architecture RNA biology & translation Methods, computation, data quality & meta-research Evolution & comparative/population genomics 
+
+4,132 (17.6%) 3,722 (15.9%) 3,467 (14.8%) 3,021 (12.9%) 2,031 (8.7%) 2,015 (8.6%) 1,962 (8.4%) 1,308 (5.6%) 888 (3.8%) 836 (3.6%) 
+
+A. L1 Question categories (n = 23,456) 
+
+0 5 10 15 20 25 
+
+Protein Interactions Enzymatic Activity and Protein Functi 
+
+Post-Translational Modifications Gene Expression and Regulatory Mechan 
+
+Protein Structure and Dynamics Genetic and Environmental Effects Protein Localization and Transport Complex Assembly and Molecular Binding Functional Assays and Phenotypic Resp 
+
+Protein Stability and Degradation 
+
+937 
+
+"To test whether two proteins physically interact." 
+
+558 
+
+"To test enzyme catalytic activity and substrate specificity." 
+
+503 
+
+"To test whether one component phosphorylates another." 
+
+401 
+
+"To test whether regulator-mediated phosphorylation is enhanced by ions." 
+
+350 
+
+"To predict protein domain architecture and membrane topology." 
+
+347 
+
+"To test whether insertional mutations abolish protein accumulation." 
+
+325 
+
+"To determine protein localization to multiple organelles." 
+
+239 
+
+"To test whether a component binds membrane lipids in vitro." 
+
+238 
+
+"To assess whether domain structures adopt a known reference fold." 
+
+233 
+
+"To test whether a component mediates degradative polyubiquitination." 
+
+B. Proteins & molecular interactions (n = 4,132) 
+
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 
+
+Developmental and Tissue-Specific Exp 
+
+Gene Expression Regulation Chromatin and Epigenetic Modifications Environmental and Stress Responses Regulatory Networks and Interactions Genetic Variation and Mutations RNA Processing and Stability Experimental Techniques and Assays Comparative and Evolutionary Genomics 
+
+631 
+
+"To identify genes highly expressed in a specific cell type." 
+
+579 
+
+"To identify direct in vivo targets of a regulatory factor." 
+
+576 
+
+"To assess gene effects on histone acetylation at specific genomic loci." 
+
+527 
+
+"To identify genes inducible by a chemical elicitor." 
+
+458 
+
+"To test whether a factor directly binds a gene promoter in vivo." 
+
+355 
+
+"To test whether genetic insertions abolish full-length transcript expression." 
+
+271 
+
+"To identify mRNA species exported to the cytoplasm across stages." 
+
+211 
+
+"To identify genome-wide binding sites of transcriptional regulators." 
+
+114 
+
+"To determine whether paralogs form tissue-specific coexpression clusters." 
+
+C. Gene regulation, chromatin & epigenetics (n = 3,722) 
+
+0 5 10 15 20 25 
+
+Pathogen Interaction and Immune Respo 
+
+Genetic and Molecular Mechanisms Signaling Pathways and Signal Transdu 
+
+Environmental Influence and Adaptation Stress and Environmental Responses Metabolic and Biochemical Processes Developmental and Morphological Proce 
+
+Gene Expression and Regulation Symbiosis and Nutrient Interactions Photosynthesis and Light Responses 
+
+792 
+
+"To determine whether pathogen infection modulates protein modification dynamics." 
+
+577 
+
+"To test whether engineered domain variants confer expanded effector recognition." 
+
+535 
+
+"To test whether locally applied molecules can diffuse to distant tissues." 
+
+371 
+
+"To test whether gene loss alters resistance to herbivory." 
+
+272 
+
+"To determine which pathway components are necessary for stress tolerance." 
+
+271 
+
+"To assess short-term nutrient limitation effects on lipid composition." 
+
+267 
+
+"To test whether a factor regulates dormancy." 
+
+191 
+
+"To test whether tissue-specific gene expression can rescue mutant defects." 
+
+130 
+
+"To compare ion fluxes among genotypes after high-ion pretreatment." 
+
+61 
+
+"To test whether components are required for a symbiotic association." 
+
+D. Signaling, stress, immunity & host interactions (n = 3,467) 
+
+0 5 10 15 20 25 
+
+Signal Transduction and Communication Gene Expression and Regulation Cellular and Molecular Mechanisms Developmental Biology Reproductive Biology Environmental and Stress Responses Morphology and Phenotypic Variation Metabolic and Physiological Processes Comparative and Evolutionary Biology 
+
+619 
+
+"To test whether immune signals suppress hormone transport and signaling." 
+
+581 
+
+"To test whether exogenous hormone application rescues mutant growth defects." 
+
+406 
+
+"To determine whether a factor contributes to cell wall integrity." 
+
+363 
+
+"To identify when during development a trait is determined." 
+
+347 
+
+"To test whether a homologous gene contributes to male gametogenesis." 
+
+318 
+
+"To determine whether a factor promotes temperature-induced growth." 
+
+191 
+
+"To characterize morphology of specialized surface glands." 
+
+160 
+
+"To identify mechanisms and receptors mediating selective organelle turnover." 
+
+36 
+
+"To test cross-species complementation and target gene repression." 
+
+E. Development, morphology & organismal phenotypes (n = 3,021) 
+
+0 5 10 15 20 25 
+
+Gene, Enzyme Function and Metabolic P 
+
+Signaling and Regulatory Mechanisms Stress and Environmental Responses Structural and Biochemical Analysis Transport and Localization Mechanisms Metabolite Dynamics and Analysis Developmental and Physiological Proce 
+
+Photosynthesis and Energy Metabolism 
+
+409 
+
+"To determine enzyme substrate specificity among related compounds." 
+
+394 
+
+"To characterize tissue-specific gene expression and metabolite levels." 
+
+261 
+
+"To determine dose-dependent phytotoxicity of a pathway intermediate." 
+
+241 
+
+"To test whether a gatekeeper substitution alters enzyme kinetic parameters." 
+
+233 
+
+"To test whether substrate modification affects membrane transport." 
+
+225 
+
+"To determine whether targeted gene disruption alters metabolite levels." 
+
+172 
+
+"To measure baseline intracellular pH in cultured cells." 
+
+95 
+
+"To determine the photosynthetic pathway employed by a taxon." 
+
+F. Metabolism, transport & bioenergetics (n = 2,031) 
+
+0 5 10 15 20 25 30 
+
+Subcellular Localization Membrane and Organelle Dynamics Protein Interactions and Dynamics Genetic and Environmental Effects Cytoskeletal Dynamics and Structure Signal Transduction and Cellular Resp 
+
+Developmental and Tissue-Specific Pro 
+
+Gene and Protein Expression Imaging and Methodologies Enzymatic, Metabolic, and Biochemical 
+
+Molecular Complexes and Assemblies 
+
+564 
+
+"To determine subcellular localization of proteins." 
+
+319 
+
+"To determine size and morphology of membrane vesicles." 
+
+234 
+
+"To test for physical interaction between biomolecules." 
+
+200 
+
+"To assess whether perturbation alters organelle ultrastructure." 
+
+186 
+
+"To quantify steady-state luminal redox potential in intact cells." 
+
+175 
+
+"To test whether probe binding inhibits cargo import efficiency." 
+
+129 
+
+"To determine whether organelles cluster near localized secretion sites." 
+
+120 
+
+"To identify molecular features differing across cellular DNA content states." 
+
+56 
+
+"To identify proteins comprising purified subcellular vesicles." 
+
+18 
+
+"To determine whether induced degradation is proteasome-dependent." 
+
+14 
+
+"To determine whether condensates incorporate RNA molecules in vitro." 
+
+G. Cell biology, localization & trafficking (n = 2,015) 
+
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 
+
+Functional Genomics and Gene Function Mutation and Phenotypic Effects Phylogenetics and Evolution Genomic Structure and Variation Genetic Mapping and Structural Varian 
+
+Genetic Interactions and Pathways Gene Expression and Regulation Population Genetics and Adaptation Regulatory and Epigenetic Studies Environmental and Stress Responses 
+
+320 
+
+"To test whether pathway inhibition can rescue mutant phenotypes." 
+
+304 
+
+"To compare phenotype severity between related gene knockouts." 
+
+269 
+
+"To evaluate whether segmental duplication events produced paralogous gene pairs." 
+
+253 
+
+"To determine gene copy number and compare counts across species." 
+
+238 
+
+"To identify the genetic cause of a reduced metabolite phenotype." 
+
+190 
+
+"To test genetic interaction between factors in regulating organ patterning." 
+
+166 
+
+"To determine whether a regulatory cascade is conserved across species." 
+
+101 
+
+"To determine whether related populations form distinct genetic clusters." 
+
+66 
+
+"To test whether regulatory factors affect leaf anatomical traits." 
+
+54 
+
+"To compare susceptibility variation across taxa and genotypes." 
+
+H. Genetics, genome variation, mapping & genome arch (n = 1,962) 
+
+0 5 10 15 20 25 30 35 40 
+
+% within L1 category 
+
+RNA Processing and Function Gene Expression and Regulation Stress and Environmental Responses Genomic and Genetic Analysis Protein and RNA Interactions Translation and Protein Synthesis Chromatin and Epigenetics 
+
+442 
+
+"To test association between phenotype and small RNA accumulation." 
+
+384 
+
+"To identify genes upregulated across tissue regions during ripening." 
+
+184 
+
+"To test whether growth environment alters transcriptomic profiles." 
+
+148 
+
+"To test whether insertional mutations reduce transcript abundance." 
+
+66 
+
+"To identify RNA sequence motifs that mediate protein RNA associations." 
+
+47 
+
+"To test whether pathway activation requires de novo protein synthesis." 
+
+37 
+
+"To assess nucleosome occupancy at chromatin accessibility sites." 
+
+I. RNA biology & translation (n = 1,308) 
+
+0 5 10 15 20 25 30 35 40 
+
+% within L1 category 
+
+Computational and Data Analysis Molecular Biology and Genomics Cellular and Biochemical Processes Research Integrity and Publication Pr 
+
+Educational and Community Engagement Environmental and Evolutionary Studies 
+
+297 
+
+"To determine presence of citation formatting errors in a publication." 
+
+255 
+
+"To quantify proteome coverage in a specialized cell type." 
+
+155 
+
+"To assess fluorescent marker labeling of endomembrane compartments in vivo." 
+
+78 
+
+"To verify the identity of a sample used in experiments." 
+
+52 
+
+"To assess acceptance of short-format high-impact articles." 
+
+51 
+
+"To test whether a trait trait association is conserved across taxa." 
+
+J. Methods, computation, data quality & meta-research (n = 888) 
+
+0 5 10 15 20 25 30 35 
+
+% within L1 category 
+
+Phylogenetics and Evolution Genomic Structure and Organization Genetic Variation and Population Gene 
+
+Functional Genomics and Gene Expressi 
+
+Regulatory and Noncoding Elements Molecular and Biochemical Analysis 
+
+247 
+
+"To determine phylogenetic relatedness between taxa." 
+
+194 
+
+"To assess syntenic conservation of a gene cluster across genomes." 
+
+126 
+
+"To map the genomic location of a modifier locus." 
+
+110 
+
+"To test cross-species functional compatibility of protein modules." 
+
+98 
+
+"To assess ortholog conservation and circadian expression patterns." 
+
+61 
+
+"To compare catalytic domain structures among homologous proteins." 
+
+K. Evolution & comparative/population genomics (n = 836) 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint 0 5 10 15 20 
+
+% of Method nodes 
+
+Proteins: biochemistry, proteomics, PTMs, interactions & st 
+
+Phenotyping, physiology, development, stress & biotic chall 
+
+Microscopy, imaging, cytology & spatial cell biology Transcriptomics, RNA biology & translation Genetics, genome engineering & mapping Computational, statistical, integrative modeling & resources Metabolites, lipids, ions, polymers & chemical composition/ 
+
+Chromatin, epigenomics & regulatory DNA Genomics, sequence analysis & evolutionary/comparative geno 
+
+Reviews, editorial, policy, education, governance & non-exp 
+
+4,415 (20.3%) 3,210 (14.7%) 3,148 (14.5%) 2,785 (12.8%) 2,342 (10.8%) 1,920 (8.8%) 1,469 (6.7%) 1,425 (6.5%) 796 (3.7%) 225 (1.0%) 
+
+A. L1 Method categories (n = 21,776) 
+
+0 5 10 15 20 25 30 
+
+Protein-Protein Interactions Protein Abundance, Stability, and Mod 
+
+Enzymatic and Biochemical Assays Structural and Biophysical Analysis Proteomics and Mass Spectrometry Cellular and Subcellular Localization DNA/RNA-Protein Interactions Gene Expression and Regulation 
+
+1,202 
+
+"Library-based protein interaction screening." 
+
+951 
+
+"Protein detection by immunoblotting." 
+
+598 
+
+"Enzymatic kinetic assays to determine catalytic parameters." 
+
+352 
+
+"X-ray crystallography of enzyme-ligand complex for structural analysis." 
+
+346 
+
+"Statistical correlation analysis of spectral counts across fractions." 
+
+335 
+
+"Organelle subfractionation with marker-based immunodetection." 
+
+329 
+
+"In vitro assay for direct protein DNA binding." 
+
+301 
+
+"Heterologous protein DNA binding assays." 
+
+B. Proteins: biochemistry, proteomics, PTMs, interac (n = 4,415) 
+
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 
+
+Environmental and Stress Responses Phenotyping and Growth Analysis Pathogen and Infection Studies Genetic and Molecular Analysis Chemical and Hormonal Treatments Physiological and Biochemical Measure 
+
+Microscopy and Imaging Techniques Signaling and Interaction Studies Reproductive and Developmental Studies Photosynthesis and Gas Exchange 
+
+571 
+
+"Short-term assay of primary nutrient response." 
+
+548 
+
+"Morphometric phenotyping and categorical trait scoring." 
+
+470 
+
+"Pathogen infection assays with microbial growth quantification." 
+
+391 
+
+"Transient gene silencing in planta with phenotypic assessment." 
+
+338 
+
+"Chemical pretreatment to induce signaling pathway activation." 
+
+294 
+
+"Chemiluminescent imaging of reactive oxygen species in planta." 
+
+240 
+
+"Live-cell fluorescence imaging of tagged proteins across cell types." 
+
+133 
+
+"Exogenous application of signaling compounds to tissues." 
+
+130 
+
+"Vascular sap collection and solute quantification." 
+
+94 
+
+"Fluorimetric measurement of photosynthetic efficiency." 
+
+C. Phenotyping, physiology, development, stress & bi (n = 3,210) 
+
+0 5 10 15 20 25 
+
+Subcellular Localization and Colocali 
+
+Fluorescence Microscopy Quantitative Imaging and Analysis Live-Cell Imaging Reporter Assays and Imaging Histological Techniques Electron Microscopy Chemical and Genetic Perturbations Cytological and Hybridization Techniq 
+
+630 
+
+"Fluorescence microscopy for subcellular protein localization." 
+
+484 
+
+"Pan-protein fluorescent labeling in expanded samples." 
+
+469 
+
+"Phenotypic imaging and scoring of tissue pigmentation." 
+
+430 
+
+"Surface-proximal live fluorescence imaging during cytokinesis." 
+
+371 
+
+"Reporter-based assay for cell-cycle activity in meristems." 
+
+313 
+
+"Staining-based gamete viability assay." 
+
+266 
+
+"Electron microscopy to assess organelle ultrastructure." 
+
+93 
+
+"Endocytic tracer uptake assay in isolated cells." 
+
+92 
+
+"Microscopy-based morphological analysis." 
+
+D. Microscopy, imaging, cytology & spatial cell biol (n = 3,148) 
+
+0 5 10 15 20 25 30 35 40 
+
+Gene Expression Quantification and Pr 
+
+Differential Expression and Functiona 
+
+Spatial and Temporal Expression Analy 
+
+Functional and Network Analysis Small RNA and RNA Processing Gene Expression Validation and Experi 
+
+Promoter and Reporter Assays Allele-Specific and Isoform Analysis RNA-Protein Interactions and Translat 
+
+Comparative and Cross-Species Analysis Chromatin and Transcriptional Regulat 
+
+Single-Cell and Cell-Type Specific An 
+
+928 
+
+"mRNA purification and quality assessment." 
+
+340 
+
+"Comparative transcript analysis across mutant genotypes." 
+
+308 
+
+"Spatial transcript localization within apical tissues." 
+
+259 
+
+"Target transcript cleavage-site mapping assays." 
+
+257 
+
+"High-throughput small RNA sequencing." 
+
+235 
+
+"Hormone treatment followed by expression analysis." 
+
+210 
+
+"Promoter activity mapping using reporter assays." 
+
+89 
+
+"Functional enrichment analysis of cluster-specific marker genes." 
+
+80 
+
+"Protein RNA immunoprecipitation with targeted RNA quantification." 
+
+44 
+
+"Transcriptomic comparison of genotypes during development." 
+
+20 
+
+"Sequence preprocessing and filtering to unique small RNA signatures." 
+
+15 
+
+"Single-cell transcriptomic profiling across developmental cell types." 
+
+E. Transcriptomics, RNA biology & translation (n = 2,785) 
+
+0 5 10 15 20 25 
+
+Genetic Perturbation and Manipulation Genetic Mapping and Sequencing Genetic Interaction and Epistasis Mutagenesis and Variant Analysis Gene Expression and Regulation Functional and Biochemical Assays Phenotypic Analysis and Assays Genotyping and Validation Phylogenetic and Evolutionary Analysis Heterologous Expression and Functiona 
+
+560 
+
+"Genetic silencing of a target component." 
+
+386 
+
+"Genetic crosses with F1 phenotypic analysis." 
+
+293 
+
+"Protein truncation analysis with rescue phenotyping." 
+
+244 
+
+"Targeted gene knockout via genome editing." 
+
+230 
+
+"Genetic reporter assay quantifying local crossover frequencies." 
+
+210 
+
+"Genetic mutant characterization and transgenic complementation." 
+
+181 
+
+"Genetic mutant and transgenic analyses." 
+
+105 
+
+"Targeted gene sequencing and marker-based genotyping." 
+
+87 
+
+"Virus-induced gene silencing for loss-of-function analysis in planta." 
+
+46 
+
+"Transient heterologous expression of tagged proteins." 
+
+F. Genetics, genome engineering & mapping (n = 2,342) 
+
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 
+
+Phylogenetic and Evolutionary Analysis Statistical and Computational Methods Gene Expression and Transcriptomics Comparative and Genomic Analysis Computational and Structural Modeling Functional and Enrichment Analysis Population Genetics and Diversity Network and Interaction Analysis Sequence and Motif Analysis Literature Review and Synthesis Experimental Techniques and Assays 
+
+317 
+
+"Phylogenetic analysis to classify gene family clades." 
+
+298 
+
+"Statistical model comparison for phylogenetic hypotheses." 
+
+267 
+
+"Network community detection applied to synteny subnetworks." 
+
+206 
+
+"Comparative analysis of evolutionary rates between paralogs." 
+
+203 
+
+"Computational protein homology and structural prediction analysis." 
+
+179 
+
+"Temporal enrichment analysis of transcription factor families." 
+
+156 
+
+"Review of computational function-inference methods." 
+
+147 
+
+"Functional network connectivity analysis of gene clusters." 
+
+117 
+
+"Comparative expression assays of orthologous genes across taxa." 
+
+19 
+
+"Author-led correction by replacing duplicated images in a figure." 
+
+11 
+
+"Automated high-throughput DNA construct assembly." 
+
+G. Computational, statistical, integrative modeling (n = 1,920) 
+
+0 5 10 15 20 25 30 35 
+
+Metabolite and Hormone Analysis Enzymatic and Biochemical Assays Structural and Compositional Analysis Lipidomics and Lipid Analysis Spectroscopy and Chromatography Isotopic and Tracer Studies Elemental and Ion Analysis Genetic and Expression Analysis 
+
+434 
+
+"Targeted chemical analysis of metabolites across tissues." 
+
+315 
+
+"Biochemical assays measuring activities of degradative enzymes." 
+
+156 
+
+"Immunolabeling to detect cell wall polysaccharide epitopes." 
+
+152 
+
+"Quantitative tissue lipid/metabolite measurements." 
+
+124 
+
+"Mass spectrometry-based quantification of metabolites." 
+
+105 
+
+"Directional transport measurement via tracer-based assays." 
+
+95 
+
+"X-ray-based elemental imaging of reproductive tissues." 
+
+88 
+
+"Heterologous expression in yeast combined with fatty-acid profiling." 
+
+H. Metabolites, lipids, ions, polymers & chemical co (n = 1,469) 
+
+0 10 20 30 40 50 60 
+
+% within L1 category 
+
+Epigenetic and Chromatin Analysis Gene Expression and Transcriptome Pro 
+
+Genomic Mapping and Chromosome Confor 
+
+Computational and Integrative Genomics Functional Genomics and Protein Inter 
+
+722 
+
+"ChIP-based quantification of histone modification." 
+
+509 
+
+"In vivo reporter assay for protein DNA interaction." 
+
+100 
+
+"Genome-wide chromatin immunoprecipitation profiling." 
+
+54 
+
+"Motif enrichment analysis on genomic regions of interest." 
+
+40 
+
+"Measurement of initiating RNA polymerase II occupancy at genomic loci." 
+
+I. Chromatin, epigenomics & regulatory DNA (n = 1,425) 
+
+0 5 10 15 20 25 
+
+% within L1 category 
+
+Phylogenetic and Comparative Genomics Gene Annotation and Expression Molecular and Genetic Techniques Population Genetics and Genomics Computational Genomics and Modeling Genomic Sequencing and Mapping Functional and Structural Genomics Epigenomics and Chromatin Studies 
+
+177 
+
+"Phylogenetic analysis of protein family sequences." 
+
+127 
+
+"Transgenic complementation using genomic constructs." 
+
+123 
+
+"Allele sequencing to characterize mutations." 
+
+121 
+
+"Quantitative assessment of sequence variant abundance." 
+
+103 
+
+"Hi-C-based chromosomal scaffolding." 
+
+59 
+
+"High-accuracy long-read library preparation and sequencing." 
+
+48 
+
+"Protein domain annotation and comparative sequence analysis." 
+
+38 
+
+"Flow cytometry of stained nuclei to quantify DNA content distribution." 
+
+J. Genomics, sequence analysis & evolutionary/compar (n = 796) 
+
+0 5 10 15 20 25 30 35 40 
+
+% within L1 category 
+
+Experimental Design and Genomic Analy 
+
+Literature and Data Synthesis Editorial and Review Processes Educational Design and Policy Statistical and Comparative Analysis Equity and Inclusion Initiatives 
+
+76 
+
+"PCR-based genotyping and mapping of insertional alleles." 
+
+70 
+
+"Literature summary of gene overexpression phenotypes." 
+
+35 
+
+"Post-publication review of corrections." 
+
+26 
+
+"Analysis of institutional and national postgraduate subject datasets." 
+
+12 
+
+"Statistical hypothesis testing, correlation, and multivariate analyses." 
+
+6
+
+"Review of institutional and funding initiatives addressing equity." 
+
+K. Reviews, editorial, policy, education, governance (n = 225) 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint 0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 
+
+% of Finding nodes 
+
+Proteins: biochemistry, PTMs, interactions & complexes Gene expression & transcriptional regulation Phenotypes: development, morphology, reproduction & organis 
+
+Genetics, genomics, variation & evolution Metabolism, metabolites, transport & physiological biochemi 
+
+Stress, signaling, immunity & host microbe/pathogen interac 
+
+Cell biology: localization, trafficking & cellular architec 
+
+Methods, computation, resources, QC & non-biological/policy 
+
+Chromatin, epigenetics & genome organization RNA processing, translation & small RNAs 
+
+8,079 (17.7%) 7,511 (16.4%) 7,129 (15.6%) 5,629 (12.3%) 4,308 (9.4%) 4,103 (9.0%) 3,907 (8.5%) 1,966 (4.3%) 1,700 (3.7%) 1,284 (2.8%) 
+
+A. L1 Finding categories (n = 45,698) 
+
+0 5 10 15 20 25 30 
+
+Protein Interactions Protein Modifications Mutations and Effects Enzymatic Activity Protein Structure and Stability Cellular Localization and Dynamics Regulation and Signaling Gene Expression and Regulation Experimental Techniques and Assays Metabolic Pathways and Responses 
+
+1,996 
+
+"Regulatory coactivators interact with target via degron motif." 
+
+987 
+
+"Phosphorylation accelerates protein degradation." 
+
+908 
+
+"Variation in adjacent residue composition reduces transfer efficiency." 
+
+835 
+
+"No enzymatic product detected in absence of required donor substrate." 
+
+822 
+
+"Resolved structural models for distinct protein DNA complexes." 
+
+803 
+
+"Localization to endomembrane compartments (ER/Golgi)." 
+
+586 
+
+"Hormone treatment increases regulator protein abundance." 
+
+554 
+
+"Gene silencing reduces precursor-to-product conversion." 
+
+427 
+
+"Measured enzyme kinetic parameters indicate catalytic activity." 
+
+160 
+
+"Exogenous precursor supplementation increases product accumulation." 
+
+B. Proteins: biochemistry, PTMs, interactions & comp (n = 8,079) 
+
+0 5 10 15 20 
+
+Mutations and Genetic Effects Developmental and Tissue-Specific Exp 
+
+Environmental and Stress Responses Gene Expression Regulation Pathways and Network Analysis RNA Dynamics and Processing Experimental Techniques and Assays Chromatin and Epigenetic Modifications 
+
+1,387 
+
+"Mutation alters intron retention and shifts splice-site selection." 
+
+1,352 
+
+"Broad transcript expression detected across multiple tissues." 
+
+1,203 
+
+"Upregulation of additional biosynthetic genes during elongation." 
+
+1,045 
+
+"Transcript modulates target mRNA stability/half-life." 
+
+791 
+
+"Substantial overlap exists among downregulated genes across perturbations." 
+
+694 
+
+"TSSs at +1 positions are enriched at tRNA genes." 
+
+563 
+
+"Negative correlation between gene expression and trait across genotypes." 
+
+476 
+
+"Factor binds loci associated with developmental repression." 
+
+C. Gene expression & transcriptional regulation (n = 7,511) 
+
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 
+
+Cellular and Molecular Mechanisms Morphological and Phenotypic Changes Genetic Mutations and Variants Gene Expression and Regulation Environmental and Stress Responses Reproductive Traits and Fertility Developmental Processes and Morphology Regulatory and Signaling Pathways Biotechnological and Experimental Tec 
+
+Pathogen and Host Interactions 
+
+1,117 
+
+"Specialized cell pair area increases with ploidy." 
+
+995 
+
+"Loss-of-function mutants show reduced organ formation." 
+
+912 
+
+"Perturbation causes delayed developmental progression." 
+
+887 
+
+"Overexpression reduces cellular extension length." 
+
+816 
+
+"Multivariate trait patterns separate by environmental treatment." 
+
+793 
+
+"Reduced female transmission efficiency in mutants." 
+
+735 
+
+"Loss-of-function mutants exhibit reduced organogenesis." 
+
+503 
+
+"Loss-of-function of a component abolishes upstream-induced activity." 
+
+281 
+
+"Genetic complementation partially rescues polarized cell elongation." 
+
+90 
+
+"In susceptible hosts lacking resistance, all variants are virulent." 
+
+D. Phenotypes: development, morphology, reproduction (n = 7,129) 
+
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 
+
+Phylogenetics and Evolution Genetic Variations and Mutations Genomic Structure and Variations Gene Expression and Regulation Functional Genomics and Gene Function Genetic Interactions and Epistasis Genetic Mapping and Association Studi 
+
+Population Genetics and Diversity Epigenetics and Chromatin Transposable Elements and Genomic Ins 
+
+Biotechnological Applications and Exp 
+
+Environmental and Developmental Inter 
+
+873 
+
+"Lineage-specific gene duplications produced multiple paralogs." 
+
+772 
+
+"Mutations reduce allele transmission efficiency through one parental role." 
+
+769 
+
+"Gene spacing distributions differ between genomes." 
+
+639 
+
+"Reduced DNA methylation at a specific locus in factor mutants." 
+
+620 
+
+"Disruption of all gene copies abolished the phenotype." 
+
+532 
+
+"Measured trait shows substantial heritability." 
+
+481 
+
+"Multiple independent alleles identified in the causal locus." 
+
+374 
+
+"Reduced genetic diversity at a locus indicates selection." 
+
+239 
+
+"Phylogenetic distances among sampled taxa were estimated." 
+
+226 
+
+"Detection of binding activity across a major taxonomic group." 
+
+63 
+
+"Genetic complementation rescues mutant growth defects." 
+
+40 
+
+"Morphological defects rescued under altered growth conditions." 
+
+E. Genetics, genomics, variation & evolution (n = 5,629) 
+
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 
+
+Metabolite Dynamics and Pathways Genetic and Regulatory Effects Stress and Environmental Responses Signaling and Hormonal Pathways Transport and Localization Structural and Analytical Techniques Protein Expression and Interaction Experimental Methods and Observations Photosynthesis and Energy Metabolism 
+
+774 
+
+"Metabolite levels increase in control during dark incubation." 
+
+751 
+
+"Loss-of-function reduces internal nutrient content." 
+
+494 
+
+"Gene silencing reduces specialized metabolite levels in roots." 
+
+469 
+
+"Dominant headgroup species observed in control samples." 
+
+417 
+
+"Activation of domain increases ion leakage relative to controls." 
+
+404 
+
+"Mutation increases intermediate-length polysaccharide chains." 
+
+358 
+
+"Complex includes an enzymatically active metabolic subunit." 
+
+322 
+
+"Overexpression led to decreased endogenous hormone levels." 
+
+318 
+
+"Decreased photosynthetic rates and stomatal conductance." 
+
+F. Metabolism, metabolites, transport & physiologica (n = 4,308) 
+
+0 5 10 15 20 25 30 
+
+Pathogen Interaction and Immune Respo 
+
+Signaling Pathways and Hormonal Regul 
+
+Stress Responses and Tolerance Protein Function and Interaction Gene Expression and Regulation Developmental and Morphological Chang 
+
+Genetic Modifications and Mutations Metabolic and Biochemical Processes Photosynthesis and Energy Dynamics Experimental Methods and Data Analysis 
+
+1,129 
+
+"Active protein expression correlated with absence of infection." 
+
+640 
+
+"Overexpression elevates signaling molecule accumulation." 
+
+572 
+
+"Overexpression enhanced fertility under salt stress." 
+
+417 
+
+"Elicitor treatment reduced intercellular tracer movement." 
+
+378 
+
+"ER stress induces unfolded protein response gene expression." 
+
+273 
+
+"No significant change in light-induced movement with labeling probes." 
+
+268 
+
+"Mutant is hypersensitive to multiple pathway inhibitors." 
+
+268 
+
+"Exogenous signaling molecule application suppresses mutant hyper-response." 
+
+143 
+
+"Exogenous treatment induced upregulation of a biosynthetic gene." 
+
+15 
+
+"Genotypes exhibited differences in microbial richness." 
+
+G. Stress, signaling, immunity & host microbe/pathog (n = 4,103) 
+
+0 5 10 15 20 25 
+
+Protein Localization and Compartmenta 
+
+Membrane and Trafficking Processes Genetic and Mutational Effects Protein Interactions and Complex Form 
+
+Cellular and Cytoskeletal Dynamics Environmental and Stress Responses Experimental Techniques and Observati 
+
+Gene Expression and Regulation 
+
+915 
+
+"Regulator localizes to the nucleus." 
+
+673 
+
+"Partial increase in organelle protein import efficiency." 
+
+586 
+
+"Catalytic inactivation abolishes function and causes mislocalization." 
+
+392 
+
+"Activator kinase interaction regulates spindle morphogenesis." 
+
+384 
+
+"Cortical foci are short-lived and exhibit mixed mobility behaviors." 
+
+374 
+
+"Subcellular distribution of a factor shifts with illumination." 
+
+294 
+
+"Immunolabeling marked intercellular channels in expanded samples." 
+
+289 
+
+"A protein accumulates in mutant or knockdown genotypes versus wild type." 
+
+H. Cell biology: localization, trafficking & cellula (n = 3,907) 
+
+0 5 10 15 20 25 
+
+% within L1 category 
+
+Genomics, Proteomics, and Protein Stu 
+
+Data Analysis, Computational Methods, 
+
+Experimental Techniques and Methodolo 
+
+Biological Networks, Systems Biology, 
+
+Cellular, Molecular, and Biological S 
+
+Scientific Communication, Policy, and 
+
+Corrections and Methodological Consid 
+
+Environmental, Evolutionary, and Ecol 
+
+Community, Collaboration, Education, 
+
+Technological and Methodological Adva 
+
+448 
+
+"Extensive proteomic identification via fractionation-coupled mass spectrometry." 
+
+330 
+
+"One network domain exhibits higher top node scores than the other." 
+
+329 
+
+"Achieved precise epitope tagging at measurable frequency." 
+
+202 
+
+"A curated set of candidate pathway genes was assembled." 
+
+186 
+
+"Domain order determines presence of the slow recovery phase." 
+
+140 
+
+"Reported concern of image similarity within a publication." 
+
+129 
+
+"Certain fragment ions displayed high abundance in spectra." 
+
+97 
+
+"Employment projections indicate growth in relevant job sectors." 
+
+92 
+
+"Sustained positive change in opinions through to graduation." 
+
+13 
+
+"Successful automated assembly of genetic constructs." 
+
+I. Methods, computation, resources, QC & non-biologi (n = 1,966) 
+
+0 5 10 15 20 25 
+
+% within L1 category 
+
+Chromatin and Epigenetics Gene Expression and Regulation Genomic Variability and Mutations RNA Dynamics and Small RNAs Regulatory Elements and Motifs Experimental Techniques and Observati 
+
+Protein Interactions and Complexes 
+
+374 
+
+"Increased DNA methylation at specific genomic loci in mutants." 
+
+374 
+
+"Regulator occupancy detected at target promoter in vivo." 
+
+354 
+
+"Increased transposable element expression in specific mutants." 
+
+212 
+
+"Increased abundance of small RNA target transcripts." 
+
+193 
+
+"Specific DNA motif strongly enriched at binding summits." 
+
+117 
+
+"DNA-binding profiling identified regulator occupancy at specific promoters." 
+
+76 
+
+"Binding sites are enriched for a canonical recognition motif." 
+
+J. Chromatin, epigenetics & genome organization (n = 1,700) 
+
+0 10 20 30 40 50 
+
+% within L1 category 
+
+RNA Dynamics and Interactions Genetic Variability and Responses Gene Expression Mechanisms Experimental Techniques Genomic and Evolutionary Insights Epigenetics and Chromatin 
+
+590 
+
+"No significant change in small RNA levels across dosage variants." 
+
+323 
+
+"Reduction in cytosolic translation initiation under stress." 
+
+237 
+
+"Preferential binding of the factor to 3'UTR regions." 
+
+46 
+
+"Targeted gene silencing eliminates detectable target mRNA." 
+
+45 
+
+"Allelic variation does not alter transcript abundance." 
+
+43 
+
+"Complete overlap of target editing dependencies between two factors." 
+
+K. RNA processing, translation & small RNAs (n = 1,284) 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint Q-L2 M-L2 F-L2 
+
+R1 · 556 papers, 14,785 chains Q-L1: Gene reg. & epigenetics M-L1: Transcriptomics F-L1: Gene expression 
+
+Chromatin & Epigenetic Mo 
+
+> (1,932)
+
+RNA Processing & Function 
+
+> (1,181)
+
+Environmental & Stress Re 
+
+> (1,116)
+
+Gene Expression & Regulat 
+
+> (1,055)
+
+Gene Expression Regulation 
+
+> (858)
+
+Epigenetic & Chromatin An 
+
+> (1,812)
+
+Gene Expression Quantific 
+
+> (1,780)
+
+Small RNA & RNA Processing 
+
+> (953)
+
+Gene Expression & Transcr 
+
+> (756)
+
+Differential Expression & 
+
+> (726)
+
+Gene Expression & Regulat 
+
+> (1,451)
+
+Environmental & Stress Re 
+
+> (1,100)
+
+Developmental & Tissue-Sp 
+
+> (902)
+
+RNA Dynamics & Interactio 
+
+> (814)
+
+Mutations & Genetic Effec 
+
+> (806)
+
+Q-L2 M-L2 F-L2 
+
+R2 · 497 papers, 13,351 chains Q-L1: Proteins & interactions M-L1: Protein biochem. F-L1: Protein biochem. 
+
+Protein Interactions 
+
+> (1,704)
+
+Post-Translational Modifi 
+
+> (1,189)
+
+Enzymatic Activity & Prot 
+
+> (836)
+
+Protein Structure & Dynam 
+
+> (797)
+
+Genetic & Environmental E 
+
+> (672)
+
+Protein-Protein Interacti 
+
+> (2,023)
+
+Protein Abundance, Stabil 
+
+> (1,521)
+
+Enzymatic & Biochemical A 
+
+> (1,119)
+
+Structural & Biophysical 
+
+> (930)
+
+Phenotyping & Growth Anal 
+
+> (503)
+
+Protein Interactions 
+
+> (1,823)
+
+Protein Modifications 
+
+> (1,135)
+
+Protein Structure & Stabi 
+
+> (1,003)
+
+Mutations & Effects 
+
+> (933)
+
+Gene Expression & Regulat 
+
+> (822)
+
+Q-L2 M-L2 F-L2 
+
+R3 · 446 papers, 10,899 chains Q-L1: Development & morph. M-L1: Phenotyping F-L1: Dev. phenotypes 
+
+Gene Expression & Regulat 
+
+> (1,310)
+
+Signal Transduction & Com 
+
+> (1,051)
+
+Developmental Biology 
+
+> (723)
+
+Reproductive Biology 
+
+> (625)
+
+Environmental & Stress Re 
+
+> (606)
+
+Phenotyping & Growth Anal 
+
+> (1,015)
+
+Gene Expression Quantific 
+
+> (751)
+
+Quantitative Imaging & An 
+
+> (717)
+
+Histological Techniques 
+
+> (607)
+
+Spatial & Temporal Expres 
+
+> (593)
+
+Gene Expression & Regulat 
+
+> (991)
+
+Morphological & Phenotypi 
+
+> (782)
+
+Cellular & Molecular Mech 
+
+> (780)
+
+Environmental & Stress Re 
+
+> (735)
+
+Genetic Mutations & Varia 
+
+> (631)
+
+Q-L2 M-L2 F-L2 
+
+R4 · 326 papers, 9,750 chains Q-L1: Signaling & stress M-L1: Phenotyping F-L1: Stress & signaling 
+
+Pathogen Interaction & Im 
+
+> (2,087)
+
+Signaling Pathways & Sign 
+
+> (949)
+
+Environmental Influence & 
+
+> (766)
+
+Genetic & Molecular Mecha 
+
+> (625)
+
+Stress & Environmental Re 
+
+> (542)
+
+Pathogen & Infection Stud 
+
+> (1,458)
+
+Environmental & Stress Re 
+
+> (1,057)
+
+Gene Expression Quantific 
+
+> (743)
+
+Protein Abundance, Stabil 
+
+> (468)
+
+Genetic & Molecular Analy 
+
+> (427)
+
+Pathogen Interaction & Im 
+
+> (1,755)
+
+Environmental & Stress Re 
+
+> (754)
+
+Signaling Pathways & Horm 
+
+> (723)
+
+Gene Expression & Regulat 
+
+> (710)
+
+Stress Responses & Tolera 
+
+> (460)
+
+Q-L2 M-L2 F-L2 
+
+R5 · 290 papers, 7,209 chains Q-L1: Metabolism & transport M-L1: Metabolites F-L1: Metabolism 
+
+Gene, Enzyme Function & M 
+
+> (692)
+
+Transport & Localization 
+
+> (575)
+
+Metabolite Dynamics & Ana 
+
+> (486)
+
+Signaling & Regulatory Me 
+
+> (470)
+
+Enzymatic Activity & Prot 
+
+> (436)
+
+Enzymatic & Biochemical A 
+
+> (795)
+
+Metabolite & Hormone Anal 
+
+> (644)
+
+Gene Expression Quantific 
+
+> (420)
+
+Environmental & Stress Re 
+
+> (321)
+
+Spectroscopy & Chromatogr 
+
+> (313)
+
+Metabolite Dynamics & Pat 
+
+> (629)
+
+Genetic & Regulatory Effe 
+
+> (550)
+
+Environmental & Stress Re 
+
+> (432)
+
+Transport & Localization 
+
+> (414)
+
+Enzymatic Activity 
+
+> (386)
+
+Q-L2 M-L2 F-L2 
+
+R6 · 242 papers, 4,640 chains Q-L1: Genetics & variation M-L1: Computational F-L1: Genetics & evol. 
+
+Phylogenetics & Evolution 
+
+> (685)
+
+Genomic Structure & Organ 
+
+> (439)
+
+Genetic Mapping & Structu 
+
+> (391)
+
+Genomic Structure & Varia 
+
+> (371)
+
+Genetic Variation & Popul 
+
+> (257)
+
+Phylogenetic & Evolutiona 
+
+> (353)
+
+Genetic Mapping & Sequenc 
+
+> (347)
+
+Statistical & Computation 
+
+> (303)
+
+Phylogenetic & Comparativ 
+
+> (245)
+
+Comparative & Genomic Ana 
+
+> (238)
+
+Genomic Structure & Varia 
+
+> (787)
+
+Phylogenetics & Evolution 
+
+> (680)
+
+Genetic Mapping & Associa 
+
+> (399)
+
+Gene Expression & Regulat 
+
+> (322)
+
+Genetic Variations & Muta 
+
+> (303)
+
+Q-L2 M-L2 F-L2 
+
+R7 · 236 papers, 6,087 chains Q-L1: Cell biology M-L1: Microscopy F-L1: Cell biology 
+
+Membrane & Organelle Dyna 
+
+> (626)
+
+Subcellular Localization 
+
+> (509)
+
+Cytoskeletal Dynamics & S 
+
+> (497)
+
+Protein Interactions & Dy 
+
+> (390)
+
+Genetic & Environmental E 
+
+> (353)
+
+Live-Cell Imaging 
+
+> (1,229)
+
+Fluorescence Microscopy 
+
+> (585)
+
+Subcellular Localization 
+
+> (570)
+
+Quantitative Imaging & An 
+
+> (400)
+
+Protein-Protein Interacti 
+
+> (319)
+
+Membrane & Trafficking Pr 
+
+> (681)
+
+Protein Localization & Co 
+
+> (502)
+
+Cellular & Cytoskeletal D 
+
+> (440)
+
+Genetic & Mutational Effe 
+
+> (384)
+
+Protein Interactions 
+
+> (369)
+
+How to read 
+
+Three columns = top 5 L2 sub-categories of Q, M, F 
+
+drawn from real Q M and M F edges in the papers of 
+
+this recipe (k-means cluster from Fig 4). Node size # chains touching that L2 in this recipe. 
+
+Edge thickness # chains with that Q-L2 M-L2 (or 
+
+M-L2 F-L2) pairing width and alpha both scale. 
+
+The L1 chain in each panel title is the dominant 
+
+L1-level template for that recipe (top L1 Q M F
+
+combo across the recipe s chains). 
+
+A recipe shows a clear "spine" when a single Q-L2 
+
+M-L2 F-L2 path dominates; it shows a "branching" 
+
+pattern when the recipe spans multiple sub-questions and sub-methods. 
+
+Paper recipes as Q-L2 M-L2 F-L2 chain networks (real edges from paper JSONs) 
+
+.CC-BY-NC 4.0 International license available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint this version posted June 10, 2026. ;https://doi.org/10.64898/2026.06.09.731113 doi: bioRxiv preprint
