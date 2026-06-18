@@ -1,0 +1,1790 @@
+Title: Incorporation of single-neuron projectome-based connectivity motifs enhances the cortex-specific performance of artificial neural networks
+
+URL Source: https://www.biorxiv.org/content/10.64898/2026.06.12.732007v1.full.pdf
+
+Number of Pages: 44
+
+Markdown Content:
+## Incorporation of single-neuron projectome-based connectivity motifs enhances 1
+
+## the cortex-specific performance of artificial neural networks 23
+
+Yue Sun 1,# , Wangzi Yao 2,3,# , Jian Zhang 1,# , Wei Song 1,4,# , Xuanle Zhao 2,3,# ,4
+
+Chonghe Hao 1, Xinyu Chen 5, Shuxin Zeng 3, Shuncheng Jia 1, Yun Yang 1, Xu Chen 1, Xiong Xiao 1,5
+
+Mu-ming Poo 1, Yangang Sun 1, Bo Xu 2 and Tielin Zhang 1,3,* 
+
+67
+
+> 1
+
+Center for Excellence in Brain Science and Intelligence Technology, State Key Laboratory of Brain 8
+
+Cognition and Brain-inspired Intelligence Technology, Institute of Neuroscience, Chinese Academy of 9
+
+Sciences, Shanghai 200031, China. 10 
+
+> 2
+
+Institute of Automation, Chinese Academy of Sciences, Beijing 100190, China. 11 
+
+> 3
+
+School of Artificial Intelligence, University of Chinese Academy of Sciences, Beijing 100049, China. 12 
+
+> 4
+
+School of Future Technology, University of Chinese Academy of Sciences, Beijing 100049, China. 13 
+
+> 5
+
+School of Artificial Intelligence, China University of Mining and Technology-Beijing, Beijing, 100083, 14 
+
+China. 15 16 17 
+
+* Corresponding authors. Emails: zhangtielin@ion.ac.cn 18 
+
+# Co-first authors. 19 20 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+## Abstract 21 
+
+The organizational principles of natural neural networks could inspire the new architecture design of 22 
+
+artificial neural networks (ANNs). Analysis of single-neuron connectomes of mouse brains revealed 23 
+
+distinct profiles of three-node connectivity motifs in various cortical areas and hippocampal formation. 24 
+
+A connectome-informed neural network algorithm (“CINA”) was developed to incorporate natural 25 
+
+connectivity motifs into ANN algorithms represented by recurrent neural network (RNN) and 26 
+
+transformer-based large language model (LLM). We found that incorporation of the average profile 27 
+
+of cortical motifs improved the RNN’s performance in noise-resistant categorization and motor 28 
+
+learning benchmark tasks, as compared with RNNs with random connectivity. Notably, incorporating 29 
+
+cortex-specific motifs further elevated the RNN’s performance in tasks related to the cortical function, 30 
+
+and this effect was enhanced by artificially increasing the bias in the motif profile. Similar 31 
+
+experimental results were verified on an LLM using Motif-Transformer for natural language question 32 
+
+answering and brain-signal decoding tasks. Graph-theoretic analyses showed that incorporating 33 
+
+natural motifs drove the emergence of modular and small-world properties in ANNs. Together, we 34 
+
+demonstrated not only connectome-inspired optimization of ANN architecture but also functional 35 
+
+significance of specific motif profiles in various cortices. 36 37 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+## INTRODUCTION 38 
+
+Cognitive functions of the brain emerge from the complex connectivity among neurons. Recent single-39 
+
+neuron connectomic analyses have begun to provide information on both long-range projections and local 40 
+
+connections of neurons in various brain regions 1,2 . Studies of artificial neural networks (ANNs) have also 41 
+
+shown that the efficiency of ANNs could be improved by mimicking the architecture of brain circuits. For 42 
+
+example, local receptive fields of the visual cortex have inspired the Gabor filter design of signal processing 43 
+
+in ANNs 3, and long-short-term memory networks 4 were developed to mimic gate-based recurrent 44 
+
+connections of memory-attention pathways. In principle, incorporating biological circuit architectures into 45 
+
+ANNs may enhance the capability of ANNs towards brain-like intelligence and offer new insights into the 46 
+
+structure-function relationship of neural circuits in the brain. However, most artificial network designs have 47 
+
+not considered the incorporation of specialized connectivity patterns of the brain, including, but not limited 48 
+
+to, recurrent neural networks (RNNs) and the Transformer that serves as the key module in large language 49 
+
+models (LLMs). 50 
+
+Selective connectivity among a small group of neurons, known as “motifs” 5, have been identified 51 
+
+and characterized in various brain regions 6. For example, feedforward and feedback inhibition motifs are 52 
+
+employed to regulate the dynamic range of input signals, which play an important role in maintaining 53 
+
+excitation–inhibition (E–I) balance across the network, thereby improving the speed and signal-to-noise 54 
+
+ratio of information processing 7,8 . Furthermore, the frequencies of certain connectivity motifs are 55 
+
+significantly higher than those based on random network connectivity, suggesting specific functional roles of 56 
+
+connectivity motifs in the brain 9. In this study, we inquired whether incorporating distinct distributions of 57 
+
+various connectivity motifs derived from different mouse brain regions could improve the performance of 58 
+
+RNN and Transformer in machine learning tasks. 59 
+
+We first analyzed recently collected connectome data on the mouse brain (https://www.digital-60 
+
+brain.cn/) for the distribution of 3-node motifs in 50 brain regions. Previous methods for determining the 61 
+
+frequency distribution of motifs heavily depended on time-consuming sampling techniques and limited 62 
+
+primarily to statistical analyses 10-12 . In this study, we developed a connectome-informed neural network 63 
+
+algorithm (termed “CINA”). This method uses matrix multiplication to parallelize the calculation of 64 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+frequency distributions for all 13 types of three-node motifs. It transforms pure statistical analyses into 65 
+
+computable equations that are then integrated into ANN algorithms via a specially designed motif loss 66 
+
+function. This newly added loss function serves as a structural constraint that complements the traditional 67 
+
+error loss. While the traditional error loss drives the network toward computational accuracy, this additional 68 
+
+loss function enforces biological plausibility in terms of network structure during the learning process. 69 
+
+We then examined the benefits of CINA-endowed motif distributions in both RNN and Transformer 70 
+
+algorithms for a variety of machine learning tasks, including four types of noise-resistant categorization, 71 
+
+four types of reinforcement-based motor learning, and six standard language benchmarks. We found that the 72 
+
+performance of RNNs was enhanced by incorporating an average motif distribution found in the frontal pole 73 
+
+cortex (FRP) and primary motor cortex (MOp), as compared to that of RNNs with random connectivity. 74 
+
+Moreover, incorporating FRP- and MOp-specific motif distributions led to further enhancement of the tasks 75 
+
+related to these two cortices. Notably, such selective enhancement by cortex-specific motifs could be further 76 
+
+elevated by artificially increasing the cortex-specific motif distribution bias. Similar conclusion could be 77 
+
+given for motif-informed Transformer in natural language question answer and brain signal decoding tasks. 78 
+
+Finally, we applied graph-theoretic analysis to ANNs endowed with cortical motif distributions and found 79 
+
+that they exhibit modular and small-world network properties inherent in neural networks of the brain. 80 
+
+Taken together, these findings demonstrated that the performance of ANNs could be enhanced by 81 
+
+incorporating biological connectome-based motif distributions into their network architecture. 82 83 
+
+## RESULTS 84 
+
+Motif distributions in mouse cortices based on single-neuron connectomes 85 
+
+As the first step, we used the single-neuron whole-brain connectome dataset (https://www.digital-brain.cn/, 86 
+
+containing 50 mouse brain regions) which was obtained by sparse labeling of cortical neurons, imaging with 87 
+
+the fluorescence Micro-Optical Sectioning Tomography (fMOST), single-axon tracing, and registration to 88 
+
+the standard mouse brain template 13 (Fig. 1a ). The putative pre- and postsynaptic sites were determined to 89 
+
+infer neuronal connectivity. As illustrated in Fig. 1b , when an axonal arbor of source neuron falls within a 90 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+specific distance (e.g., 5 ) of a dendritic arbor of target neuron in 3D, the existence of a putative site for 91 
+
+synaptic contacts from source to target neurons was identified with a connection score. The total connection 92 
+
+score is calculated by summing the scores of all putative synaptic sites (see Methods). A matrix of 93 
+
+connection scores among all neurons within a cortical region was constructed, as illustrated using data from 94 
+
+MOp ( Fig. 1c, left ). Based on the matrix and a preset pruning threshold value of connectivity score, the 95 
+
+connectivity among all neurons was obtained ( Fig. 1c, right ). For example, the existence of projection was 96 
+
+identified when the connection score is above the threshold. We further identified all 3-node connectivity 97 
+
+motifs, which comprise 13 possible configurations, as illustrated by examples from MOp dataset ( Fig. 1d ). 98 
+
+101 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+Fig. 1. Inference of connectivity motifs from single-neuron mouse projectomes. a, Diagram showing workflow for 102 
+
+single-neuron whole-brain connectome data collection including sparse labeling, fMOST imaging, axon tracing, and 103 
+
+registration. b, Schematic diagram depicting the determination of putative pre- and postsynaptic sites used for 104 
+
+inferring connectivity. The axon of the source neuron (blue) and the dendrite of the target neuron (orange) are sampled 105 
+
+along their arbors (blue and gray points, respectively). When any axonal arbor falls within a threshold (dashed circle) 106 
+
+of a dendritic arbor in 3D, a putative connection is registered. c, Schematic diagram of the connectivity matrix 107 
+
+calculated from b. d, Illustration of 13 possible three-node motifs based on single-neuron connectome data from the 108 
+
+mouse primary motor cortex (MOp). Single-neuron tracing of axonal/dendritic arbors are projected to the same 109 
+
+template, and putative synaptic contacts among three neurons were determined by measuring Euclidean distances 110 
+
+between axonal and dendritic arbors of two neurons (see Methods). Example connectivity patterns for each of 13 111 
+
+three-neuron motifs were shown. Colored circles, examples of putative synaptic contacts (for neuron i → j and i → k). 112 
+
+Arrows, direction of functional projections (connectivity score above a defined threshold). 113 114 
+
+Based on mouse connectome dataset, we obtained the frequency distribution of 13 three-node motifs 115 
+
+in 50 brain regions. The normalized Z score 5,9 was used here to quantify the frequency of a specific motif 116 
+
+that differed from that found in a randomly connected network (+, above; -, below; see Methods). Notably, 117 
+
+we found that the frequency of fully recurrent three-node motif (type 13) was consistently elevated across all 118 
+
+brain regions and frequency distributions were distinctly different among brain regions related to cognitive, 119 
+
+motor, and sensory functions ( Fig. 2a ). Further analysis of the similarity in the pattern of motif distributions 120 
+
+among 50 brain regions (see Methods) revealed four major clusters corresponding roughly to PFC, 121 
+
+hippocampal formation, motor-sensory cortices, and audiovisual cortices ( Fig. 2b) .122 
+
+A total of 34,572 neurons across these four clustered regions were measured in terms of their spatial 123 
+
+distribution ( Fig. 2c ). We found that the PFC and hippocampus exhibited preferential enrichment of non-124 
+
+recurrent motifs 2, 4, and 8. In contrast, the motor-sensory and audiovisual cortices showed preferential 125 
+
+enrichment of recurrent motif 7, whereas the motor-sensory cortices had the lowest levels of motif 8 ( Fig. 126 
+
+2d ). In addition, from these four clusters of brain regions, we selected four most representative regions (FRP, 127 
+
+CA1, MOp, and AUDp) to visualize their single-neuron projection patterns ( Fig. 2e, see Fig. S1 and S2 for 128 
+
+more details), whereby the frequency distributions of the 13 connectivity motifs across these four regions 129 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+also revealed substantial distributional differences ( Fig. 2f ). 130 
+
+We also found that these preferential motif distributions were stable and not constrained by the 131 
+
+traditional stringent criterion of defining synaptic connections based on an axon-dendrite distance of < 5 μm. 132 
+
+We subsequently tested different distance thresholds (3, 7, 9, and 11 μm; Fig. S3 ) and found that these 133 
+
+variations did not significantly alter the motif distributions. Furthermore, we confirmed that the observed 134 
+
+motif distributions were not driven by subsampling of neurons (20% to 100%, Fig. S4 ), the choice of 135 
+
+specific regions (intratelencephalic IT region, Fig. S5 ), or pruning of synapses (0% to 40%, Fig. S6 ). This 136 
+
+finding is important, as it indicates that motif distributions can serve as a metric for distinguishing 137 
+
+connectivity patterns across different brain regions, independent of local microscopic statistics. 138 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+139 
+
+Fig. 2. Connectivity motif signatures across 50 mouse brain regions. a, Heatmap showing the frequency 140 
+
+distribution of 13 three-node motifs relative to random networks for 50 brain regions (names are listed in Table S1 ). 141 
+
+Color intensity codes the normalized Z score for the deviation from random distribution (red and blue, higher and 142 
+
+lower than random, respectively). The frequency of the fully recurrent three-node connectivity motif (type 13) was 143 
+
+consistently higher than that of random networks across all brain regions. Frequency distribution patterns were 144 
+
+distinctly different among brain areas associated with cognitive (PFC and hippocampal formation), motor (motor-145 
+
+sensory cortices), and sensory (audiovisual cortices) functions. b, Diagram showing the cosine similarity of frequency 146 
+
+distribution of 13 three-node motifs for 50 brain regions. Four dashed areas correspond to PFC, hippocampal 147 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+formation, motor-sensory cortices, and audiovisual cortices, respectively. c, Spatial distribution of neurons in the 148 
+
+isocortex 14 (left) and hippocampal regions shown in the folded Y-Z view 13 (right). Each dot represents a soma from the 149 
+
+single-neuron connectome dataset, colored according to the cluster assignment of its corresponding brain region. d, 150 
+
+Schematic diagram illustrating differences in motif frequency among all areas shown in the four classes of brain areas 151 
+
+(see b) for four motifs that showed significant differences between the four classes. The remaining nine motifs showed 152 
+
+relatively small differences among brain region classes (see Fig. S7 for more details). Here, * indicates P < 0.05, ** 153 
+
+indicates P < 0.01, *** indicates P < 0.001, and **** indicates P < 0.0001. e, Representative example brain regions 154 
+
+from the four major classes, including frontal pole cortex (FRP, n = 222 neurons), hippocampal CA1 region ( n = 4396), 155 
+
+primary motor cortex (MOp, n = 957), and primary auditory area (AUDp, n = 541), shown in the standard mouse brain 156 
+
+template. f, Diagrams depicting the frequency distribution of various motifs in connectome data from FRP, CA1, MOp 157 
+
+(see Fig. S8 for more details), and AUDp brain regions. 158 159 
+
+Incorporating intracortical connectivity motifs in RNN and Transformer using CINA 160 
+
+Incorporation of connectivity architecture revealed by single-neuron connectomes into ANNs (represented 161 
+
+by both RNN and Transformer) faces the challenge of converting key features of connectivity into equations 162 
+
+compatible with ANN calculations. We developed an algorithm, referred to as “Connectome-Informed 163 
+
+Neural network Algorithm” (CINA), based on the idea that recurrently connected ANNs could be 164 
+
+constructed from 3-node connectivity motifs of various frequency distributions. Previous studies on 165 
+
+counting motif frequency in the brain 12 and computational models 15 have used a serial sampling approach 166 
+
+(Fig. 3a ), which is computationally demanding due to the requirement of exhaustive serial motif search in 167 
+
+large networks. Our CINA uses an efficient matrix multiplication-based method for simultaneous calculation 168 
+
+of motif frequencies for all 13 three-node motifs ( Fig. 3b ). For the connectivity matrix, we first defined a 169 
+
+method to obtain the frequency statistics of different motif categories within a small network of three 170 
+
+neurons. This is achieved by performing element-wise probabilistic multiplication of matrix entries. 171 
+
+Subsequently, we extend this approach to arbitrary neuronal networks using mathematical matrix operations, 172 
+
+converting the element-wise multiplication into matrix multiplication. This key breakthrough allows the 173 
+
+incorporation of the motif distribution into both RNNs and Transformers (here we use Mamba 16 for example) 174 
+
+based on combined use of a loss function and task error function ( Fig. 3c, d ). Both spiking and non-spiking 175 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+neurons were integrated into these two types of architectures, and approximate gradient descent algorithm 17 
+
+176 
+
+was employed for network training. During network learning, the CINA could gradually embed the 177 
+
+topographic structure of biological networks, in the form of motif distribution, into the recurrent matrix 178 
+
+weights of RNNs and Transformers ( Fig. 3e ). We further compared the computational time of our proposed 179 
+
+matrix-based method against that of the traditional serial approach. The result showed that the speedup of 180 
+
+our method increased with neuron number, reaching approximately 300-fold at 1,024 neurons ( Fig. 3f) ,181 
+
+demonstrating its practical utility. 182 
+
+183 
+
+Fig. 3. Connectome-informed neural network algorithm for embedding motif distributions. a, Schematic 184 
+
+diagram depicting the serial motif counting method using sequential motif sampling and classification, requiring Cn
+
+> 3
+
+185 
+
+steps of sampling, each counting resulted in addition of number “1” into the total number of the specific motif 186 
+
+[“ Num m ”]. Red node, neurons chosen for each step of motif counting. The 13 motifs (indexed 1 to 13) are shown 187 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+below. b, Diagram depicting the CINA approach that calculates “ Num m ” through a parallel computation function 188 
+
+using the adjacency matrix W with Hadamard product ( ) and matrix multiplication ( ) operations (see Methods). c, 189 
+
+Network architecture of Motif-RNN. The input and output layers are fully connected to a recurrently connected hidden 190 
+
+pool of non-spiking (ANN) or spiking (SNN) neurons. The network motifs in the hidden pool were endowed by CINA 191 
+
+via the “ Loss Motif ” function (equation above, where “ Per ANN m ” and “ Per Target m ” represent the percentage of a 192 
+
+specific motif in the ANN and target neural network, respectively) during network learning with “ Loss Task ” function 193 
+
+(equation below, where “ ” and “ ” denote the kth output of the ANN and the corresponding task target, 194 
+
+respectively). d, Network architecture of Motif-Mamba. Input tokens are processed by stacked Motif-Mamba blocks 195 
+
+to generate the predicted token. In the Mamba state-space model, the original state-transition matrix is replaced by a 196 
+
+motif-compatible square matrix ( 𝐀 , Motif-matrix), allowing CINA to endow the model with biologically derived 197 
+
+motif distributions while retaining the selective state-space components ( 𝐀 𝐀 , 𝐀 𝐀 , and Δ𝐀 ). e, Diagrams illustrating an 198 
+
+example of a training process constrained by biological connectivity motif, the initial hidden pool configuration with 199 
+
+full recurrent connections and progressive CINA-endowed motif configuration after the Nth step of learning. f, 200 
+
+Comparison of the time required for serial counting and parallel CINA counting of various motifs, for increasing 201 
+
+number of neurons. 202 203 
+
+CINA-endowed motif structures enhanced RNN’s learning capability 204 
+
+We next evaluated the performance of RNNs with CINA-endowed motif distributions in performing two 205 
+
+categories of learning tasks. First, for noise-resistant categorization tasks, we examined the network learning 206 
+
+of (1) visual perception using perceptual decision-making (PDM) dataset 18 , (2) static image recognition 207 
+
+using N-MNIST dataset 19,20 , (3) dynamic video recognition using DVS-Gesture dataset 21 , and (4) spoken 208 
+
+audio recognition using TIDIGITS dataset 22 (Fig. 4a ). Second, we examined motor learning of four 209 
+
+benchmark tasks, using OpenAI MuJoCo 23 paradigm of the reinforcement learning for continuous robot 210 
+
+control, including (1) balancing a single inverted pendulum (“Inverted pendulum-v2”), (2) stabilizing a 211 
+
+chaotic inverted double pendulum (“Inverted double pendulum-v2”), (3) teaching a robot to walk (“Walker-212 
+
+v2”), and (4) enabling an ant to run (“Ant-v2”) ( Fig. 4b ). We used CINA to endow five distinct frequency 213 
+
+distributions of three-node motifs in ANNs as follows: (1) Averaged motif distribution obtained by 214 
+
+averaging those found in FRP and MOp cortices (“FRP/MOp-averaged”), (2) cortex-specific motif 215 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+distribution found in either FRP or MOp cortex (“FRP-specific” or “MOp-specific”), and (3) artificially 216 
+
+increased bias of motif distribution by applying a non-linear transformation to normalized Z scores for FRP-217 
+
+or MOp-specific motif distribution (“FRP-enhanced” or “MOp-enhanced”, Fig. 4c, d ). As a control, we also 218 
+
+tested the performance of ANNs with random connectivity (“vanilla”). 219 
+
+For the PDM task ( Fig. 4e ), we found that the mean accuracy (across all input noise levels) for 220 
+
+RNNs with “FRP-specific”, “FRP/MOp-averaged”, and “MOp-specific” motif distributions were 221 
+
+significantly higher than that found for the “vanilla” distribution by 6.6 ± 1.6% (SEM, n = 5 repetitions, P =222 
+
+0.004), 5.2 ± 1.4% ( P = 0.013), and 4.0 ± 1.9% ( P = 0.038), respectively, indicating enhanced reliability of 223 
+
+performance against input noise. Among these three distributions, “FRP-specific” distribution showed the 224 
+
+highest accuracy (reliability) for the PDM task, in line with the notion that this task involves maintaining 225 
+
+stable decision-making under noise, a known function of FRP 24 . Interestingly, “FRP-enhanced” distribution 226 
+
+achieved accuracy surpassing that of the biologically relevant “FRP-specific” distribution by 2.5 ± 0.9% ( P227 
+
+= 0.032). The results on the performance of CINA-endowed RNNs on three other noise-resistant 228 
+
+categorization tasks (i.e., static clothing classification, dynamic video recognition, and spoken digit 229 
+
+recognition tasks, Fig. 4e ) were very similar to that described above for the PDM task. 230 
+
+For two single inverted pendulum and double pendulum motor learning tasks, we found that 231 
+
+although the accuracies of task performance (as reflected by reinforcement reward scores) were similar ( Fig. 232 
+
+4f ), the learning speed (convergence rate) of ANNs with CINA-endowed “MOp-specific”, “FRP/MOp-233 
+
+averaged”, and “FRP-specific” motif distributions were significantly faster than that found for the “vanilla” 234 
+
+distribution by 27.7 ± 1.8% (SEM, n = 20 repetitions, P < 0.001), 17.8 ± 1.3% ( P < 0.001), and 16.6 ± 1.5% 235 
+
+(P < 0.001) for inverted pendulum-v2 task, respectively; by 73.7 ± 2.0% ( P < 0.001), 69.6 ± 2.2% ( P <236 
+
+0.001), and 64.0 ± 1.6% ( P < 0.001) for inverted double pendulum-v2 task, respectively. Thus, “MOp-237 
+
+specific” distribution yielded the fastest learning speed on the pendulum tasks, in line with the notion that 238 
+
+learning of these motor tasks were facilitated by motif distribution of the motor cortex. Moreover, “MOp-239 
+
+enhanced” motif distribution achieved a learning speed significantly surpassed that of the biologically 240 
+
+relevant “MOp-specific” distribution (15.1 ± 2.5%, P < 0.001, inverted pendulum-v2; 10.0 ± 1.7%, P =241 
+
+0.015, inverted double pendulum-v2). The results on the learning speed of two other motor learning tasks 242 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+(i.e., robot walking and ant movement tasks) were similar to that described above. Furthermore, the 243 
+
+accuracies of these motor learning, as indicated by the reward scores, were also progressively elevated for 244 
+
+RNNs endowed with “FRP-specific”, “FRP/MOp average”, “MOp-specific” and “MOp-enhanced” motif 245 
+
+distributions than that of the “vanilla” distribution ( Fig. 4f ). For robot walking and ant movement motor 246 
+
+learning tasks, reward scores were progressively elevated for RNNs endowed with “FRP-specific”, 247 
+
+“FRP/MOp-average”, “MOp-specific”, and “MOp-enhanced” motif distributions than that of the “vanilla” 248 
+
+distribution by 19.7 ± 5.3% (SEM, n = 20 repetitions, P = 0.006), 21.5 ± 6.8% (P = 0.013), 27.7 ± 10.0% (P 249 
+
+= 0.024), and 46.2 ± 12.4% (P = 0.007) for robot walking task, respectively; by 31.0 ± 9.9% (SEM, n = 20 250 
+
+repetitions, P = 0.017), 46.0 ± 16.4% (P = 0.027), 68.9 ± 9.6% (P < 0.001), and 81.6 ± 17.6% (P = 0.002) for 251 
+
+ant movement task, respectively. 252 
+
+Taken together, these results showed that RNNs endowed with “FRP/MOp-averaged” motif 253 
+
+distribution in general achieved higher performance in all tasks than “vanilla” RNNs. Furthermore, in line 254 
+
+with the respective functions of FRP and MOp, RNNs endowed with “FRP-specific” and “MOp-specific” 255 
+
+motif distribution resulted in higher performance for noise-resistant categorization and motor learning tasks, 256 
+
+respectively. Similar results were found when the activation function of RNNs were replaced with spiking 257 
+
+neurons ( Fig. S9 ). 258 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+259 
+
+Fig. 4. CINA-endowed biological and artificially biased motif distributions enhance task performance of RNNs. 260 
+
+a-b, Images depicting various learning tasks examined for the performance achieved by RNNs endowed with various 261 
+
+3-node motif distributions. a, Four noise-resistant categorization tasks (PFC-related): perceptual decision-making 262 
+
+(PDM), static image recognition (10-class digits recognition, N-MNIST , also abbreviated as NMNIST in figures, 263 
+
+denotes the neuromorphic version of MNIST), temporal motion recognition (11-class video gestures, DVS Gesture), 264 
+
+and voice recognition (10-class spoken digits, TIDIGITS). b, Four motor learning tasks (motor cortex-related) from 265 
+
+OpenAI MuJoCo: balancing a single inverted pendulum (Inverted pendulum-v2, “SIP”), a chaotic inverted double 266 
+
+pendulum (Inverted double pendulum-v2, “DIP”), teaching a robot to walk (Walker-v2), and enabling ant movement 267 
+
+(Ant-v2). c-d, Diagram depicts the motif distributions of “FRP-specific”, “MOp-specific” and artificially biased 268 
+
+versions (“FRP-enhanced”, “MOp-enhanced”). For “FRP-enhanced” and “MOp-enhanced” distributions, the original 269 
+
+normalized scores ( ) were first artificially biased (positive scores were amplified using the function 270 
+
+and negative scores were attenuated by mapping them as ), then renormalized. For 271 
+
+visualization, all were further transformed using . e-f, Performance of CINA-endowed RNNs with 272 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+the “vanilla” control in the four noise-resistant categorization tasks e, shown as accuracy under increasing input noise 273 
+
+variance, and four motor learning tasks f, shown as reward score during reinforcement learning. Different motif 274 
+
+distributions are color-coded (box above). 275 276 
+
+Motif-informed Transformer further enhanced LLM’s prediction capability 277 
+
+We selected Mamba as the basic transformer block, and then modified its state-transition matrix from the 278 
+
+original structured diagonal form to a square matrix ( 𝐀 , termed the Motif-matrix in Fig. 3d ), in order to 279 
+
+make motif-distribution constraints applicable (named Motif-Mamba). We then used CINA to endow three 280 
+
+distinct biologically derived motif distributions in Motif-Mamba as follows: (1) an averaged motif 281 
+
+distribution obtained by averaging those found in FRP and MOp cortices, denoted “Average-Motif-Mamba”; 282 
+
+(2) the cortex-specific motif distribution found in FRP, denoted “FRP-Motif-Mamba”; and (3) the cortex-283 
+
+specific motif distribution found in MOp, denoted “MOp-Motif-Mamba”. We next evaluated the 284 
+
+performance of a 130M-parameter Mamba LLM endowed with CINA-constrained motif priors on 6 popular 285 
+
+downstream zero-shot evaluation language benchmarks, including LAMBADA task for broad-context word 286 
+
+prediction 25 , HellaSwag task for commonsense situation completion 26 , PIQA task for physical commonsense 287 
+
+reasoning 27 , ARC-E and ARC-C tasks for easy-level and challenge-level science question answering and 288 
+
+reasoning 28 , respectively, and WinoGrande task for resolving ambiguous words in a sentence 29 (Fig. 5a ). 289 
+
+Together, these benchmark tasks assess complementary aspects of language prediction, ranging from long-290 
+
+context prediction to commonsense and scientific reasoning. 291 
+
+We found that relative to the vanilla Mamba, biologically derived motif priors produced additional 292 
+
+gains ( Fig. 5b , c), “MOp-Motif Mamba”, “FRP-Motif-Mamba”, and “Average-Motif-Mamba” remarkedly 293 
+
+improved the average accuracy across the all 6 language benchmarks by 0.22%, 0.45%, and 1.12%, 294 
+
+respectively. Among them, “Average-Motif-Mamba” gave the strongest overall performance (improving 295 
+
+accuracy by 2.48%, LAMBADA; 0.57%, HellaSwag; 0.16%, PIQA; 1.04%, ARC-E; 3.29%, ARC-C; 0.39%, 296 
+
+WinoGrande relative to the vanilla Mamba), supporting the previous hypothesis that the averaged cortical 297 
+
+motif distribution might serve as a more generic and broadly transferable biological prior. In addition, “FRP-298 
+
+Motif Mamba” showed advantages on selected benchmarks (0.85%, HellaSwag; 1.04%, ARC-E; 1.23%, 299 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+ARC-C; 0.39%, WinoGrande) relative to the vanilla Mamba, whereas “MOp-Motif-Mamba” produced only 300 
+
+limited improvement in this setting. Representative examples illustrated two benchmark questions that were 301 
+
+correctly answered by Motif-Mamba ( Fig. 5d ). A plausible interpretation is that these language benchmarks 302 
+
+are better matched to the cognitive cortical prior represented by the FRP region than that by the Mop region 303 
+
+(motor-related prior). 304 
+
+In addition to language benchmarks, we further found that CINA-constrained motif priors could 305 
+
+improve brain-signal decoding tasks related to BMI applications. We selected three neural decoding 306 
+
+benchmarks: (1) a center-out classification task for decoding one of eight movement directions from 307 
+
+invasive neural recordings 30 (Fig. 5e ); (2) a mouse auditory two-alternative forced-choice task for decoding 308 
+
+low- or high-frequency tone choices by licking the left or right water port 31 (Fig. 5f ); (3) a mouse licking 309 
+
+task for decoding binary lick/no-lick behavior from electrophysiological spike recordings 32 (Fig. 5g ). 310 
+
+Experimental results indicated that, relative to the vanilla Mamba, biologically derived motif priors 311 
+
+produced additional gains on all these three tasks (up to 93.7%, 72.8%, 78.6%, Fig. 5h, i, j ), where 312 
+
+“Average-Motif-Mamba” gave the strongest overall performance, improving classification accuracy by 1.56 313 
+
+± 0.36% (SEM, n = 5 repetitions, P = 0.012), 1.91 ± 0.34% ( P = 0.006), and 0.83 ± 0.11% ( P = 0.040) for 314 
+
+the center-out movement-direction classification task, mouse auditory forced-choice and mouse spike-to-315 
+
+behavior prediction tasks, respectively. 316 
+
+Together, these results demonstrated that our method achieved higher accuracy simultaneously in 317 
+
+both language-based prediction and brain-signal decoding tasks, suggesting that connectome-derived motif 318 
+
+priors can provide additional structural knowledge to LLM. 319 320 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+321 
+
+Fig. 5. Biological motif priors embedded to Motif-Mamba on language benchmarks and brain-signal decoding 322 
+
+tasks. a , Schematic diagram illustrating the natural language processing tasks. b, Radar plot showing accuracy on six 323 
+
+downstream natural language question and answer benchmarks. For each benchmark, the values in parentheses 324 
+
+indicate the maximum and minimum accuracies among the compared models. For visualization, the radial scale of 325 
+
+each axis was set from 0.9 times the minimum accuracy to 1.1 times the maximum accuracy across the compared 326 
+
+models for that benchmark. c, Accuracy values of the vanilla Mamba and motif-constrained Mamba models on the six 327 
+
+downstream natural language question and answer benchmarks. Dashed and bold values indicate the best-performing 328 
+
+model among the compared models for each benchmark . d, Representative examples from two natural language 329 
+
+question and answer benchmarks, showing that Motif-Mamba correctly completes the tasks. e, Schematic diagram of 330 
+
+the BMI decoding using center-out movement-direction classification task, in which invasive neural recordings were 331 
+
+used to decode one of eight movement directions. f, Schematic diagram of the BMI decoding using mouse auditory 332 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+two-alternative forced-choice task, in which animals classified tones as low or high frequency by licking the left or 333 
+
+right water port. g, Schematic diagram of the BMI decoding using mouse fixed-interval licking task, in which 334 
+
+electrophysiological spike recordings were used to decode binary lick/no-lick behavior. h-j, Classification accuracy of 335 
+
+the vanilla Mamba and motif-constrained Mamba (FRP-Motif, MOp-Motif, and Average-Motif) models on the three 336 
+
+brain-signal decoding tasks shown in e-g, respectively. 337 338 
+
+Topological organization of hidden pool neurons in specific motif-endowed ANNs 339 
+
+To understand the network properties in ANNs endowed with various motif distributions from the 340 
+
+perspective of the graph theory, we systematically analyzed network structure of hidden pool neurons by 341 
+
+quantifying the topological structures of post-learning connectivity weights and the distribution of their 342 
+
+connectivity. Complex networks often naturally comprise distinct communities or modules 33 . We first 343 
+
+examined whether embedding motif distributions into RNNs could drive the network connectivity towards 344 
+
+modular structures similar to real-world networks. We employed the Infomap algorithm 34,35 to detect the 345 
+
+community structures of RNNs endowed with different motif distributions, using optimal modularity as the 346 
+
+criterion for community partitioning. The community partitions for various RNNs are shown in Fig. 6a ,347 
+
+which displays at most top 15 strongest communities for “FRP-specific”, “MOp-specific”, and “FRP/MOp-348 
+
+averaged” motif distributions, and each had distinct community structures. These structures were all distinct 349 
+
+from that found for the “vanilla” RNN, which exhibits no discernible community. We calculated modularity 350 
+
+using the directed modularity method 36 , quantified by the modularity index, and compared it against the 351 
+
+baseline of ER random networks 37 with matched graph size and sparsity. The RNNs endowed with “FRP-352 
+
+specific”, “MOp-specific”, and “FRP/MOp-averaged” motif distributions exhibited markedly higher 353 
+
+modularity indices than the “vanilla” RNN, with the “MOp-specific” motif distribution yielding the highest 354 
+
+index ( Fig. 6b ). 355 
+
+The small-world property is often a feature of complex networks that reflects the balance between 356 
+
+local clustering and global integration, supporting efficient information transmission 38,39 . The small-world 357 
+
+coefficient is used to assess whether a network has an efficient organizational structure and is quantified 358 
+
+using two key parameters: the clustering coefficient ( Fig. 6c ) and the average path length ( Fig. 6d ; see 359 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+Methods). Our results showed that RNNs endowed with different distributions of connectivity motifs 360 
+
+displayed distinct differences in these two parameters among themselves and from those of the “vanilla” 361 
+
+RNN ( Fig. 6c, d ), leading to significant small-world coefficients in all RNNs endowed with biological motif 362 
+
+distributions ( Fig. 6e ). Notably, RNNs endowed with “FRP-specific” motif distribution exhibited the highest 363 
+
+small-world index, suggesting that this motif structure represents a more optimized balance between local 364 
+
+clustering and global transmission. We further constructed weight matrices of hidden pool neurons for RNNs 365 
+
+endowed with different motif distributions ( Fig. S10 ) and found that RNNs endowed with three types of 366 
+
+biologically inspired motif distributions showed sparse and distinct patterns of weight distributions ( Fig. 6f ), 367 
+
+whereas the RNN with the “vanilla” distribution exhibited random weights. The statistically significant 368 
+
+differences were further validated by the cumulative probability analysis of the weight distributions 369 
+
+(Kolmogorov-Smirnov test 40 : D > 0.11, P < 0.001) ( Fig. 6g ) and among themselves ( D > 0.08, P < 0.001). 370 
+
+Notably, the greatest difference was found between the “vanilla” RNN and RNN with CINA-endowed 371 
+
+“FRP-specific” motif distribution ( D = 0.21, P < 0.001). 372 
+
+To further examine the dynamical basis of the functional differences conferred by cortex-specific 373 
+
+motif distributions, we analyzed the internal dynamics of the trained recurrent networks. We found that, 374 
+
+based on their stability and divergence, the 13 three-node motifs could be organized into a three-level 375 
+
+hierarchy ( Fig. 6h ): Level one consists of motifs 1, 2, 3, and 4; Level two consists of motifs 5, 6, 7, and 8; 376 
+
+and Level three consists of motifs 9, 10, 11, 12 and 13. This hierarchical organization suggests that the 377 
+
+functional capabilities of different brain regions can be inferred by analyzing the enrichment of motifs from 378 
+
+different levels within each brain region. Our analysis confirmed this hypothesis. For example, relative to 379 
+
+the "FRP/MOp-averaged" profile, the “FRP-specific” motif distribution was shifted toward the more stable 380 
+
+side of the hierarchy, suggesting that the FRP may play a role in tasks requiring network stability. 381 
+
+Conversely, the “MOp-specific” distribution was shifted toward the more recurrent side, indicating that the 382 
+
+MOp may be more involved in reinforcement learning-type exploratory tasks ( Fig. 6i ). Supporting this, 383 
+
+latent-state dynamics analysis during the noise-resistant PDM task showed that RNNs endowed with the 384 
+
+“FRP-specific” motif distribution achieved the highest accuracy and the most robust convergence toward 385 
+
+stable decision points under noise ( Fig. 6j ). 386 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+In addition, to assess how biological motif distributions shape action-level dynamics during motor 387 
+
+control, we tracked action deviation across 200 normalized observations in the SIP task and found that the 388 
+
+RNN endowed with “MOp-specific” motif distribution exhibited the broadest range of action deviation 389 
+
+across recurrent steps ( Fig. 6k ). Together, these results suggest that cortex-specific motif distributions bias 390 
+
+collective network dynamics toward distinct computational modes, suggesting that “FRP-specific” and 391 
+
+“MOp-specific” profiles favoring noise-resistant and environment-sensitive computation, respectively. 392 
+
+393 
+
+Fig. 6. Motif-constrained RNNs exhibit distinct topological properties and latent dynamics. a, Network 394 
+
+topological structures after community partitioning of RNNs endowed with biological motif distributions and the 395 
+
+“vanilla” distribution. Different colors represent distinct communities, with intra-community connections shown in the 396 
+
+corresponding community color, inter-community connections shown in gray, and the top 20% most important 397 
+
+connections (measured by node degree) highlighted in black. We sampled 25 nodes from the total of 512 to more 398 
+
+effectively visualize the network structure of the “vanilla” RNN, which does not exhibit a clear community structure. 399 
+
+b-e, Diagrams depicting network modularity index (b), clustering coefficient (c), averaged path length (d) and small-400 
+
+world coefficient (e). For each motif distribution, 10 RNN repetitions models were trained and compared against 100 401 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+ER random networks. Here, * indicates P < 0.05 and *** indicates P < 0.001. f, The cumulative distribution curves of 402 
+
+connectivity weights for RNNs endowed with different motif distributions and the “vanilla” RNN. g, The heatmap 403 
+
+depicts the statistic value D of the Kolmogorov-Smirnov test for each pair of RNNs and P value , where D > 0.0054 404 
+
+denoting P < 0.001. The number of observations corresponds to their connectivity elements. h, Diagram of all 13 405 
+
+three-node motifs organized into a three-level hierarchy based on their local dynamical behavior. i, Normalized Z406 
+
+scores of the “FRP-specific” and “MOp-specific” motif distributions relative to the “FRP/MOp-averaged” distribution, 407 
+
+mapped onto the hierarchy in h. j, Latent-state dynamical trajectories during sample trials of the PDM task for RNNs 408 
+
+endowed with biological motif distributions. Collective activity was projected onto a two-dimensional latent space by 409 
+
+low-rank method 41 . k, Diagrams depicting statistical tracking of action deviation across recurrent steps for 200 410 
+
+normalized observations in the corresponding RNNs during the SIP task. Each line represents one trial. The 𝐀 axis 411 
+
+indicates recurrent iteration steps and the 𝐀 axis indicates action deviation. 412 413 
+
+## DISCUSSION 414 
+
+Single-neuron connectome data provide neuronal level information on the brain’s organizational principles 415 
+
+that could help to design more efficient and capable ANN architectures. Using the available mouse 416 
+
+intracortical connectome data, we identified the frequency distributions for all 13 possible 3-node 417 
+
+connectivity motifs across 50 brain regions and developed a computational algorithm CINA to endow 418 
+
+various motif distributions into the hidden-pool connectivity of ANNs. To further investigate functional 419 
+
+consequences of such motif organization in ANNs, we selected frontal pole of PFC (FRP) and primary 420 
+
+motor cortex (MOp) as two representative cortical areas involved in perceptual and motor functions, 421 
+
+respectively. We found that ANNs with “FRP-enhanced” and “MOp-enhanced” motif distributions achieved 422 
+
+the highest accuracy and efficiency in noise-resistant categorization and motor learning tasks, respectively. 423 
+
+This is consistent with the crucial function of PFC in maintaining stable decision-making in the presence of 424 
+
+noise interference 24 and MOp is essential for movement planning and execution 42 . Further graph theory-425 
+
+based studies of network topography showed that ANNs endowed with FRP-specific, MOp-specific, or 426 
+
+“FRP/MOp-averaged” motif distributions showed strong modularity and small-world features that were 427 
+
+absent in the “vanilla” ANN with random connectivity. These results support the notion that motif-endowed 428 
+
+network architecture underlies the elevated efficiency of ANNs. 429 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+Our motif analysis of the mouse connectome showed that FRP and MOp cortices contain higher 430 
+
+proportions of non-recurrent and recurrent connectivity motifs, respectively. Such cortex-specific motif 431 
+
+distributions are likely to serve for distinct functions of information processing. Compared with MOp, FRP-432 
+
+enriched motif 2 provides convergent connections that contribute to information integration. In contrast, 433 
+
+motif 13 recurrent connections were enriched in MOp, the motor area for mapping antecedent conditions 434 
+
+(e.g., sensory cues and recent choices) onto upcoming actions 42 , where recurrent connections could promote 435 
+
+rapid neuronal synchronization and persistent activity. These observations are in line with the previous 436 
+
+finding that non-recurrent sparse connectivity reduces noise interference and enhances the reliability in 437 
+
+categorization tasks 9, whereas relatively high recurrent connectivity motifs in MOp may support the 438 
+
+exploratory flexibility required for motor learning. Such cortex-specific motif organization may emerge 439 
+
+during evolution and development for performing specific tasks of various cortices. 440 
+
+In this study, we found that artificially increasing the bias of motif distributions in FRP and MOp 441 
+
+further enhanced the ANN’s performance (including both RNN and Transformer) in tasks associated with 442 
+
+these cortical regions. These results provide additional evidence that specific connectivity motif profiles 443 
+
+contribute to the learning of distinct computational functions. Moreover, the elevated performance of ANNs 444 
+
+with artificially enhanced motif distributions also exemplifies biologically inspired optimization of ANN 445 
+
+architecture for specific tasks. 446 
+
+Taken together, our work characterized the motif organization of various brain regions, developed a 447 
+
+computational algorithm for incorporating biological motif structures into ANNs, and demonstrated the high 448 
+
+performance of these ANNs in noise-resistant categorization and motor learning tasks. These findings 449 
+
+highlight the potential of connectome-inspired network design for improving artificial neural systems while 450 
+
+providing new insights into the functional significance of specific motif profiles in various brain regions. 451 452 
+
+## METHODS 453 
+
+Construction of intracortical connectivity matrix 454 
+
+To measure the motif distribution of intracortical connections in the mouse cortex, we generated a neuron 455 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+connection matrix based on the single-neuron mouse connectome data in the Digital Brain Database 456 
+
+(https://www.digital-brain.cn/). These single-neuron projectomes were obtained by the fluorescence Micro-457 
+
+Optical Sectioning Tomography (fMOST) method on mouse brains that were virally labeled with the 458 
+
+fluorescent protein to achieve sparse labeling of intracortical pyramidal projection neurons 43,44 , with a spatial 459 
+
+resolution of 0.3×0.3×0.3 . The acquired single-neuron images (including soma, dendritic and axonal 460 
+
+arbors) were traced and registered to the standard mouse brain template (i.e. the Allen CCFv3, ref. 13 ) in 461 
+
+order to obtain the spatial coordinates of the neuronal soma and axon/dendrite arbors ( Fig. 1a ). Single-462 
+
+neuron images from each intracortical region were projected simultaneously to the same template to 463 
+
+determine connectivity between each pair of neurons. 464 
+
+For each putative synaptic contact from source to target neurons, we computed the closest Euclidean 465 
+
+distance (ED) from every axonal arbor to dendritic arbor. Corresponding to the typical length of dendritic 466 
+
+spines and the size of axonal boutons 45,46 , we designated the axon-dendrite arbor pair with ED < 5 (other 467 
+
+ED thresholds are also considered in Fig. S3 ) as putative sites for synaptic contacts ( Fig. 1b ). The total 468 
+
+number of putative contact sites was used to indicate the connectivity score from neuron A to neuron B ( Fig. 469 
+
+1c ). To estimate the connectivity score of a given neuron pair, we used the following equation 46 :470 
+
+(1) 471 
+
+where ED (i) is the Euclidean distance for the ith putative pre- and postsynaptic sites. 472 473 
+
+Calculation of three-node motif distribution 474 
+
+We extended a previous matrix multiplication method 47 for two-edge motif distribution calculation to all 13 475 
+
+possible three-node motifs. Let be the adjacency matrix of the connection matrix , where 476 
+
+represents the presence of a directed connection from node to node , represents its absence. In 477 
+
+contrast, to carve out unconnected edges, we define and as the presence and absence of a 478 
+
+directed connection from node from node to node , respectively. We define the vector where all elements 479 
+
+are as . For convenience, the number of 13 three-node motifs is calculated by the equation in a 480 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+general form as follows: 481 
+
+(2) 482 
+
+where is the Hadamard product and is the matrix multiplication, is the ID number of three-node 483 
+
+motifs, is a constant. is mapped to be and , when the connection of the edge of 484 
+
+motif is present and absent, respectively (see Table S2 and Table S3 for more details). The frequency of 485 
+
+the three-node motif is calculated by dividing its count by the total number of all three-node motifs. 486 
+
+Note that the backpropagation algorithm was used to update model parameters by calculating the gradient of 487 
+
+the loss function 17 . Since this calculation relies on the continuity and differentiability of the loss function, we 488 
+
+approximate the binary adjacency matrix by setting , where a and b are 489 
+
+adjustable parameters ( Fig. S11 ). 490 
+
+The frequency of the motif that differed from the frequency found in a randomly connected 491 
+
+network is evaluated by calculating the Z score as utilized previously, 492 
+
+, where is the total number of the motif for the real 493 
+
+network, and are the mean and standard deviation of its total number of 100 ER 494 
+
+random networks. Moreover, Z scores were normalized to unit vectors to enable direct 495 
+
+comparison across different networks. To improve visualization of small normalized Z scores, we applied a 496 
+
+nonlinear transformation . This transformation preserves the sign and relative ordering of 497 
+
+normalized Z scores, and all normalized Z scores. All normalized Z scores presented in figures throughout 498 
+
+the manuscript refer to these transformed values unless explicitly stated otherwise. 499 500 
+
+Analyze the stability of motif dynamics 501 
+
+For a given motif class , the internal states evolve according to 502 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+. (3) 503 
+
+where denotes the motif-specific recurrent coupling matrix, represents the external input drive. 504 
+
+Following the Hartman–Grobman theorem, we characterized the local behavior of the nonlinear motif 505 
+
+dynamics by linearizing the system around an equilibrium point . The Jacobian matrix of the motif 506 
+
+dynamics with respect to the state is given by 507 
+
+(4) 508 
+
+where is the Kronecker delta and is the local gain at equilibrium. We then analyzed 509 
+
+the eigenvalue conditions of the motif-specific Jacobian to derive sufficient stability conditions for different 510 
+
+motif classes. 511 
+
+Based on these sufficient conditions, the 13 motifs were grouped into three dynamical levels. Level-1 512 
+
+motifs (IDs 1–4) form the most stable class and require only negative self-connections on all three nodes. 513 
+
+Level-2 motifs (IDs 5–8) additionally contain a single reciprocal pair and require both negative self-514 
+
+connections and an extra stability constraint on that pair. Level-3 motifs (IDs 9–13) contain multiple 515 
+
+reciprocal interactions or three-node cycles and require more stringent higher-order stability conditions. We 516 
+
+therefore used this three-level grouping as a dynamical descriptor of motif composition in the present study. 517 
+
+This grouping was not intended to imply that isolated three-node motifs uniquely determine the full-518 
+
+network dynamics. Rather, it provided an interpretable local structural bias for comparing biological motif 519 
+
+profiles. In this view, motif distributions enriched in Level-1 motifs were expected to favor more convergent 520 
+
+and robust dynamics, whereas motif distributions enriched in Level-3 motifs were expected to favor more 521 
+
+flexible and feedback-sensitive dynamics. 522 523 
+
+Similarity analysis of motif distributions 524 
+
+To visualize the similarity of motif distributions across 50 brain regions, we performed hierarchical 525 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+clustering on the 13-dimensional normalized Z score vectors of motif distributions ( Fig. 2a ). We calculated 526 
+
+the cosine similarity between motif distribution vectors of different brain regions in Fig. 2b using the 527 
+
+formula: , where A and B are the normalized Z score vectors of motif distributions for two 528 
+
+brain regions. Moreover, we used Uniform Manifold Approximation and Projection 48 (UMAP) to reduce the 529 
+
+motif distributions of different brain regions to 2-dimensional embeddings, followed by K-means clustering 530 
+
+to quantify the similarity among brain regions. 531 532 
+
+ANN architecture for categorization and motor learning tasks 533 
+
+We used ANNs with an input layer, a hidden pool of recurrently connected neurons, and an output layer for 534 
+
+visual/auditory categorization tasks or OpenAI MuJoCo 23 reinforcement motor learning tasks. Network 535 
+
+parameters are listed in Table S4 . Audio data from TIDIGITS 22 were preprocessed using Mel-frequency 536 
+
+cepstral coefficients (MFCC) to transform 1D raw data into 2D frequency spectrum. 537 538 
+
+Analysis of the modularity and small-world properties of ANNs 539 
+
+Community detection was performed using the Infomap algorithm 34,35 , and the quality of the community 540 
+
+partition was evaluated by the optimal modularity, computed using Newman’s directed modularity 36 :541 
+
+(5) 542 
+
+Here, represents the existence of an edge from node to node , denotes the corresponding 543 
+
+community label for node . if and belong to the same community, and 0 otherwise. The 544 
+
+community-partitioned network is visualized using the Python package NetworkX 49 .545 
+
+The Humphries–Gurney index 50 is used to compute the small-world property, using the formula 546 
+
+Here, is the clustering coefficient, is the average path length, and are the clustering 547 
+
+coefficient and average path length of ER random networks, respectively. The clustering coefficient and 548 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+average path length are computed as and , where is the number 549 
+
+of nodes, is the number of edges among the neighbors of node , is the number of neighbors of node ,550 
+
+and is the shortest path length from node to node .551 552 
+
+Data and code availability .553 
+
+All data needed to evaluate the conclusions in the paper are present in the main text with citations. All 554 
+
+source codes can be downloaded from https://github.com/I4m4I/motif. 555 556 
+
+SUPPLEMENTARY MATERIALS 557 
+
+The list of supplementary materials for this article is shown as follows: 558 
+
+Fig. S1. Spatial distributions of reconstructed neurons across cortical and hippocampal regions. 559 
+
+Fig. S2. Grouped spatial distributions of reconstructed neurons across four region classes. 560 
+
+Fig. S3. Similarity of motif distributions for various Euclidean distance (ED) thresholds. 561 
+
+Fig. S4. Similarity of motif distributions for various subsampling of neurons. 562 
+
+Fig. S5. Motif distributions for various subsampling of neurons. 563 
+
+Fig. S6. Similarity of motif distributions for various pruning ratios of weak connections. 564 
+
+Fig. S7. Frequency distributions of three-node motifs across brain region classes. 565 
+
+Fig. S8. Number of three-node motifs in the MOp brain region versus matched ER random networks. 566 
+
+Fig. S9. CINA-endowed biological and artificially biased motif distributions improve task 567 
+
+performance of SNNs. 568 
+
+Fig. S10. Connectivity weights of artificial neural networks. 569 
+
+Fig. S11. Accuracy and motif similarity of ANNs with FRP and MOp motif distributions. 570 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+Table S1. Number of neurons and synaptic connections in 50 brain regions. 571 
+
+Table S2. Variable values for 13 three-node motif formulas in Equation (2). 572 
+
+Table S3: Equations for calculating the number of all 13 three-node motifs. 573 
+
+Table S4. Network configurations of different ANNs on benchmark recognition and RL tasks. 574 575 
+
+## References 576 
+
+1 Gao, L. et al. Integrative analysis of single-neuron projectomes links connectome, transcriptome, and function in 577 
+
+the mouse cortex. Neuron (2025). 578 
+
+2 Gao, L. et al. Single-neuron projectome of mouse prefrontal cortex. Nature neuroscience 25 , 515-529 (2022). 579 
+
+3 Daugman, J. G. Uncertainty relation for resolution in space, spatial frequency, and orientation optimized by two-580 
+
+dimensional visual cortical filters. Journal of the Optical Society of America A 2, 1160-1169 (1985). 581 
+
+4 Hochreiter, S. & Schmidhuber, J. Long short-term memory. Neural Comput 9, 1735-1780, 582 
+
+doi:10.1162/neco.1997.9.8.1735 (1997). 583 
+
+5 Milo, R. et al. Network motifs: simple building blocks of complex networks. Science 298 , 824-827, 584 
+
+doi:10.1126/science.298.5594.824 (2002). 585 
+
+6 Luo, L. Architectures of neuronal circuits. Science 373 , eabg7285 (2021). 586 
+
+7 Van Vreeswijk, C. & Sompolinsky, H. Chaos in neuronal networks with balanced excitatory and inhibitory activity. 587 
+
+Science 274 , 1724-1726 (1996). 588 
+
+8 Shadlen, M. N. & Newsome, W. T. The variable discharge of cortical neurons: implications for connectivity, 589 
+
+computation, and information coding. Journal of neuroscience 18 , 3870-3896 (1998). 590 
+
+9 Prill, R. J., Iglesias, P. A. & Levchenko, A. Dynamic properties of network motifs contribute to biological network 591 
+
+organization. PLoS Biol 3, e343, doi:10.1371/journal.pbio.0030343 (2005). 592 
+
+10 Wernicke, S. & Rasche, F. FANMOD: a tool for fast network motif detection. Bioinformatics 22 , 1152-1153 (2006). 593 
+
+11 Ribeiro, P., Paredes, P., Silva, M. E., Aparicio, D. & Silva, F. A survey on subgraph counting: concepts, algorithms, and 594 
+
+applications to network motifs and graphlets. ACM computing surveys (csur) 54 , 1-36 (2021). 595 
+
+12 Sporns, O. & Kötter, R. Motifs in brain networks. PLoS biology 2, e369 (2004). 596 
+
+13 Wang, Q. et al. The allen mouse brain common coordinate framework: a 3D reference atlas. Cell 181 , 936-953 e920, 597 
+
+doi:10.1016/j.cell.2020.04.007 (2020). 598 
+
+14 Harris, J. A. et al. Hierarchical organization of cortical and thalamic connectivity. Nature 575 , 195-202 (2019). 599 
+
+15 Zhang, X.-J., Moore, J. M., Yan, G. & Li, X. Universal structural patterns in sparse recurrent neural networks. 600 
+
+Communications Physics 6, 243 (2023). 601 
+
+16 Gu, A. & Dao, T. Mamba: Linear-time sequence modeling with selective state spaces. arXiv preprint 602 
+
+arXiv:2312.00752 (2023). 603 
+
+17 Rumelhart, D. E., Hinton, G. E. & Williams, R. J. Learning representations by back-propagating errors. nature 323 ,604 
+
+533-536 (1986). 605 
+
+18 Dubreuil, A., Valente, A., Beiran, M., Mastrogiuseppe, F. & Ostojic, S. The role of population structure in 606 
+
+computations through neural dynamics. Nat Neurosci 25 , 783-794, doi:10.1038/s41593-022-01088-4 (2022). 607 
+
+19 Orchard, G., Jayawant, A., Cohen, G. K. & Thakor, N. Converting static image datasets to spiking neuromorphic 608 
+
+datasets using saccades. Frontiers in neuroscience 9, 437 (2015). 609 
+
+20 LeCun, Y., Cortes, C. & Burges, C. MNIST handwritten digit database. ATT Labs. Available: 610 
+
+http://yann.lecun.com/exdb/mnist 2 (2010). 611 
+
+21 Amir, A. et al. A low power, fully event-based gesture recognition system. Proceedings of the IEEE conference on 612 
+
+computer vision and pattern recognition , 7243-7252 (2017). 613 
+
+22 Leonard, R. A database for speaker-independent digit recognition. IEEE International Conference on Acoustics, 614 
+
+Speech, and Signal Processing 9, 328-331 (1984). 615 
+
+23 Todorov, E., Erez, T. & Tassa, Y. Mujoco: A physics engine for model-based control. IEEE/RSJ international 616 
+
+conference on intelligent robots and systems , 5026-5033 (2012). 617 
+
+24 Miller, E. K. & Cohen, J. D. An integrative theory of prefrontal cortex function. Annu Rev Neurosci 24 , 167-202, 618 
+
+doi:10.1146/annurev.neuro.24.1.167 (2001). 619 
+
+25 Paperno, D. et al. The LAMBADA dataset: Word prediction requiring a broad discourse context. Proceedings of the 620 
+
+54th annual meeting of the association for computational linguistics , 1525-1534 (2016). 621 
+
+26 Zellers, R., Holtzman, A., Bisk, Y., Farhadi, A. & Choi, Y. Hellaswag: Can a machine really finish your sentence? 622 
+
+Proceedings of the 57th annual meeting of the association for computational linguistics , 4791-4800 (2019). 623 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+27 Bisk, Y., Zellers, R., Gao, J. & Choi, Y. Piqa: Reasoning about physical commonsense in natural language. Proceedings 624 
+
+of the AAAI conference on artificial intelligence 34 , 7432-7439 (2020). 625 
+
+28 Clark, P. et al. Think you have solved question answering? try arc, the ai2 reasoning challenge. arXiv preprint 626 
+
+arXiv:1803.05457 (2018). 627 
+
+29 Sakaguchi, K., Bras, R. L., Bhagavatula, C. & Choi, Y. Winogrande: An adversarial winograd schema challenge at scale. 628 
+
+Communications of the ACM 64 , 99-106 (2021). 629 
+
+30 Ma, X. et al. Using adversarial networks to extend brain computer interface decoding accuracy over time. elife 12 ,630 
+
+e84296 (2023). 631 
+
+31 Hong, B. et al. A dataset of simultaneous two-photon calcium imaging and auditory discrimination behavior. 632 
+
+bioRxiv , 2026.2004. 2028.721534 (2026). 633 
+
+32 Xu, Z. et al. Aligned recordings of neural spiking activity and licking behavior in thirsty mice. bioRxiv , 2026.2004. 634 
+
+2021.720009 (2026). 635 
+
+33 Newman, M. E. J. Modularity and community structure in networks. Proceedings of the National Academy of 636 
+
+Sciences 103 , 8577-8582, doi:doi:10.1073/pnas.0601602103 (2006). 637 
+
+34 Rosvall, M. & Bergstrom, C. T. Multilevel Compression of Random Walks on Networks Reveals Hierarchical 638 
+
+Organization in Large Integrated Systems. PLOS ONE 6, e18209, doi:10.1371/journal.pone.0018209 (2011). 639 
+
+35 Rosvall, M. & Bergstrom, C. T. Maps of random walks on complex networks reveal community structure. 640 
+
+Proceedings of the national academy of sciences 105 , 1118-1123 (2008). 641 
+
+36 Leicht, E. A. & Newman, M. E. J. Community Structure in Directed Networks. Physical Review Letters 100 , 118703, 642 
+
+doi:10.1103/PhysRevLett.100.118703 (2008). 643 
+
+37 Erdos, P. L. & Rényi, A. On the evolution of random graphs. Transactions of the American Mathematical Society 286 ,644 
+
+257-257 (1984). 645 
+
+38 Watts, D. J. & Strogatz, S. H. Collective dynamics of ‘small-world’ networks. Nature 393 , 440-442, 646 
+
+doi:10.1038/30918 (1998). 647 
+
+39 Newman, M. E. The structure and function of complex networks. SIAM review 45 , 167-256 (2003). 648 
+
+40 Massey Jr, F. J. The Kolmogorov-Smirnov test for goodness of fit. Journal of the American statistical Association 46 ,649 
+
+68-78 (1951). 650 
+
+41 Mastrogiuseppe, F. & Ostojic, S. Linking connectivity, dynamics, and computations in low-rank recurrent neural 651 
+
+networks. Neuron 99 , 609-623. e629 (2018). 652 
+
+42 Economo, M. N. et al. Distinct descending motor cortex pathways and their roles in movement. Nature 563 , 79-84 653 
+
+(2018). 654 
+
+43 Wang, X. et al. Chemical sectioning fluorescence tomography: high-throughput, high-contrast, multicolor, whole-655 
+
+brain imaging at subcellular resolution. Cell Rep 34 , 108709, doi:10.1016/j.celrep.2021.108709 (2021). 656 
+
+44 Zhong, Q. et al. High-definition imaging using line-illumination modulation microscopy. Nat Methods 18 , 309-315, 657 
+
+doi:10.1038/s41592-021-01074-x (2021). 658 
+
+45 Iascone, D. M. et al. Whole-neuron synaptic mapping reveals spatially precise excitatory/inhibitory balance 659 
+
+limiting dendritic and somatic spiking. Neuron 106 , 566-578. e568 (2020). 660 
+
+46 Xiong, F., Liu, L. & Peng, H. Reconstruction of a connectome of single neurons in mouse brains by cross-validating 661 
+
+multi-scale multi-modality data. Nature Methods , 1-14 (2025). 662 
+
+47 Hu, Y., Trousdale, J., Josić, K. & Shea-Brown, E. Motif statistics and spike correlations in neuronal networks. Journal 663 
+
+of Statistical Mechanics: Theory and Experiment 2013 , P03012 (2013). 664 
+
+48 McInnes, L., Healy, J. & Melville, J. Umap: Uniform manifold approximation and projection for dimension reduction. 665 
+
+arXiv preprint arXiv:1802.03426 (2018). 666 
+
+49 Hagberg, A. A., Schult, D. A. & Swart, P. J. Exploring network structure, dynamics, and function using NetworkX. 667 
+
+Proceedings of the 7th Python in Science Conference (SciPy 2008) , 11-15 (2008). 668 
+
+50 Humphries, M. D. & Gurney, K. Network ‘Small-World-Ness’: A Quantitative Method for Determining Canonical 669 
+
+Network Equivalence. PLOS ONE 3, e0002051, doi:10.1371/journal.pone.0002051 (2008). 670 671 
+
+## Acknowledgements 672 
+
+This work was supported by the Brain Science and Brain-like Intelligence Technology - National Science 673 
+
+and Technology Major Project (2025ZD0217200), Strategic Priority Research Program of the Chinese 674 
+
+Academy of Sciences (Grant No. XDB1010302), CAS Project for Young Scientists in Basic Research 675 
+
+(YSBR-116), Youth Innovation Promotion Association CAS, the Lingang Laboratory Fund (Grant No. LG-676 
+
+GG-202402-06-07, LGL-1987-09), the Shanghai Municipal Science and Technology Project (Grant No. 677 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+25ZR1401370, 25LN3200400), Special Support Project of Guangdong Province (Grant No.0720240209). 678 
+
+The numerical calculations in this study were carried out on the ORISE Supercomputer. 679 680 
+
+## Author contributions 681 
+
+T.Z. designed the study. T.Z., Y.S., W.Y., J.Z., W.S., X.Z., C.H., X.Y.C., S.Z., S.J., Y.Y., X.C., X.X., M-m. P, 682 
+
+Y.G.S., and B.X. performed the discussion and wrote the paper together. Y.S. contributed to the design of the 683 
+
+theoretical framework. W.Y., J.Z., X.Z., C.H., X.Y.C., S.Z., and Y.Y. performed the experiments. S.J. 684 
+
+contributed to the figures. W.S., X.C., X.X., and Y.G.S. contributed to the preparation of biological data. 685 686 
+
+## Competing interests 687 
+
+The authors declare no competing interests. 688 689 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+# Supplementary Materials for 690 
+
+## Incorporation of single-neuron projectome-based connectivity motifs enhances 691 
+
+## the cortex-specific performance of artificial neural networks 692 
+
+Yue Sun 1,# , Wangzi Yao 2,3,# , Jian Zhang 1,# , Wei Song 1,4,# , Xuanle Zhao 2,3,# ,693 
+
+Chonghe Hao 1, Xinyu Chen 5, Shuxin Zeng 3, Shuncheng Jia 1, Yun Yang 1, Xu Chen 1, Xiong Xiao 1,694 
+
+Mu-ming Poo 1, Yangang Sun 1, Bo Xu 2 and Tielin Zhang 1,3,* 
+
+695 696 
+
+> 1
+
+Center for Excellence in Brain Science and Intelligence Technology, State Key Laboratory of Brain 697 
+
+Cognition and Brain-inspired Intelligence Technology, Institute of Neuroscience, Chinese Academy of 698 
+
+Sciences, Shanghai 200031, China. 699 
+
+> 2
+
+Institute of Automation, Chinese Academy of Sciences, Beijing 100190, China. 700 
+
+> 3
+
+School of Artificial Intelligence, University of Chinese Academy of Sciences, Beijing 100049, China. 701 
+
+> 4
+
+School of Future Technology, University of Chinese Academy of Sciences, Beijing 100049, China. 702 
+
+> 5
+
+School of Artificial Intelligence, China University of Mining and Technology-Beijing, Beijing, 100083, 703 
+
+China. 704 705 
+
+* Corresponding authors. Emails: zhangtielin@ion.ac.cn 706 
+
+# Co-first authors. 707 708 
+
+## The PDF file includes Figures S1–S11 and Tables S1–S4. 709 710 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+## SUPPLEMENTARY FIGURES 711 
+
+713 
+
+Fig. S1. Spatial distributions of reconstructed neurons across cortical and hippocampal regions. Spatial 714 
+
+distributions of reconstructed neurons in individual regions belonging to prefrontal cortex, hippocampal formation, 715 
+
+motor-sensory cortices, and audiovisual cortices. Each panel shows neurons from one subregion projected onto a 716 
+
+transparent whole-brain template, with colors indicating the corresponding brain region class. 717 718 
+
+719 
+
+Fig. S2. Grouped spatial distributions of reconstructed neurons across four region classes. Spatial distributions of 720 
+
+reconstructed neurons grouped by prefrontal cortex, hippocampal formation, motor-sensory cortices, and audiovisual 721 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+cortices. Each panel shows neurons from all included regions within one class, projected onto a transparent whole-722 
+
+brain template. 723 724 
+
+725 
+
+Fig. S3. Similarity of motif distributions for various Euclidean distance (ED) thresholds. a, Diagram showing the 726 
+
+similarity of the frequency distribution of 13 three-node motifs for 50 brain regions across various Euclidean distance 727 
+
+(ED) thresholds. b, Schematic diagram illustrating the Pearson correlation of motif distributions between the baseline 728 
+
+threshold (5 ) and alternative distance thresholds (3, 7, 9, and 11 ). 729 730 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+731 
+
+Fig. S4. Similarity of motif distributions for various subsampling of neurons. a, Diagram showing the similarity 732 
+
+of the frequency distribution of 13 three-node motifs for 50 brain regions across various pruning ratio of weak 733 
+
+connection. b, Schematic diagram illustrating the Pearson correlation for 50 brain regions between random resampling 734 
+
+of subsets (from 20% to 100%) of total neurons. c, Deviation of normalized Z-scores between subsampled and full 735 
+
+neurons as a function of edge count across different brain regions. 736 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+737 
+
+Fig. S5. Motif distributions for various subsampling of neurons. a, The percentage of different type neurons in the 738 
+
+total number neurons. Here, IT, PT, and CT are intratelencephalic, pyramidal tract, and corticothalamic neurons. b, 739 
+
+The frequency distributions of 13 three-node motifs for 50 brain regions of IT neurons. c, Schematic diagram 740 
+
+illustrating the Pearson correlation for 50 brain regions between IT sampling and the total number of neurons. 741 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+742 
+
+Fig. S6. Similarity of motif distributions for various pruning ratios of weak connections. a, Diagram showing the 743 
+
+similarity of the frequency distribution of 13 three-node motifs for 50 brain regions across various pruning ratio of 744 
+
+weak connection. b, Schematic diagram illustrating the Pearson correlation for 50 brain regions across various pruning 745 
+
+ratio of weak connection. 746 747 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+748 
+
+Fig. S7. Number of three-node motifs in the MOp brain region versus matched ER random networks. Diagram 749 
+
+showing counts of the 13 three-node motifs observed in the MOp region and the mean ± standard deviation of counts 750 
+
+for each motif in the corresponding ER random network. These values were used to compute the normalized Z score 751 
+
+for motif over- or under-representation. 752 753 
+
+754 
+
+Fig. S8. Frequency distributions of three-node motifs across brain region classes. Motif frequencies for all 13 755 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+three-node motifs across prefrontal cortex, hippocampal formation, motor-sensory cortices, and audiovisual cortices. 756 
+
+Violin plots show normalized Z scores for each motif across the four brain region classes, with significance bars 757 
+
+indicating pairwise differences among classes. The bottom panels summarize the included subregions together with 758 
+
+their neuron and edge counts for each brain region class. 759 760 
+
+761 
+
+Fig. S9. CINA-endowed biological and artificially biased motif distributions improve task performance of SNNs. 762 
+
+a, Performance of CINA-endowed SNNs with the “vanilla” control in the four noise-resistant categorization tasks, 763 
+
+shown as accuracy under increasing Gaussian noise variance. b, Performance of CINA-endowed SNNs with the 764 
+
+“vanilla” control in the four motor learning tasks, shown as reward score during reinforcement learning. Different 765 
+
+motif distributions are color-coded (box below). 766 767 
+
+768 
+
+Fig. S10. Connectivity weights of artificial neural networks. a, Heatmap diagram depicting connectivity weights of 769 
+
+hidden pool neurons for ANNs endowed with “FRP-specific”, “MOp-specific”, “FRP/MOp-averaged” motif 770 
+
+distributions and the “vanilla” distribution. 771 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+772 
+
+773 
+
+Fig. S11. Accuracy and motif similarity of ANNs with FRP and MOp motif distributions. a-b , Accuracy and 774 
+
+motif similarity of ANNs endowed with FRP (a) and MOp (b) motif distributions on a perceptual decision- making 775 
+
+task across varying parameter configurations. The best configuration (Sigmoid bias = 0.05, slope = 100; red star) was 776 
+
+selected for all tasks. 777 778 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+## SUPPLEMENTARY TABLES 779 
+
+Table S1. Number of neurons and synaptic connections in 50 brain regions. 780 
+
+Abbreviation Full name Neurons Edges 
+
+FRP Frontal pole 222 1758 
+
+PL Prelimbic area 1384 18967 
+
+ILA Infralimbic area 225 1268 
+
+ORBl Orbital area, lateral part 892 9701 
+
+ORBvl Orbital area, ventrolateral part 907 8009 
+
+ORBm Orbital area, medial part 677 4138 
+
+ACAd Anterior cingulate area, dorsal part 1225 35823 
+
+ACAv Anterior cingulate area, ventral part 983 12723 
+
+AId Agranular insular area, dorsal part 1166 25435 
+
+AIv Agranular insular area, ventral part 422 10487 
+
+AIp Agranular insular area, posterior part 196 5222 
+
+VISC Visceral area 275 9093 
+
+GU Gustatory areas 250 6065 
+
+MOs Secondary motor area 2261 142019 
+
+MOp Primary motor area 957 39569 
+
+SSs Supplemental somatosensory area 909 34262 
+
+SSp-ul Primary somatosensory area, upper limb 355 9021 
+
+SSp-ll Primary somatosensory area, lower limb 317 9824 
+
+SSp-tr Primary somatosensory area, trunk 292 6934 
+
+SSp-bfd Primary somatosensory area, barrel field 1187 66885 
+
+SSp-m Primary somatosensory area, mouth 591 20288 
+
+SSp-n Primary somatosensory area, nose 199 4878 
+
+RSPd Retrosplenial area, dorsal part 349 6914 
+
+RSPv Retrosplenial area, ventral part 781 43009 
+
+RSPagl Retrosplenial area, lateral agranular part 278 4848 
+
+VISp Primary visual area 1059 28691 
+
+VISa Anterior visual area 624 23200 
+
+VISl Lateral visual area 194 4685 
+
+VISli Laterointermediate visual area 54 730 
+
+VISam Anteromedial visual area 117 1765 
+
+VISpm Posteromedial visual area 108 1399 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+VISrl Rostrolateral visual area 168 3970 
+
+VISpl Posterolateral visual area 63 399 
+
+VISpor Postrhinal area 92 1440 
+
+VISal Anterolateral visual area 153 3529 
+
+AUDp Primary auditory area 541 35268 
+
+AUDv Ventral auditory area 222 6725 
+
+AUDd Dorsal auditory area 203 6395 
+
+AUDpo Posterior auditory area 138 4076 
+
+TEa Temporal association areas 444 14471 
+
+CA3 Cornu Ammonis 3 1066 148625 
+
+CA1 Cornu Ammonis 1 4396 296256 
+
+DG Dentate gyrus 3307 38194 
+
+SUB Subiculum 928 27397 
+
+ProS Prosubiculum 677 14234 
+
+PAR Parasubiculum 257 2406 
+
+PRE Presubiculum 416 2102 
+
+POST Postsubiculum 152 774 
+
+ENT Entorhinal area 1014 44393 
+
+PIR Piriform area 879 43490 
+
+781 
+
+> .CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint
+
+Table S2. Variable values for 13 three-node motif formulas in Equation (2). 782 
+
+Motifs ID (n) 
+
+1 1/2 
+
+2 1/2 
+
+3 1
+
+4 1
+
+5 1
+
+6 1
+
+7 1/2 
+
+8 1/2 
+
+9 1/2 
+
+10 1/3 
+
+11 1
+
+12 1
+
+13 1/6 
+
+783 784 
+
+.CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint Table S3. Equations for calculating the number of all 13 three-node motifs. 785 786 787 
+
+Motifs ID Equations for calculating the number of motifs 
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10 
+
+11 
+
+12 
+
+13 
+
+.CC-BY-NC-ND 4.0 International license made available under a (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is The copyright holder for this preprint this version posted June 17, 2026. ;https://doi.org/10.64898/2026.06.12.732007 doi: bioRxiv preprint Table S4. Network configurations of different ANNs on benchmark recognition and RL tasks. 788 
+
+Hyperparameter PDM MNIST 
+
+DVS Gesture 
+
+TIDIGITS 
+
+Inverted pendulum 
+
+Inverted double pendulum 
+
+Walker Ant 
+
+Input dimension 1 28 256 20 4 9 17 27 
+
+Hidden dimension 512 512 512 256 512 512 512 512 
+
+Output dimension 1 10 11 10 1 1 6 8
+
+Batch size 64 256 64 16 64 64 64 64 
+
+Learning rate 1e-3 1e-3 1e-3 1e-2 3e-5 3e-5 3e-5 3e-5 
+
+Motif learning rate 1e-2 1e-2 1e-2 1e-2 1e-2 1e-2 1e-2 1e-2 
+
+Training epochs 50 5 300 150 60 2000 4000 3000 
+
+789

@@ -1,0 +1,69 @@
+{
+  "label": "2026-06-18",
+  "date": "2026-06-18",
+  "generated_at": "2026-06-18T22:01:19",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202606/18/2606.15633v2-formalizing-and-mitigating-structural-distortion-in-llm-attention-for-graph-reasoning",
+      "section": "deep",
+      "title_en": "Formalizing and Mitigating Structural Distortion in LLM Attention for Graph Reasoning",
+      "authors": "Donald Loveland, Puja Trivedi, Ari Weinstein, Edward W Huang, Danai Koutra",
+      "date": "2026-06-14",
+      "pdf": "https://arxiv.org/pdf/2606.15633v2",
+      "score": "9.0",
+      "evidence": "分析并缓解LLM图推理时因图线性化导致的结构失真",
+      "tldr": "大语言模型在图推理时需将图结构线性化为序列，这因图带宽问题引入结构失真，但失真机制长期归因于提示或模型规模而未明确。本文揭示旋转位置嵌入将图线性化变为带宽依赖的注意力衰减，抑制了序列中远离的邻接节点间注意力，从而将问题锚定在注意力错位上。基于此提出图对齐语言注意力（GaLA），一种推理时轻量修改，通过偏置强化图邻接节点注意力，同时保留序列归纳偏置。在文本属性图基准上，GaLA以几乎零开销提升性能，证明纠正注意力衰减是可行且关键的优化方向。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Large Language Models (LLMs) have shown promise for reasoning over Text-Attributed Graphs (TAGs). However, applying LLMs to graphs requires linearizing their structure into sequences, introducing distortion rooted in the graph bandwidth problem. While this distortion has been shown to degrade performance, it is often attributed to prompt design or model scale, leaving the underlying mechanism unclear. In this work, we show \\textit{how} rotary positional embeddings turn graph linearization into bandwidth-dependent attention decay, suppressing attention between graph-adjacent nodes that are forced far apart in the serialized sequence. This shifts the focus of LLM-based graph reasoning from prompt engineering and scaling toward correcting attention misalignment. Motivated by this analysis, we propose \\textbf{G}raph-\\textbf{a}ligned \\textbf{L}anguage \\textbf{A}ttention (\\textbf{GaLA}), a lightweight, inference-time modification for LLMs. GaLA biases attention toward graph-adjacent nodes while preserving the LLM's sequential inductive biases. Across TAG benchmarks, GaLA improves performance with negligible overhead, demonstrating that distortion is a correctable bottleneck in LLM-based graph reasoning.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/18/biorxiv-10-64898-2026-02-15-706011-v2-moldeberta-foundational-model-for-physicochemical-and-substructure-informed-molecular-representation-learning",
+      "section": "deep",
+      "title_en": "MolDeBERTa: Foundational Model for Physicochemical and Substructure-Informed Molecular Representation Learning",
+      "authors": "de Oliveira, G. B., Saeed, F.",
+      "date": "2026-06-10",
+      "pdf": "https://www.biorxiv.org/content/10.64898/2026.02.15.706011v2.full.pdf",
+      "score": "8.0",
+      "evidence": "提出结合物理化学与子结构信息的分子语言模型，利用大语言模型处理图结构分子数据",
+      "tldr": "现有分子基础模型依赖通用掩码语言建模，未融入理化性质与子结构信息，限制表征精度。MolDeBERTa基于DeBERTaV2架构，设计三种新预训练目标，在大规模SMILES上预训练，注入化学偏置，强化属性与子结构学习。在MoleculeNet九项任务中，四项性能最优，七项超越同基线，回归误差降16%，分类ROC-AUC升2.2点。该工作为材料与药物发现提供了化学感知的分子表征范式，代码与模型已公开。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Foundational models that learn the \"language\" of molecules are essential for accelerating material and drug discovery. These self-learning models can be trained on large collections of unlabelled molecules, enabling applications such as property prediction, molecule design, and screening for specific functions. However, existing molecular language models rely on masked language modeling, a generic token-level objective that is agnostic to physico-chemical and substructure molecular properties. Here we introduce MolDeBERTa, a chemistry-informed self-supervised molecular encoder built upon the DeBERTaV2 architecture with byte-level Byte-Pair Encoding (BPE) tokenization. MolDeBERTa is pre-trained on up to 123 million SMILES from PubChem using three novel pretraining objectives designed to inject strong inductive biases for molecular properties and substructure similarity directly into the latent space. The model is systematically investigated across three architectural scales, two dataset sizes, and five distinct pretraining objectives, of which three are novel and two are adapted from prior work. When evaluated on 9 MoleculeNet benchmarks, MolDeBERTa achieves the best overall performance on 4 out of 9 tasks and outperforms SMILES-based encoders on 7 out of 9 tasks, with up to a 16% reduction in regression error, and improvements of up to 2.2 ROC-AUC points on classification tasks. The source code, pretrained checkpoints, and datasets are publicly available at https://github.com/pcdslab/MolDeBERTa and https://huggingface.co/collections/SaeedLab/moldeberta.\n\nCCS ConceptsO_LIComputing methodologies [-&gt;] Neural networks; Natural language processing; Learning paradigms.\nC_LI",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/18/2606.19150v1-complementary-attention-head-pruning-for-efficient-transformers",
+      "section": "quick",
+      "title_en": "Complementary Attention Head Pruning for Efficient Transformers",
+      "authors": "Yaniv Livertovsky, Shahar Somin, Gonen Singer",
+      "date": "2026-06-17",
+      "pdf": "https://arxiv.org/pdf/2606.19150v1",
+      "score": "7.0",
+      "evidence": "利用图聚类实现Transformer中互补注意力头选择以进行剪枝",
+      "tldr": "大规模Transformer模型参数冗余严重，制约其在资源受限环境的高效部署。现有注意头剪枝方法依赖梯度或门控，存在不稳定与结构退化，且需手动调节稀疏率。本文提出互补注意力头剪枝框架CAHP，以图论优化重定义头选择，结合图聚类和信息论距离自动识别并保留拓扑多样、功能互补的头子集，通过多项式拟合边际性能曲线自适应确定剪枝量。在SST-5和MNLI基准上，多Transformer变体实验显示，CAHP在高压缩比下性能显著超越主流方法，且避免仅保留输出近端头，有效留存中间层关键头。方法无需预设稀疏度，为Transformer自动结构化剪枝提供新途径。",
+      "tags": "query:graph-llm",
+      "abstract_en": "The remarkable success of Transformer-based models in natural language processing stems from architectural scaling, which leads to a large number of parameters and hinders deployment in resource-constrained environments. While structured pruning offers a pathway to compression, existing state-of-the-art methods often rely on gradient-based importance ranking or stochastic gating, which suffer from instability, structural degeneration, and the need for extensive manual hyperparameter tuning. In this paper, we introduce CAHP (Complementary Attention Head Pruning), a novel post-hoc framework that redefines head selection as a global graph-theoretical problem. Rather than evaluating heads in isolation, CAHP utilizes graph-based clustering combined with information-theoretic distance measures to identify and preserve a topologically diverse subset of complementary attention heads. Without requiring a predefined sparsity level or pruning ratio, the framework automatically determines the number of selected attention heads across layers by identifying a diminishing marginal performance curve, where pruning additional heads leads to a sharp degradation in performance, as determined by the chosen polynomial degree. Extensive evaluations on the SST-5 and MNLI benchmarks, across different Transformer model scales, demonstrate that CAHP consistently outperforms competitive baselines, particularly in high-compression regimes. Furthermore, our structural analysis shows that CAHP avoids the \"proximity bias\" of gradient-based pruning methods, which tend to preserve heads mainly in layers close to the output, and instead retains a functionally critical set of attention heads in the model's intermediate layers.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/18/biorxiv-10-64898-2026-06-12-732007-v1-incorporation-of-single-neuron-projectome-based-connectivity-motifs-enhances-the-cortex-specific-performance-of-artificial-neural-networks",
+      "section": "quick",
+      "title_en": "Incorporation of single-neuron projectome-based connectivity motifs enhances the cortex-specific performance of artificial neural networks",
+      "authors": "Sun, Y., Yao, W., Zhang, J., Song, W., Zhao, X., Hao, C., Chen, X., Zeng, S., Jia, S., Yang, Y., Xiao, X., Poo, M.-m., Xu, B., Zhang, T.",
+      "date": "2026-06-17",
+      "pdf": "https://www.biorxiv.org/content/10.64898/2026.06.12.732007v1.full.pdf",
+      "score": "7.0",
+      "evidence": "使用脑连接模体（图模式）增强基于Transformer的大语言模型训练",
+      "tldr": "小鼠大脑单神经元连接组分析揭示了不同皮层区的三节点连接模体特异轮廓。提出CINA算法将自然模体融入RNN和Transformer，发现皮层模体显著提升抗噪分类和运动学习任务表现，且皮层特异模体进一步增强相关功能任务，通过人工增大模体偏差可强化效果，在LLM的语言问答和脑信号解码中验证。图论分析揭示了模块化和小世界特性涌现。该研究不仅提供了连接组启发的ANN架构优化方法，还揭示了特定皮层模体轮廓的功能重要性。",
+      "tags": "query:graph-llm",
+      "abstract_en": "The organizational principles of natural neural networks could inspire the new architecture design of artificial neural networks (ANNs). Analysis of single-neuron connectomes of mouse brains revealed distinct profiles of three-node connectivity motifs in various cortical areas and hippocampal formation. A connectome-informed neural network algorithm (\"CINA\") was developed to incorporate natural connectivity motifs into ANN algorithms represented by recurrent neural network (RNN) and transformer-based large language model (LLM). We found that incorporation of the average profile of cortical motifs improved the RNN's performance in noise-resistant categorization and motor learning benchmark tasks, as compared with RNNs with random connectivity. Notably, incorporating cortex-specific motifs further elevated the RNN's performance in tasks related to the cortical function, and this effect was enhanced by artificially increasing the bias in the motif profile. Similar experimental results were verified on an LLM using Motif-Transformer for natural language question answering and brain-signal decoding tasks. Graph-theoretic analyses showed that incorporating natural motifs drove the emergence of modular and small-world properties in ANNs. Together, we demonstrated not only connectome-inspired optimization of ANN architecture but also functional significance of specific motif profiles in various cortices.",
+      "source": "biorxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

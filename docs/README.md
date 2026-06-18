@@ -6,31 +6,34 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-17
-- 运行时间：2026-06-17 21:20:07 UTC
+- 最新运行日期：2026-06-18
+- 运行时间：2026-06-18 22:01:11 UTC
 - 运行状态：成功
-- 本次总论文数：3
+- 本次总论文数：4
 - 精读区：2
-- 速读区：1
+- 速读区：2
 
 ### 今日简报（AI）
-今日深读两篇GraphRAG高分研究：LLM驱动科研逻辑图谱萃取与统一上下文关系感知图检索框架，速览流式多粒度图推理新作。  
-最值得关注的方向是将研究过程结构化与图增强生成深度融合，让大模型从“读懂单篇”跃迁到“理清逻辑脉络”。  
-建议读者优先体验Research Process Graph的思路，尝试用图模型梳理自己的知识线索，再关注FlowRAG的推理演进。
-- 详情：[/202606/17/README](/202606/17/README)
+今日精读两篇AI前沿论文，重点审视了大模型在图推理中的注意力失真问题及分子表征新基准模型。
+最值得关注的是揭示大语言模型图推理时面临结构失真，并给出形式化缓解方法，同时分子模型MolDeBERTa为融合物理化学子结构信息提供了新方案。
+对关注AI底层能力与领域落地的读者，可从注意力机制优化和垂直领域基础模型两条路径跟进，尝试在自身场景中验证其泛化效果。
+- 详情：[/202606/18/README](/202606/18/README)
 
 ### 精读区论文标签
-1. [Research Process Graph: LLM-Driven Extraction and Hierarchical Organization of Research Logic](/202606/17/biorxiv-10-64898-2026-06-09-731113-v1-research-process-graph-llm-driven-extraction-and-hierarchical-organization-of-research-logic)  
-   标签：评分：10.0/10、query:graph-llm
-   evidence：利用LLM流水线从科学文章中提取研究逻辑图（节点和边）
-2. [A Unified Framework for Context-Aware and Relation-Aware Graph Retrieval-Augmented Generation](/202606/17/2606.18075v1-a-unified-framework-for-context-aware-and-relation-aware-graph-retrieval-augmented-generation)  
+1. [Formalizing and Mitigating Structural Distortion in LLM Attention for Graph Reasoning](/202606/18/2606.15633v2-formalizing-and-mitigating-structural-distortion-in-llm-attention-for-graph-reasoning)  
    标签：评分：9.0/10、query:graph-llm
-   evidence：提出分层图RAG框架，融合上下文和关系进行知识整合，用图结构化检索增强LLM生成。
+   evidence：分析并缓解LLM图推理时因图线性化导致的结构失真
+2. [MolDeBERTa: Foundational Model for Physicochemical and Substructure-Informed Molecular Representation Learning](/202606/18/biorxiv-10-64898-2026-02-15-706011-v2-moldeberta-foundational-model-for-physicochemical-and-substructure-informed-molecular-representation-learning)  
+   标签：评分：8.0/10、query:graph-llm
+   evidence：提出结合物理化学与子结构信息的分子语言模型，利用大语言模型处理图结构分子数据
 
 ### 速读区论文标签
-1. [FlowRAG: Synergizing Explicit Reasoning via Frequency-Aware Multi-Granularity Graph Flow](/202606/17/2606.17856v1-flowrag-synergizing-explicit-reasoning-via-frequency-aware-multi-granularity-graph-flow)  
+1. [Complementary Attention Head Pruning for Efficient Transformers](/202606/18/2606.19150v1-complementary-attention-head-pruning-for-efficient-transformers)  
    标签：评分：7.0/10、query:graph-llm
-   evidence：提出GraphRAG框架，利用异构图提升大语言模型的检索与多跳推理
+   evidence：利用图聚类实现Transformer中互补注意力头选择以进行剪枝
+2. [Incorporation of single-neuron projectome-based connectivity motifs enhances the cortex-specific performance of artificial neural networks](/202606/18/biorxiv-10-64898-2026-06-12-732007-v1-incorporation-of-single-neuron-projectome-based-connectivity-motifs-enhances-the-cortex-specific-performance-of-artificial-neural-networks)  
+   标签：评分：7.0/10、query:graph-llm
+   evidence：使用脑连接模体（图模式）增强基于Transformer的大语言模型训练
 
 
 <div class="dpr-home-promo-card">
