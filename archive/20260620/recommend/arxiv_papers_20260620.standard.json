@@ -1,0 +1,55 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-20T21:13:22.784511+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2606.19264v1",
+      "source": "arxiv",
+      "title": "Structured Inference with Large Language Gibbs",
+      "abstract": "The knowledge encoded in large language models (LLMs) can serve as a substrate for structured reasoning over variables describing a complex world, but accessing this knowledge in a probabilistically coherent manner poses a difficult inference problem. We propose Large Language Gibbs, a scheme for structured probabilistic inference that uses conditional distributions of an LLM as transition operators. Rather than sampling structured objects through single-pass autoregressive generation, we iteratively resample individual variables conditioned on others using an LLM's next-token conditionals. This approach avoids order-dependent biases and produces a stationary distribution that reflects a compromise between all local conditionals. We apply this approach to sampling from synthetic distributions, consistent reasoning tasks, and Bayesian structure learning. The results suggest that the use of LLM conditionals in MCMC is a practical alternative to one-pass generation for structured probabilistic inference under a world prior accessible through noisy LLM conditionals.",
+      "authors": [
+        "Sanghyeok Choi",
+        "Henry Gouk",
+        "Esmeralda S. Whitammer"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-06-17T16:40:32+00:00",
+      "link": "https://arxiv.org/pdf/2606.19264v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Uses LLMs for structured probabilistic inference, applicable to graph-structured data",
+      "llm_evidence_cn": "利用大型语言模型进行结构化概率推断，可应用于图结构数据",
+      "llm_evidence": "利用大型语言模型进行结构化概率推断，可应用于图结构数据",
+      "canonical_evidence": "利用大型语言模型进行结构化概率推断，可应用于图结构数据",
+      "llm_tldr_en": "Proposes Large Language Gibbs, using LLM conditionals as transition operators for iterative structured inference, enabling coherent reasoning over graph-like variable dependencies.",
+      "llm_tldr_cn": "本文针对大型语言模型在结构化知识上进行概率一致推理的难题，提出Large Language Gibbs方法。该方法将LLM的条件分布作为转移算子，通过迭代地基于其他变量重采样单个变量，避免了顺序依赖偏差，生成反映全局条件分布的平稳分布。在合成图结构上的采样实验证明了其有效性，为利用LLM进行图数据上的结构化推理提供了可行方案。",
+      "llm_tldr": "本文针对大型语言模型在结构化知识上进行概率一致推理的难题，提出Large Language Gibbs方法。该方法将LLM的条件分布作为转移算子，通过迭代地基于其他变量重采样单个变量，避免了顺序依赖偏差，生成反映全局条件分布的平稳分布。在合成图结构上的采样实验证明了其有效性，为利用LLM进行图数据上的结构化推理提供了可行方案。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

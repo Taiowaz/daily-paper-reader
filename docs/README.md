@@ -6,26 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-19
-- 运行时间：2026-06-19 21:44:21 UTC
+- 最新运行日期：2026-06-20
+- 运行时间：2026-06-20 21:14:15 UTC
 - 运行状态：成功
 - 本次总论文数：1
-- 精读区：1
-- 速读区：0
+- 精读区：0
+- 速读区：1
 
 ### 今日简报（AI）
-今日精读一篇满分论文，探索如何让视觉语言模型“在上下文中”看懂你第一视角拍下的行为。
-研究发现，把视频帧转化成时序图，再配合示例对比，能让模型直接推理动作而不需微调。
-想快速跟上，可关注“时序图+上下文学习”在智能眼镜或多模态助手场景的应用潜力。
-- 详情：[/202606/19/README](/202606/19/README)
+今速读一篇用大语言模型做结构化推断的论文《Structured Inference with Large Language Gibbs》  
+核心看点：用吉布斯采样让LLM在关系、图等结构化约束下进行概率推理，提升一致性与可控性  
+建议关注LLM与概率编程、结构化采样的交叉方向，从关系推理开始小规模复现实验
+- 详情：[/202606/20/README](/202606/20/README)
 
 ### 精读区论文标签
-1. [From Frames to Temporal Graphs: In-Context Egocentric Action Recognition with Vision-Language Models](/202606/19/2606.15417v1-from-frames-to-temporal-graphs-in-context-egocentric-action-recognition-with-vision-language-models)  
-   标签：评分：10.0/10、query:graph-llm
-   evidence：将自我中心视频转化为时序动作图，使用VLM进行上下文图推理
+- 本次无精读推荐。
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [Structured Inference with Large Language Gibbs](/202606/20/2606.19264v1-structured-inference-with-large-language-gibbs)  
+   标签：评分：7.0/10、query:graph-llm
+   evidence：利用大型语言模型进行结构化概率推断，可应用于图结构数据
 
 
 <div class="dpr-home-promo-card">

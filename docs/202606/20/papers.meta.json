@@ -1,0 +1,24 @@
+{
+  "label": "2026-06-20",
+  "date": "2026-06-20",
+  "generated_at": "2026-06-20T21:14:21",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202606/20/2606.19264v1-structured-inference-with-large-language-gibbs",
+      "section": "quick",
+      "title_en": "Structured Inference with Large Language Gibbs",
+      "authors": "Sanghyeok Choi, Henry Gouk, Esmeralda S. Whitammer",
+      "date": "2026-06-17",
+      "pdf": "https://arxiv.org/pdf/2606.19264v1",
+      "score": "7.0",
+      "evidence": "利用大型语言模型进行结构化概率推断，可应用于图结构数据",
+      "tldr": "大型语言模型（LLMs）的丰富知识为复杂世界变量的结构化推理提供了基础，但如何以概率上连贯的方式从中提取知识是一个难题。本文提出了Large Language Gibbs，一个将LLM的条件分布作为马尔可夫链蒙特卡洛转移算子的方案，通过迭代地对各个变量进行条件重采样，而非单次自回归生成，从而避免顺序依赖偏差。在合成分布采样、一致性推理和贝叶斯结构学习等任务上，该方法的采样质量优于单次生成。表明在含噪LLM条件分布可访问的世界先验下，MCMC结合LLM是结构化概率推理的可行替代方案。",
+      "tags": "query:graph-llm",
+      "abstract_en": "The knowledge encoded in large language models (LLMs) can serve as a substrate for structured reasoning over variables describing a complex world, but accessing this knowledge in a probabilistically coherent manner poses a difficult inference problem. We propose Large Language Gibbs, a scheme for structured probabilistic inference that uses conditional distributions of an LLM as transition operators. Rather than sampling structured objects through single-pass autoregressive generation, we iteratively resample individual variables conditioned on others using an LLM's next-token conditionals. This approach avoids order-dependent biases and produces a stationary distribution that reflects a compromise between all local conditionals. We apply this approach to sampling from synthetic distributions, consistent reasoning tasks, and Bayesian structure learning. The results suggest that the use of LLM conditionals in MCMC is a practical alternative to one-pass generation for structured probabilistic inference under a world prior accessible through noisy LLM conditionals.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
