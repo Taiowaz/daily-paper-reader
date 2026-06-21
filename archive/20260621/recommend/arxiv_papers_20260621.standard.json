@@ -1,0 +1,93 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-21T20:32:48.091288+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2606.16925v1",
+      "source": "arxiv",
+      "title": "RAID: Semantic Graph Diffusion for True Cold-Start and Cross-Lingual Forecasting",
+      "abstract": "Time-series foundation models show strong transfer performance when given a non-empty history window. However, true cold-start scenarios, where a new item has no prior observations, violate this assumption. We propose RAID (Retrieval-Augmented Iterative Diffusion) a framework, which replaces history-based correlation learning with metadata-driven semantic retrieval and graph-conditioned diffusion. RAID maps textual metadata into a shared semantic space using a frozen multilingual embedding model and constructs an inductive retrieval graph that extends naturally to unseen items. It first forms a base forecast by aggregating information from semantically related neighbors, then refines this forecast with a gated diffusion module to model residual uncertainty. Under a strict true cold-start protocol, RAID outperforms strong foundation models and competitive baselines on both forecasting accuracy and prediction interval coverage, while reducing inference latency by an order of magnitude through non-autoregressive decoding. The shared semantic space also enables zero-shot cross-lingual transfer, allowing a model trained on English descriptions to generalize to items described in other languages without direct supervision.",
+      "authors": [
+        "Arunkumar V",
+        "Manoranjan Gandhudi",
+        "Gangadharan G. R.",
+        "Arun Prakash",
+        "S. Senthilkumar"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-15T16:27:14+00:00",
+      "link": "https://arxiv.org/pdf/2606.16925v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Uses frozen multilingual embeddings to construct a semantic graph for cold-start forecasting, combining LLM with graph diffusion",
+      "llm_evidence_cn": "利用冻结的多语言嵌入构建语义图，结合大语言模型与图扩散进行冷启动预测",
+      "llm_evidence": "利用冻结的多语言嵌入构建语义图，结合大语言模型与图扩散进行冷启动预测",
+      "canonical_evidence": "利用冻结的多语言嵌入构建语义图，结合大语言模型与图扩散进行冷启动预测",
+      "llm_tldr_en": "RAID replaces history-based forecasting with metadata-driven semantic retrieval and graph-conditioned diffusion, using a frozen LLM to build an inductive retrieval graph for unseen items, achieving effective true cold-start forecasting.",
+      "llm_tldr_cn": "RAID框架通过将文本元数据映射到共享语义空间并构建归纳检索图，替代了基于历史相关性的学习方式。它先聚合语义相似邻居的信息形成基础预测，再用门控扩散模块细化残差，实现了对全新项的零历史预测。该方法展示了如何利用大语言模型嵌入构建图结构，有效解决了时间序列中的真冷启动难题。",
+      "llm_tldr": "RAID框架通过将文本元数据映射到共享语义空间并构建归纳检索图，替代了基于历史相关性的学习方式。它先聚合语义相似邻居的信息形成基础预测，再用门控扩散模块细化残差，实现了对全新项的零历史预测。该方法展示了如何利用大语言模型嵌入构建图结构，有效解决了时间序列中的真冷启动难题。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.15482v1",
+      "source": "arxiv",
+      "title": "Ricci-Filtration: Boosting Retrieval-Augmented Generation Reranker to Query-Answer Tasks by Discrete Ricci Flow",
+      "abstract": "Ricci flow is a curvature-guided diffusion process that deforms space by shrinking regions of high positive curvature and expanding those with negative curvature. Similarly, discrete Ricci flow on weighted graphs modifies edge weights by shrinking edges with positive Ricci curvature and stretching those with negative Ricci curvature, effectively increasing the separation between clusters. Inspired by these two cornerstone works, we propose a geometry-based RAG reranker enhancement procedure called Ricci-Filtration. By modeling the input query and initial retrieved chunks as a network, where the input query and chunks serve as nodes and embedding-based pairwise relations define an initial graph, Ricci-Filtration leverages discrete curvature and Ricci flow to evaluate the structural importance of each chunk with respect to the user query. The system first filters the initial chunks based on their geometric curvature relative to the query; then, a reranker processes the remaining chunks to enhance generative performance. We theoretically prove that normalized discrete Ricci flow can detect community structures by identifying distinct asymptotic behaviors in edge weights. This supports the removal of ``noisy'' document chunks characterized by large weights and negative Ricci curvature relative to the query node. Extensive experiments confirm that Ricci-Filtration outperforms several baseline reranking methods in accuracy, precision, recall, and F1 scores. Furthermore, ablation studies demonstrate that the Ricci-Filtration generally outperforms the baseline under various settings, highlighting the framework's robustness across different architectures.",
+      "authors": [
+        "Tian Qin",
+        "Wei-Min Huang"
+      ],
+      "primary_category": "stat.ML",
+      "categories": [
+        "stat.ML",
+        "cs.LG"
+      ],
+      "published": "2026-06-13T21:34:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.15482v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Uses discrete Ricci flow on a graph of query and retrieved chunks to improve RAG reranking",
+      "llm_evidence_cn": "在查询和检索块构成的图上应用离散Ricci流增强RAG重排序",
+      "llm_evidence": "在查询和检索块构成的图上应用离散Ricci流增强RAG重排序",
+      "canonical_evidence": "在查询和检索块构成的图上应用离散Ricci流增强RAG重排序",
+      "llm_tldr_en": "Proposes a geometry-based RAG reranker that uses discrete Ricci flow to refine edge weights in a graph of query and chunks, improving retrieval quality for LLMs.",
+      "llm_tldr_cn": "针对检索增强生成中的重排序问题，提出基于几何的方法，将查询和检索块建模为图，利用离散Ricci流调整边权重增强聚类分离，提升重排序效果，从而改善LLM的问答性能。",
+      "llm_tldr": "针对检索增强生成中的重排序问题，提出基于几何的方法，将查询和检索块建模为图，利用离散Ricci流调整边权重增强聚类分离，提升重排序效果，从而改善LLM的问答性能。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

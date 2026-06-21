@@ -6,26 +6,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-20
-- 运行时间：2026-06-20 21:14:15 UTC
+- 最新运行日期：2026-06-21
+- 运行时间：2026-06-21 20:35:07 UTC
 - 运行状态：成功
-- 本次总论文数：1
+- 本次总论文数：2
 - 精读区：0
-- 速读区：1
+- 速读区：2
 
 ### 今日简报（AI）
-今速读一篇用大语言模型做结构化推断的论文《Structured Inference with Large Language Gibbs》  
-核心看点：用吉布斯采样让LLM在关系、图等结构化约束下进行概率推理，提升一致性与可控性  
-建议关注LLM与概率编程、结构化采样的交叉方向，从关系推理开始小规模复现实验
-- 详情：[/202606/20/README](/202606/20/README)
+今日速读两篇前沿论文，聚焦图扩散建模与检索增强生成优化。  
+值得重点关注图扩散如何突破冷启动与跨语言预测瓶颈，以及利用离散Ricci流强化问答重排序的思路。  
+建议关注语义图扩散的同学可复现RAID模型，而从事RAG系统的读者不妨沿Ricci流做轻量级实验。
+- 详情：[/202606/21/README](/202606/21/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Structured Inference with Large Language Gibbs](/202606/20/2606.19264v1-structured-inference-with-large-language-gibbs)  
+1. [RAID: Semantic Graph Diffusion for True Cold-Start and Cross-Lingual Forecasting](/202606/21/2606.16925v1-raid-semantic-graph-diffusion-for-true-cold-start-and-cross-lingual-forecasting)  
    标签：评分：7.0/10、query:graph-llm
-   evidence：利用大型语言模型进行结构化概率推断，可应用于图结构数据
+   evidence：利用冻结的多语言嵌入构建语义图，结合大语言模型与图扩散进行冷启动预测
+2. [Ricci-Filtration: Boosting Retrieval-Augmented Generation Reranker to Query-Answer Tasks by Discrete Ricci Flow](/202606/21/2606.15482v1-ricci-filtration-boosting-retrieval-augmented-generation-reranker-to-query-answer-tasks-by-discrete-ricci-flow)  
+   标签：评分：6.0/10、query:graph-llm
+   evidence：在查询和检索块构成的图上应用离散Ricci流增强RAG重排序
 
 
 <div class="dpr-home-promo-card">

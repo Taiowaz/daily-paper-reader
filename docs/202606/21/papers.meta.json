@@ -1,0 +1,39 @@
+{
+  "label": "2026-06-21",
+  "date": "2026-06-21",
+  "generated_at": "2026-06-21T20:35:13",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202606/21/2606.16925v1-raid-semantic-graph-diffusion-for-true-cold-start-and-cross-lingual-forecasting",
+      "section": "quick",
+      "title_en": "RAID: Semantic Graph Diffusion for True Cold-Start and Cross-Lingual Forecasting",
+      "authors": "Arunkumar V, Manoranjan Gandhudi, Gangadharan G. R., Arun Prakash, S. Senthilkumar",
+      "date": "2026-06-15",
+      "pdf": "https://arxiv.org/pdf/2606.16925v1",
+      "score": "7.0",
+      "evidence": "利用冻结的多语言嵌入构建语义图，结合大语言模型与图扩散进行冷启动预测",
+      "tldr": "真冷启动场景下，新时间序列项目完全缺乏历史观测，导致现有时间序列基础模型因依赖非空历史窗口而性能骤降。RAID框架用元数据驱动的语义检索替代历史相关性学习，通过冻结多语言嵌入将文本信息映射到共享空间，构建归纳检索图聚合语义相似邻居的预测信号，并引入门控扩散模块精细刻画残差不确定性。在严格冷启动协议下，RAID在预测精度与区间覆盖率上显著优于主流基础模型和竞争基线，其非自回归解码将推理延迟降低一个数量级。该共享语义空间还支持零样本跨语言迁移，使得英语训练的模型可直接应用于其他语言描述的项目，大幅提升模型泛化能力。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Time-series foundation models show strong transfer performance when given a non-empty history window. However, true cold-start scenarios, where a new item has no prior observations, violate this assumption. We propose RAID (Retrieval-Augmented Iterative Diffusion) a framework, which replaces history-based correlation learning with metadata-driven semantic retrieval and graph-conditioned diffusion. RAID maps textual metadata into a shared semantic space using a frozen multilingual embedding model and constructs an inductive retrieval graph that extends naturally to unseen items. It first forms a base forecast by aggregating information from semantically related neighbors, then refines this forecast with a gated diffusion module to model residual uncertainty. Under a strict true cold-start protocol, RAID outperforms strong foundation models and competitive baselines on both forecasting accuracy and prediction interval coverage, while reducing inference latency by an order of magnitude through non-autoregressive decoding. The shared semantic space also enables zero-shot cross-lingual transfer, allowing a model trained on English descriptions to generalize to items described in other languages without direct supervision.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/21/2606.15482v1-ricci-filtration-boosting-retrieval-augmented-generation-reranker-to-query-answer-tasks-by-discrete-ricci-flow",
+      "section": "quick",
+      "title_en": "Ricci-Filtration: Boosting Retrieval-Augmented Generation Reranker to Query-Answer Tasks by Discrete Ricci Flow",
+      "authors": "Tian Qin, Wei-Min Huang",
+      "date": "2026-06-13",
+      "pdf": "https://arxiv.org/pdf/2606.15482v1",
+      "score": "6.0",
+      "evidence": "在查询和检索块构成的图上应用离散Ricci流增强RAG重排序",
+      "tldr": "检索增强生成（RAG）中检索到的文档块常含噪声，降低答案质量。Ricci-Filtration提出一种几何驱动的重排序增强方法，将查询与文档块建模为图并利用离散Ricci流评估每个块的结构重要性，过滤低相关噪声块。实验表明该方法在准确率、精确率、召回率和F1指标上均超越基线重排序器，且消融实验验证了其鲁棒性。该框架为RAG重排序提供了新的几何视角，有效提升问答任务的生成性能。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Ricci flow is a curvature-guided diffusion process that deforms space by shrinking regions of high positive curvature and expanding those with negative curvature. Similarly, discrete Ricci flow on weighted graphs modifies edge weights by shrinking edges with positive Ricci curvature and stretching those with negative Ricci curvature, effectively increasing the separation between clusters. Inspired by these two cornerstone works, we propose a geometry-based RAG reranker enhancement procedure called Ricci-Filtration. By modeling the input query and initial retrieved chunks as a network, where the input query and chunks serve as nodes and embedding-based pairwise relations define an initial graph, Ricci-Filtration leverages discrete curvature and Ricci flow to evaluate the structural importance of each chunk with respect to the user query. The system first filters the initial chunks based on their geometric curvature relative to the query; then, a reranker processes the remaining chunks to enhance generative performance. We theoretically prove that normalized discrete Ricci flow can detect community structures by identifying distinct asymptotic behaviors in edge weights. This supports the removal of ``noisy'' document chunks characterized by large weights and negative Ricci curvature relative to the query node. Extensive experiments confirm that Ricci-Filtration outperforms several baseline reranking methods in accuracy, precision, recall, and F1 scores. Furthermore, ablation studies demonstrate that the Ricci-Filtration generally outperforms the baseline under various settings, highlighting the framework's robustness across different architectures.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
