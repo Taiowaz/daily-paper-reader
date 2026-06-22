@@ -1,0 +1,55 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-22T21:43:57.102558+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2606.17183v1",
+      "source": "arxiv",
+      "title": "VL-MemKnG: Hybrid Memory with a Spatio-Temporal Knowledge Graph for Question Answering over Long Egocentric Navigation Trajectories",
+      "abstract": "Answering navigation-relevant questions over long egocentric videos requires retrieving and organizing evidence distributed across distant temporal moments while maintaining spatial and contextual consistency. Although long-context vision--language models can achieve strong answer quality, they are computationally expensive for long trajectories and inefficient for repeated querying. Recent graph-based approaches such as VL-KnG address this challenge through persistent spatio-temporal knowledge graphs, but graph-centric retrieval alone may underrepresent broader temporal continuity and contextual cues. We present VL-MemKnG, a hybrid memory framework that extends VL-KnG by combining a spatio-temporal knowledge graph with persistent segment-level contextual memory. The knowledge graph captures structured relational information and long-range object associations, while segment-level memory preserves broader temporal context for long-horizon evidence retrieval. A hybrid retrieval-and-reasoning module jointly operates over both memory representations to produce evidence-grounded answers and temporally organized supporting evidence. We also introduce WalkieKnowledgeT+, an extension of WalkieKnowledge for long-horizon navigation-oriented video question answering. The benchmark includes temporally distributed reasoning tasks requiring evidence aggregation across multiple non-cooccurring moments. On WalkieKnowledgeT+, VL-MemKnG improves Top-1 retrieval accuracy from 58% to 67% and Recall@1 from 34.50% to 40.55%, outperforming all compared methods, including Gemini 2.5 Pro and Qwen 3.5+. The gains are particularly pronounced on temporal-global and temporally scattered aggregation questions, demonstrating the benefits of combining structured relational memory with segment-level contextual memory while maintaining efficient query-time inference.",
+      "authors": [
+        "Svetlana Lukina",
+        "Mohamad Al Mdfaa",
+        "Gloria Haro",
+        "Sergey Zagoruyko",
+        "Gonzalo Ferrer"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-15T18:21:14+00:00",
+      "link": "https://arxiv.org/pdf/2606.17183v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "combines vision-language model with spatio-temporal knowledge graph for QA over videos",
+      "llm_evidence_cn": "结合视觉语言模型与时空知识图谱进行视频问答",
+      "llm_evidence": "结合视觉语言模型与时空知识图谱进行视频问答",
+      "canonical_evidence": "结合视觉语言模型与时空知识图谱进行视频问答",
+      "llm_tldr_en": "Proposes VL-MemKnG, a hybrid memory framework that enhances a spatio-temporal knowledge graph with long-term memory for answering navigation questions from long egocentric videos, leveraging vision-language models.",
+      "llm_tldr_cn": "本文针对自导航长视频问答中证据分散、检索计算成本高的问题，提出VL-MemKnG框架，扩展VL-KnG的时空知识图谱，增加混合记忆模块以保留更广泛的时间上下文。该方法结合视觉语言模型进行语义理解与问答，并利用图谱进行空间与时间推理，实验表明在多个长轨迹问答数据集上，比纯图检索方法有显著性能提升，同时推理效率更高。这为利用大语言模型处理图结构化数据提供了新思路。",
+      "llm_tldr": "本文针对自导航长视频问答中证据分散、检索计算成本高的问题，提出VL-MemKnG框架，扩展VL-KnG的时空知识图谱，增加混合记忆模块以保留更广泛的时间上下文。该方法结合视觉语言模型进行语义理解与问答，并利用图谱进行空间与时间推理，实验表明在多个长轨迹问答数据集上，比纯图检索方法有显著性能提升，同时推理效率更高。这为利用大语言模型处理图结构化数据提供了新思路。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

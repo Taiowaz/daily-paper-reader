@@ -6,29 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-21
-- 运行时间：2026-06-21 20:35:07 UTC
+- 最新运行日期：2026-06-22
+- 运行时间：2026-06-22 21:45:44 UTC
 - 运行状态：成功
-- 本次总论文数：2
-- 精读区：0
-- 速读区：2
+- 本次总论文数：1
+- 精读区：1
+- 速读区：0
 
 ### 今日简报（AI）
-今日速读两篇前沿论文，聚焦图扩散建模与检索增强生成优化。  
-值得重点关注图扩散如何突破冷启动与跨语言预测瓶颈，以及利用离散Ricci流强化问答重排序的思路。  
-建议关注语义图扩散的同学可复现RAID模型，而从事RAG系统的读者不妨沿Ricci流做轻量级实验。
-- 详情：[/202606/21/README](/202606/21/README)
+今日精读一篇高分论文，探讨如何用时空知识图谱增强记忆，让 AI 在超长第一视角导航视频中进行问答。  
+核心亮点：将动态知识图谱与记忆模块结合，能显著提升对“什么时候、在哪、发生了什么”类问题的回答准确率。  
+如果你关注具身智能或视频理解，不妨从这篇切入，关注 VL-MemKnG 对长序列推理的改进思路。
+- 详情：[/202606/22/README](/202606/22/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [VL-MemKnG: Hybrid Memory with a Spatio-Temporal Knowledge Graph for Question Answering over Long Egocentric Navigation Trajectories](/202606/22/2606.17183v1-vl-memkng-hybrid-memory-with-a-spatio-temporal-knowledge-graph-for-question-answering-over-long-egocentric-navigation-trajectories)  
+   标签：评分：8.0/10、query:graph-llm
+   evidence：结合视觉语言模型与时空知识图谱进行视频问答
 
 ### 速读区论文标签
-1. [RAID: Semantic Graph Diffusion for True Cold-Start and Cross-Lingual Forecasting](/202606/21/2606.16925v1-raid-semantic-graph-diffusion-for-true-cold-start-and-cross-lingual-forecasting)  
-   标签：评分：7.0/10、query:graph-llm
-   evidence：利用冻结的多语言嵌入构建语义图，结合大语言模型与图扩散进行冷启动预测
-2. [Ricci-Filtration: Boosting Retrieval-Augmented Generation Reranker to Query-Answer Tasks by Discrete Ricci Flow](/202606/21/2606.15482v1-ricci-filtration-boosting-retrieval-augmented-generation-reranker-to-query-answer-tasks-by-discrete-ricci-flow)  
-   标签：评分：6.0/10、query:graph-llm
-   evidence：在查询和检索块构成的图上应用离散Ricci流增强RAG重排序
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">
