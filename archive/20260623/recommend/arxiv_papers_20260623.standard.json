@@ -1,0 +1,215 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-23T21:09:32.740494+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.22429v1",
+      "source": "arxiv",
+      "title": "Enhancing LLMs for Graph Tasks via Graph-aware LoRA Generation",
+      "abstract": "Graph neural networks (GNNs) tightly couple their input-output parameters to dataset-specific feature spaces and target sets, exhibiting limited transferability across different datasets. In contrast, language models (LMs) generalize flexibly via a unified input-output interface, motivating recent attempts to adapt LMs to graph tasks. However, existing methods struggle to encode whole-graph information, leading to potential information loss and suboptimal graph understanding. In this work, we propose a novel weight-level information injection paradigm for adapting LMs to graph tasks. This paradigm injects whole-graph information by generating task-specific weight updates that interact directly with hidden representations. Instantiating this paradigm following low-rank adaptation (LoRA), we introduce GaRA, a Graph-aware LoRA generation model. GaRA constructs low-rank weight updates conditioned on the original graph structures and constrains the norm of the generated updates, thus injecting whole-graph information and avoiding the optimization bias in the weight generation. Empirical studies demonstrate that GaRA consistently outperforms baselines on zero-shot graph learning tasks.",
+      "authors": [
+        "Junshu Sun",
+        "Wanxing Chang",
+        "Qingming Huang",
+        "Shuhui Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-21T10:40:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.22429v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "injects whole-graph information via weight updates to adapt LLMs to graph tasks",
+      "llm_evidence_cn": "通过图感知 LoRA 生成注入全图信息以适配大语言模型到图任务",
+      "llm_evidence": "通过图感知 LoRA 生成注入全图信息以适配大语言模型到图任务",
+      "canonical_evidence": "通过图感知 LoRA 生成注入全图信息以适配大语言模型到图任务",
+      "llm_tldr_en": "Overcomes limited GNN transferability and difficulty of encoding whole-graph info in LMs by proposing a weight-level injection paradigm that generates graph-aware LoRA updates, enhancing LLMs for graph tasks.",
+      "llm_tldr_cn": "现有方法难以将全图信息编码到语言模型中，导致图理解不足。本文提出一种权重级注入范式，通过生成图感知的低秩适配（LoRA）更新，将全图信息直接注入语言模型的隐表示交互中，从而增强大语言模型处理图任务的能力，在多个图任务上表现优异。",
+      "llm_tldr": "现有方法难以将全图信息编码到语言模型中，导致图理解不足。本文提出一种权重级注入范式，通过生成图感知的低秩适配（LoRA）更新，将全图信息直接注入语言模型的隐表示交互中，从而增强大语言模型处理图任务的能力，在多个图任务上表现优异。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22975v1",
+      "source": "arxiv",
+      "title": "TaLK: Text-attributed Graph Dataset Distillation via Coupling Language Model with Graph-Aware Kernel",
+      "abstract": "Text-attributed graphs (TAGs) are widely used in many real-world domains, and learning on TAGs requires jointly modeling text semantics and graph structure. A standard approach for modeling TAGs is to combine a language model (LM) and a graph neural network (GNN), but joint training is computationally expensive and difficult to scale. Dataset distillation is a promising way to reduce training costs, but existing methods are not well suited to TAGs because they are typically designed for a single modality or still require repeatedly training expensive LM-GNN models on the full dataset during distillation. To address this, we propose TaLK, an effective dataset distillation method for TAGs that couples an LM with a graph-aware neural tangent kernel.This design enables efficient dataset distillation, avoiding repeated joint training on the full dataset while reflecting both textual and structural information for effective TAG learning.Experiments on multiple TAG benchmarks show that TaLK consistently outperforms existing baselines and achieves up to 97% of full-dataset performance with only 1% synthetic data.",
+      "authors": [
+        "Yeongho Kim",
+        "Yeonje Choi",
+        "Kijung Shin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-22T07:55:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.22975v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "proposes coupling language model with graph-aware kernel for TAG dataset distillation",
+      "llm_evidence_cn": "提出耦合语言模型与图感知核进行文本属性图数据集蒸馏",
+      "llm_evidence": "提出耦合语言模型与图感知核进行文本属性图数据集蒸馏",
+      "canonical_evidence": "提出耦合语言模型与图感知核进行文本属性图数据集蒸馏",
+      "llm_tldr_en": "Addresses the high cost of joint LM-GNN training for TAGs by proposing a dataset distillation method (TaLK) that couples an LM with a graph-aware kernel, enabling efficient training without repeatedly training expensive models.",
+      "llm_tldr_cn": "针对文本属性图（TAGs）上联合训练语言模型与图神经网络成本高的问题，本文提出一种数据集蒸馏方法 TaLK，该方法将语言模型与图感知核耦合，避免反复训练昂贵的 LM-GNN 模型，从而有效降低训练成本，为图与语言模型的结合提供了高效训练范式。",
+      "llm_tldr": "针对文本属性图（TAGs）上联合训练语言模型与图神经网络成本高的问题，本文提出一种数据集蒸馏方法 TaLK，该方法将语言模型与图感知核耦合，避免反复训练昂贵的 LM-GNN 模型，从而有效降低训练成本，为图与语言模型的结合提供了高效训练范式。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.21059v1",
+      "source": "arxiv",
+      "title": "DEFENGRAPH: Knowledge Graph-Enhanced LLMs for Blue Team Cyber Defense",
+      "abstract": "Large Language Models (LLMs) show promise for supporting decision-making in cybersecurity, but their reliability in high-stakes, time-evolving environments remains limited due to hallucinations, poor temporal reasoning, and shallow grounding in system context. We introduce DEFENGRAPH, an LLM-driven assistant designed to support human defenders during cybersecurity incidents. DEFENGRAPH improves contextual reasoning by integrating a dual-layer Static-Dynamic Knowledge Graph (KG) with graph-based path retrieval, LLM-driven contextual filtering, and reasoning-based re-ranking. The framework grounds LLM outputs in both long-term domain knowledge and evolving event context, enabling faithful and temporally aware decision support. We evaluate DEFENGRAPH in a cyber defense setting using knowledge graphs constructed from heterogeneous security artifacts, including SIEM alerts, system topology, attacker behaviors, and prior defensive actions. The evaluation uses data collected during live Red vs. Blue team cyber range exercises simulating attacks on critical infrastructure, which generate realistic and noisy datasets reflecting real-world defender workflows and system dynamics. Evaluations across four prevalent LLMs show that DEFENGRAPH sets a new state-of-the-art: on GPT-4o it boosts reasoning-recall from 61.45\\% to 73.49\\% and ticket-action recall from 52.17% to 72.46% (precision 24.49\\% to 29.24\\%), with similar gains on LLaMA-3 (46.99\\% to 61.45\\%), DeepSeek-R1 (45.78\\% to 56.63\\%) and QWen-3 (51.81\\% to 59.04\\%), while surfacing up to 50 correct defense actions versus 36 for the next best baseline and holding fault rates steady.",
+      "authors": [
+        "Zhen Wang",
+        "Kristen Moore",
+        "Qin Wang",
+        "Guangsheng Yu",
+        "Minjune Kim",
+        "Diksha Goel",
+        "Gang Li",
+        "Ahmed Ibrahim",
+        "Ahmad Mohsin",
+        "Helge Janicke"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-06-19T03:10:01+00:00",
+      "link": "https://arxiv.org/pdf/2606.21059v1",
+      "tags": [
+        "keyword:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Integrates a dual-layer static-dynamic knowledge graph with LLMs for contextual reasoning in cybersecurity.",
+      "llm_evidence_cn": "集成双层静态-动态知识图谱与大型语言模型进行网络安全上下文推理。",
+      "llm_evidence": "集成双层静态-动态知识图谱与大型语言模型进行网络安全上下文推理。",
+      "canonical_evidence": "集成双层静态-动态知识图谱与大型语言模型进行网络安全上下文推理。",
+      "llm_tldr_en": "DEFENGRAPH enhances LLMs with a dual-layer static-dynamic knowledge graph for faithful cyber defense decision support, addressing hallucinations and temporal reasoning.",
+      "llm_tldr_cn": "为解决大语言模型在网络安全高风险环境中的幻觉和时间推理不足，DEFENGRAPH提出融合双层静态-动态知识图谱的框架，通过图路径检索、LLM上下文过滤和推理重排序，将LLM输出锚定在长期领域知识和动态事件上下文中，为蓝队事件响应提供高保真度、时间感知的决策支持。",
+      "llm_tldr": "为解决大语言模型在网络安全高风险环境中的幻觉和时间推理不足，DEFENGRAPH提出融合双层静态-动态知识图谱的框架，通过图路径检索、LLM上下文过滤和推理重排序，将LLM输出锚定在长期领域知识和动态事件上下文中，为蓝队事件响应提供高保真度、时间感知的决策支持。",
+      "llm_tags": [
+        "query:graph-llm:composite"
+      ],
+      "matched_query_tag": "query:graph-llm:composite",
+      "matched_query_text": "Papers central to 图大型语言模型, especially work that connects or combines: integrating graph neural networks with large language models; using large language models for graph-structured data; graph reasoning capabilities of large language models; graph representation learning combined with large language models; graph machine learning techniques for large language models; graph-enhanced training of large language models; How to integrate graph neural networks with large language models?; Training graph enhanced large language models.",
+      "matched_requirement_id": "req-composite-graph-llm",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "biorxiv-10-64898-2026-06-16-732397-v1",
+      "source": "biorxiv",
+      "title": "CellTosg2Sequence: A Unified Text-Omics-Signaling-Graph Large Language Model for Single-Cell Analysis",
+      "abstract": "bioRxivLaTeXUnicodeabstract --- In single-cell (sc)-based scientific discovery, text-formatted biomedical prior knowledge and signaling graphs are essential for annotating and interpreting numeric sc-omics data and for generating novel testable hypotheses. A major limitation of existing single-cell large language models (scLLMs) is that they rely on numeric expression data with gene names as the only textual signal, while comprehensive biomedical priors -- cellular localization, gene function, disease associations, and signaling interaction patterns -- remain absent from the model input. We introduce CellTosg2Sequence, a textual-prior- and signaling-graph-augmented cell-omics-sentence language model. A lightweight heterogeneous graph encoder maps a curated 62,507-node biomedical knowledge graph (KG) into compact virtual tokens that are prepended to each cell sentence, allowing the language model to condition on biological structure with minimal sequence-length overhead. We train CellTosg2Sequence with a three-stage objective: Stage I anchors the KG channel under autoregressive language-model pretraining, leveraging Qwen2.5-32B's own language reasoning for rapid KG alignment; Stage II aligns labels via supervised fine-tuning with KG-anchored InfoNCE; Stage III applies Group Relative Policy Optimization (GRPO) with an ontology-hierarchy reward, enabling free-generation cell-type prediction that generalizes beyond the closed training vocabulary. Across multiple benchmarks and ablation experiments, CellTosg2Sequence outperforms strong baselines. All results are achieved with lightweight LoRA training and a single unified checkpoint.",
+      "authors": [
+        "chen, w.",
+        "Ye, M.",
+        "Xu, T.",
+        "Huang, D.",
+        "Zhang, H.",
+        "Li, H.",
+        "Li, W.",
+        "Chen, Y.",
+        "Payne, P. R.",
+        "Li, F."
+      ],
+      "primary_category": "bioinformatics",
+      "categories": [
+        "bioinformatics"
+      ],
+      "published": "2026-06-22T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.06.16.732397v1.full.pdf",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Combines textual prior knowledge and signaling graphs with a large language model for single-cell analysis.",
+      "llm_evidence_cn": "将文本先验知识和信号图谱与大型语言模型相结合，用于单细胞分析。",
+      "llm_evidence": "将文本先验知识和信号图谱与大型语言模型相结合，用于单细胞分析。",
+      "canonical_evidence": "将文本先验知识和信号图谱与大型语言模型相结合，用于单细胞分析。",
+      "llm_tldr_en": "CellTosg2Sequence integrates textual priors and signaling graphs with a large language model to overcome the lack of biomedical knowledge in single-cell LLMs, enabling more informed annotation and hypothesis generation.",
+      "llm_tldr_cn": "针对现有单细胞大语言模型仅依赖表达数据而缺乏生物医学先验知识的问题，CellTosg2Sequence构建了融合文本先验与信号图增强的细胞组学句子语言模型，通过轻量异构架构注入细胞定位、基因功能等知识，显著提升了单细胞注释与假设生成的准确性。",
+      "llm_tldr": "针对现有单细胞大语言模型仅依赖表达数据而缺乏生物医学先验知识的问题，CellTosg2Sequence构建了融合文本先验与信号图增强的细胞组学句子语言模型，通过轻量异构架构注入细胞定位、基因功能等知识，显著提升了单细胞注释与假设生成的准确性。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph representation learning combined with large language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.22992v1",
+      "source": "arxiv",
+      "title": "Predicate Importance Estimation and Decoupled Rationale-Score Distillation for Entity Alignment",
+      "abstract": "Knowledge graphs (KGs) are increasingly used as structured context for Large Language Models (LLMs), but industrial KG-RAG systems often need to integrate public and domain-specific KGs constructed from heterogeneous databases. This integration relies on Entity Alignment (EA), where lexical matching alone is insufficient under predicate-name variation and incomplete local neighborhoods. We address EA for KG integration by constructing a pairwise EA dataset and proposing two complementary modules: Predicate Importance Estimation (PIE) and Decoupled Rationale-Score Distillation (DRSD). PIE is a compact embedding-based approach that removes the subject information from each 1-hop triple, encodes the resulting subjectless triples, and aggregates them with learnable predicate-importance weights to build predicate-aware entity embeddings. DRSD trains a distilled small language model (SLM) with pseudo-answers produced by a teacher LLM through distinct prompts. By converting binary EA labels into text-based supervision and decoupling confidence-score estimation from label-consistent rationales, DRSD enables the SLM to learn task-specific reasoning while retaining a less label-biased confidence signal. Experiments show that PIE and DRSD improve EA classification. Moreover, because DRSD decouples confidence-score estimation from the decision, a discrepancy between the two flags an uncertain prediction for human review, thereby enabling a practical discrepancy between automatic acceptance and human-in-the-loop verification.",
+      "authors": [
+        "Keunha Kim",
+        "Yoonjin Jang",
+        "Hyeon-gu Lee",
+        "Sihyung Kim",
+        "Youngjoong Ko"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-22T08:11:35+00:00",
+      "link": "https://arxiv.org/pdf/2606.22992v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Uses LLM-generated rationales for entity alignment in knowledge graphs, applying LLMs to graph-structured data",
+      "llm_evidence_cn": "利用LLM生成的推理来提升知识图谱中的实体对齐，体现了LLM在图数据上的应用",
+      "llm_evidence": "利用LLM生成的推理来提升知识图谱中的实体对齐，体现了LLM在图数据上的应用",
+      "canonical_evidence": "利用LLM生成的推理来提升知识图谱中的实体对齐，体现了LLM在图数据上的应用",
+      "llm_tldr_en": "This paper addresses entity alignment for integrating knowledge graphs in LLM-based RAG systems. It proposes Predicate Importance Estimation (PIE) and Decoupled Rationale-Score Distillation (DRSD) that distills LLM-generated reasoning to improve alignment accuracy, showing effectiveness on industrial KGs.",
+      "llm_tldr_cn": "工业KG-RAG系统需整合异构知识图谱，但实体对齐面临谓词名称不一和局部邻域不完整等挑战。本文提出关系重要性估计(PIE)和解耦推理-分数蒸馏(DRSD)两个模块，PIE通过去除主语信息编码谓词重要性，DRSD则利用LLM生成的推理链对齐语义。实验表明该方法有效提升了实体对齐性能，有助于大语言模型更可靠地利用图结构化知识。在工业级基准上取得领先结果，验证了LLM推理蒸馏对图数据任务的增强作用。",
+      "llm_tldr": "工业KG-RAG系统需整合异构知识图谱，但实体对齐面临谓词名称不一和局部邻域不完整等挑战。本文提出关系重要性估计(PIE)和解耦推理-分数蒸馏(DRSD)两个模块，PIE通过去除主语信息编码谓词重要性，DRSD则利用LLM生成的推理链对齐语义。实验表明该方法有效提升了实体对齐性能，有助于大语言模型更可靠地利用图结构化知识。在工业级基准上取得领先结果，验证了LLM推理蒸馏对图数据任务的增强作用。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
