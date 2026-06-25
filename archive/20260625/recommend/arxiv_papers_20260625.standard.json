@@ -1,0 +1,51 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-25T21:51:29.593109+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2606.24980v1",
+      "source": "arxiv",
+      "title": "Closed-Loop Graph Algorithm Execution with Small Language Models: Step Accuracy and Rollout Reliability",
+      "abstract": "Small language models offer an efficient alternative to large-scale systems, but their ability to execute structured algorithms over multiple dependent decisions remains poorly understood. We study graph algorithm execution as a closed-loop prediction problem in which a model repeatedly selects the next action from the current graph and algorithmic state. Our evaluation framework covers several classical graph procedures, multiple synthetic graph families, and disjoint training, validation, and test partitions. It assesses both local decision quality and global execution behaviour using step accuracy, exact rollout accuracy, constraint validity, partial solution quality, prefix survival, and intervention-based diagnostics. The results show that adaptation can produce reliable policies for structural procedures such as traversal and coloring, while weighted algorithms remain substantially more sensitive to error accumulation. More broadly, the findings demonstrate that strong next-step prediction does not necessarily translate into reliable autonomous execution and motivate evaluating algorithmic language models through complete closed-loop rollouts rather than isolated decisions.",
+      "authors": [
+        "Michal Podstawski"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-23T13:02:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.24980v1",
+      "tags": [
+        "keyword:graph-llm",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Small LMs execute graph algorithms in closed-loop, assessing graph reasoning capabilities",
+      "llm_evidence_cn": "小型语言模型在闭环中执行图算法，评估图推理能力",
+      "llm_evidence": "小型语言模型在闭环中执行图算法，评估图推理能力",
+      "canonical_evidence": "小型语言模型在闭环中执行图算法，评估图推理能力",
+      "llm_tldr_en": "This paper investigates whether small language models can execute classical graph algorithms step-by-step in a closed-loop manner, analyzing their step accuracy and global reliability across synthetic graphs, revealing current limitations in structured reasoning.",
+      "llm_tldr_cn": "本文探讨小型语言模型能否在闭环设置中逐步执行经典图算法，通过在合成图族上评估步骤准确性和全局可靠性，分析结构化推理的当前局限性，为语言模型的图推理能力提供系统诊断。",
+      "llm_tldr": "本文探讨小型语言模型能否在闭环设置中逐步执行经典图算法，通过在合成图族上评估步骤准确性和全局可靠性，分析结构化推理的当前局限性，为语言模型的图推理能力提供系统诊断。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

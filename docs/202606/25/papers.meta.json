@@ -1,0 +1,24 @@
+{
+  "label": "2026-06-25",
+  "date": "2026-06-25",
+  "generated_at": "2026-06-25T21:52:55",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202606/25/2606.24980v1-closed-loop-graph-algorithm-execution-with-small-language-models-step-accuracy-and-rollout-reliability",
+      "section": "deep",
+      "title_en": "Closed-Loop Graph Algorithm Execution with Small Language Models: Step Accuracy and Rollout Reliability",
+      "authors": "Michal Podstawski",
+      "date": "2026-06-23",
+      "pdf": "https://arxiv.org/pdf/2606.24980v1",
+      "score": "9.0",
+      "evidence": "小型语言模型在闭环中执行图算法，评估图推理能力",
+      "tldr": "小语言模型在结构化算法执行中的多步决策能力尚未明确。本研究将图算法执行视为闭环预测任务，模型基于当前图与算法状态选择下一步行动，并通过步骤准确率与全执行可靠性等多维指标评估。结果表明，适应性训练可使遍历、着色等结构过程获得可靠策略，但加权算法对错误累积更敏感；且强下一步预测未必转化为自主执行能力。该发现强调需通过完整闭环rollout来评估算法语言模型，而非仅衡量孤立决策。",
+      "tags": "query:graph-llm",
+      "abstract_en": "Small language models offer an efficient alternative to large-scale systems, but their ability to execute structured algorithms over multiple dependent decisions remains poorly understood. We study graph algorithm execution as a closed-loop prediction problem in which a model repeatedly selects the next action from the current graph and algorithmic state. Our evaluation framework covers several classical graph procedures, multiple synthetic graph families, and disjoint training, validation, and test partitions. It assesses both local decision quality and global execution behaviour using step accuracy, exact rollout accuracy, constraint validity, partial solution quality, prefix survival, and intervention-based diagnostics. The results show that adaptation can produce reliable policies for structural procedures such as traversal and coloring, while weighted algorithms remain substantially more sensitive to error accumulation. More broadly, the findings demonstrate that strong next-step prediction does not necessarily translate into reliable autonomous execution and motivate evaluating algorithmic language models through complete closed-loop rollouts rather than isolated decisions.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

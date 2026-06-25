@@ -6,28 +6,28 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-24
-- 运行时间：2026-06-24 21:54:47 UTC
+- 最新运行日期：2026-06-25
+- 运行时间：2026-06-25 21:52:49 UTC
 - 运行状态：成功
-- 本次总论文数：2
+- 本次总论文数：1
 - 精读区：1
-- 速读区：1
+- 速读区：0
 
 ### 今日简报（AI）
-今日精读网络防御知识图谱增强大模型，并速览自动化知识图谱构建新方法。  
-最值得关注的是蓝队防御场景下用知识图谱约束LLM输出，以及文本自动转知识图谱并生成问答对的技术路径。  
-建议安全从业者关注知识图谱与LLM结合如何减少幻觉并提升威胁分析可靠性。
-- 详情：[/202606/24/README](/202606/24/README)
+今日精读了一篇高分论文，探讨小模型在闭环图算法执行中的步骤准确度与展开可靠性。
+
+核心发现是：小型语言模型通过闭环反馈和多步展开，能在图算法任务上逼近甚至媲美大型模型的执行稳定性。
+
+建议关注小模型结合结构化验证的落地潜力，尝试用类似闭环机制优化你的自动化流程。
+- 详情：[/202606/25/README](/202606/25/README)
 
 ### 精读区论文标签
-1. [DEFENGRAPH: Knowledge Graph-Enhanced LLMs for Blue Team Cyber Defense](/202606/24/2606.21059v1-defengraph-knowledge-graph-enhanced-llms-for-blue-team-cyber-defense)  
+1. [Closed-Loop Graph Algorithm Execution with Small Language Models: Step Accuracy and Rollout Reliability](/202606/25/2606.24980v1-closed-loop-graph-algorithm-execution-with-small-language-models-step-accuracy-and-rollout-reliability)  
    标签：评分：9.0/10、query:graph-llm
-   evidence：整合知识图谱与大语言模型以增强网络防御推理
+   evidence：小型语言模型在闭环中执行图算法，评估图推理能力
 
 ### 速读区论文标签
-1. [All Relations Lead to Rome: Automated Knowledge Graph Creation and Question Generation](/202606/24/2606.22645v1-all-relations-lead-to-rome-automated-knowledge-graph-creation-and-question-generation)  
-   标签：评分：7.0/10、query:graph-llm
-   evidence：利用LLM构建知识图谱用于统一推理
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">
