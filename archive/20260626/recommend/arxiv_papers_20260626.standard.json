@@ -1,0 +1,273 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-26T22:07:50.906960+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 3,
+    "deep_divecandidates": 6,
+    "deep_cap": 8,
+    "deep_selected": 6,
+    "quick_candidates": 0,
+    "quick_skim_target": 13,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2606.23136v1",
+      "source": "arxiv",
+      "title": "LLM-Aided A* Search in Non-Geometric Network Graphs",
+      "abstract": "Finding the shortest path in non-geometric network graphs, where edge weights encode arbitrary metrics such as latency or monetary cost rather than spatial distance, poses a challenge for informed search algorithms. Their efficiency depends on an informative heuristic, typically supplied in spatial domains by geometric distances that have no counterpart on non-geometric graphs. We propose a large language model (LLM)-aided A* algorithm in which an LLM generates intermediate waypoints that guide the A* expansion toward promising graph regions. At the core of the approach are landmark distances, which serve both as an admissible landmark-based (ALT) heuristic for the search and as a compact structural feature that, supplied to the LLM, restores the distance-to-destination signal it would otherwise lack on non-geometric graphs. Our comprehensive experiments on multiple graph topologies with up to 2,000 nodes demonstrate that LLM-generated waypoints reduce the number of expanded nodes by around 50% while incurring only a marginal path cost increase compared to the optimal solution. We further analyze the impact of prompt engineering and show that incorporating compact structural features, namely heuristic estimates, is more effective than advanced prompting techniques. These findings demonstrate the potential of combining LLM- based guidance with classical search algorithms for efficient network optimization.",
+      "authors": [
+        "Nouf Alabbasi",
+        "Esraa Ghourab",
+        "Omar Alhussein"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-22T10:26:35+00:00",
+      "link": "https://arxiv.org/pdf/2606.23136v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes LLM-aided A* search on non-geometric network graphs, using LLM to generate waypoints from graph landmark distances.",
+      "llm_evidence_cn": "提出LLM辅助的A*搜索算法，在非几何网络图上利用LLM从图地标距离生成航路点。",
+      "llm_evidence": "提出LLM辅助的A*搜索算法，在非几何网络图上利用LLM从图地标距离生成航路点。",
+      "canonical_evidence": "提出LLM辅助的A*搜索算法，在非几何网络图上利用LLM从图地标距离生成航路点。",
+      "llm_tldr_en": "For shortest path finding on graphs with abstract edge weights, this paper introduces an LLM-aided A* algorithm where the LLM suggests intermediate waypoints based on compact graph structural features, significantly improving search efficiency.",
+      "llm_tldr_cn": "该论文针对非几何网络图中最短路径搜索缺乏有效启发式的挑战，提出利用大语言模型辅助A*搜索的新方法。具体而言，方法计算图中地标到节点的距离作为紧凑的结构特征，输入LLM预测中间航路点，引导A*向目标区域扩展；同时地标距离构成可采纳的启发式函数以保证最优性。在多种网络数据集上的实验表明，LLM的引导显著减少了扩展节点数，大幅提升搜索效率。该工作为将语言模型的推理能力注入传统图算法开辟了可行路径。",
+      "llm_tldr": "该论文针对非几何网络图中最短路径搜索缺乏有效启发式的挑战，提出利用大语言模型辅助A*搜索的新方法。具体而言，方法计算图中地标到节点的距离作为紧凑的结构特征，输入LLM预测中间航路点，引导A*向目标区域扩展；同时地标距离构成可采纳的启发式函数以保证最优性。在多种网络数据集上的实验表明，LLM的引导显著减少了扩展节点数，大幅提升搜索效率。该工作为将语言模型的推理能力注入传统图算法开辟了可行路径。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26986v1",
+      "source": "arxiv",
+      "title": "ReaORE: Reasoning-Guided Progressive Open Relation Extraction Empowered by Large Reasoning Models",
+      "abstract": "Open Relation Extraction (OpenRE) requires a model to extract unseen relations between head and tail entities from unstructured text for real-world applications. The core challenge of OpenRE lies in achieving reliable generalization to unseen relation types. Current OpenRE approaches either employ clustering techniques, which cannot generate relation labels and suffer from poor generalization, or rely on direct relation label generation via Large Language Models (LLMs), which lack sufficient discriminative capacity to distinguish easily confused relations. To address these limitations, we propose Reasoning-guided progressive OpenRE (ReaORE), a framework for performing relation extraction through coarse-to-fine relation reasoning. Specifically, ReaORE consists of two key stages: (i) relation filtering, which reasons over multiple aspects to understand relations and instances, yielding an initial relation set, and further supplements and filters relations via embedding-based similarity to ensure the target relation is included; (ii) relation prediction, which aims to predict the target relations from the above set via fine-grained comparative reasoning to better distinguish easily confused relations. Extensive experiments on two widely used OpenRE datasets demonstrate that ReaORE outperforms existing baselines.",
+      "authors": [
+        "Xin Lin",
+        "Liang Zhang",
+        "Guoqi Ma",
+        "Hongyao Tu",
+        "Jinsong Su"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-25T12:59:53+00:00",
+      "link": "https://arxiv.org/pdf/2606.26986v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Progressive open relation extraction using large reasoning models (LLMs) for knowledge graph construction",
+      "llm_evidence_cn": "利用大推理模型进行渐进式开放关系抽取以构建知识图谱",
+      "llm_evidence": "利用大推理模型进行渐进式开放关系抽取以构建知识图谱",
+      "canonical_evidence": "利用大推理模型进行渐进式开放关系抽取以构建知识图谱",
+      "llm_tldr_en": "ReaORE addresses open relation extraction by using large reasoning models in a coarse-to-fine reasoning framework, improving generalization to unseen relations through discriminative label generation.",
+      "llm_tldr_cn": "ReaORE框架通过大推理模型实现由粗到细的渐进式关系推理，解决了开放关系抽取中泛化到未知关系类型的挑战。它克服了聚类方法无法生成关系名和直接使用LLM标签生成缺乏判别力的问题，在多个数据集上显著提升了抽取性能，为知识图谱构建提供了更可靠的方法。",
+      "llm_tldr": "ReaORE框架通过大推理模型实现由粗到细的渐进式关系推理，解决了开放关系抽取中泛化到未知关系类型的挑战。它克服了聚类方法无法生成关系名和直接使用LLM标签生成缺乏判别力的问题，在多个数据集上显著提升了抽取性能，为知识图谱构建提供了更可靠的方法。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "biorxiv-10-1101-2024-11-15-623830-v5",
+      "source": "biorxiv",
+      "title": "Uncovering dynamic human brain phase coherence networks",
+      "abstract": "Complex cognitive functions rely on coordinated communication between distributed brain regions, yet capturing these interactions as they evolve over time remains challenging. Traditional analyses of functional brain connectivity largely rely on correlations in signal amplitude, which are sensitive to noise and artifacts such as head motion. Here, we introduce a mixture modeling approach that focuses on the phase of brain signals, allowing dynamic patterns of large-scale synchronization in brain phase coherence networks to be studied directly and in their entirety. We lay the mathematical and conceptual groundwork for phase modeling and introduce the complex angular central Gaussian mixture model, providing a principled way to analyze phase-based interactions across the brain. Applied to fMRI data, the model identifies recurring states of brain-wide synchronized activity that reliably distinguish cognitive tasks and generalize across previously unseen individuals, without requiring any task labels during training. These results show that modeling signal phase offers a clean and informative view of brain synchronization dynamics, opening new avenues for studying large-scale neural coordination.",
+      "authors": [
+        "Olsen, A. S.",
+        "Brammer, A.",
+        "Fisher, P. M.",
+        "Moerup, M."
+      ],
+      "primary_category": "neuroscience",
+      "categories": [
+        "neuroscience"
+      ],
+      "published": "2026-06-26T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.1101/2024.11.15.623830v5.full.pdf",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Analyzes dynamic human brain connectivity as evolving phase coherence networks.",
+      "llm_evidence_cn": "将人脑动态连接分析为演变的相位相干网络。",
+      "llm_evidence": "将人脑动态连接分析为演变的相位相干网络。",
+      "canonical_evidence": "将人脑动态连接分析为演变的相位相干网络。",
+      "llm_tldr_en": "Introduces a mixture modeling approach using complex angular central Gaussian to analyze dynamic brain phase coherence networks directly from phase signals, avoiding amplitude-based noise. Enables studying complete temporal evolution of large-scale brain synchronization.",
+      "llm_tldr_cn": "传统脑功能连接分析依赖信号幅度相关性，易受噪声干扰，难以捕捉全脑动态同步模式。本文引入基于相位的混合建模方法，提出复数角中心高斯混合模型，直接分析脑信号相位以揭示完整的时变相位相干网络。该方法为研究大规模脑网络的时间演化提供了原则性框架，对认知功能动态理解具有重要意义。",
+      "llm_tldr": "传统脑功能连接分析依赖信号幅度相关性，易受噪声干扰，难以捕捉全脑动态同步模式。本文引入基于相位的混合建模方法，提出复数角中心高斯混合模型，直接分析脑信号相位以揭示完整的时变相位相干网络。该方法为研究大规模脑网络的时间演化提供了原则性框架，对认知功能动态理解具有重要意义。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "study of dynamic graphs",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.20955v1",
+      "source": "arxiv",
+      "title": "A Gated Graph Neural Network Approach to Fast-Convergent Dynamic Average Estimation",
+      "abstract": "Dynamic average estimation is a critical problem in multi-agent systems, enabling agents to collaboratively estimate time-varying signals using only local information exchange. Traditional model-based approaches often face challenges related to convergence speed and sensitivity to network topology changes. This paper introduces a novel learning-based solution leveraging Gated Graph Neural Networks (GGNNs) for fast-convergent dynamic average estimation in a fully distributed manner. Taking advantage of the inherent structure of GGNNs, the proposed method models the estimation process as a distributed autoregressor, ensuring rapid convergence while maintaining stability. We incorporate a regularization term during training to enforce convergence guarantees and introduce an encoding-decoding mechanism to reduce communication overhead without sacrificing accuracy compared to standard GGNNs. Extensive numerical experiments demonstrate that our approach significantly outperforms conventional model-based estimators in terms of both convergence speed and precision, making it a promising alternative for multi-agent applications that require dynamic average estimation.",
+      "authors": [
+        "Antonio Marino",
+        "Claudio Pacchierotti",
+        "Paolo Robuffo Giordano"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.RO"
+      ],
+      "published": "2026-06-18T21:39:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.20955v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Proposes a learning-based method using Gated Graph Neural Networks for dynamic average estimation over networks with topology changes, explicitly handling dynamic graph structures.",
+      "llm_evidence_cn": "提出基于门控图神经网络的学习方法，用于处理具有拓扑变化的动态图网络中的动态平均估计问题。",
+      "llm_evidence": "提出基于门控图神经网络的学习方法，用于处理具有拓扑变化的动态图网络中的动态平均估计问题。",
+      "canonical_evidence": "提出基于门控图神经网络的学习方法，用于处理具有拓扑变化的动态图网络中的动态平均估计问题。",
+      "llm_tldr_en": "This paper introduces a Gated Graph Neural Network approach for fast-convergent dynamic average estimation in multi-agent systems with topology changes, modeling estimation as a distributed autoregressor with stability regularization.",
+      "llm_tldr_cn": "针对多智能体系统中动态平均估计问题，本文提出一种门控图神经网络方法，应对传统方法收敛慢、对网络拓扑变化敏感的挑战。该方法将估计过程建模为分布式自回归器，并引入正则化保证训练稳定性，实现完全分布式下的快速收敛动态平均估计。实验表明，该方法在网络拓扑变化时仍能快速收敛，为动态图上的分布式学习提供了有效方案。",
+      "llm_tldr": "针对多智能体系统中动态平均估计问题，本文提出一种门控图神经网络方法，应对传统方法收敛慢、对网络拓扑变化敏感的挑战。该方法将估计过程建模为分布式自回归器，并引入正则化保证训练稳定性，实现完全分布式下的快速收敛动态平均估计。实验表明，该方法在网络拓扑变化时仍能快速收敛，为动态图上的分布式学习提供了有效方案。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22597v1",
+      "source": "arxiv",
+      "title": "MapReason-OSM: Can Vision-Language Models Make Graph-Verifiable Mobility Decisions from Street Maps ?",
+      "abstract": "Vision-language models (VLMs) are increasingly used to read maps for logistics, delivery, and accessible navigation, where the output is an actionable decision (a route, a pin, a parking choice) that must respect the road network. Yet most map benchmarks grade free-text or multiple-choice answers that cannot be verified against the underlying graph. We present \\textbf{MapReason-OSM}, a benchmark and evaluation harness for graph-verifiable mobility decisions on self-rendered OpenStreetMap panels. We render fixed-style maps for ten U.S. downtowns at two aligned zoom scales, overlay a consistent marker grammar, and pair each panel with a hidden street graph and exact oracles, yielding 6{,}000 instances (12{,}000 panels across the two zooms) over 12 routing, facility-location, and visual-disambiguation tasks. Models return structured decisions that we snap back to the graph and score for validity, legality, optimality, and constraint satisfaction, plus \\emph{cross-zoom consistency}. Across seven VLMs, models read maps and route simply but fail at graph-cost reasoning (single-facility pin placement is near chance even for frontier reasoning models), and are frequently scale-inconsistent. We release the benchmark, harness, and deterministic generator.",
+      "authors": [
+        "Srinivas Venkatanarayanan",
+        "Clement Pakkam Isaac"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-21T17:13:35+00:00",
+      "link": "https://arxiv.org/pdf/2606.22597v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Vision-language models make graph-verifiable decisions on street maps",
+      "llm_evidence_cn": "视觉-语言模型在街道地图上做出图可验证的决策",
+      "llm_evidence": "视觉-语言模型在街道地图上做出图可验证的决策",
+      "canonical_evidence": "视觉-语言模型在街道地图上做出图可验证的决策",
+      "llm_tldr_en": "MapReason-OSM benchmark tests if vision-language models can make mobility decisions like routing and parking that respect hidden road network graphs, using self-rendered OpenStreetMap panels with graph-based oracles for verification.",
+      "llm_tldr_cn": "MapReason-OSM基准测试评估视觉-语言模型在从街道地图做出移动决策时，是否能遵守底层道路网络图的约束。通过定制渲染的OpenStreetMap面板和隐藏的街道图精确答案，提供了6,000个图可验证实例。实验揭示了模型在图推理方面的显著局限，为提升多模态模型在结构化空间决策中的能力提供了方向。",
+      "llm_tldr": "MapReason-OSM基准测试评估视觉-语言模型在从街道地图做出移动决策时，是否能遵守底层道路网络图的约束。通过定制渲染的OpenStreetMap面板和隐藏的街道图精确答案，提供了6,000个图可验证实例。实验揭示了模型在图推理方面的显著局限，为提升多模态模型在结构化空间决策中的能力提供了方向。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "biorxiv-10-64898-2026-04-30-721835-v2",
+      "source": "biorxiv",
+      "title": "LNGCN: a distance-aware continuous-time graph protocol for prioritizing protein-protein interaction candidates",
+      "abstract": "Accurate high-throughput prediction of protein-protein interactions (PPIs) is essential for mapping cellular mechanisms and prioritizing experimental validation. Current graph-based methods often rely on discrete message passing, suffer from representation over-smoothing, and provide poorly calibrated confidence scores. We present LNGCN, a distance-aware continuous-time graph protocol that integrates residue-level structural graphs with liquid neural dynamics to model spatially heterogeneous interaction patterns. Residue radial distance is used as an explicit driving signal for continuous graph evolution, while hierarchical calibration converts raw model outputs into interpretable interaction probabilities. Across balanced, highly imbalanced, and cross-species benchmarks, LNGCN achieved robust predictive performance. Importantly, the calibrated scores supported biologically coherent prioritization in the FGF23-FGFR1c--Klotho complex, SHP2-associated signaling interactions and Tdk1 oligomeric-state-dependent binding. In a TPR-centered experimental case study, LNGCN recovered known TPR-associated partners and prioritized ELAVL1-TPR and RALY-TPR, whose physical interactions were subsequently confirmed via experimental validation. These results indicate that LNGCN can serve as a practical prioritization protocol for PPI candidates.",
+      "authors": [
+        "Xiao, Y.",
+        "Zheng, Y.",
+        "Hua, Y.",
+        "Peng, J.",
+        "Liu, J.",
+        "Qu, Y.",
+        "Xu, J.",
+        "Fu, R.",
+        "Qian, Q.",
+        "Zhao, M.",
+        "Zhang, X.",
+        "Zhao, J.",
+        "Yao, Y.",
+        "Kosar, M.",
+        "Ke, Y.",
+        "Chi, Y."
+      ],
+      "primary_category": "bioinformatics",
+      "categories": [
+        "bioinformatics"
+      ],
+      "published": "2026-06-25T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.04.30.721835v2.full.pdf",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Presents a continuous-time graph neural protocol with liquid neural dynamics for modeling dynamic graph evolution, suitable for temporal graph learning.",
+      "llm_evidence_cn": "提出一种结合液体神经动态的连续时间图神经网络协议，用于建模动态图演化，适用于时序图学习。",
+      "llm_evidence": "提出一种结合液体神经动态的连续时间图神经网络协议，用于建模动态图演化，适用于时序图学习。",
+      "canonical_evidence": "提出一种结合液体神经动态的连续时间图神经网络协议，用于建模动态图演化，适用于时序图学习。",
+      "llm_tldr_en": "This paper introduces LNGCN, a distance-aware continuous-time graph protocol that integrates residue-level structural graphs with liquid neural dynamics to predict protein-protein interactions with calibrated probabilities.",
+      "llm_tldr_cn": "针对现有图方法在蛋白质互作预测中离散消息传递、过度平滑和置信度校准差的问题，本文提出LNGCN，一种距离感知的连续时间图协议。该协议利用残基径向距离驱动图的连续演化，并融入液体神经动态建模空间异质性，再通过层次校准输出可解释的交互概率。实验证实，LNGCN在多个基准上显著提升了预测精度与校准性能，为动态图学习在生物信息学中的应用提供了新工具。",
+      "llm_tldr": "针对现有图方法在蛋白质互作预测中离散消息传递、过度平滑和置信度校准差的问题，本文提出LNGCN，一种距离感知的连续时间图协议。该协议利用残基径向距离驱动图的连续演化，并融入液体神经动态建模空间异质性，再通过层次校准输出可解释的交互概率。实验证实，LNGCN在多个基准上显著提升了预测精度与校准性能，为动态图学习在生物信息学中的应用提供了新工具。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "temporal graph neural network architectures",
+      "matched_requirement_id": "req-16",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}
