@@ -1,0 +1,826 @@
+Title: Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+URL Source: https://arxiv.org/pdf/2606.19712v1
+
+Published Time: Fri, 19 Jun 2026 00:22:39 GMT
+
+Number of Pages: 36
+
+Markdown Content:
+Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+# Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+Bryan Bo Cao boccao@cs.stonybrook.edu 
+
+Department of Computer Science Stony Brook University Stony Brook, NY 11790, USA 
+
+Abhinav Sharma abhinsharma@cs.stonybrook.edu 
+
+Department of Computer Science Stony Brook University Stony Brook, NY 11790, USA 
+
+Lawrence O’Gorman larry.o gorman@nokia-bell-labs.com 
+
+Nokia Bell Labs Murray Hill, NJ 07974, USA 
+
+Michael Coss mike.coss@nokia-bell-labs.com 
+
+Nokia Bell Labs Murray Hill, NJ 07974, USA 
+
+Shubham Jain jain@cs.stonybrook.edu 
+
+Department of Computer Science Stony Brook University Stony Brook, NY 11790, USA 
+
+Abstract 
+
+While much effort has focused on developing and benchmarking high-performance neu-ral networks, less attention has been given to how dataset properties, known to practition-ers, can guide efficient model selection. Neural models are typically evaluated on datasets with thousands of classes, yet many real-world applications involve fewer than ten. To address this understudied but common setting, we develop a measure of classification diffi-culty based on data-side properties and show how it enables more efficient model selection for few-class datasets, where traditional approaches are less effective. We term this phe-nomenon “few-class distinctiveness”. Our metric allows comparison of models and datasets 6 to 29 × faster than repeated training and testing. Leveraging this insight, we extend scaled model families below the smallest published models, achieving greater efficiency at similar accuracy, for example models up to 42% smaller than YOLOv5-nano for a mobile robot task. Targeting resource-constrained applications, we demonstrate few-class model selec-tion across mobile robot, drone, and IoT scenarios, highlighting practical gains in efficiency without sacrificing performance. 
+
+Keywords: few-class datasets, neural network selection, efficient neural networks, classi-fication, dataset difficulty, class similarity 
+
+1 Introduction 
+
+Part of the rapid progress of neural network technology is due to the public availability of datasets for testing and comparing the performance of different models. Image datasets 
+
+1
+
+> arXiv:2606.19712v1 [cs.LG] 18 Jun 2026 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+used for this architecture development usually have many classes (e.g., 1000 for ImageNet (Deng et al., 2009), 80 for COCO (Lin et al., 2014)) as is appropriate for general testing. However, these large datasets are often used by practitioners to help select models for their own applications, which may have far fewer classes. In this paper, we shift the focus from the model-side architecture to the data-side or dataset properties, and we show how knowledge of these properties can help choose very efficient models. For one of the data-side properties, number of classes, we offer experimental evidence of a “distinctiveness” for classification of few-class application datasets, which we define as those applications with fewer than 10 classes. Knowledge of this distinctiveness can benefit practitioners to select more efficient models than by assuming that many-class dataset performance extrapolates linearly down to few classes. In the area of computer vision, there are some applications where we want to detect objects from of a dataset of many classes. One example is autonomous driving in which the classes of vehicles, pedestrians, road signs, and road conditions numbers in the 10s or more. However, there are many smaller, practical applications where often two, three, or four is the number of classes in the dataset. The number of classes in a sampling of applications includes six for wildlife animal detection (Nguyen et al., 2017); four for cancer cell classification (Salman et al., 2022); two each for crowd (Sabokrou et al., 2018), cattle (Barbedo et al., 2019), hardhat (Li et al., 2020), and ship (Liu et al., 2022) detection; and one for the BioDrone benchmark of single-object tracking for bionic drones (Zhao et al., 2024). In many of these examples, the goal is to design an efficient (energy, memory, time, and cost) (O’Donnell and Crownhart, 2025; Kim et al., 2025) system with good accuracy. While conventional testing of off-the-shelf models on large datasets can help select between models for accuracy, this will not reliably find the most efficient model without also considering few-class properties. We identify five independent data-side properties: number of classes, intra-class simi-larity, inter-class similarity, scale-resolution, and color (Cao et al., 2023). The classification difficulty of an application depends in large part on these properties. For instance, an ap-plication whose classes have very similar features will generally have higher classification difficulty than for one with lower inter-class similarity. There are benefits to quantifying this with a difficulty measure based upon dataset properties. Using difficulty metrics as-sociated with datasets, one can compare just these numbers instead of performing more time-consuming training and testing trials of many model and dataset combinations. We propose a quantitative, lightweight measure of classification difficulty for an application dataset (Cao et al., 2024), which is based upon the number of classes, intra-, and inter-class similarity. The goal in this paper is deliberately different from the development of new models (which is the focus of much important work in the neural network field). Instead, our goal is to take advantage of the data-side properties , known for any application, to choose existing models and those models’ parameters that yield efficient, lightweight models most efficiently matched to the application data. Contributions of this work are summarized as follows: 
+
+• Focusing on data-side properties for efficient model selection that involves establish-ing a mathematical relationship between classification difficulty and class similarity properties. 
+
+> 2Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+• Discovery and use of “few-class distinctiveness”, by which accuracy behaves differently for few-class application datasets than many-class, and which can aid in selecting more efficient models. 
+
+• Identifying scaled models below those of published model families that offer higher efficiency at similar accuracy for few-class datasets. 
+
+• Producing experimental evidence supporting the performance advantages of few-class model selection for efficiency-critical applications of mobile robots, drones, and IoT devices. This paper is organized as follows. In Section 2, we discuss related literature on model selection and classification difficulty metrics. In Section 3, a new measure of dataset classi-fication difficulty is determined by maximizing the correlation between class similarity and accuracy across a range of a number of classes. In Section 4, experiments are performed to understand how number of classes, intra-class similarity, and inter-class similarity affect classification performance. In Section 5, we describe how sub-models and the difficulty met-ric are used in practice toward the goal of designing efficient systems, including examples for mobile robot, drone, and IoT (Internet of Things) device applications. And we conclude with limitations and suggested future work in Section 6. 
+
+2 Related Work 
+
+2.1 Model Selection 
+
+In recent years, a plethora of neural architectures have been designed, trained, and made easily available such that a practitioner will usually select a model rather than designing or training one from scratch. However, with the increasing number of efficient architectures (e.g. MobileNets (Howard et al., 2017; Sandler et al., 2018; Koonce and Koonce, 2021a) , SqueezeNet (Koonce and Koonce, 2021b) ShuffleNets (Zhang et al., 2018; Ma et al., 2018) , EfficientNet (Tan and Le, 2019), etc.), selecting a proper model to satisfy an application’s requirements becomes a challenge in itself. To select a model, existing approaches can be categorized into four options: 1) off-the-shelf, 2) transfer learning plus targeted training, 3) scaled model selection, and 4) selection from model repository. For the first option, numerous off-the-shelf models (e.g., (The Linux Foundation, 2023; Google Inc., 2023; Hugging Face, 2023)) have been trained on datasets containing the same classes as the application, for instance for pedestrian detection (Du et al., 2017), flower classification (Wu et al., 2018), fish classification (Tamou et al., 2018), and food detection (Subhi and Md. Ali, 2018). Although this can save substantial time from data collection, la-beling, and training, it often fails in real-world applications because of feature shift (Huseljic et al., 2024) in deployed environments caused by such factors as different camera capture angles, backgrounds, object scales, etc. A second option is transfer learning (Zhuang et al., 2021; Zhao et al., 2025) by which a model is trained on a larger, standard dataset such as ImageNet (Deng et al., 2009) or COCO (Lin et al., 2014), stripped of its classification layer (leaving the backbone), then fine-tuned (Ngnaw´ e et al., 2025) on objects of the application of interest. An efficiency drawback to this popular choice is that the backbone incorporates extraneous features for 
+
+> 3Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+the large dataset that are not needed for the application classes. Although transfer learning facilitates the selection of a neural model with high accuracies, the model will be larger than one trained on only the classes of interest for the same level of accuracy. A third option is to choose from a scaled model family – a collection of models that share the same general architecture, but whose size (width, depth, and resolution) are adjusted with a scaling factor. Examples include the EfficientNet family (Tan and Le, 2019) whose scale levels range from B0 (small) to B7 (large), the YOLO family (Jocher and et. al., 2021) whose scale levels range from “nano” to “extra-large”, and the LPS-Net family (Zhang et al., 2023) whose scale levels range from “S” to “L”. Since this paper focuses on efficiency for small, few-class applications, we experiment and compare on the smaller levels of the EfficientNet image classifier (EfficientNet-B0) and the YOLO object detector (YOLO-nano) (Ganesh et al., 2022). The fourth option is to select a pre-trained model from a model repository (Guo et al., 2022; Zhou and Tan, 2023; Huseljic et al., 2024). This is a fast way to start using a model, but it is different than the focus of this paper in two ways. Our focus is on selecting efficient models to match dataset properties. The most efficient models must be trained on the dataset of the application. This is unlike a model repository whose models may be efficient, but are unlikely to be the most efficient (accuracy versus model size) for the specific application dataset . Contrary to class-incremental learning (CIL) (Zhou et al., 2024), but in line with the spirit of semantic image matting (Sun et al., 2024), we aim to retain only the deployed dataset-specific semantics from a general one. The second difference is that our methods are directed to the data side versus the model side (Jia et al., 2022; Shah et al., 2023). One benefit is that this focus enables different application datasets to be quickly compared by their classification difficulty metrics rather than only by their test performance after training on that dataset, the latter being much more time-consuming. 
+
+2.2 Image Classification Difficulty 
+
+No matter which type of classifier is used, their empirically-determined behavior is strongly data dependent. Previous to the widespread adoption of neural networks, classification difficulty was largely measured by the ability to distinguish classes volumetrically in multi-dimensional feature space. A classical measure is Fisher’s Discriminant Ratio, by which a large difference in class means (inter-class) and a small sum of their variances (intra-class) describes a less difficult classification problem (Richard O. Duda, 1973). In (Ho and Basu, 2002), complexity measures are described that include feature overlap, separability of classes, and geometry of the class manifolds. Although the embedding space of a neural network is also a feature space, neural networks often have much higher dimensionality of nonintuitive (machine-learned) features, which have the ability to better distinguish highly non-linear class boundaries, thus leading to neural network classification difficulty metric different from these previous metrics. A number of image difficulty measures have been proposed. For metric learning (Bellet et al., 2013; Lu et al., 2017; Duffner et al., 2021), the loss function is set to minimize the similarity between images of the same class during training, where similarity is measured as the dot product between embeddings of two images (usually from the last hidden layer of the model) (Tudor Ionescu et al., 2016; Hannemose et al., 2022; Peng et al., 2022). Another 
+
+> 4Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+way to measure difficulty is by classification error on a difficulty-scaled range of datasets (Scheidegger et al., 2021a; Meding et al., 2022; Pliushch et al., 2022) or models (Chang et al., 2022). Machine difficulty scores can also be used to prune filters associated with easier features during training (Pentsos et al., 2023), and by more highly weighted filters of difficult features during inference (Marsden et al., 2020). One difference from these previous papers is that we focus upon classification difficulty .Many references calculate single-image difficulty for purposes of curriculum (or simple-to-difficult) learning (Tudor Ionescu et al., 2016; Appalaraju and Chaoji, 2017; Hannemose et al., 2022; Peng et al., 2022) and scaled model selection (Soviany and Ionescu, 2018). In (Marsden et al., 2020), intra-class difficulty is measured for the purpose of weighting classes differently during training. In contrast to single-image difficulty, we incorporate intra- and inter-class similarity in determining a difficulty metric for application datasets containing many images of multiple classes, as shown in Section 3. And in Section 4, we show by experiment how the measure varies for different numbers of classes and similarities. 
+
+2.3 Relation to Representation Learning Frameworks Few-Shot Learning. The goal of the Few-Short Learning (FSL) framework (Song et al., 2023; Wang et al., 2020; Hu et al., 2022; Sung et al., 2018; Wang et al., 2024; Wu et al., 2024; Lang et al., 2024) is to leverage the representations learned from very few samples or prior knowledge for generalizing to other tasks or domains. 
+
+Self-Supervised Learning. Under the Self-Supervised Learning (SSL) paradigm, tasks such as pretext mask-and-reconstruct methods (He et al., 2022) and Contrastive Learning (Chen et al., 2020a; He et al., 2020; Chen et al., 2020b, 2021; Gao et al., 2024; Zhu et al., 2024) are designed to generate supervisory signals from the dataset itself, enabling the learning of general visual features (Jaiswal et al., 2020; Jing and Tian, 2020). We distinguish our work from the aforementioned learning frameworks by focusing on target application deployment. Specifically, we aim to identify the most efficient baseline model that achieves the task using the minimal set of required features. 
+
+3 Classification Difficulty Metric 
+
+We first define a classification difficulty metric. This will be used in subsequent sections to support three contributions of this paper: i) few-class distinctiveness, ii) correlation between class similarity and accuracy, and iii) a metric for quickly comparing models. Cosine similarity is a common measure used to determine the closeness between two feature vectors, s( x, y) = cos( θxy ) = xT y/(|| x|| || y|| ). (1) Cosine similarity has a range of [ −1.0, 1.0], however in practice, most cosine similarity values between two natural images are positive. Normalization to [0 .0, 1.0] can be accom-plished by a sof tmax function as in (Hannemose et al., 2022), but that reduces the positive range by 1 /e , so we use a ReLu function, 
+
+s′(x, y) = ReLu  s(x, y) = max s(x, y), 0. (2) For the purpose of defining a classification difficulty metric, we distinguish intra- and inter-class similarity, the first that relates inversely to difficulty and the latter that relates 
+
+> 5Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+directly to difficulty. We define intra-class similarity as the average of similarities between all pairs of instances in the same class, 
+
+SR({x}) = 1
+
+n1
+
+X 
+
+> i,j ∈CX,i ̸=j
+
+s′(xi, xj ), (3) where CX {x} is a set of instances in class CX , and n1 is the number of pair combinations of instances in that set. We define inter-class similarity as the average of similarities of all pairs of instances between two classes, 
+
+SE ({x}{ y}) = 1
+
+n2
+
+X 
+
+> i∈CX,j ∈CY
+
+s(xi, yj ), (4) where CY {y} is a set of instances in class CY , and n2 is the number of pair combinations of instances between sets CX and CY .Equations 3 and 4 are for one and two classes. For the general case of NCL classes (and assuming balanced set sizes), we can take averages of those equations to obtain the average intra- and inter-class similarities: 
+
+Intra-class: ¯SR = 1
+
+NCL 
+
+X
+
+> i
+
+SRi ({x)}, (5) 
+
+Inter-class: ¯SE = 1
+
+n3
+
+X
+
+> j
+
+SEj ({x}{ y}), (6) where 0 ≤ i < N CL , 0 ≤ j < n 3, and n3 =  NCL 
+
+> 2
+
+ is the number of combinations of class pairs. Variations of difficulty measures can be found in the literature for purposes that are similar, but not exactly the same as classification difficulty (as discussed in Section 2.2). Below, we follow a progression through five of these, and compare them with our new proposal. All the difficulty measures Di are functions of the average intra- and/or inter-class similarities. We correlate the measures with experimental accuracy results to determine which measure is best to predict classification accuracy. All difficulty measures have range [0 , 1]. For completeness, we begin with difficulty metrics based upon only one of inter- and intra-class similarity each. Since inter-class similarity is directly related to classification difficulty, the first metric is, 
+
+DA = ¯SE . (7) And since intra-class similarity is related as the complement to difficulty, the second metric is, 
+
+DB = 1 .0 − ¯SR. (8) Both similarity metrics can be combined into a proportional relationship as in reference (Hannemose et al., 2022). For DC , ¯SE is normalized by both similarities, 
+
+DC = ¯SE /( ¯SE + ¯SR). (9) 
+
+> 6Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Figure 1: Accuracy results over a number of classes from 2 to 8 and for three models. Results for the CIFAR-100 dataset is on the left, and for ImageNet-200 on the right. Similarly for DD,
+
+DD = (1 .0 − ¯SR)/( ¯SE + ¯SR). (10) Instead of a proportional relationship of similarities as in equations 8 to 10, (Peng et al., 2022) defines difficulty with a difference relationship between similarities, 
+
+DE = 0 .5 1.0 − ¯SR + ¯SE
+
+. (11) To determine how each difficulty metric relates to classification accuracy, we performed the following experiments. We chose three neural network classifier models that range in size: MobileNet-V2 (small) (Sandler et al., 2018), ResNet-50 (medium) (He et al., 2016), and ViT (large) (Wolf et al., 2020). We chose two datasets: CIFAR-100 and ImageNet-200. Each model was trained and tested on subsets of the datasets that comprised 2, 3, 4, 6, and 8 classes. We grouped 200 randomly chosen subsets for each dataset and for each number of classes. We show the accuracy results in Fig. 1 to show that the results span a range to be expected for the models and datasets. These show: i) accuracy is directly related to model size (ViT better than ResNet-50 better than MobileNet), and ii) the larger dataset, ImageNet-200, is more challenging than the smaller dataset, CIFAR-100. The five difficulty values are calculated for each model/dataset/subset/tuple size, so there are 3 models x 2 datasets x 200 subsets x 5 tuple sizes (total 6000) pairs of accuracy results and difficulty values. We perform a Spearman correlation for these pairs. Spearman correlation measures the correlation of ranking between values, not the values themselves. So for our purposes it is used to predict whether one dataset/model combination will have better accuracy relative to another. Results are shown for the CIFAR-100 dataset in Fig. 2 and the ImageNet-200 dataset in Fig. 3. In Fig.s 2 and 3, it can be seen that methods DB and DE have much higher correlation coefficients than the other methods. (A value above 0.7 is considered to indicate strong correlation (Schober et al., 2018).) We can do a further experiment to more precisely determine if and how the proportions of intra- and inter-similarity affect correlation with accuracy by replacing the 0.5 multiplier in equation 11 with complementary weights γ and 1.0 − γ, where 0 ≤ γ ≤ 1.0, on intra- and inter-class similarity, 
+
+DF = γ(1 .0 − ¯SR) + (1 .0 − γ) ¯SE . (12) 
+
+> 7Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Figure 2: Spearman correlation values on the CIFAR-100 dataset for three models and for class sizes NCL = 2 , 3, 4, 6, 8. On the horizontal axis, “D A 2” designates “Difficulty method A, 2 classes”; “D B 3” designates “Difficulty method B, 3 classes”; etc. 
+
+Figure 3: Spearman correlation coefficients on the ImageNet-200 dataset for three models and for class sizes NCL = 2 , 3, 4, 6, 8. Horizontal axis designations are as in Fig. 2. We performed experiments to see how the weight γ in equation 12 affects the correlation between difficulty and accuracy across the range of few classes. Figure 4 displays the results of Spearman correlation versus the number of classes for γ = {0.0, 0.25 , 0.5, 0.75 } as well as for the weight where correlation is maximum. As before, we tested all combinations of the models MobileNet-V2, ResNet-50, and ViT, with the CIFAR-100 and ImageNet-200 datasets. We tested for the few-class size range of NCL = {2, 3, 4, 6, 8}.Two observations can be made from the results in Fig. 4 that are consistent among the three models and two datasets. The first is that the highest correlation values are for the weight range within 0 .0 ≤ γ ≤ 0.5. Consistently, all the plots for γ = 0 .75 have lower correlation than 0 .0 < γ < 0.5. The second is that the correlation distance between 
+
+> 8Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Figure 4: Spearman correlation coefficient values as a function of the number of classes, NCL .The left column of plots are for the CIFAR-100 dataset, and the right are for ImageNet-200. The top row of plots is for the MobileNet-V2 model, middle is for ResNet-50, and bottom is for ViT. The legend indicates weight values for the plots of γ = {0.0, 0.5, 0.75 }, and rmax 
+
+indicates the best-case correlation with respect to variable weight values. plots narrows as NCL goes from 2 to 8. This means that the weight value in the difficulty equation matters less for measuring correlation at higher NCL than lower NCL within the range tested. We use these observations in Section 4 to describe properties and in Section 5 to describe methods associated with the few-class applications. 
+
+4 Data-Side Properties 
+
+To reiterate a main message of this paper, the practitioner can take advantage of knowl-edge of data-side properties to help select efficient models. In this section, we describe the relationships between data-side properties and system performance. The data-side properties are: number of classes, intra-class similarity, inter-class similarity, color, and “scale-resolution”. Note that while the two similarity properties are independent, scale and resolution are inter-dependent, so we use the term “scale-resolution” for this single property. 
+
+> 9Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+4.1 Number of Classes 
+
+Since the focus of this paper is few-class datasets, our first two tasks are the following, i) to show that few-class datasets have properties distinct from datasets of more classes, and ii) to define the boundary between “few” and “many” classes. We performed the following experiment. We chose the ResNet model because it is widely used and has a range of sizes that have been shown to directly relate to performance across many datasets (He et al., 2016). We chose the ImageNet-1000 dataset because it is also widely used and its 1000 classes enables us to test subsets of the full dataset from 1000 down to the 2 classes. We performed two sets of tests. For a baseline, we trained the full dataset and tested on subsets of classes with this same model. We call this full-dataset training .Compared with this, we trained subsets for a range of numbers of classes. We call this 
+
+subset-only training . For each number of classes, we trained upon 5 random selections of classes and averaged the accuracy results. In total, we trained and tested 5 ResNet models from ResNet-152 to ResNet-18, 10 sizes of number of classes, and 5 subset selections per 
+
+NCL , a total of 250 models. Results of the ResNet tests in Fig. 5 can be used to address the two tasks of the section. i) Few-class datasets have different properties than for more classes. Evidence in the plots of Fig. 5 shows that accuracy improves for few classes with subset-only training (blue) as class number decreases, whereas accuracy decreases in this range for full-dataset training (red). There is lower variance in accuracy results among the five ResNet models for subset-only training (the inset of the middle graph shows about 3% span among model results), whereas there is higher variance for full-dataset training (the inset of the bottom graph shows about 10% span among model results). Regarding the second task, ii) we designate the region below NCL = 10 as the “few-class regime”, a concept closely related to, but distinct from “narrow domains” (Michaud et al., 2025). We use a number of 2 to 10 classes to perform more complete examination on this wider range as we do in our experiments for completeness in this paper. We can make further observations from Fig. 5. i) There is a steady improvement of accuracy from NCL = 1000 down to the few-class regime for the subset-only training curve, whereas the full-dataset training curve stays relatively flat from NCL = 1000 down to the few-class regime. ii) Both subset-only training and full-dataset training curves follow the scaling law (Bahri et al., 2024) for NCL = 1000 down to – but not including – the few-class regime, where larger models (dark blue or red) have higher accuracies than smaller models (lighter blue or red). Within the few-class regime, the full-dataset training curves adhere to this scaling law, but the subset-only training curves do not (see the middle plot). This may be due to the much lower deviation in accuracy values between model sizes for few classes. The experiments with the ResNet models and ImageNet dataset probed deeply with respect to number of models and number of subsets of classes. To obtain broader evidence of few-class properties, we performed experiments on other models and datasets and show the results in Fig. 6. The results in general confirm the observed few-class properties extend over the various combinations of models and datasets tested. 
+
+> 10
+
+Efficient Neural Network Model Selection for Few-Class Application Datasets 0 200 400 600 800 1000 
+
+NCL 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+80 
+
+90 
+
+100      
+
+> Top-1 Acc. (%)
+> 18 NCL
+> 18 1K
+> 34 NCL
+> 34 1K
+> 50 NCL
+> 50 1K
+> 101 NCL
+> 101 1K
+> 152 NCL
+> 152 1K
+
+(a) Blue plot (subset-only training) increases in accuracy for fewer classes, whereas red plot (full dataset training) decreases. 0 200 400 600 800 1000 
+
+NCL 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+80 
+
+90 
+
+100 
+
+> Top-1 Acc. (%)
+
+5 10 
+
+90 
+
+95 
+
+100          
+
+> 18 NCL 34 NCL 50 NCL 101 NCL 152 NCL
+
+(b) Results for subset-only training. Inset shows change in the increase in accuracy for fewer than 10 classes. 0 200 400 600 800 1000 
+
+NCL 
+
+30 
+
+40 
+
+50 
+
+60 
+
+70 
+
+80 
+
+90 
+
+100 
+
+> Top-1 Acc. (%)
+
+5 10 
+
+60 
+
+70 
+
+80     
+
+> 18 1K 34 1K 50 1K 101 1K 152 1K
+
+(c) Results for full-dataset training. Inset shows change in the drop of accuracy for fewer than 10 classes. 
+
+Figure 5: Top-1 accuracy results over a range of number of classes for ResNet on the ImageNet dataset. The red plots are for full-dataset training and the blue for subset-only training. The legend above each graph shows the range of ResNet model sizes tested, and these are plotted with saturation (of red and blue) decreasing as model size decreases. 11 Efficient Neural Network Model Selection for Few-Class Application Datasets 2 4 6 8 10 
+
+> NCL
+> 85.0
+> 87.5
+> 90.0
+> 92.5
+> 95.0
+> 97.5
+> CF100 Accuracy (%)  RN18
+> RN34
+
+(a) Classification on CIFAR-100 with two ResNets. 2 4 6 8 10 
+
+> NCL
+> 85.0
+> 87.5
+> 90.0
+> 92.5
+> 95.0
+> FD101 Accuracy (%)  RN18
+> RN34
+
+(b) Classification on Food-101 with two ResNets. 2 4 6 8 10 
+
+> NCL
+> 50
+> 60
+> 70
+> 80
+> 90
+> Accuracy (%)
+> MNv2
+> EN-B0
+> EN-B1
+
+(c) Classification on CalTech-256 by 3 models. 2 4 6 8 10 
+
+> NCL
+> 70
+> 75
+> 80
+> 85
+> 90
+> 95
+> 100
+> Accuracy (%)
+> EfficientNetB0
+> VGG19
+> ResNet18
+
+(d) Classification on CIFAR-10 with 3 models. 2 4 6 8 10 
+
+> NCL
+> 60
+> 70
+> 80
+> 90
+> Accuracy (%)
+> MV
+> SW
+
+(e) Classification by transformers on CalTech-256. 0 20 40 60 80 
+
+> NCL
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> (%)
+> mAP@.5
+> mAP@.5:.95
+> R
+
+(f) Object detection with YOLOv5-nano on COCO. 
+
+Figure 6: Accuracy results versus number of classes. Graphs a-d are for classification by 5 CNNs on 4 datasets. Graph e is for 2 Transformers on 1 dataset. Graph 3 is object detection by YOLOv5-nano on the COCO dataset. Each dot denotes the average accuracy of 5 subsets. The error bars show standard deviations of accuracy over 5 subsets. The CNN models are: ResNet (RN), MobileNet V2 (MNv2), and EfficientNet (EF). The transformers are: MobileViT (MV) and Swin Transformer (SW). The datasets are: CalTech-256 (CT256), CIFAR-10 (CF10), CIFAR-100 (CF100), and Food101 (FD101). For the classification experiments of Figure 6 a-c and e, the number of classes NCL is varied from 2 to 10 with step size 2. For each NCL , 5 subsets are randomly selected (seed number 0-4) from the full dataset. A model is trained and converged in each subset, then the validation Top-1 accuracy is reported. CNN models include: ResNet18 and ResNet34 (He et al., 2016), MobileNet V2 MobileNet V2 (Sandler et al., 2018), and EfficientNet-B0 and -B1 (Tan and Le, 2019). By default, we use SGD optimizer with learning rate 0 .1, momentum 0 .9 and weight decay 0 .0001 to train our models. In graph f, we show the results of object detection using YOLOv5-nano on the COCO dataset for NCL from 80 down to 2 classes. For graph d, image classification is performed by three models, EfficientNet-B0 (Tan and Le, 2019), VGG-19 (Simonyan and Zisserman, 2014), and ResNet18 (He et al., 2016) on the CIFAR-10 dataset (Krizhevsky et al., 2009). With so few classes (10) in this dataset – ranging only within our self-defined few-class regime – we wanted to see if this made any difference to the accuracy relationship. We extracted subsets of classes for NCL ranging from 2 to 9. We trained 3 classifiers for each subset. Results show that accuracy improvement is 
+
+12 Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+substantial as NCL reduces from 8 to 2; between 8 and 10 the accuracy curve is relatively flatter. Graph e shows the results of classification using two transformers, MobileViT (Mehta and Rastegari, 2021) and Swin Transformer (Liu et al., 2021). Transformers are included for completeness, though they were initially designed for scaling up, i.e., larger model sizes. Since large models are not the focus of this paper, we include the lightweight ViT MobileViT. For graph f, we decided to complement the classification experiments with an object detection experiment. We use the YOLOv5-nano (Jocher and et. al., 2021) backbone upon randomly-chosen, increasing-size class subsets of the COCO dataset (Lin et al., 2014). Ten subsets with NCL of {1, 2, 3, 4, 5, 10, 20, 40, 60, 80 } were prepared. For each group, we trained a separate YOLOv5-nano model from scratch. The initial learning rate was set to 0 .01 with weight decay 0 .0005 at image size 640 using SGD optimizer. The results are similar to those of the classifiers tested, that is, the accuracy curve is steep in the few-class regime and is flatter for NCL from 10 to 80. The importance of the findings in this section should be emphasized. As the number of classes is reduced, the accuracy gain for few-classes is much steeper than for many classes. This means that a practitioner with few classes can use this observation to achieve higher accuracy or a smaller model to achieve a more efficient system. We give examples of how one can take practical advantage of this in Section 5. 
+
+4.2 Intra- and Inter-Class Similarity 
+
+We start with a simple, didactic experiment to help reinforce our intuition of closeness of statistical clusters and to associate this quantitatively with the inter-similarity measure of equation 6. From the CIFAR-10 dataset, we chose 6 class groupings, three whose class fea-tures are visually similar and three whose class features are visually dissimilar. Our purpose is to examine the relationship between our visual choices, the inter-similarity measurement, and accuracy scores for three classifiers, EfficientNet-B0, VGG-19, and MobileNet-V2. Table 1 shows results for groupings of 2 and 4 classes from the CIFAR-10 dataset. We assign subjective assessments of visual similarity for each group; for instance, {Deer, Horse } are similar because they are both 4-legged animals, and {airplane, frog } are dissim-ilar because one is a large machine and another a small amphibian. One can see that the quantitative inter-class similarity SE values correspond to visual similarity “yes-no” assign-ments, high values for similar groupings and low for dissimilar. One can also see that high 
+
+SE values correspond to low accuracy results from each of the models. This is as expected, the more similar are the classes, the more difficult is the classification. Just as high inter-class similarity makes classification more difficult, high intra-class similarity makes classification less difficult. We expand from the previous experiment to examine both intra- and inter-class similarity values for all class pairs in CIFAR-10, and give accuracy results with EfficientNet-B0 to associate with these measures. In Fig. 7, intra-and inter-class similarities are given for all pairings. One of the highest intra-class similarity values is for horse, one reason may be because many of these images include a standing horse on a grassy field (i.e., low varialibity of foreground and background. Conversely, the lowest intra-class similarity value is for cat, likely because of the many poses and backgrounds. 
+
+> 13
+
+Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+Table 1: Relationship between visual class groupings, similarity, inter-class similarity SE ,and accuracy for three classifiers, EfficientNet-B0 (EB0), VGG-19 (V19), and MobileNet-V2 (MV2). 
+
+NCL Classes Similar SE EB0 V19 MV2 4 cat, deer, dog, horse yes 0.57 0.84 0.86 0.76 4 airplane, cat, auto, ship no 0.12 0.91 0.94 0.93 2 deer, horse yes 0.61 0.92 0.94 0.89 2 auto, truck yes 0.56 0.91 0.95 0.93 2 airplane, frog no 0.11 0.98 0.98 0.96 2 deer, ship no 0.08 0.98 0.98 0.96 Airplane                                      
+
+> Automobile
+> Bird
+> Cat
+> Deer
+> Dog
+> Frog
+> Horse
+> Ship
+> Truck
+> Airplane
+> Automobile
+> Bird
+> Cat
+> Deer
+> Dog
+> Frog
+> Horse
+> Ship
+> Truck
+> 0.98
+> 0.91 0.98
+> 0.96 0.97 0.86
+> 0.97 0.99 0.90 0.88
+> 0.97 0.98 0.92 0.83 0.93
+> 0.98 0.98 0.92 0.92 0.94 0.95
+> 0.97 0.98 0.94 0.91 0.92 0.93 0.98
+> 0.94 0.97 0.97 0.97 0.98 0.97 0.98 0.98
+> 0.96 0.91 0.98 0.96 0.98 0.98 0.98 0.98 0.96 0.84
+> 0.86
+> 0.88
+> 0.90
+> 0.92
+> 0.94
+> 0.96
+> 0.98
+
+Figure 7: Intra-class similarity values between CIFAR-10 class pairs are on the diagonal of the matrix, and inter-class values are in off-diagonal boxes. Light colored boxes indicate higher values and dark indicate lower values. Fig. 8 shows EfficientNet-B0 accuracy results corresponding with each pair in Fig. 7. There is a strong inverse correlation, 0.77, between similarity and accuracy values of these two graphs. Fig. 9 shows this. Of note in this plot, the lowest similarity data point in the top left of the plot (high accuracy) is for the (automobile, deer) pair, and the highest similarity data point in the bottom right (low accuracy) is for the (cat, dog) pair. To gain further insight into the characteristics of intra- and inter-class similarity, we augmented the few-class dataset testing of CIFAR-10, with the more extensive testing of Section 3. For each of the three models, two datasets, and 5 levels of numbers of classes, we determined the correlation between accuracy and both intra- and inter-class similarity measures for each class grouping of 200 class combinations. We show a representative plot the intra- and inter-class clusters of similarity versus accuracy in Fig. 10. This plot is for the ResNet-50 model on the ImageNet-200 dataset and for NCL = 4; the other 29 model-dataset-NCL combinations (3 models × 2 datasets × 5 numbers of classes - 1) have similar 
+
+14 Efficient Neural Network Model Selection for Few-Class Application Datasets Airplane                                     
+
+> Automobile
+> Bird
+> Cat
+> Deer
+> Dog
+> Frog
+> Horse
+> Ship
+> Truck
+> Airplane
+> Automobile
+> Bird
+> Cat
+> Deer
+> Dog
+> Frog
+> Horse
+> Ship
+> Truck
+> 0.20
+> 0.46 0.00
+> 0.28 0.08 0.74
+> 0.39 0.01 0.82 0.77
+> 0.28 0.04 0.74 0.87 0.77
+> 0.24 0.05 0.74 0.70 0.77 0.62
+> 0.32 0.11 0.63 0.72 0.80 0.79 0.43
+> 0.58 0.15 0.26 0.15 0.20 0.14 0.11 0.13
+> 0.22 0.74 0.09 0.21 0.17 0.20 0.11 0.37 0.17
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+
+Figure 8: EfficientNet-B0 accuracy values for CIFAR-10 class pairs. Light colored boxes indicate lower accuracies, and dark indicate higher accuracies. 0.0 0.2 0.4 0.6 0.8 
+
+Inter-Class Similarity 
+
+0.82 
+
+0.84 
+
+0.86 
+
+0.88 
+
+0.90 
+
+0.92 
+
+0.94 
+
+0.96 
+
+0.98 
+
+> Binary Classification Acc. (%)
+
+Figure 9: As inter-class similarity increases, accuracy decreases. characteristics. Correlation values for combinations with the ResNet-50 model are shown in Table 1; correlations for MobileNet-V2 and ViT are not shown, but also have similar characteristics. The plot of Fig. 10 illustrates some important characteristics on intra- and inter-class similarity. The most evident is that inter-class similarity values are much smaller than 
+
+15 Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+Figure 10: Clusters for accuracy versus inter-class similarity (blue) and intra-class (orange) for ResNet-50 on ImageNet-200 with 4 classes. This shows little correlation (-0.027) for inter-class, but high (0.643) for intra-class, where the dotted lines are the regression fits associated with these correlation coefficients. intra-class values because different classes have very different features than those in the same class. However, most interesting is that the correlation of intra-class similarity to accuracy is much greater than for inter-class, as illustrated by the dashed lines in Fig. 10 and by the correlation values in Table 2. This is also reinforced in Fig. 4 where the highest correlation of difficulty score to accuracy is for high weighting of the intra-class similarity measure and much lower for inter-class similarity. This means that close clustering within classes, as measured by intra-class similarity is a much better predictor of accuracy than distance between clusters as measured by inter-class similarity – at least for the datasets tested. We examined our random class combinations to understand this better. The three top inter-class similarities for two classes are for (lion, tiger), (bowl, plate), and (shark, shrew). But there were very few combinations such as these in which the two classes were so obviously similar. And as the number of classes increased above two, both intra- and inter-class similarity tend toward their respective averages as there is less likelihood of close similarities for more classes. Table 2: Correlation of accuracy versus similarity for intra- and inter-class similarities for the ResNet-50 test.                          
+
+> ImageNet CIFAR
+> NCL intra inter intra inter 20.585 0.060 0.807 -0.097 30.635 0.041 0.826 -0.210 40.643 -0.027 0.819 -0.238 60.422 0.031 0.801 -0.300 80.557 -0.055 0.833 -0.365
+> 16
+
+Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+4.3 Class Clustering 
+
+The intra- or inter-class similarity alone neglects cluster characteristic information that can better represent the a dataset difficulty. Specifically, this dataset property should capture the (1) tightness of a class cluster and (2) distance to other classes . To that end, we adopt the Silhouette Score (SS) (Rousseeuw, 1987; Shahapure and Nicholas, 2020): 
+
+SS (i) = b(i)−a(i) 
+
+> max (a(i),b (i))
+
+, where SS (i) is the Silhouette Score of the data point i, a(i) denotes the average dissimilarity between i and other instances in the same class, and b(i) represents the average dissimilarity between i and other data points in the closest different class. We denote the dataset-level Nearest Inter-Class Similarity S′(D) 
+
+> β
+
+as: 
+
+S′(D) 
+
+> β
+
+= 1
+
+|L|
+
+X
+
+> l∈L
+
+S′(Cl)
+
+> β
+
+= 1
+
+|L| × | P (Cl, ˆCl)|
+
+X
+
+> l∈L
+
+X 
+
+> i∈Cl,j ∈ˆCl
+
+cos( Zi, Zj ),
+
+(13) where ˆC is the nearest class to instance i ( ˆC̸ = C). Taking all into consideration, we propose a novel Similarity-Based Silhouette Score 
+
+SimSS for dataset D:
+
+SimSS (D) = 1
+
+|L| × | Cl|
+
+X
+
+> i∈Cl
+
+Sα(i) − S′β (i)
+
+max (Sα(i), S ′β (i)) . (14) Using our proposed SimSS, the relationships of similarity scores and number of classes 
+
+NCL in ten datasets 1 are shown in Fig. 11 (a) and (b) with CLIP and DINOv2 as similarity base functions. In Fig. 11, we make a key observation that all ten datasets share the general trend of inverse relationship between similarity and the number of classes. In particular, image similarity increases as the number of classes NCL decreases. This reveals that similarity, as a proxy of dataset difficulty, plays a more important role in the few-class regime than for datasets with more classes. Therefore, blindly downscaling a model without considering dataset difficulty may yield a sub-optimal model selection decision. We therefore propose to take image similarity into consideration in existing scaling laws (Kaplan et al., 2020; Rae et al., 2021; Zhai et al., 2022). 
+
+Comparing Accuracy and Similarity. The effectiveness of SimSS is evaluated by Pear-son correlation coefficient (PCC) ( r) between model accuracy and SimSS. The reference dataset classification difficulty number (DCN) (Scheidegger et al., 2021b) is adopted to rep-resent the empirical top accuracy in a dataset. We show that in Figure 12 (a) (b), SimSS is poorly correlated with DCN-Full ( r = 0 .18 and r = 0 .26 for CLIP and DINOv2). This could be due to the large variance accuracy and extraneous feature representations from full datasets to a much smaller set of target sub-classes. In contrast, with r = 0 .90 and r = 0 .88 
+
+> 1. Datasets include CalTech101 (CT101) (Li et al., 2022) , CalTech256 (CT256) (Griffin et al., 2022) , CIFAR100 (CF100) (Krizhevsky et al., 2009) , CUB200 (CB200) (Wah et al., 2011) , Food101 (FD101) (Bossard et al., 2014a) , GTSRB43 (GT43) (Stallkamp et al., 2012) , ImageNet1K (IN1K) (Deng et al., 2009) , Indoor67 (ID67) (Quattoni and Torralba, 2009) , Quickdraw345 (QD345) (Ha and Eck, 2017) and Textures47 (TT47) (Cimpoi et al., 2014a) .
+
+17 Efficient Neural Network Model Selection for Few-Class Application Datasets 0 15 30 45 60 75 90 105 
+
+> NCL
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> 0.12
+> 0.14
+> SimSS[CLIP]
+> IN1K
+> QD345
+> CT256
+> CB200
+> FD101
+> CT101
+> CF100
+> ID67
+> TT47
+> GT43
+
+(a) SimSS using CLIP as similarity base function vs 
+
+NCL curve. 0 15 30 45 60 75 90 105 
+
+> NCL
+> 0.00
+> 0.04
+> 0.08
+> 0.12
+> 0.16
+> 0.20
+> 0.24
+> 0.28
+> 0.32
+> SimSS[DINOv2]
+> IN1K
+> QD345
+> CT256
+> CB200
+> FD101
+> CT101
+> CF100
+> ID67
+> TT47
+> GT43
+
+(b) SimSS using DINOv2 as similarity base function vs NCL curve. 
+
+Figure 11: Relation of SimSS[CLIP,DINOv2] and NCL .0.05 0.10 0.15 
+
+> SimSS[CLIP]
+> 50
+> 60
+> 70
+> 80
+> DCN-Full (%)
+> r=0.18
+> p=0.34
+
+(a) DCN-Full 0.1 0.2 0.3  
+
+> SimSS[DINOv2]
+> 50
+> 60
+> 70
+> 80
+> DCN-Full (%)
+> r=0.26
+> p=0.16
+
+(b) DCN-Full 0.05 0.10 0.15  
+
+> SimSS[CLIP]
+> 90
+> 95
+> 100
+> DCN-Sub (%)
+> r=0.90
+> p=8.8e-12
+
+(c) DCN-Sub 0.1 0.2 0.3  
+
+> SimSS[DINOv2]
+> 90
+> 95
+> 100
+> DCN-Sub (%)
+> r=0.88
+> p=2.4e-10
+
+(d) DCN-Sub 
+
+Figure 12: Pearson correlation coefficient (r) between DCN and SimSS when NCL ∈{2, 3, 4, 5, 10 , 100 }. DCN-Sub (blue squares) is more highly correlated than DCN-Full (red dia-monds) with SimSS using both similarity base functions of CLIP (dashed line) and DINOv2 (solid line) with r ≥ 0.88. 
+
+using CLIP (dashed) and DINOv2 (solid), SimSS is highly correlated with DCN-Sub (blue squares). We attribute the high correlation to sub-models’ focus on the minimal features needed in the target sub-classes. The high correlation score (Wicklin, 2024; Schober et al., 2018) demonstrates that SimSS can be regarded as a reliable metric for estimating few-class dataset difficulty. Such a metric can help predict a model’s empirical upper-bound accuracy. We highlight that this score is computed only once and then used for all times for the same dataset. 
+
+4.4 Other Features: Color and Scale-Resolution 
+
+Because reduction from color to grayscale only affects the number of multiplies in the first layer, the efficiency gain depends upon the number of layers of the model. For a large model such as VGG-19, percentage efficiency gain will be much smaller than for a small 
+
+18 Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+model such as EfficientNet-B0, as shown in Table 3. Furthermore, even for small networks, the effect of reducing from color to grayscale processing is small relative to effects of other attributes. Because of these small gains, we do not pursue the investigation of color-to-grayscale efficiencies further. For a previous investigation of color versus gray neural network computation, refer to (Bui et al., 2016). Table 3: Difference between color and grayscale computa- tion [kFLOPS] for the large VGG-19 classifier and much smaller EfficientNet-B0 classifier. Ratio is grayscale-to- color computation for all layers.                 
+
+> Model Layer-1 All Layers Ratio color gray color gray [%] VGG-19 1835.01 655.36 399474 398295 99.7 EN-B0 884.7 294.9 31431 30841 98.1
+
+The fifth property of an image dataset is scale-resolution. We call this a single property because the scale and resolution are inter-dependent. When the size of an image is reduced through subsampling, so is pixel resolution. For efficient model selection, a practitioner would strive to reduce the image size as much as possible to reduce the model size and number of multiplications. In many cases, such as when an image is captured at a resolution that exceeds that of important features, scale reduction can yield great efficiency benefits. However, scale reduction can lead to accuracy loss when smaller-scale features such as texture, object boundaries, distance between objects, etc., contributes to class separation. There is substantial emphasis on the model side to be scale efficient. For instance, model families such as EfficientNet contain increasingly large models with increasing scale steps. (For EfficientNet, the levels and input sizes (one dimension) are: B0 (224), B1 (240), B2 (260), B3 (300), B4 (380), B5 (456), B6 (528), B7 (600).) On the data-side, we know of no previous work that examines scale-resolution versus accuracy and measures difficulty as we have done for the other data-side properties. While object scale is straightforward to quantify, feature resolution (not pixel resolution) is more difficult. We leave the analysis of the fifth data-side property, scale-resolution, to future work. 
+
+5 Few-Class Models in Practice 
+
+How can a practitioner take advantage of their knowledge of properties of their few-class application to more easily design efficient applications? We describe five aspects, i) sub-models that offer extra efficiency for few-class applications, ii) fast selection of efficient models using the difficulty metric, iii) dataset difficulty comparison, iv) design-phase aid for specifying an application, and v) embedded systems examples. 
+
+5.1 Sub-Models 
+
+Practitioners with few-class applications and need for efficiency will often choose the smallest model from a model family, for example YOLO-nano from the YOLO family (nano to x-large) or EfficientNet-B0 from the EfficientNet family (B0 to B7). We have found empirically that, using the same compound scaling factor used to increase width, depth, and resolution     
+
+> 19 Efficient Neural Network Model Selection for Few-Class Application Datasets 1234
+> GFLOPs
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> mAP@.5
+> nano
+> SY1 SY2 SY3 SY4
+> SY5
+> SY6
+> SY7
+> SY8 NCL :80
+> NCL :10
+> NCL :1
+
+Figure 13: Computation reduction (GFLOPs) as model size is reduced from YOLO-nano to sub-models SY1 to SY8. of a family for larger models, we can also scale down to smaller models – sometimes with little accuracy loss. For the YOLOv5 object detector, we scale layers and channels down in model size with the depth and width factors already used for scaling the family up in size from nano to x-large (Jocher and et. al., 2021). Starting with depth and width multiples of 0.33 and 0.25 for YOLOv5-nano, we reduce these in step sizes of 0.04 for depth and 0.03 for width. In this way, we design a monotonically decreasing sequence of sub-YOLO models that we denote as SY1 to SY8. We prepared 89 random class subsets from the COCO minitrain dataset (Samet et al., 2020). These include 80 subsets with NCL = 1, each containing a single class from 80 classes; 8 subsets with NCL = 10; and the final dataset is the original COCO minitrain with NCL = 80. We trained each model separately for each of these groupings. Results of sub-YOLO detection are shown in Fig. 13. There are three plots in which each point of mAP @.5 is averaged across results for all subsets for each NCL . An overall trend can be observed that the fewer-class models achieve higher efficiency (lower GFLOPs) than many-class models. This is as expected, but perhaps not expected and certainly beneficial to few-class model application developers is the following. Whereas the accuracy for 80 classes drops steadily from the YOLOv5-nano size, accuracy for 10 classes is fairly flat down to SY2, which corresponds to a 36% computation reduction, and for 1 class down to SY4, which corresponds to a 72% computation reduction. There are three messages from this experiment to practitioners with few-class applica-tions. One is that smaller models may be available that provide greater efficiency at similar accuracy than the smallest (published) models of a family. The second message is that the smaller models do not have to be architected from scratch; instead, the compound scaling factor for the family can be used to down-scale the same model architecture by simply ad-justing width, depth, and resolution parameter values in the model configuration. Thirdly, the performance advantage of sub-models is greater for few-classes datasets than larger. 
+
+> 20 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+5.2 Selecting Models Using the Difficulty Metric 
+
+To select a neural network model for an application, a common first step is to identify models that might be appropriate to meet the requirements. In this paper, since we focus on small, efficient computer vision applications, appropriate selections would include scaled model families such as YOLO, MobileNet, and EfficientNet-B0 (either classification or object detection variants of these depending upon the goal of the application). The traditional selection process entails training different model sizes and families and comparing these. This is a tedious and time-consuming process if the practitioner does (as is one of the messages of this paper to obtain an efficient model) train each model candidate on each application dataset. Use of the difficulty metric offers a faster way to find a well-matched model. The practi-tioner follows the following procedure. First, training is performed on a dataset that includes all classes of interest (and it can include other classes that are not of immediate interest). The choice of training model doesn’t matter since we will be comparing groups of classes relative to their features, i.e., data-side features, rather than comparing between models, i.e., model side. This is done once, and although it can be done once by a practitioner, it is more logically done and offered as a public benchmark. For this purpose, we have created a ”few-class benchmark” (Cao et al., 2025), which provides difficulty and accuracy results for many combinations of classes, number-of-classes, models, and datasets 2. This benchmark eliminates the need for a practitioner to perform the initial training step – as long as the classes in the application are also in the benchmark. We leave description of the benchmark to the reference. With use of the trained model and equation 12 (with γ = 0 .25), difficulty measures can be calculated for all class groupings of interest. By use of the difficulty metric alone, this gives the practitioner the numbers upon which to perform prediction of relative performance between groupings. After choosing classes, number of classes, and model, that combination of class grouping and model is trained and tested once to predict absolute (not relative) accuracy performance. Following is a simple application example. Consider a computer vision application to monitor safety items worn on a construction site. A dataset of construction safety wear is created and trained that includes: helmet, reflective vest, protective footwear, protective eyewear, gloves, lumbar support, etc. A practitioner can compare the difficulties of any combination of these objects – without the need for training and testing each grouping .After a grouping and model are chosen, that model is trained and tested once to predict performance, and used for the application. An experimental comparison of use of the difficulty metric for comparing models is shown in Table 4. For the CIFAR-10 dataset, we compare three CNNs, VGG-19, EfficientNet-B0, and MobileNet-V2, each designed for small or embedded (Roth et al., 2024) applications, on a NVIDIA RTX A6000 GPU. Both CNN and difficulty metric approaches require initial training. For the difficulty metric, there is an additional one-time task of feeding all test images by class into the difficulty metric, which takes 0.72 seconds, and then caching, which takes 0.63 seconds. This is included in the difficulty metric training time of 3.31 in the table. This time is larger than for each CNN, but there are two qualifications to make with this. 
+
+> 2. Code is available at https://github.com/bryanbocao/fca
+> 21 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+One is that training is done only once (versus testing times in the next column, which are done for each instance pair). The second qualification is that, when the difficulty metric is found in a public benchmark, the practitioner incurs no training time. Applying the difficulty metric takes 0.76 seconds to calculate a difficulty score for each instance pair. The conventional alternative is full CNN testing, which as seen in the Table, takes from 6 to 20 times longer. Table 4: Runtime comparison results for conventional CNN training and testing versus using the difficulty metric. s: second, pair: all pair of instances in two classes.            
+
+> Model ttrain ttest
+> (s/epoch) (s/pair) VGG-19 0.69 4.49 EfficientNet-B0 3.13 21.82 MobileNet V2 2.19 15.05
+> Difficulty Metric 3.31 0.76
+
+5.3 Dataset Difficulty 
+
+Although we used the term classification difficulty , in Section 3, a narrower use of equation 12 can be termed dataset difficulty . We use class groupings from the experiments in Section 3 to illustrate how dataset difficulty relates to difficulty. In Table 5, the lowest (L) and highest (H) dataset difficulty values are found and shown with their corresponding accuracies and class grouping. For NCL = 2, it is especially evident that (leopard, tiger), (poppy, tulip), and (bowl, plate) each comprise similar class pairs; their difficulty measures are high and accuracies low as expected. It is less easy to recognize that (orange, tank), (bicycle, chair), and (skyscraper, tiger) are the least difficult pairs; and even less easy for NCL = 4. The point of this example is that, given a dataset, the difficulty metric can be used as a quick prediction (i.e., without repeated training and testing) of the relative performance, or equivalently the relative resources needed to perform classification upon compared datasets. 
+
+5.4 Application Specification 
+
+When practitioners specify application requirements, they consider tradeoffs in accuracy, size, speed, power usage, and cost. We have applied the classification difficulty metric to model selection for a real industry application involving video analytics for human-robot interaction (O’Gorman, 2024). The objective is to recognize human activity from fixed hallway cameras of an assembly factory so as to reduce human-robot interaction (HRI). Three classes were identified and trained for this application, person-walk , person-cart , and 
+
+robot . The person class was initially separated into two, person-walk and person-cart (person walking and person pushing a cart). This was because this distinction was deemed useful, and we didn’t want to re-label for three groups if we just labeled two classes at the outset. Results in Table 6 show in general that the 3-class group with inter-class similarity 0.18 has lower accuracy across models than the 2-class group with similarity 0.15. For the 3-class option, one good choice that balances accuracy and size would be the sub-YOLO1 model (Y-1), whose accuracy is just 0 .743 − 0.742 = 0 .001 less than the YOLO-nano model 
+
+> 22
+
+Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+Table 5: Dataset difficulty scores and corresponding accuracies on CIFAR-100 with Mo-bileNet (MN), ResNet (RN), and ViT. L and H denote the 3 lowest and highest difficulty values from 200 sub-groups for NCL = {2, 4} each.                                                        
+
+> NCL Difficulty MN RN ViT Classes 20.055 (L) 0.83 0.92 0.98 orange, tank 0.060 (L) 0.85 0.90 0.97 bicycle, chair 0.062 (L) 0.78 0.91 0.95 skyscraper, tiger 0.259 (H) 0.69 0.81 0.93 leopard, tiger 0.283 (H) 0.67 0.75 0.88 poppy, tulip 0.369 (H) 0.63 0.68 0.83 bowl, plate 40.046 (L) 0.81 0.88 0.96 bicycle, bottle, chimp, poppy 0.051 (L) 0.81 0.88 0.97 bicycle, castle, chimp, mushroom 0.051 (L) 0.88 0.90 0.96 aquarium, motorcycle, road, streetcar 0.154 (H) 0.53 0.60 0.81 boy, lobster, man, possum 0.160 (H) 0.61 0.70 0.83 crocodile, maple tree, oak tree, turtle 0.210 (H) 0.64 0.73 0.80 oak tree, pine tree, tiger, willow tree
+
+(Y-n), but whose size is 58% (1 .1/1.9) of YOLO-nano. When the person-walk and person-cart classes are merged into a single person class, then sub-YOLO1 could be chosen with essentially the same accuracy as YOLOs (0.766 versus 0.764), but with 15% (1.1 / 7.2) of the size. Table 6: Results of detection of YOLOv5 small (Ys), nano (Yn) and the sub-YOLO models (Y-1, Y-2) on 3-class (person-walk, person-cart, robot) and 2-class (person, robot) cases respectively. The bracketed numbers below the model names are their model sizes. The accuracy is mAP@0.5.                                              
+
+> NCL Simil. Class Ys Yn Y-1 Y-2 (7.2M) (1.9M) (1.1M) (0.16M) p-walk 0.728 0.727 0.725 0.665 30.18 p-cart 0.690 0.674 0.681 0.576 robot 0.872 0.827 0.82 0.747 mAP 0.764 0.743 0.742 0.663 person 0.752 0.732 0.719 0.691 20.15 robot 0.875 0.827 0.814 0.755 mAP 0.813 0.779 0.766 0.723
+> change 6.4% 4.9% 3.2% 9.1%
+
+5.5 Embedded Systems Examples 
+
+We examine two aspects of efficiency, low power and small memory size, which in turn affect running and system cost for three examples of mobile, embedded system platforms. Some of the most energy-critical (Al-Haddad et al., 2025; Kinnas et al., 2025; Zhang et al., 2025) types of systems are those running on battery power, so our experiments include mobile 
+
+23 Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+robots, drones, and IoT devices (Naveen and Kounte, 2025). The scope of this paper is not to perform a comprehensive study of a range of these platforms, but to give an idea of how the aspects of this paper apply in practice. For this experiment, we measured the relative energy use for a mobile robot, drone, and IoT device, where “relative” refers to the amount of energy needed for different levels of neural network processing. For a mobile robot and drone, the non-neural-network energy use is predominantly for wheel and propeller locomotion respectively. The mobile robot in our experiment is a small (17kg) Clearpath Jackal with LTE and WiFi, Velodyne LiDAR, video camera, and i-5 2.7GHz CPU. The drone is a small (17g) ModalAI VOXL-2 with LTE and WiFi, video camera, and Qualcomm QRB5165 AI processor. For consistency across comparisons, we fix the processor, model, and application to be the same, that is the TensorFlow-Lite (TFLite), 2-class model to detect horizontal and vertical shelf components. (The goal of this object detection application is for camera-based inventory monitoring in a warehouse). For each platform, we measured the average watts used with and without the detection algorithm running. In Table 7, one can see that the power used for locomotion of the robot and drone vastly overwhelms that used by the algorithm, and furthermore, there is < 1% savings for using the smaller Y-4 model versus YOLO-nano. There is, however, a substantial reduction of required memory, 64% from YOLO-nano to Y-4, and time reduction (average inference time) of 31%. Although our experiment shows memory and time savings but little power savings for the model-size reduction relative to the energy for locomotion, there is more to learn by a broader comparison of more models, devices, and applications. For instance, in (O’Gorman, 2024), we found a substantial energy savings (plus memory and time) for a comparison using a larger GPU device (NVIDIA GeForce GTX 1060) on a different application (fixed-camera robot path planning). Table 7: Robot, drone, and IoT device efficiencies.                           
+
+> Model Memory Power [w] Time [MB] Robot Drone IoT [ms] Baseline -97.5 52.1 2.5 -Y-nano 6.7 99.7 54.2 4.66 51.2 Y-2 4.3 99.4 54.0 4.44 45.2 Y-4 2.4 99.3 53.9 4.37 35.2
+
+6 Conclusions 
+
+Through this work, we elucidate three high-level messages that support our findings. i) Few class ( < 10) image classification has distinctive properties that are different from clas-sification of a larger number of classes. ii) This few-class distinctiveness is one aspect of data-side properties, which we believe to be under-explored in the literature. Conversely model-side design, which is supported by benchmark testing is largely focused upon large datasets, which as we imply from (i), do not give full insight into few-class performance. iii) There are many few-class applications in practice, so methodologies that can help the 
+
+> 24 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+practitioner with efficient model selection can offer the following benefits: reduce time and effort in model selection, select models with better performance (some combination of ac-curacy, size, speed, power usage, and cost), and to expand on power usage, attain better energy sustainability of models whose applications may be deployed in the thousands or millions. Four technical contributions support the messages of this paper, all focused and distinc-tive to the few-class regime. i) We compared classification difficulty measures and identified weightings of intra- and inter-class similarity that best correlate with accuracy. ii) We investigated the contributions (i.e., highest correlated weightings) of intra- and inter-class similarities and made two observations. Intra-class similarity contributes more highly than inter-class similarity for few-classes (and for the models and datasets tested), and the effect of inter-class similarity on accuracy rises toward that of intra-class similarity as the number of classes increases. iii) The dataset difficulty metric can be used to predict relative clas-sification performance of different class groupings or datasets. Use of this metric is much faster than conventional training and testing for comparing different class groupings. iv) We have proposed using “sub-models”, that is models smaller than the lowest published model in scaled model families such as EfficientNet and YOLO. We have endeavored to provide extensive experimentation of models and datasets to sup-port our findings on few-class distinctiveness and utility. For the investigation of difficulty metrics in Section 3, we trained and tested 6000 trained models in total on 3 architec-tures (MobileNet-V2, ResNet-50, and ViT, 5 sizes of number of classes from CIFAR-100 and ImageNet-200, and 200 random selection of classes per subsets. For the investigation of few-class properties in Section 4.1, we trained and tested 250 models for 5 ResNet sizes from ResNet-152 to ResNet-18, 10 sizes of number of classes from ImageNet-1000 from 1000 to 2 classes, and 5 subset selections per number of classes. In Section 4.2, we trained and tested on 18 class groupings for 3 models, EfficientNet-B0, VGG-19, and MobileNet-V2; plus 45 pairwise class groupings of CIFAR-100. And we trained and tested 9 levels of YOLO for 3 class groupings on a total of 89 subsets of the COCO dataset in Section 5. As far as limitations of this work, we suggest a few here. i) Although we trained and tested extensively on over 6000 models, we have been careful to include the caveat that these results apply “to the datasets tested”. We found consistent results for the CIFAR-100 and ImageNet-1000 datasets of Section 3 in which similarities from many class groupings were extracted. However, testing for some more focused datasets such as Food-101 (Bossard et al., 2014b) and Textures-47 (Cimpoi et al., 2014b) might have different balances of intra-and inter-class similarities, which may lead to different weightings of the difficulty metric in equation 12. ii) As is evident in Fig.s 4 and 5 few-class properties appear to converge with many-classes as the number of classes increases, but we didn’t extend the comparison of models and datasets above NCL = 10 (due to time- and energy-use considerations of the larger sub-sets and explosion of combinations for larger class groupings). iii) Our testing of one robot, one drone, and one IoT device platform in Section 5.4 and 5.5 was intended only to offer a sampling of how few-class properties are important in practice. iv) Finally, we did not cover the data-side property of scale-resolution for reasons described in Section 4.4. We suggest that topics in this paragraph should be undertaken in future work. 
+
+> 25
+
+Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+Appendix A. Data Availability Statement 
+
+Dataset information is presented in Table 8, including the dataset name, abbreviation, reference, the link to the dataset and path in FewClassArena . 
+
+Dataset Name Abbrev. Ref. Homepage Path in FCA 
+
+CIFAR-10 CF10 (Krizhevsky et al., 2009) cs.toronto.edu/ ˜kriz/cifar.html -Common Objects in Context COCO (Lin et al., 2014) cocodataset.org -Caltech 101 CT101 (Li et al., 2022) data.caltech.edu/records/mzrjq-6wc02 tools/ncls/datasets/caltech101.py Caltech 256 CT256 (Griffin et al., 2022) data.caltech.edu/records/nyy15-4j048 tools/ncls/datasets/caltech256.py CIFAR-100 CF100 (Krizhevsky et al., 2009) cs.toronto.edu/ kriz/cifar.html tools/ncls/datasets/cifar100.py github.com/knjcode/cifar2png Caltech-UCSD CB200 (Wah et al., 2011) vision.caltech.edu/visipedia/CUB-200-2011.html tools/ncls/datasets/cub200.py Birds-200-2011 data.caltech.edu/records/65de6-vp158/files/CUB 200 2011.tgz Food 101 FD101 (Bossard et al., 2014a) vision.ee.ethz.ch/datasets extra/food-101/ tools/ncls/datasets/food101.py huggingface.co/datasets/food101 German Traffic Sign GT43 (Stallkamp et al., 2012) benchmark.ini.rub.de/ tools/ncls/datasets/gtsrb43.py ImageNet IN1K (Deng et al., 2009) image-net.org/challenges/LSVRC/2012/index.php *Indoor Scene Recogni-tion ID67 (Quattoni and Torralba, 2009) web.mit.edu/torralba/www/indoor.html tools/ncls/datasets/indoor67.py Quickdraw QD345 (Ha and Eck, 2017) github.com/googlecreativelab/quickdraw-dataset tools/ncls/datasets/quickdraw345.py tensorflow.org/datasets/community catalog/huggingface/quickdraw Describable Textures Dataset TT47 (Cimpoi et al., 2014a) robots.ox.ac.uk/ vgg/data/dtd/index.html tools/ncls/datasets/textures47.py 
+
+Table 8: Dataset information. * Note that ImageNet dataset format is used as the reference for other datasets. Therefore, the Path in FCA is not required for ImageNet. 
+
+26 Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+License. We have searched available online resources and list the license of each dataset in Table A.9. For licenses not found in the datasets or websites denoted as “*”, we assume they are non-commercial research use only.            
+
+> Dataset License
+> CT101 CC BY 4.0 CT256 CC BY 4.0 CF10, CF100 MIT CB200 CC BY 4.0 FD101 CC BY-SA 4.0 GT43 GPLv2 IN1K *ID67 *QD345 CC BY 4.0 TT47 *
+
+Table 9: Licenses of ten datasets. We follow the same train/val splits when the original dataset has already provided. If the dataset does not have explicit splits, we first assign image IDs to all images, starting from 0. We then select 4 /5 of the images as the training set and place the rest in the validation set. Specifially, if an image’s ID satisfies the condition ID % 5 == 0, it is moved to the validation set; otherwise, it is assigned as a training sample. Due to confidentiality and proprietary business considerations, datasets in Sec. 5.4 are not publicly released. 
+
+27 Efficient Neural Network Model Selection for Few-Class Application Datasets 
+
+Acknowledgments and Disclosure of Funding 
+
+This research has been supported in part by the National Science Foundation (NSF) under Grant No. CNS-2055520. 
+
+References 
+
+Luttfi A Al-Haddad, Andrzej Lukaszewicz, Hasan Sh Majdi, Andriy Holovatyy, Alaa Ab-dulhady Jaber, Mustafa I Al-Karkhi, and Wojciech Giernacki. Energy consumption and efficiency degradation predictive analysis in unmanned aerial vehicle batteries using deep neural networks. Advances in Science and Technology. Research Journal , 19(5), 2025. Srikar Appalaraju and Vineet Chaoji. Image similarity using deep cnn and curriculum learning. arXiv preprint arXiv:1709.08761 , 2017. Yasaman Bahri, Ethan Dyer, Jared Kaplan, Jaehoon Lee, and Utkarsh Sharma. Ex-plaining neural scaling laws. Proceedings of the National Academy of Sciences , 121(27): e2311878121, 2024. J.G.A. Barbedo, L.V. Koenigkan, T.T. Santos, and P.M. Santos. A study on the detection of cattle in uav images using deep learning. Sensors , 19(24), 2019. Aur´ elien Bellet, Amaury Habrard, and Marc Sebban. A survey on metric learning for feature vectors and structured data. arXiv preprint arXiv:1306.6709 , 2013. Lukas Bossard, Matthieu Guillaumin, and Luc Van Gool. Food-101 – mining discriminative components with random forests. In European Conference on Computer Vision , 2014a. Lukas Bossard, Matthieu Guillaumin, and Luc Van Gool. Food-101 – mining discriminative components with random forests. In European Conference on Computer Vision , 2014b. Hieu Minh Bui, Margaret Lech, Eva Cheng, Katrina Neville, and Ian S. Burnett. Using grayscale images for object recognition with convolutional-recursive neural network. In 
+
+2016 IEEE Sixth Int. Conf. on Communications and Electronics (ICCE) , pages 321–325, 2016. Bryan Bo Cao, Lawrence O’Gorman, Michael Coss, and Shubham Jain. Data-side effi-ciencies for lightweight convolutional neural networks. arXiv preprint arXiv:2308.13057 ,2023. Bryan Bo Cao, Abhinav Sharma, Lawrence O’Gorman, Michael Coss, and Shubham Jain. A lightweight measure of classification difficulty from application dataset characteristics. In International Conference on Pattern Recognition , pages 439–455. Springer, 2024. Bryan Bo Cao, Lawrence O’Gorman, Michael Coss, and Shubham Jain. Few-class arena: A benchmark for efficient selection of vision models and dataset difficulty measurement. In 
+
+Proceedings of the International Conference on Learning Representations (ICLR) , 2025. URL https://openreview.net/forum?id=2ET561DyPe .
+
+> 28 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Yu-Jen Chang, Ding-Yong Hong, Pangfeng Liu, and Jan-Jan Wu. Efficient inference on convolutional neural networks by image difficulty prediction. In 2022 IEEE Int. Conf. on Big Data (Big Data) , pages 5672–5681, 2022. Ting Chen, Simon Kornblith, Mohammad Norouzi, and Geoffrey Hinton. A simple frame-work for contrastive learning of visual representations. In International conference on machine learning , pages 1597–1607. PMLR, 2020a. Xinlei Chen, Haoqi Fan, Ross Girshick, and Kaiming He. Improved baselines with momen-tum contrastive learning. arXiv preprint arXiv:2003.04297 , 2020b. Xinlei Chen, Saining Xie, and Kaiming He. An empirical study of training self-supervised vision transformers. In Proceedings of the IEEE/CVF international conference on com-puter vision , pages 9640–9649, 2021. M. Cimpoi, S. Maji, I. Kokkinos, S. Mohamed, , and A. Vedaldi. Describing textures in the wild. In Proceedings of the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR) , 2014a. M. Cimpoi, S. Maji, I. Kokkinos, S. Mohamed, and A. Vedaldi. Describing textures in the wild. In Proceedings of the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR) , 2014b. Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li Fei-Fei. Imagenet: A large-scale hierarchical image database. In 2009 IEEE conference on computer vision and pattern recognition , pages 248–255. Ieee, 2009. Xianzhi Du, Mostafa El-Khamy, Jungwon Lee, and Larry Davis. Fused DNN: A deep neural network fusion approach to fast and robust pedestrian detection. In 2017 IEEE Winter Conf. on Applications of Computer Vision (WACV) , pages 953–961, 2017. Stefan Duffner, Christophe Garcia, Khalid Idrissi, and Atilla Baskurt. Similarity Metric Learning , pages 103–125. Springer Int. Publishing, Cham, 2021. Prakhar Ganesh, Yao Chen, Yin Yang, Deming Chen, and Marianne Winslett. Yolo-ret: Towards high accuracy real-time object detection on edge gpus. In Proc. IEEE/CVF Winter Conf. on Applications of Computer Vision , pages 3267–3277, 2022. Peng Gao, Shijie Geng, Renrui Zhang, Teli Ma, Rongyao Fang, Yongfeng Zhang, Hongsheng Li, and Yu Qiao. Clip-adapter: Better vision-language models with feature adapters. 
+
+International Journal of Computer Vision , 132(2):581–595, 2024. Google Inc. Tensorflow model hub, August 22 2023. URL https://www.tensorflow.org/ hub .Gregory Griffin, Alex Holub, and Pietro Perona. Caltech 256, Apr 2022. Peizhen Guo, Bo Hu, and Wenjun Hu. Sommelier: Curating DNN models for the masses. In Proc. 2022 Int. Conf. on Management of Data , SIGMOD ’22, page 1876–1890. Asso-ciation for Computing Machinery, 2022. 
+
+> 29 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+David Ha and Douglas Eck. A neural representation of sketch drawings. arXiv preprint arXiv:1704.03477 , 2017. Morten Rieger Hannemose, Josefine Vilsbøll Sundgaard, and et al. Was that so hard? estimating human classification difficulty. In Shandong Wu and et al., editors, Appl.s of Medical Artificial Intelligence , pages 88–97. Springer Nature Switzerland, 2022. Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 770–778, 2016. Kaiming He, Haoqi Fan, Yuxin Wu, Saining Xie, and Ross Girshick. Momentum contrast for unsupervised visual representation learning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 9729–9738, 2020. Kaiming He, Xinlei Chen, Saining Xie, Yanghao Li, Piotr Doll´ ar, and Ross Girshick. Masked autoencoders are scalable vision learners. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 16000–16009, 2022. Tin Kam Ho and M. Basu. Complexity measures of supervised classification problems. 
+
+IEEE Trans. on Pattern Analysis and Machine Intelligence , 24(3):289–300, 2002. Andrew G Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, To-bias Weyand, Marco Andreetto, and Hartwig Adam. Mobilenets: Efficient convolutional neural networks for mobile vision applications. arXiv preprint arXiv:1704.04861 , 2017. Shell Xu Hu, Da Li, Jan St ¨”uhmer, Minyoung Kim, and Timothy M Hospedales. Pushing the limits of simple pipelines for few-shot learning: External data and fine-tuning make a difference. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 9068–9077, 2022. Hugging Face. Hugging face model hub, August 22 2023. URL https://huggingface.co/ models .Denis Huseljic, Marek Herde, Paul Hahn, Mehmet M ¨”ujde, and Bernhard Sick. Systematic evaluation of uncertainty calibration in pretrained object detectors. International Journal of Computer Vision , pages 1–15, 2024. Ashish Jaiswal, Ashwin Ramesh Babu, Mohammad Zaki Zadeh, Debapriya Banerjee, and Fillia Makedon. A survey on contrastive self-supervised learning. Technologies , 9(1):2, 2020. Hengrui Jia, Hongyu Chen, Jonas Guan, and Nicolas Papernot. A zest for LIME: To-ward architecture-independent model distances. In ICLR 2022 , page 1876–1890, Virtual, France, April 2022. Longlong Jing and Yingli Tian. Self-supervised visual feature learning with deep neural networks: A survey. IEEE transactions on pattern analysis and machine intelligence , 43 (11):4037–4058, 2020. 
+
+> 30 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Glenn Jocher and et. al. ultralytics/yolov5: v6.0 - YOLOv5n ’Nano’ models, Roboflow integration, TensorFlow export, OpenCV DNN support, Oct 2021. Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models. arXiv preprint arXiv:2001.08361 , 2020. Yang-Seon Kim, Moon Keun Kim, Nuodi Fu, Jiying Liu, Junqi Wang, and Jelena Srebric. Investigating the impact of data normalization methods on predicting electricity con-sumption in a building using different artificial neural network models. Sustainable Cities and Society , 118:105570, 2025. Michail Kinnas, John Violos, Ioannis Kompatsiaris, and Symeon Papadopoulos. Reduc-ing inference energy consumption using dual complementary cnns. Future Generation Computer Systems , 165:107606, 2025. Brett Koonce and Brett Koonce. Mobilenetv3. Convolutional Neural Networks with Swift for Tensorflow: Image Recognition and Dataset Categorization , pages 125–144, 2021a. Brett Koonce and Brett Koonce. SqueezeNet . Springer, 2021b. Alex Krizhevsky, Geoffrey Hinton, et al. Learning multiple layers of features from tiny images. University of Toronto , 2009. Chunbo Lang, Gong Cheng, Binfei Tu, and Junwei Han. Few-shot segmentation via divide-and-conquer proxies. International Journal of Computer Vision , 132(1):261–283, 2024. Fei-Fei Li, Marco Andreeto, Marc’Aurelio Ranzato, and Pietro Perona. Caltech 101, Apr 2022. H. Li, Y. andWei, Z. Han, J. Huang, and W. Wang. Deep learning-based safety helmet detection in engineering management based on convolutional neural networks. Advances in Civil Engineering , 2020:88–97, 2020. Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, Piotr Doll´ ar, and C Lawrence Zitnick. Microsoft coco: Common objects in context. In 
+
+European Conf. on computer vision , pages 740–755. Springer, 2014. Shanwei Liu, Weimin Kong, Xingfeng Chen, Mingming Xu, Muhammad Yasir, Limin Zhao, and Jiaguo Li. Multi-scale ship detection algorithm based on a lightweight neural network for spaceborne sar images. Remote Sensing , 14(5), 2022. Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and Baining Guo. Swin transformer: Hierarchical vision transformer using shifted windows. In Proceedings of the IEEE/CVF international conference on computer vision , pages 10012–10022, 2021. Jiwen Lu, Junlin Hu, and Jie Zhou. Deep metric learning for visual understanding: An overview of recent advances. IEEE Signal Processing Magazine , 34(6):76–84, 2017. 
+
+> 31 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Ningning Ma, Xiangyu Zhang, Hai-Tao Zheng, and Jian Sun. Shufflenet v2: Practical guidelines for efficient cnn architecture design. In Proc. European Conf. on computer vision (ECCV) , pages 116–131, 2018. Mark Marsden, Kevin McGuinness, and et al. Investigating class-level difficulty factors in multi-label classification problems. In 2020 IEEE Int. Conf. on Multimedia and Expo (ICME) , pages 1–6, 2020. Kristof Meding, Luca M. Schulze Buschoff, Robert Geirhos, and Felix A. Wichmann. Trivial or impossible — dichotomous data difficulty masks model differences (on imagenet and beyond). In Int. Conf. on Learning Representations , 2022. Sachin Mehta and Mohammad Rastegari. Mobilevit: light-weight, general-purpose, and mobile-friendly vision transformer. arXiv preprint arXiv:2110.02178 , 2021. Eric J Michaud, Asher Parker-Sartori, and Max Tegmark. On the creation of narrow ai: hierarchy and nonlocality of neural network skills. arXiv preprint arXiv:2505.15811 , 2025. Soumyalatha Naveen and Manjunath R Kounte. Optimized convolutional neural network at the iot edge for image detection using pruning and quantization. Multimedia Tools and Applications , 84(9):5435–5455, 2025. Jonas Ngnaw´ e, Maxime Heuillet, Sabyasachi Sahoo, Yann Pequignot, Ola Ahmad, Audrey Durand, Fr´ ed´ eric Precioso, and Christian Gagn´ e. Robust fine-tuning from non-robust pretrained models: Mitigating suboptimal transfer with adversarial scheduling. arXiv preprint arXiv:2509.23325 , 2025. Hung Nguyen, Sarah J. Maclagan, and et al. Animal recognition and identification with deep convolutional neural networks for automated wildlife monitoring. In 2017 IEEE Int. Conf. on Data Science and Advanced Analytics , pages 40–49, 2017. Lawrence O’Gorman. Efficient multi-band temporal video filter for reducing human-robot interaction. In Proc. Int. Conf. Pattern Recognition (ICPR) . Springer, Dec 2024. James O’Donnell and Casey Crownhart. We did the math on ai’s energy footprint. here’s the story you haven’t heard. MIT Technology Review , 2025. Bohua Peng, Mobarakol Islam, and Mei Tu. Angular gap: Reducing the uncertainty of image difficulty through model calibration. In Proc 30th ACM Int Conf Multimedia , MM ’22, New York, NY, USA, 2022. Association for Computing Machinery. ISBN 9781450392037. Vasileios Pentsos, Ourania Spantidi, and Iraklis Anagnostopoulos. Dynamic image difficulty-aware DNN pruning. Micromachines , 14(5), 2023. Iuliia Pliushch, Martin Mundt, Nicolas Lupp, and Visvanathan Ramesh. When deep clas-sifiers agree: Analyzing correlations between learning order and image statistics. In Shai Avidan and et al., editors, ECCV , pages 397–413. Springer Nature Switzerland, 2022. Ariadna Quattoni and Antonio Torralba. Recognizing indoor scenes. In 2009 IEEE confer-ence on computer vision and pattern recognition , pages 413–420. IEEE, 2009. 
+
+> 32 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Jack W Rae, Sebastian Borgeaud, Trevor Cai, Katie Millican, Jordan Hoffmann, Francis Song, John Aslanides, Sarah Henderson, Roman Ring, Susannah Young, et al. Scaling language models: Methods, analysis & insights from training gopher. arXiv preprint arXiv:2112.11446 , 2021. Peter E. Hart Richard O. Duda. Pattern Classification and Scene Analysis . Wiley-Interscience, 1973. Wolfgang Roth, G ¨”unther Schindler, Bernhard Klein, Robert Peharz, Sebastian Tschi-atschek, Holger Fr ¨”oning, Franz Pernkopf, and Zoubin Ghahramani. Resource-efficient neural networks for embedded systems. Journal of Machine Learning Research , 25(50): 1–51, 2024. Peter J Rousseeuw. Silhouettes: a graphical aid to the interpretation and validation of cluster analysis. Journal of computational and applied mathematics , 20:53–65, 1987. M. Sabokrou, M. Fayyaz, M. Fathy, Z. Moayed, and R. Klette. Deep-anomaly: Fully convolutional neural network for fast anomaly detection in crowded scenes. Computer Vision and Image Understanding , 172:88–97, 2018. ISSN 1077-3142. M.E Salman, G.C. Cakar, J. Azimjonov, M. Kosem, and I.H. Cedimoglu. Automated prostate cancer grading and diagnosis system using deep learning-based yolo object de-tection algorithm. Expert Systems with Applications , 201:117148, 2022. Nermin Samet, Samet Hicsonmez, and Emre Akbas. Houghnet: Integrating near and long-range evidence for bottom-up object detection. In Eur. Conf. Comp. Vis. (ECCV) , 2020. Mark Sandler, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, and Liang-Chieh Chen. Mobilenetv2: Inverted residuals and linear bottlenecks. In Proceedings of the IEEE con-ference on computer vision and pattern recognition , pages 4510–4520, 2018. Florian Scheidegger, Roxana Istrate, Giovanni Mariani, Luca Benini, Costas Bekas, and Cristiano Malossi. Efficient image dataset classification difficulty estimation for predicting deep-learning accuracy. In The Visual Computer , volume 37, pages 1593–1610, 2021a. Florian Scheidegger, Roxana Istrate, Giovanni Mariani, Luca Benini, Costas Bekas, and Cristiano Malossi. Efficient image dataset classification difficulty estimation for predicting deep-learning accuracy. The Visual Computer , 37(6):1593–1610, 2021b. Patrick Schober, Christa Boer, and Lothar A Schwarte. Correlation coefficients: appropriate use and interpretation. Anesthesia & analgesia , 126(5):1763–1768, 2018. Harshay Shah, Sung Min Park, Andrew Ilyas, and Aleksander Madry. ModelDiff: A frame-work for comparing learning algorithms. In Proc. 40th Int. Conf. on Machine Learning ,volume 202 of Proc.of Machine Learning Research , pages 30646–30688, 23–29 Jul 2023. Ketan Rajshekhar Shahapure and Charles Nicholas. Cluster quality analysis using silhouette score. In 2020 IEEE 7th international conference on data science and advanced analytics (DSAA) , pages 747–748. IEEE, 2020. 
+
+> 33 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Karen Simonyan and Andrew Zisserman. Very deep convolutional networks for large-scale image recognition. arXiv preprint arXiv:1409.1556 , 2014. Yisheng Song, Ting Wang, Puyu Cai, Subrota K Mondal, and Jyoti Prakash Sahoo. Acomprehensive survey of few-shot learning: Evolution, applications, challenges, and op-portunities. ACM Computing Surveys , 55(13s):1–40, 2023. Petru Soviany and Radu Tudor Ionescu. Optimizing the trade-off between single-stage and two-stage deep object detectors using image difficulty prediction. In 2018 20th Int. Symposium on Symbolic and Numeric Algorithms for Scientific Computing (SYNASC) ,pages 209–214, 2018. J. Stallkamp, M. Schlipsing, J. Salmen, and C. Igel. Man vs. computer: Benchmarking machine learning algorithms for traffic sign recognition. Neural Networks , (0):–, 2012. ISSN 0893-6080. doi: 10.1016/j.neunet.2012.02.016. URL http://www.sciencedirect. com/science/article/pii/S0893608012000457 .Mohammed A. Subhi and Sawal Md. Ali. A deep convolutional neural network for food detection and recognition. In 2018 IEEE-EMBS Conf. on Biomedical Engineering and Sciences (IECBES) , pages 284–287, 2018. Yanan Sun, Chi-Keung Tang, and Yu-Wing Tai. Semantic image matting: General and specific semantics. International Journal of Computer Vision , 132(3):710–730, 2024. Flood Sung, Yongxin Yang, Li Zhang, Tao Xiang, Philip HS Torr, and Timothy M Hospedales. Learning to compare: Relation network for few-shot learning. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 1199–1208, 2018. A.B. Tamou, A. Benzinou, K. Nasreddine, and L. Ballihi. Transfer learning with deep convolutional neural network for underwater live fish recognition. In 2018 IEEE Int. Conf. on Image Processing, Appl.s and Systems (IPAS) , pages 204–209, 2018. Mingxing Tan and Quoc Le. Efficientnet: Rethinking model scaling for convolutional neural networks. In Int. Conf. on machine learning , pages 6105–6114, 2019. The Linux Foundation. Pytorch model hub, August 22 2023. URL https://pytorch.org/ hub/ .Radu Tudor Ionescu, Bogdan Alexe, Marius Leordeanu, Marius Popescu, Dim P. Pa-padopoulos, and Vittorio Ferrari. How hard can it be? estimating the difficulty of visual search in an image. In Proc. IEEE Conf. Computer Vision and Pattern Recognition , June 2016. Catherine Wah, Steve Branson, Peter Welinder, Pietro Perona, and Serge Belongie. The Caltech-UCSD Birds-200-2011 Dataset . Jul 2011. Xiang Wang, Shiwei Zhang, Jun Cen, Changxin Gao, Yingya Zhang, Deli Zhao, and Nong Sang. Clip-guided prototype modulating for few-shot action recognition. International Journal of Computer Vision , 132(6):1899–1912, 2024. 
+
+> 34 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Yaqing Wang, Quanming Yao, James T Kwok, and Lionel M Ni. Generalizing from a few examples: A survey on few-shot learning. ACM computing surveys (csur) , 53(3):1–34, 2020. Rick Wicklin. Weak or strong? how to interpret a spearman or kendall correlation. https: //blogs.sas.com/content/iml/2023/04/05/interpret-spearman-kendall-corr. html , 2024. URL https://blogs.sas.com/content/iml/2023/04/05/ interpret-spearman-kendall-corr.html .Thomas Wolf, Lysandre Debut, and et al. Huggingface’s transformers: State-of-the-art natural language processing, 2020. URL https://arxiv.org/abs/1910.03771 .Rongcheng Wu, Mingzhe Wang, Zhidong Li, Jianlong Zhou, Fang Chen, Xuan Wang, and Changming Sun. Few-shot stereo matching with high domain adaptability based on adaptive recursive network. International Journal of Computer Vision , 132(5):1484–1501, 2024. Yong Wu, Xiao Qin, Yonghua Pan, and Changan Yuan. Convolution neural network based transfer learning for classification of flowers. In 2018 IEEE 3rd Int. Conf. on Signal and Image Processing (ICSIP) , pages 562–566, 2018. Xiaohua Zhai, Alexander Kolesnikov, Neil Houlsby, and Lucas Beyer. Scaling vision trans-formers. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 12104–12113, 2022. Ning Zhang, Shuo Ni, Liang Chen, Tong Wang, and He Chen. High-throughput and energy-efficient fpga-based accelerator for all adder neural networks. IEEE Internet of Things Journal , 2025. Xiangyu Zhang, Xinyu Zhou, Mengxiao Lin, and Jian Sun. Shufflenet: An extremely effi-cient convolutional neural network for mobile devices. In Proc. IEEE Conf. on computer vision and pattern recognition , pages 6848–6856, 2018. Yiheng Zhang, Ting Yao, Zhaofan Qiu, and Tao Mei. Lightweight and progressively-scalable networks for semantic segmentation. International Journal of Computer Vision , 131(8): 2153–2171, 2023. Pan Zhao, Julie Josse, and Shu Yang. Efficient and robust transfer learning of optimal individualized treatment regimes with right-censored survival data. Journal of Machine Learning Research , 26(48):1–54, 2025. Xin Zhao, Shiyu Hu, Yipei Wang, Jing Zhang, Yimin Hu, Rongshuai Liu, Haibin Ling, Yin Li, Renshu Li, Kun Liu, et al. Biodrone: A bionic drone-based single object tracking benchmark for robust vision. International Journal of Computer Vision , 132(5):1659– 1684, 2024. Da-Wei Zhou, Zi-Wen Cai, Han-Jia Ye, De-Chuan Zhan, and Ziwei Liu. Revisiting class-incremental learning with pre-trained models: Generalizability and adaptivity are all you need. International Journal of Computer Vision , pages 1–21, 2024. 
+
+> 35 Efficient Neural Network Model Selection for Few-Class Application Datasets
+
+Zhi-Hua Zhou and Zhi-Hao Tan. Learnware: small models do big. Science China Informa-tion Sciences , 67:1869–1919, 2023. Lianghui Zhu, Xinggang Wang, Jiapei Feng, Tianheng Cheng, Yingyue Li, Bo Jiang, Ding-wen Zhang, and Junwei Han. Weakclip: Adapting clip for weakly-supervised semantic segmentation. International Journal of Computer Vision , pages 1–21, 2024. Fuzhen Zhuang, Zhiyuan Qi, Keyu Duan, Dongbo Xi, Yongchun Zhu, Hengshu Zhu, Hui Xiong, and Qing He. A comprehensive survey on transfer learning. Proc. IEEE , 109(1): 43–76, 2021.
