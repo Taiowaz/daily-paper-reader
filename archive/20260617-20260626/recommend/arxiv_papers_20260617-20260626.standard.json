@@ -1,0 +1,786 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-26T07:14:06.323377+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 2,
+    "deep_divecandidates": 14,
+    "deep_cap": 7,
+    "deep_selected": 11,
+    "quick_candidates": 8,
+    "quick_skim_target": 12,
+    "quick_selected": 8
+  },
+  "deep_dive": [
+    {
+      "id": "2606.21940v1",
+      "source": "arxiv",
+      "title": "DevoTG: Temporal Graph Neural Networks for Modeling C. elegans Developmental Connectomics",
+      "abstract": "Understanding how a nervous system wires itself from birth to adulthood is a fundamental challenge in developmental neuroscience. We present DevoTG, a temporal graph framework that applies Temporal Graph Neural Networks (TGNs) to two complementary representations of C. elegans neural development: a Continuous-Time Dynamic Graph (CTDG) of cell division events derived from cell lineage data, and a Discrete-Time Dynamic Graph (DTDG) of the developing synaptic connectome spanning eight reconstructed electron-microscopy datasets. On the lineage prediction task, our TGN achieves a mean test AUC of 0.839 +/- 0.007 (5 seeds; validation AUC 0.937 +/- 0.001), outperforming a static GNN with the identical architecture by 26 AUC points (0.577 +/- 0.080), demonstrating that temporal memory is the decisive factor. Applied to the connectome DTDG, DevoTG identifies three connection stability classes (stable, developmental, and variable) across 225 neurons and 858 to 2,496 connections over development (L1 birth to adult), providing a temporal-graph-theoretic complement to the individual-variability classification of Witvliet et al. Analysis of hub command interneurons AVA, AVB, and AVE reveals their persistent centrality and how their integration roles are progressively reinforced across larval stages. Accompanying interactive visualizations (3D animated networks, centrality heatmaps, and a spatiotemporal lineage graph) make developmental dynamics accessible for biological hypothesis generation. DevoTG is open-source and designed for extension to other developing nervous systems. Code is publicly available at https://github.com/DevoLearn/DevoGraph/tree/main/DevoTG.",
+      "authors": [
+        "Jayadratha Gayen",
+        "Bradly Alicea"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "q-bio.NC"
+      ],
+      "published": "2026-06-20T08:15:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.21940v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "applies Temporal Graph Neural Networks to dynamic graphs of developmental connectomics",
+      "llm_evidence_cn": "将时间图神经网络应用于发育连接组学的动态图",
+      "llm_evidence": "将时间图神经网络应用于发育连接组学的动态图",
+      "canonical_evidence": "将时间图神经网络应用于发育连接组学的动态图",
+      "llm_tldr_en": "DevoTG applies Temporal Graph Neural Networks to model C. elegans neural development using continuous-time and discrete-time dynamic graphs, outperforming static GNNs by 26 AUC points on lineage prediction.",
+      "llm_tldr_cn": "该论文提出DevoTG框架，利用时间图神经网络对线虫神经发育进行建模。它分别构建了细胞分裂事件的连续时间动态图和突触连接体的离散时间动态图，并证明TGN在谱系预测上优于静态GNN 26个AUC点，为发育神经科学中的动态图学习提供了有效工具，展示了时序建模的优势。",
+      "llm_tldr": "该论文提出DevoTG框架，利用时间图神经网络对线虫神经发育进行建模。它分别构建了细胞分裂事件的连续时间动态图和突触连接体的离散时间动态图，并证明TGN在谱系预测上优于静态GNN 26个AUC点，为发育神经科学中的动态图学习提供了有效工具，展示了时序建模的优势。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "temporal graph neural network architectures",
+      "matched_requirement_id": "req-16",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.21096v1",
+      "source": "arxiv",
+      "title": "SLeDGe: Semi-Supervised Learning on Data Streams with Graph Structure Learning",
+      "abstract": "Semi-supervised learning (SSL) on data streams is challenging due to the continuous evolution of high-volume data and the scarcity of labels. Existing methods are limited in leveraging the intrinsic relationships among samples because they typically rely on fixed similarity measures or static graph structures, which cannot capture how relationships evolve over time. We propose SLeDGe, an SSL method for data streams that jointly learns a predictive model and an adaptive graph structure under strict memory and label constraints. SLeDGe maintains compact labeled and unlabeled memories using distinct update strategies, balancing rapid adaptation to novel features with the retention of historical consistency. In addition, by encouraging sparsity in the relational graph, SLeDGe filters out spurious connections and enables effective propagation of label supervision. Across 12 datasets, SLeDGe outperforms state-of-the-art competitors, achieving average relative accuracy gains of 31.7% with 0.1% labels and 14.8% with 1% labels.",
+      "authors": [
+        "Heechan Moon",
+        "Kijung Shin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-19T04:53:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.21096v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Learns adaptive graph structure on evolving data streams",
+      "llm_evidence_cn": "在持续演化的数据流上学习自适应图结构",
+      "llm_evidence": "在持续演化的数据流上学习自适应图结构",
+      "canonical_evidence": "在持续演化的数据流上学习自适应图结构",
+      "llm_tldr_en": "Proposes SLeDGe, a semi-supervised method for data streams that jointly learns a classifier and an adaptive graph structure, using compact memories and sparsity to capture evolving relationships, outperforming static-based baselines with limited labels.",
+      "llm_tldr_cn": "针对数据流半监督学习中关系动态演化与标签稀缺问题，本文提出 SLeDGe 方法，联合学习分类器与自适应图结构，通过紧凑记忆管理平衡快速适应与历史一致性，并利用稀疏化提升图质量。实验表明，在少量标签下该方法优于现有流分类基准，能有效捕捉数据流中的演化关系。",
+      "llm_tldr": "针对数据流半监督学习中关系动态演化与标签稀缺问题，本文提出 SLeDGe 方法，联合学习分类器与自适应图结构，通过紧凑记忆管理平衡快速适应与历史一致性，并利用稀疏化提升图质量。实验表明，在少量标签下该方法优于现有流分类基准，能有效捕捉数据流中的演化关系。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.21434v1",
+      "source": "arxiv",
+      "title": "Universal Encoders for Modular Relational Deep Learning",
+      "abstract": "Relational Deep Learning (RDL) models multi-tabular databases as temporal heterogeneous graphs for end-to-end representation learning. While RDL is evolving rapidly, existing approaches face significant generalization obstacles. They are either schema-specific, requiring training from scratch for every new database, or they rely on monolithic architectures that entangle feature encoding with graph message-passing. Analyzing these limitations, we establish four core pillars for building foundational relational models: semantic granularity, structural topology, temporal causality, and unified optimization.   Addressing these pillars, we propose a modular approach that decouples row encoding from graph message-passing. We introduce the Universal Row Encoder, a transformer-based module that integrates raw cell data with schema metadata$-$including column semantics, table names, and global distribution statistics$-$to produce table-width invariant row embeddings. By explicitly feeding global statistics to an intra-row self-attention mechanism, the encoder natively contextualizes unseen features and handles sparse data. Serving as a flexible \"backend\" for any downstream graph architecture, our pretrained encoder enhances cross-database knowledge transfer on the established RelBench benchmarks while improving learning convergence and memory footprint.",
+      "authors": [
+        "Jakub Peleška",
+        "Gustav Šír"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DB"
+      ],
+      "published": "2026-06-19T13:49:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.21434v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Models multi-tabular databases as temporal heterogeneous graphs, addressing temporal causality",
+      "llm_evidence_cn": "将多表数据库建模为时序异构图，处理时间因果关系",
+      "llm_evidence": "将多表数据库建模为时序异构图，处理时间因果关系",
+      "canonical_evidence": "将多表数据库建模为时序异构图，处理时间因果关系",
+      "llm_tldr_en": "Proposes a modular approach to relational deep learning, decoupling row encoding from graph message-passing and introducing a universal row encoder for temporal heterogeneous graphs, advancing foundational models that handle temporal dynamics.",
+      "llm_tldr_cn": "针对现有关系深度学习方法的泛化障碍，提出模块化方法将行编码与图消息传递解耦，并引入通用行编码器在时序异构图上进行端到端学习，建立处理时间因果关系的基础模型，提升跨模式泛化能力。",
+      "llm_tldr": "针对现有关系深度学习方法的泛化障碍，提出模块化方法将行编码与图消息传递解耦，并引入通用行编码器在时序异构图上进行端到端学习，建立处理时间因果关系的基础模型，提升跨模式泛化能力。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.21696v1",
+      "source": "arxiv",
+      "title": "Universal time scales linking topology and dynamics in temporal networks",
+      "abstract": "Temporal networks underlie a wide range of social, technological, and biological phenomena, highlighting how temporal inhomogeneities drive interactions in complex systems. Despite vast research on the area, the way temporal network connectivity evolves across time scales remains poorly understood. By analyzing temporal network data of informational and societal origin, involving tens of systems, millions of nodes, and observation periods from days to years, we find systematic evidence of an optimal time scale for coarse-graining interaction events. At this level of aggregation, networks are maximally dynamic in their local structure, while retaining system-wide connectivity. To understand the origins of such a seemingly generic interplay of time and topology, we explore a minimal temporal network model based on uncorrelated renewal processes, and show that intermittent yet globally connected activity may arise solely due to heterogeneities in inter-event times and degrees, and no other system-specific details. All coarse-grained empirical networks studied show persistent patterns of cyclic node degree change yet stationary system-level degree distributions, a striking coexistence of microscopic self-regulation and macroscopic stability. Our results give support to the notion of a universal pattern in temporal networks that involves both time and topology, via the nontrivial interplay of aggregation and temporal inhomogeneity, with consequences for the study of spreading dynamics on networks and the balance between robustness and adaptability in complex systems.",
+      "authors": [
+        "Giulia de Meijere",
+        "Marton Karsai",
+        "Gerardo Iniguez"
+      ],
+      "primary_category": "physics.soc-ph",
+      "categories": [
+        "physics.soc-ph"
+      ],
+      "published": "2026-06-19T19:07:10+00:00",
+      "link": "https://arxiv.org/pdf/2606.21696v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "query:dynamic-g"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Analyzes temporal network data to find optimal time scales for coarse-graining interaction events, revealing universal dynamics in temporal networks.",
+      "llm_evidence_cn": "分析时态网络数据，寻找聚合交互事件的最佳时间尺度，揭示时态网络中的普遍动力学规律。",
+      "llm_evidence": "分析时态网络数据，寻找聚合交互事件的最佳时间尺度，揭示时态网络中的普遍动力学规律。",
+      "canonical_evidence": "分析时态网络数据，寻找聚合交互事件的最佳时间尺度，揭示时态网络中的普遍动力学规律。",
+      "llm_tldr_en": "By analyzing diverse temporal network data, the paper uncovers a universal optimal time scale for aggregating interactions, at which networks are maximally dynamic locally yet globally connected, linking topology and dynamics across time scales.",
+      "llm_tldr_cn": "本文通过分析多个时态网络系统（涵盖社会、信息、生物等领域）的大量数据，发现存在一个最佳时间尺度用于粗粒化交互事件，在该尺度下网络局部结构动态性最强而全局连通性得以保持。该发现揭示了时态网络连接性随时间尺度演变的普遍规律，为理解和建模时态网络中的拓扑-动力学耦合提供了新见解。",
+      "llm_tldr": "本文通过分析多个时态网络系统（涵盖社会、信息、生物等领域）的大量数据，发现存在一个最佳时间尺度用于粗粒化交互事件，在该尺度下网络局部结构动态性最强而全局连通性得以保持。该发现揭示了时态网络连接性随时间尺度演变的普遍规律，为理解和建模时态网络中的拓扑-动力学耦合提供了新见解。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "temporal network analysis",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22909v1",
+      "source": "arxiv",
+      "title": "Graph-Enhanced Large Language Models for Spatial Search",
+      "abstract": "There have been many recent improvements in the ability of Large Language Models (LLMs) to perform complex tasks and answer domain-specific questions through techniques like Retrieval Augmented Generation (RAG). However, reasoning abilities of LLMs, including spatial reasoning abilities, are still lacking. Spatial reasoning is a key component required to answer questions in a variety of domains that are grounded in the physical world, including urban planning, civil engineering, travel, and many others. To advance the development of LLMs and facilitate an impact in these domains, new research techniques must be developed to enable LLMs to reason over spatial data, which is commonly stored in the form of a graph. In this paper we outline the challenges associated with spatial reasoning through LLMs and envision a future in which search engines integrate with LLMs to answer complex spatial questions through graph-enhanced reasoning.",
+      "authors": [
+        "Nicole R. Schneider",
+        "Kent O'Sullivan",
+        "Hanan Samet"
+      ],
+      "primary_category": "cs.DB",
+      "categories": [
+        "cs.DB",
+        "cs.AI",
+        "cs.IR"
+      ],
+      "published": "2026-06-22T06:49:38+00:00",
+      "link": "https://arxiv.org/pdf/2606.22909v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Graph-enhanced LLMs for spatial reasoning over graph-structured spatial data",
+      "llm_evidence_cn": "图增强大型语言模型用于空间图数据推理",
+      "llm_evidence": "图增强大型语言模型用于空间图数据推理",
+      "canonical_evidence": "图增强大型语言模型用于空间图数据推理",
+      "llm_tldr_en": "Proposes graph-enhanced large language models to enable spatial reasoning over graph-structured spatial data, addressing limitations in current LLMs' spatial understanding.",
+      "llm_tldr_cn": "本文提出图增强的大语言模型，旨在赋予大语言模型对空间数据进行图推理的能力，以解决当前大语言模型在空间推理方面的不足。论文概述了将图结构空间数据与大语言模型结合所面临的关键挑战，为空间搜索等应用领域提供新的技术路径。",
+      "llm_tldr": "本文提出图增强的大语言模型，旨在赋予大语言模型对空间数据进行图推理的能力，以解决当前大语言模型在空间推理方面的不足。论文概述了将图结构空间数据与大语言模型结合所面临的关键挑战，为空间搜索等应用领域提供新的技术路径。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22914v1",
+      "source": "arxiv",
+      "title": "PromptDyG: Test-Time Prompt Adaptation on Dynamic Graphs",
+      "abstract": "Activities in numerous evolving systems can be represented as dynamic graphs in snapshot form at different time intervals, i.e., discrete-time dynamic graphs (DTDGs). Existing methods show impressive advances in capturing historical temporal evolution patterns in DTDGs, but they focus on addressing an offline learning setting, where models are trained using historical snapshots once and then evaluated to all subsequent graph snapshots without further updating. This fails to capture 1) the nature of evolving complexities across graph snapshots and 2) the distribution shift in the testing graph snapshots. To address these problems, we propose PromptDyG, a novel framework that leverages unsupervised test-time Prompt adaptation for Dynamic Graph learning under a live-update online setting. The key insight is that an expressive dynamic graph prompt can be learned on a frozen backbone via minimization of feature-wise, label-free entropy to efficiently and continuously model the evolving patterns. We show theoretically that this unsupervised prompt adaptation can guarantee a larger similarity margin between positive and negative pairs, facilitating more accurate dynamic predictions. It is further confirmed by our extensive empirical results on six benchmark datasets that show consistent and significant improvements of PromptDyG over state-of-the-art baselines.",
+      "authors": [
+        "Guoguo Ai",
+        "Chaoxi Niu",
+        "Hui Yan",
+        "Joey Tianyi Zhou",
+        "Yew-Soon Ong",
+        "Guansong Pang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-22T06:54:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.22914v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes a test-time prompt adaptation framework for dynamic graph learning to handle distribution shift in evolving graph snapshots.",
+      "llm_evidence_cn": "提出一种测试时提示自适应框架，用于动态图学习，以处理演化图快照中的分布偏移。",
+      "llm_evidence": "提出一种测试时提示自适应框架，用于动态图学习，以处理演化图快照中的分布偏移。",
+      "canonical_evidence": "提出一种测试时提示自适应框架，用于动态图学习，以处理演化图快照中的分布偏移。",
+      "llm_tldr_en": "To address the limitation of offline training on dynamic graphs, PromptDyG adapts to evolving data via unsupervised test-time prompt tuning, improving performance on subsequent snapshots without retraining.",
+      "llm_tldr_cn": "针对现有动态图学习方法在离线训练后无法适应测试时分布偏移的问题，本文提出PromptDyG框架，利用无监督测试时提示自适应技术，在动态图快照中持续更新模型。通过在历史模式基础上动态调整提示，该方法能够有效捕获快照间的演化复杂性，在不重新训练的情况下提升后续图快照上的预测性能，为实时动态图推理提供了新方案。",
+      "llm_tldr": "针对现有动态图学习方法在离线训练后无法适应测试时分布偏移的问题，本文提出PromptDyG框架，利用无监督测试时提示自适应技术，在动态图快照中持续更新模型。通过在历史模式基础上动态调整提示，该方法能够有效捕获快照间的演化复杂性，在不重新训练的情况下提升后续图快照上的预测性能，为实时动态图推理提供了新方案。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.23136v1",
+      "source": "arxiv",
+      "title": "LLM-Aided A* Search in Non-Geometric Network Graphs",
+      "abstract": "Finding the shortest path in non-geometric network graphs, where edge weights encode arbitrary metrics such as latency or monetary cost rather than spatial distance, poses a challenge for informed search algorithms. Their efficiency depends on an informative heuristic, typically supplied in spatial domains by geometric distances that have no counterpart on non-geometric graphs. We propose a large language model (LLM)-aided A* algorithm in which an LLM generates intermediate waypoints that guide the A* expansion toward promising graph regions. At the core of the approach are landmark distances, which serve both as an admissible landmark-based (ALT) heuristic for the search and as a compact structural feature that, supplied to the LLM, restores the distance-to-destination signal it would otherwise lack on non-geometric graphs. Our comprehensive experiments on multiple graph topologies with up to 2,000 nodes demonstrate that LLM-generated waypoints reduce the number of expanded nodes by around 50% while incurring only a marginal path cost increase compared to the optimal solution. We further analyze the impact of prompt engineering and show that incorporating compact structural features, namely heuristic estimates, is more effective than advanced prompting techniques. These findings demonstrate the potential of combining LLM- based guidance with classical search algorithms for efficient network optimization.",
+      "authors": [
+        "Nouf Alabbasi",
+        "Esraa Ghourab",
+        "Omar Alhussein"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-22T10:26:35+00:00",
+      "link": "https://arxiv.org/pdf/2606.23136v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM generates waypoints to guide A* search on network graphs",
+      "llm_evidence_cn": "LLM生成路点引导网络图上的A*搜索",
+      "llm_evidence": "LLM生成路点引导网络图上的A*搜索",
+      "canonical_evidence": "LLM生成路点引导网络图上的A*搜索",
+      "llm_tldr_en": "Proposes LLM-aided A* search for non-geometric graphs, where LLM generates waypoints using landmark distances, addressing the lack of informative heuristics.",
+      "llm_tldr_cn": "针对非几何网络图最短路径搜索缺乏信息启发式的问题，提出LLM辅助A*算法，利用大语言模型基于路标距离生成中间路点，引导A*扩展至有前景的图区域。路标距离同时作为可容许启发式和LLM的结构特征，恢复距离信息。实验证实方法能有效提升搜索效率。该工作展示了LLM在图搜索任务中的图推理潜力。",
+      "llm_tldr": "针对非几何网络图最短路径搜索缺乏信息启发式的问题，提出LLM辅助A*算法，利用大语言模型基于路标距离生成中间路点，引导A*扩展至有前景的图区域。路标距离同时作为可容许启发式和LLM的结构特征，恢复距离信息。实验证实方法能有效提升搜索效率。该工作展示了LLM在图搜索任务中的图推理潜力。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24421v1",
+      "source": "arxiv",
+      "title": "Can Aggregate Invariants Accelerate Continuous Subgraph Matching? Limits, Laws, and a Dynamic Spectral Index",
+      "abstract": "Spectral filtering recently delivered substantial pruning for \\emph{static} subgraph matching: Laplacian interlacing rejects candidates whose neighborhoods cannot host the query. We study whether such aggregate structural tests can accelerate \\emph{continuous} subgraph matching (CSM) over dynamic graphs, and answer in three parts. First, lazily maintained spectral bounds are infeasible exactly where spectral pruning has value: we characterize the tightest safe rule over a formalized perturbation relaxation and show that even it loses essentially all pruning power within four touching updates. Second, exact maintenance is affordable when selective: pruning utility and recomputation cost are anti-correlated across vertices -- hubs provably never prune -- so recomputing small-neighborhood spectra on touch sustains exact local spectra at microseconds per update, complete by construction. Third, integrated into a decoupled CSM benchmark against an identical-minus-spectra control, the tests remove up to $51\\%$ of candidates or safely skip up to $47\\%$ of update enumerations, yet enumeration intermediates remain unchanged -- beyond the gates' skipped first-level bindings, typically zero -- across two engines, four real graphs, two stream types, and $77$ solved queries; a constructed radius-stratified workload confirms the instrument detects the exception when one exists ($-99.9\\%$ intermediates, $748\\times$ faster). Aggregate tests accelerate what scales with candidate sets -- construction, list scans -- never adjacency-guided exploration. We distill an intermediate-invariance methodology for evaluating CSM filters and release a reusable dynamic local-spectra index.",
+      "authors": [
+        "Minghao Chen",
+        "Jiale Zheng"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.DB",
+        "cs.DS"
+      ],
+      "published": "2026-06-23T10:58:44+00:00",
+      "link": "https://arxiv.org/pdf/2606.24421v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Studies spectral filtering for continuous subgraph matching on dynamic graphs, characterizing pruning limits and proposing a dynamic spectral index.",
+      "llm_evidence_cn": "研究动态图上连续子图匹配的谱过滤方法，刻画剪枝极限并提出动态谱索引。",
+      "llm_evidence": "研究动态图上连续子图匹配的谱过滤方法，刻画剪枝极限并提出动态谱索引。",
+      "canonical_evidence": "研究动态图上连续子图匹配的谱过滤方法，刻画剪枝极限并提出动态谱索引。",
+      "llm_tldr_en": "This paper investigates whether spectral invariants can accelerate continuous subgraph matching on dynamic graphs, finding lazy maintenance infeasible but exact maintenance affordable on selective updates, leading to a dynamic spectral index for streaming graph matching.",
+      "llm_tldr_cn": "本文探究了谱不变量是否能够加速动态图上的连续子图匹配，发现惰性维护谱界在少量更新后即失去剪枝效力，但选择性精确维护在更新频率反相关时可行。基于此，提出了一种动态谱索引，在保证剪枝效用的同时控制重计算成本，为流式图数据的实时子图匹配提供了新解决方案。",
+      "llm_tldr": "本文探究了谱不变量是否能够加速动态图上的连续子图匹配，发现惰性维护谱界在少量更新后即失去剪枝效力，但选择性精确维护在更新频率反相关时可行。基于此，提出了一种动态谱索引，在保证剪枝效用的同时控制重计算成本，为流式图数据的实时子图匹配提供了新解决方案。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "streaming graph data",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26458v1",
+      "source": "arxiv",
+      "title": "MKG-RAG-Bench: Benchmarking Retrieval in Multimodal Knowledge Graph-Augmented Generation",
+      "abstract": "Retrieval-augmented generation (RAG) over knowledge graphs has emerged as a promising approach for grounding large language models, yet existing benchmarks largely overlook the challenges of retrieval in multimodal knowledge graph RAG (MKG-RAG). In practice, retrieval is a critical bottleneck: multimodal knowledge is heterogeneous, difficult to align across modalities, and often poorly served by retrievers designed for unstructured corpora. To address this gap, we introduce MKG-RAG-Bench, a cross-domain benchmark explicitly designed to evaluate retrieval in MKG-RAG. MKG-RAG-Bench is constructed from two multimodal knowledge graphs spanning general and medical domains, and includes carefully aligned question-answering datasets that support controlled evaluation of both retrieval and downstream generation. The benchmark is built using an LLM-based curation pipeline that filters low-utility knowledge, generates structurally grounded queries with exact supervision, and systematically covers diverse modality configurations. Through extensive experiments across representative retriever families and modality settings, we show that effective multimodal retrieval remains challenging yet crucial for end-to-end MKG-RAG performance, and that retrieval quality strongly determines generation outcomes. By isolating retrieval as a first-class evaluation target, MKG-RAG-Bench provides a principled foundation for diagnosing current limitations and advancing multimodal knowledge graph RAG systems.",
+      "authors": [
+        "Xiaochen Wang",
+        "Bao Hoang",
+        "Han Liu",
+        "Ting Wang",
+        "Fenglong Ma"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-24T23:38:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.26458v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "benchmark explicitly designed to evaluate retrieval in MKG-RAG, grounding large language models",
+      "llm_evidence_cn": "专门设计用于评估MKG-RAG检索的基准测试，接地大语言模型",
+      "llm_evidence": "专门设计用于评估MKG-RAG检索的基准测试，接地大语言模型",
+      "canonical_evidence": "专门设计用于评估MKG-RAG检索的基准测试，接地大语言模型",
+      "llm_tldr_en": "MKG-RAG-Bench is a cross-domain benchmark for evaluating retrieval in multimodal knowledge graph RAG, addressing the bottleneck of aligning heterogeneous multimodal knowledge for grounded LLM generation.",
+      "llm_tldr_cn": "提出MKG-RAG-Bench跨领域基准，专门评估多模态知识图谱增强生成中的检索环节，解决多模态知识异质性强、难以对齐的问题，为基于知识图谱的大语言模型落地提供重要测试平台。",
+      "llm_tldr": "提出MKG-RAG-Bench跨领域基准，专门评估多模态知识图谱增强生成中的检索环节，解决多模态知识异质性强、难以对齐的问题，为基于知识图谱的大语言模型落地提供重要测试平台。",
+      "llm_tags": [
+        "query:graph-llm:composite"
+      ],
+      "matched_query_tag": "query:graph-llm:composite",
+      "matched_query_text": "Papers central to 图大型语言模型, especially work that connects or combines: integrating graph neural networks with large language models; using large language models for graph-structured data; graph reasoning capabilities of large language models; graph representation learning combined with large language models; graph machine learning techniques for large language models; graph-enhanced training of large language models; How to integrate graph neural networks with large language models?; Training graph enhanced large language models.",
+      "matched_requirement_id": "req-composite-graph-llm",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26750v1",
+      "source": "arxiv",
+      "title": "Evolving edge weights via local entropy flow and cohesion flow on graphs",
+      "abstract": "In this paper, we first propose two different quantities on graphs, namely local entropy and cohesion, then design two corresponding flows for edge weights: the local entropy flow and the cohesion flow. We establish the global existence and uniqueness of solutions for both flows and investigate their asymptotic behaviors, including the case that the limit goes to positive infinity. Moreover, they can be applied to fundamental network analysis tasks, including community detection and node classification. Empirical evaluations demonstrate that our method achieves performance competitive with Ollivier Ricci flow and Lin-Lu-Yau Ricci flow on benchmark network analysis tasks. In experimental scenarios, we first apply the cohesion flow to evolve the edge weights of the graph, and then apply the local entropy flow to further update the resulting weighted graph. Both flows are computationally efficient, leading to a significant reduction in overall computational cost and improved scalability.",
+      "authors": [
+        "Juan Zhao",
+        "Jicheng Ma",
+        "Yunyan Yang",
+        "Liang Zhao"
+      ],
+      "primary_category": "math.CA",
+      "categories": [
+        "math.CA",
+        "math.AP"
+      ],
+      "published": "2026-06-25T08:35:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.26750v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes local entropy flow and cohesion flow to evolve edge weights on graphs",
+      "llm_evidence_cn": "提出局部熵流和凝聚流以演化图上的边权重",
+      "llm_evidence": "提出局部熵流和凝聚流以演化图上的边权重",
+      "canonical_evidence": "提出局部熵流和凝聚流以演化图上的边权重",
+      "llm_tldr_en": "Introduces local entropy flow and cohesion flow for evolving edge weights on graphs, with applications to community detection and node classification.",
+      "llm_tldr_cn": "针对图边权演化的数学建模问题，定义图上的局部熵和凝聚量，设计对应的两种流——局部熵流和凝聚流，严格证明解的全局存在唯一性并分析渐近行为。实验将凝聚流应用于社区检测和节点分类，性能与Ollivier Ricci流相当。该工作为演化图分析提供了新的动态机制和理论工具。",
+      "llm_tldr": "针对图边权演化的数学建模问题，定义图上的局部熵和凝聚量，设计对应的两种流——局部熵流和凝聚流，严格证明解的全局存在唯一性并分析渐近行为。实验将凝聚流应用于社区检测和节点分类，性能与Ollivier Ricci流相当。该工作为演化图分析提供了新的动态机制和理论工具。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "evolving graphs over time",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.27202v1",
+      "source": "arxiv",
+      "title": "Graph Neural Networks Applications Across Domains: All Insights You Need",
+      "abstract": "Graph neural networks have moved from a niche representation-learning technique to the default model class wherever data carry relational structure. The interesting question is no longer whether message passing helps on a given dataset, but where graph structure earns its computational cost and where it does not. This survey organises the field around a single design space, derives the spectral and spatial formulations from shared first principles, and connects expressive power to the Weisfeiler-Leman hierarchy with explicit statements of what current architectures can and cannot separate. Against that methodological backbone we examine twelve application domains, among them recommendation and social networks, knowledge graphs and language-model integration, drug discovery and molecular property learning, healthcare and neuroscience, computer vision, traffic and urban computing, power and renewable-energy systems, wireless and sixth-generation networks, fraud and cybersecurity, industrial prognostics, materials science, and climate modelling. For each domain we specify the graph-construction choices and their costs, identify which architecture families dominate and why, and separate reported gains from artefacts of weak baselines or favourable splits. A cross-domain comparison exposes recurring patterns: heterophily and scale undercut the same models almost everywhere, temporal graphs remain harder than their static counterparts, and the architectures that top public leaderboards are seldom the ones that reach deployment. We treat over-smoothing, over-squashing, robustness, distribution shift, fairness, and explainability not as a closing checklist but as the constraints that decide adoption.",
+      "authors": [
+        "Abderaouf Bahi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-25T16:00:11+00:00",
+      "link": "https://arxiv.org/pdf/2606.27202v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Survey covers GNN applications including knowledge graphs and language-model integration",
+      "llm_evidence_cn": "综述涵盖图神经网络在知识图谱和语言模型集成中的应用",
+      "llm_evidence": "综述涵盖图神经网络在知识图谱和语言模型集成中的应用",
+      "canonical_evidence": "综述涵盖图神经网络在知识图谱和语言模型集成中的应用",
+      "llm_tldr_en": "A comprehensive survey organizing GNNs around a unified design space, connecting expressive power to the Weisfeiler-Leman hierarchy, and examining twelve application domains including integration with language models, offering insights into where graph structure is beneficial.",
+      "llm_tldr_cn": "本综述围绕统一的设计空间组织图神经网络，推导频谱与空间公式并将表达能力与Weisfeiler-Leman层次结构相联系，进而检查包括知识图谱和语言模型集成在内的12个应用领域，为图结构的计算效益提供系统见解。",
+      "llm_tldr": "本综述围绕统一的设计空间组织图神经网络，推导频谱与空间公式并将表达能力与Weisfeiler-Leman层次结构相联系，进而检查包括知识图谱和语言模型集成在内的12个应用领域，为图结构的计算效益提供系统见解。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph representation learning combined with large language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.18850v1",
+      "source": "arxiv",
+      "title": "ScholarSum: Student-Teacher Abstractive Summarization via Knowledge Graph Reasoning and Reflective Refinement",
+      "abstract": "Abstractive summarization plays a crucial role in enabling efficient understanding of scientific literature, yet it inherently demands both linguistic fluency and factual faithfulness. Existing approaches often fail to reconcile these two requirements. Extractive methods rely on rigid sentence splicing that disrupts macro-level logical coherence, while large language model (LLM)-based generative approaches, despite mastering linguistic fluency, exhibit limited factual consistency. In this work, we propose ScholarSum, a hierarchical reflective graph-based framework that emulates a student-teacher writing process for fluent and faithful scientific summarization. ScholarSum first organizes the document into a hierarchical knowledge graph by segmenting it into semantically coherent units, whose multi-layered community structure captures global logic and macro-level themes. Guided by this global structure, the student generates an initial draft, which is subsequently refined through fine-grained evidence retrieval. To ensure factual consistency, a teacher-like reviewer then iteratively examines the draft, identifies unsupported content, and prompts targeted re-retrieval and rewriting until the summary meets rigorous quality standards. Extensive experiments demonstrate that ScholarSum significantly outperforms previous baselines in terms of both completeness and faithfulness. Our code is available at https://github.com/Xiaoyu-Tao/ScholarSum.",
+      "authors": [
+        "Bohou Zhang",
+        "Xiaoyu Tao",
+        "Mingyue Cheng",
+        "Huijie Liu",
+        "Qi Liu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.IR"
+      ],
+      "published": "2026-06-17T09:31:07+00:00",
+      "link": "https://arxiv.org/pdf/2606.18850v1",
+      "tags": [
+        "keyword:graph-llm"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Knowledge graph reasoning with LLM-based reflective refinement for summarization",
+      "llm_evidence_cn": "结合知识图谱推理与基于大语言模型的反思精炼进行摘要生成",
+      "llm_evidence": "结合知识图谱推理与基于大语言模型的反思精炼进行摘要生成",
+      "canonical_evidence": "结合知识图谱推理与基于大语言模型的反思精炼进行摘要生成",
+      "llm_tldr_en": "ScholarSum uses hierarchical knowledge graph reasoning and LLM refinement to produce fluent and faithful scientific summaries, improving factual consistency over pure LLM approaches.",
+      "llm_tldr_cn": "现有摘要方法难以兼顾流畅性与事实一致性。抽取式方法破坏逻辑连贯，大语言模型生成方法缺乏事实忠实度。ScholarSum提出层次化知识图谱推理与反思精炼框架，模拟师生写作过程，先构建文档层次图，通过知识图谱推理生成草稿，再经大语言模型反思修正，在科学文献摘要任务上显著提升了事实准确性和流畅性。",
+      "llm_tldr": "现有摘要方法难以兼顾流畅性与事实一致性。抽取式方法破坏逻辑连贯，大语言模型生成方法缺乏事实忠实度。ScholarSum提出层次化知识图谱推理与反思精炼框架，模拟师生写作过程，先构建文档层次图，通过知识图谱推理生成草稿，再经大语言模型反思修正，在科学文献摘要任务上显著提升了事实准确性和流畅性。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.24011v1",
+      "source": "arxiv",
+      "title": "Low-rank Updates in Slowly Time-varying Graphs for Spatial-Temporal Signal Interpolation",
+      "abstract": "A crucial assumption in graph signal processing (GSP) is the existence of an underlying graph that captures the pairwise similarities between nodes, allowing filters to be designed based on this graph for tasks such as denoising. For spatial-temporal data in which node-to-node similarities evolve over time, a static spatial graph is insufficient. In this paper, to represent slowly time-varying pairwise relationships, we model the graph changes in two consecutive adjacency matrices $P = W^{(2)} - W^{(1)}$ across time as a low-rank matrix. % Specifically, given an initial adjacency matrix $W^{(1)}$ at time $t=1$, we jointly interpolate a signal $x_2$ and estimate $W^{(2)}$ at $t=2$ using both a graph signal smoothness prior for $x_2$ and a low-rank prior on $¶$. We alternate optimization steps. With $W^{(2)}$ fixed, $x_2$ is interpolated by solving a linear system. Alternatively, holding $x_2$ fixed, $W^{(2)}$ is updated via proximal gradient descent (PGD). The proximal mapping of the rank term $Gamma(W^{(2)} - W^{(1)})$ is approximated in linear time using a fast orthogonal matching pursuit (OMP) algorithm that selects a sparse combination of atoms from a dictionary $cR$ formed by the outer products of $W^{(1)}$'s eigenvectors. We unroll iterations of our algorithm into layers to build a lightweight neural network for limited data-driven parameter tuning. Experiments show that our joint optimization achieves better signal interpolation compared to existing time-varying graph models.",
+      "authors": [
+        "Saghar Bagheri",
+        "Gene Cheung",
+        "Tim Eadie",
+        "Antonio Ortega"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP",
+        "cs.LG"
+      ],
+      "published": "2026-06-22T23:33:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.24011v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "models graph changes as low-rank for time-varying graphs",
+      "llm_evidence_cn": "将图变化建模为低秩以处理时变图",
+      "llm_evidence": "将图变化建模为低秩以处理时变图",
+      "canonical_evidence": "将图变化建模为低秩以处理时变图",
+      "llm_tldr_en": "This paper proposes a method for spatial-temporal signal interpolation on slowly time-varying graphs by modeling graph changes as low-rank, jointly interpolating signals and estimating graph structure.",
+      "llm_tldr_cn": "针对时变图中节点相似性随时间缓慢变化的问题，本文将连续时间邻接矩阵间的差异建模为低秩矩阵，并联合执行信号插值与图估计。实验证明低秩假设能有效捕捉图的缓慢演化，为动态图信号处理提供了一种新范式，有助于在图结构不完全已知时仍保持插值精度。",
+      "llm_tldr": "针对时变图中节点相似性随时间缓慢变化的问题，本文将连续时间邻接矩阵间的差异建模为低秩矩阵，并联合执行信号插值与图估计。实验证明低秩假设能有效捕捉图的缓慢演化，为动态图信号处理提供了一种新范式，有助于在图结构不完全已知时仍保持插值精度。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.22995v1",
+      "source": "arxiv",
+      "title": "Group-Graph Policy Optimization for Long-Horizon Agentic Reinforcement Learning",
+      "abstract": "Group-based Reinforcement Learning (RL) has significantly enhanced Large Language Models (LLMs) in agentic scenarios. To achieve finer-grained policy updates, recent agentic RL frameworks have shifted from trajectory-level to step-level training. However, long-horizon agentic RL suffers from severe reward sparsity and delay, as feedback is often deferred for dozens of interaction steps. While existing step-level frameworks refine training granularity, their credit assignment remains coarse-grained and still treats agent exploration as isolated, linear trajectories. This oversimplified perspective ignores the inherent graph structure of state transitions, leading to high-variance state-value estimation and myopic, localized credit assignment. To overcome these critical bottlenecks, we propose Group-Graph Policy Optimization (G2PO), a novel group-based RL algorithm tailored for multi-turn agentic tasks. G2PO explicitly transforms linear interaction trajectories into a global state-transition graph. By aggregating identical observations across different trajectories, we introduce group-aggregation state-value estimation that reduces sampling variance and trajectory-dependent bias. Furthermore, we redefine agent actions as transitions between state nodes and propose an edge-centric advantage estimation strategy. By globally standardizing Temporal Difference (TD) errors across the entire graph, G2PO explicitly identifies and prioritizes critical transitions that drive absolute task progress. Extensive experiments on representative long-horizon benchmarks-WebShop, ALFWorld, and AppWorld-demonstrate that G2PO substantially outperforms state-of-the-art prompt-based and RL baselines, achieving remarkable success rate improvements of up to 22.2% over GRPO.",
+      "authors": [
+        "Yunan Wang",
+        "Minghui Song",
+        "Zihan Zhang",
+        "Shaohan Huang",
+        "Haizhen Huang",
+        "Furu Wei",
+        "Weiwei Deng",
+        "Feng Sun",
+        "Qi Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-22T08:12:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.22995v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "models state transitions as graph for credit assignment in LLM agent RL",
+      "llm_evidence_cn": "将状态转移建模为图以改进LLM智能体强化学习的信用分配",
+      "llm_evidence": "将状态转移建模为图以改进LLM智能体强化学习的信用分配",
+      "canonical_evidence": "将状态转移建模为图以改进LLM智能体强化学习的信用分配",
+      "llm_tldr_en": "Proposes graph-structured policy optimization for long-horizon RL with LLMs. Models exploration as state-transition graph to improve credit assignment and reduce value estimation variance. Enables finer step-level policy updates and better LLM agent performance.",
+      "llm_tldr_cn": "针对基于LLM的智能体在长周期任务中面临奖励稀疏和信用分配困难的问题，本文提出一种组图策略优化方法。该方法将智能体的探索过程抽象为状态转移图，通过图结构感知的信用分配机制，减少值函数估计方差，实现更精准的步级策略优化。实验结果表明，该方法显著提升了LLM智能体在复杂长序列任务中的表现，为图增强的大语言模型训练提供了新思路。",
+      "llm_tldr": "针对基于LLM的智能体在长周期任务中面临奖励稀疏和信用分配困难的问题，本文提出一种组图策略优化方法。该方法将智能体的探索过程抽象为状态转移图，通过图结构感知的信用分配机制，减少值函数估计方差，实现更精准的步级策略优化。实验结果表明，该方法显著提升了LLM智能体在复杂长序列任务中的表现，为图增强的大语言模型训练提供了新思路。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph-enhanced training of large language models",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.25293v1",
+      "source": "arxiv",
+      "title": "Communicability-Inspired Positional Encoding (CIPE)",
+      "abstract": "Positional encodings (PEs) are essential for Transformers. Yet designing effective PEs for non-Euclidean graphs remains challenging. Such encodings should ideally induce an Attention-Compatible Geometry for self-attention: not merely describing graph structure, but defining a geometry whose inner products reflect meaningful structural relatedness. To realize this geometry, we propose Communicability-Inspired Positional Encoding (CIPE), built from communicability, a measure between pairs of nodes that aggregates contributions from paths of all lengths. By construction, CIPE inner products recover communicability, converting global multi-path connectivity into an attention-ready similarity geometry. For practical Transformer training, we introduce dimensionality alignment, mapping graph-size-dependent CIPE representations to prescribed dimensions while faithfully preserving the induced geometry. Empirically, CIPE improves structure-agnostic Transformers by 35.5% on average across seven benchmarks, outperforming representative PEs; it also consistently improves structure-biased graph Transformers, where competing PEs often yield only marginal benefits. These results position CIPE as a principled framework for attention-compatible graph positional encodings.",
+      "authors": [
+        "Yipeng Zhang",
+        "Zhongtian Sun",
+        "Pietro Liò",
+        "Kelin Xia"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-24T01:56:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.25293v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Proposes graph positional encoding for Transformers, enabling attention-compatible geometry",
+      "llm_evidence_cn": "为Transformer提出图位置编码，实现注意力兼容的几何",
+      "llm_evidence": "为Transformer提出图位置编码，实现注意力兼容的几何",
+      "canonical_evidence": "为Transformer提出图位置编码，实现注意力兼容的几何",
+      "llm_tldr_en": "Proposes CIPE, a positional encoding for graph Transformers based on communicability, converting global path connectivity into attention-ready geometry.",
+      "llm_tldr_cn": "针对非欧图Transformer位置编码设计的挑战，提出CIPE，利用图节点间通信性度量构建位置编码，其内积恢复通信性，将多路径全局连接转换为适合自注意力的相似度几何。实验表明CIPE能有效提升图Transformer性能。该方法为图结构数据上的大模型训练提供了一种图感知的位置编码技术。",
+      "llm_tldr": "针对非欧图Transformer位置编码设计的挑战，提出CIPE，利用图节点间通信性度量构建位置编码，其内积恢复通信性，将多路径全局连接转换为适合自注意力的相似度几何。实验表明CIPE能有效提升图Transformer性能。该方法为图结构数据上的大模型训练提供了一种图感知的位置编码技术。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph machine learning techniques for large language models",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.27201v1",
+      "source": "arxiv",
+      "title": "Explaining Temporal Graph Neural Networks via Feature-induced Information Flow",
+      "abstract": "Event-based Temporal Graph Neural Networks (ETGNNs) have demonstrated strong performance across a wide range of applications, including social network analysis, epidemic tracing, recommender systems, and political event forecasting. However, their increasing complexity poses significant challenges for explainability. Existing explanation methods focus only on a subset of the information flow within ETGNNs, typically tracing contributions from the event-related embeddings to the output. Consequently, they overlook the important pathways through event-induced variables, which mediate interactions between nodes and thereby play a central role in capturing long-range temporal dependencies. To overcome this limitation, we propose a novel attribution method that analyzes the \\emph{entire} information flow through all event-associated variables. Our method is built upon the recent Normalized Relevance Measure (NRM) framework, which enables explicit quantification of information flow originating from event embeddings as well as information flow passing through event-induced variables. It also ensures comparability of latent variables across layers, and supports higher-order analysis of interactions between events. To handle the architectural complexity of ETGNNs, we extend the NRM framework with a modular decomposition procedure that facilitates the systematic construction of relevance structure for complex neural architectures. We evaluate our approach on two synthetic datasets for epidemic tracing and social dynamics, as well as a real-world dataset of political event networks. Our qualitative and quantitative experiments show that our method consistently outperforms existing explanation approaches while producing more human-interpretable explanations.",
+      "authors": [
+        "Ping Xiong",
+        "Thomas Schnake",
+        "Klaus-Robert Müller",
+        "Shinichi Nakajima"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-25T16:00:11+00:00",
+      "link": "https://arxiv.org/pdf/2606.27201v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Proposes an attribution method for explaining temporal graph neural networks, aiding temporal network analysis.",
+      "llm_evidence_cn": "提出一种归因方法，通过特征诱导信息流解释时间图神经网络，辅助时间网络分析",
+      "llm_evidence": "提出一种归因方法，通过特征诱导信息流解释时间图神经网络，辅助时间网络分析",
+      "canonical_evidence": "提出一种归因方法，通过特征诱导信息流解释时间图神经网络，辅助时间网络分析",
+      "llm_tldr_en": "Addresses the challenge of explaining event-based temporal graph neural networks (ETGNNs) by proposing a novel attribution method that captures information flow through event-induced variables, improving understanding of long-range temporal dependencies.",
+      "llm_tldr_cn": "本文针对事件驱动的时间图神经网络（ETGNN）可解释性不足的问题，提出一种新颖的归因方法，通过特征诱导的信息流捕获事件相关变量的贡献，揭示了长程时间依赖性的重要通路。实验表明该方法能更全面地解释ETGNN的预测，为时间网络分析提供了有效工具。",
+      "llm_tldr": "本文针对事件驱动的时间图神经网络（ETGNN）可解释性不足的问题，提出一种新颖的归因方法，通过特征诱导的信息流捕获事件相关变量的贡献，揭示了长程时间依赖性的重要通路。实验表明该方法能更全面地解释ETGNN的预测，为时间网络分析提供了有效工具。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "temporal network analysis",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.26578v1",
+      "source": "arxiv",
+      "title": "EvoOptiGraph: Weakness-Driven Coevolution via Graph-Based Structural Generation for Optimization Modeling",
+      "abstract": "Automating optimization modeling from natural language with large language models (LLMs) faces two key challenges. First, training corpora lack structural diversity. Second, data generation pipelines remain static and decoupled from model learning. To address these challenges, we propose EvoOptiGraph, a novel framework where data and model co-evolve, driven by model weaknesses. EvoOptiGraph represents each mixed-integer linear program (MILP) as an attributed bipartite graph and applies validity-preserving evolutionary operators to generate structurally diverse instances. The evolved graphs are converted into solver code and natural language via deterministic compilation and verified back-translation. Training proceeds in two stages: supervised fine-tuning (SFT) on an initial dataset, followed by reinforcement learning with verifiable rewards (RLVR), where graph-derived weakness signals guide the generation of new instances targeting the model's failures. This forms a closed loop that continuously updates the training distribution. Empirical results on six public datasets show that EvoOptiGraph significantly outperforms larger generalist models, agentic methods, and specialized baselines in accuracy, executability, and generalization. These results demonstrate that targeted data-model coevolution is an effective strategy for improving LLMs on optimization modeling tasks.",
+      "authors": [
+        "Qingcan Kang",
+        "Mingyang Liu",
+        "Xiaojin Fu",
+        "Shixiong Kai",
+        "Tao Zhong",
+        "Mingxuan Yuan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-25T03:57:07+00:00",
+      "link": "https://arxiv.org/pdf/2606.26578v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "uses LLMs with graph-based MILP representation for optimization",
+      "llm_evidence_cn": "使用大语言模型处理图结构化的MILP数据进行优化",
+      "llm_evidence": "使用大语言模型处理图结构化的MILP数据进行优化",
+      "canonical_evidence": "使用大语言模型处理图结构化的MILP数据进行优化",
+      "llm_tldr_en": "EvoOptiGraph co-evolves data and model for optimization modeling by representing MILPs as attributed bipartite graphs, using LLMs and validity-preserving evolutionary operators.",
+      "llm_tldr_cn": "针对LLM自动化优化建模中训练数据缺乏结构多样性且生成管线静态的问题，该论文提出EvoOptiGraph框架，将混合整数线性规划（MILP）实例表示为属性二部图，并利用保解进化算子生成多样化结构数据；这些图实例被编译为求解器代码并由LLM处理，通过验证性回译确保质量。实验表明，数据与模型协同进化能持续提升优化建模的性能，为将图形结构引入LLM训练提供了新思路。",
+      "llm_tldr": "针对LLM自动化优化建模中训练数据缺乏结构多样性且生成管线静态的问题，该论文提出EvoOptiGraph框架，将混合整数线性规划（MILP）实例表示为属性二部图，并利用保解进化算子生成多样化结构数据；这些图实例被编译为求解器代码并由LLM处理，通过验证性回译确保质量。实验表明，数据与模型协同进化能持续提升优化建模的性能，为将图形结构引入LLM训练提供了新思路。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "biorxiv-10-64898-2026-04-30-721835-v2",
+      "source": "biorxiv",
+      "title": "LNGCN: a distance-aware continuous-time graph protocol for prioritizing protein-protein interaction candidates",
+      "abstract": "Accurate high-throughput prediction of protein-protein interactions (PPIs) is essential for mapping cellular mechanisms and prioritizing experimental validation. Current graph-based methods often rely on discrete message passing, suffer from representation over-smoothing, and provide poorly calibrated confidence scores. We present LNGCN, a distance-aware continuous-time graph protocol that integrates residue-level structural graphs with liquid neural dynamics to model spatially heterogeneous interaction patterns. Residue radial distance is used as an explicit driving signal for continuous graph evolution, while hierarchical calibration converts raw model outputs into interpretable interaction probabilities. Across balanced, highly imbalanced, and cross-species benchmarks, LNGCN achieved robust predictive performance. Importantly, the calibrated scores supported biologically coherent prioritization in the FGF23-FGFR1c--Klotho complex, SHP2-associated signaling interactions and Tdk1 oligomeric-state-dependent binding. In a TPR-centered experimental case study, LNGCN recovered known TPR-associated partners and prioritized ELAVL1-TPR and RALY-TPR, whose physical interactions were subsequently confirmed via experimental validation. These results indicate that LNGCN can serve as a practical prioritization protocol for PPI candidates.",
+      "authors": [
+        "Xiao, Y.",
+        "Zheng, Y.",
+        "Hua, Y.",
+        "Peng, J.",
+        "Liu, J.",
+        "Qu, Y.",
+        "Xu, J.",
+        "Fu, R.",
+        "Qian, Q.",
+        "Zhao, M.",
+        "Zhang, X.",
+        "Zhao, J.",
+        "Yao, Y.",
+        "Kosar, M.",
+        "Ke, Y.",
+        "Chi, Y."
+      ],
+      "primary_category": "bioinformatics",
+      "categories": [
+        "bioinformatics"
+      ],
+      "published": "2026-06-25T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.04.30.721835v2.full.pdf",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "continuous-time graph protocol with liquid neural dynamics models graph evolution",
+      "llm_evidence_cn": "连续时间图协议与液体神经动力学建模图演化",
+      "llm_evidence": "连续时间图协议与液体神经动力学建模图演化",
+      "canonical_evidence": "连续时间图协议与液体神经动力学建模图演化",
+      "llm_tldr_en": "Proposes LNGCN, a continuous-time graph protocol using residue-level graphs and liquid neural dynamics for protein interaction prediction, offering improved calibration.",
+      "llm_tldr_cn": "针对蛋白质相互作用预测中离散消息传递导致的过平滑和校准差问题，提出LNGCN协议，结合残基结构图与液体神经动力学，显式利用距离信号驱动图连续演化，并通过分层校准获得可解释概率。实验表明方法能有效捕捉空间异质模式，提升预测置信度。",
+      "llm_tldr": "针对蛋白质相互作用预测中离散消息传递导致的过平滑和校准差问题，提出LNGCN协议，结合残基结构图与液体神经动力学，显式利用距离信号驱动图连续演化，并通过分层校准获得可解释概率。实验表明方法能有效捕捉空间异质模式，提升预测置信度。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "biorxiv-10-64898-2026-06-17-732914-v1",
+      "source": "biorxiv",
+      "title": "Drug-Prot: A query system for statistical inference of drug effects and interactions in dynamic proteomic networks",
+      "abstract": "Understanding drug effects and drug-drug interactions is essential for developing combination therapies. We present Drug-Prot, a computational framework that leverages large-scale perturbation proteomics to quantify causal drug effects, drug-drug interactions, and dynamic protein relationships. Using data from 63 single drugs and 59 drug combinations applied to 18 breast cancer cell lines at 6, 24, and 48 hours, Drug-Prot estimates drug effects on protein expression and reconstructs directed temporal protein dependency networks.\n\nThe publicly available software enables targeted analyses of user-defined protein sets, substantially reducing the multiple-testing burden. Through an interactive web application, users obtain corrected p-values for single-drug and combination effects, directed temporal dependency networks, and downloadable results without requiring access to the underlying proteomic dataset.\n\nAs a use case, we apply invariance-regularized Random Forests to triple-negative breast cancer cell lines to identify proteins associated with drug response. Querying these proteins in Drug-Prot reveals drug-specific and interaction effects at the protein-network level, illustrating how the framework links candidate causal protein features to actionable drug combinations.",
+      "authors": [
+        "Ulmer, M.",
+        "Sun, R.",
+        "Qian, L.",
+        "Aebersold, R.",
+        "Guo, T.",
+        "Buehlmann, P."
+      ],
+      "primary_category": "bioinformatics",
+      "categories": [
+        "bioinformatics"
+      ],
+      "published": "2026-06-22T00:00:00+00:00",
+      "link": "https://www.biorxiv.org/content/10.64898/2026.06.17.732914v1.full.pdf",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "reconstructs directed temporal protein dependency networks from time-series perturbation proteomics",
+      "llm_evidence_cn": "从时间序列扰动蛋白质组学重建有向时序蛋白质依赖网络",
+      "llm_evidence": "从时间序列扰动蛋白质组学重建有向时序蛋白质依赖网络",
+      "canonical_evidence": "从时间序列扰动蛋白质组学重建有向时序蛋白质依赖网络",
+      "llm_tldr_en": "Drug-Prot is a computational framework that leverages time-series proteomics data to quantify drug effects and reconstruct temporal protein dependency networks, supporting statistical inference of dynamic drug interactions.",
+      "llm_tldr_cn": "Drug-Prot利用大规模扰动蛋白质组学数据量化药物效应和相互作用，并重建有向时间蛋白质依赖网络。它通过分析63种单药和59种药物组合在18种乳腺癌细胞系中6、24、48小时的数据，构建了动态蛋白关系网络，为组合疗法开发提供了因果关系推断工具。",
+      "llm_tldr": "Drug-Prot利用大规模扰动蛋白质组学数据量化药物效应和相互作用，并重建有向时间蛋白质依赖网络。它通过分析63种单药和59种药物组合在18种乳腺癌细胞系中6、24、48小时的数据，构建了动态蛋白关系网络，为组合疗法开发提供了因果关系推断工具。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "temporal network analysis",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

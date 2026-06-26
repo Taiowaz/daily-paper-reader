@@ -1,0 +1,1729 @@
+Title: Evolving edge weights via local entropy flow and cohesion flow on graphs
+
+URL Source: https://arxiv.org/pdf/2606.26750v1
+
+Published Time: Fri, 26 Jun 2026 00:50:00 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+# Evolving edge weights via local entropy flow and cohesion flow on graphs 
+
+Juan Zhao a, Jicheng Ma a, Yunyan Yang a, ∗, Liang Zhao b
+
+> aSchool of Mathematics, Renmin University of China, Beijing, 100872, China
+> bSchool of Mathematical Sciences, Key Laboratory of Mathematics and Complex Systems of MOE, Beijing Normal University, Beijing, 100875, China
+
+Abstract 
+
+In this paper, we first propose two di ff erent quantities on graphs, namely local entropy and cohesion, then design two corresponding flows for edge weights: the local entropy flow and the cohesion flow. We establish the global existence and uniqueness of solutions for both flows and investigate their asymptotic behaviors, including the case that the limit goes to positive infin-ity. Moreover, they can be applied to fundamental network analysis tasks, including community detection and node classification. Empirical evaluations demonstrate that our method achieves performance competitive with Ollivier Ricci flow and Lin-Lu-Yau Ricci flow on benchmark net-work analysis tasks. In experimental scenarios, we first apply the cohesion flow to evolve the edge weights of the graph, and then apply the local entropy flow to further update the resulting weighted graph. Both flows are computationally e ffi cient, leading to a significant reduction in overall computational cost and improved scalability. 
+
+Keywords: entropy flow, Ricci flow, community detection, node classification, weighted graph 
+
+2020 MSC: 05C21, 35R02, 68Q06 
+
+1. Introduction 
+
+Graph models serve as a fundamental tool across a wide range of fields, including network analysis, machine learning, and complex systems. In these models, edges between nodes are assigned weights to encode the strength or distance of pairwise connections. Understanding the intrinsic structure of graphs, such as node clustering into communities, or information propa-gation patterns across the network, is essential for tasks including community detection, core detection, and graph representation learning. An important and widely adopted class of methods for characterizing the intrinsic topologi-cal and geometric properties of discrete graph structures is discrete curvature and curvature flow. Ollivier proposed a discrete Ricci curvature framework for metric measure spaces based on opti-mal transport distance in the seminal works [43, 44]. This framework was later modified by Lin, Lu and Yau [33], and is widely referred to as Lin-Lu-Yau Ricci curvature. Bauer, Jost and Liu        
+
+> ∗Corresponding author
+> Email addresses: zhaojuan0509@ruc.edu.cn (Juan Zhao), 2019202433@ruc.edu.cn (Jicheng Ma),
+> yunyanyang@ruc.edu.cn (Yunyan Yang), liangzhao@bnu.edu.cn (Liang Zhao)
+> arXiv:2606.26750v1 [math.CA] 25 Jun 2026
+
+systematically investigated the spectral properties of the normalized graph Laplacian associated with Ollivier Ricci curvature [8]. Jost and Liu established curvature-dimension inequalities for discrete graph settings [26]. Inspired by Hamilton’s pioneering Ricci flow on smooth manifolds [22] and Perelman’s manifold surgery theory [45], discrete geometric flows have aspired to generalize continuous manifold geometry to discrete graph structures. Chow and Luo developed the theory of com-binatorial Ricci flow on surfaces [11]. For complex network analysis, Weber, Saucan and Jost introduced Forman-Ricci flow and systematically explored its applications in graph structural mining [57, 58]. Focusing on community detection, Ni et al. applied Ollivier Ricci flow with graph surgery operations to identify community structures [42]. This work was further general-ized to normalized Lin-Lu-Yau Ricci flow by Lai, Bai and Lin [29]. On the theoretical side, Bai et al. established the well-posedness theory for Lin-Lu-Yau Ricci flow, including the existence, uniqueness, and long-time convergence of its solutions [6]. For recent theoretical advances on the well-posedness, convergence behavior, and prescribed curvature problem of Ollivier or Lin-Lu-Yau Ricci curvature, we refer interested readers to [4, 3, 5, 7, 31, 32]. In addition, Ma and Yang proposed several variants of the normalized Ricci flow, established their long-time existence the-ory, and further applied these flow frameworks to community detection tasks [34, 35, 36]. For extended applications of discrete curvature flow in core detection and hypergraph community detection, we refer readers to [49, 54, 64, 63]. Entropy is a foundational concept in both physics and information theory. Entropy-based approaches have long been proven e ff ective for quantifying uncertainty, complexity, and infor-mation dynamics in networked systems. Rooted in information theory and statistical mechanics, entropy and relative entropy have been extensively studied in connection with stochastic pro-cesses, di ff usion dynamics, and random walks on graphs [50, 28, 14]. These methods are widely used in network analysis to measure key structural properties including heterogeneity, robust-ness, and node centrality [2, 17]. In the context of graph frameworks, the key information metric we adopt is the Kullback-Leibler (KL) divergence, which quantifies the dissimilarity between two probability measures. In our recent work [65], we constructed a family of nowhere-zero random walks on graphs, and defined edge entropy via a symmetric variant of KL divergence (J-divergence [25]) between these walks. Motivated by the geometric intuition of Ricci flow, we further proposed an entropy flow on weighted graphs with rigorous theoretical guarantees. This method achieves detection accuracy comparable to discrete Ollivier Ricci flow in the task of community detection, while avoiding the high computational cost of optimal transport. Despite its improved e ffi ciency over Ricci flow methods, this framework still faces scalability challenges for large-scale graph computations, due to the global nature of the nowhere-zero random walks it relies on. In this paper, to further simplify the computation of global entropy, we introduce a local entropy and the corresponding local entropy flow. Along this flow, edges with higher entropy experience faster weight growth, while those with lower entropy grow more slowly. In addition to the point of view of probability, we introduce a cohesion, characterizing the geometric struc-ture through cohesiveness of the two endpoints of an edge. We further construct the cohesion flow to evolve edge weights accordingly. Theoretically, we prove the existence and uniqueness of global solutions to both flows, and further investigate their asymptotic behavior. To assess the e ff ectiveness of the proposed flows, we consider two representative network analysis tasks: community detection and node classification using graph convolutional networks (GCNs). For community detection, we observe that both the local entropy flow and the cohesion flow are ef-fective when applied individually, while their sequential combination, which first evolves edge 2weights via the cohesion flow and then further updates them using the local entropy flow, yields improved performance. For node classification, both the individual flows and their combination achieve comparable results. Experimental results show that the proposed flows achieve perfor-mance compared with both Ricci flow approaches [29, 34, 35, 36, 42, 37] and our previous global entropy flow approaches [65]. The remainder of this paper is organized as follows. In Section 2, we introduce the flows and state the main results. In Section 3, we provide several examples of both flows. Section 4 presents the proofs of the main theorems. In Section 5, we validate the performance of the proposed flows for community detection and node classification. Finally, we conclude this work in Section 6. 
+
+2. Local entropy flow and cohesion flow 
+
+In this section, we present two quantities and their associated flows on graphs. We first in-troduce the local entropy defined via paired local random walks and construct the corresponding local entropy flow, together with its well-posedness and convergence properties. We then define the cohesion based on local neighborhood structures and construct the corresponding cohesion flow, along with its well-posedness and long-time behavior. 
+
+2.1. Local entropy flow 
+
+In this subsection, we define local random walks and the associated edge entropy. Based on these quantities, we construct the local entropy flow and present its main theoretical properties together with a discrete version for numerical implementation. 
+
+2.1.1. Local random walks 
+
+Let G = (V, E, w) be a connected finite weighted graph, where V = {x1, x2, . . . , xn} is the vertex set, E = {e1, e2, . . . , em} is the edge set, and w = (we)e∈E is the edge weight vector with 
+
+we > 0 for all e ∈ E. We write x ∼ y if vertices x and y are adjacent. For any edge e = xy ∈ E,we denote the 1-step neighborhood of x and y by 
+
+Nx = {u ∈ V : u ∼ x or u = x}, Ny = {u ∈ V : u ∼ y or u = y},
+
+respectively. For each e = xy and a fixed parameter α ∈ (0 , 1), the local random walk starting from x 
+
+(associated with edge e = xy ), denoted by μα 
+
+> x
+
+: V → [0 , 1], is defined as follows: 
+
+• If Ny \ Nx , ∅, we set 
+
+μα 
+
+> x
+
+(z) =
+
+
+
+α, z = x,α(1 − α) wxz P 
+
+> u∼x
+> wxu
+
+, z ∼ x,
+
+(1 − α)2 wyz  
+
+> P
+> u∈Ny\Nx
+> wyu
+
+, z ∈ Ny \ Nx,
+
+0, otherwise .
+
+(2.1) 3• If Ny \ Nx = ∅, we define μα 
+
+> x
+
+as the 1-step α-lazy random walk on G, i.e., 
+
+μα 
+
+> x
+
+(z) =
+
+
+
+α, z = x,
+
+(1 − α) wxz P 
+
+> u∼x
+> wxu
+
+, z ∼ x,
+
+0, otherwise .
+
+(2.2) It is straightforward to verify that for any α ∈ (0 , 1), the support of μα 
+
+> x
+
+is exactly Nx ∪ Ny,i.e., {u ∈ V : μα 
+
+> x
+
+(u) , 0} = Nx ∪ Ny. In particular, we have 0 < μ α 
+
+> x
+
+(z) < 1, ∀z ∈ Nx ∪ Ny (2.3) and X
+
+> z∈V
+
+μα 
+
+> x
+
+(z) =
+
+X 
+
+> z∈Nx∪Ny
+
+μα 
+
+> x
+
+(z) = 1, (2.4) which confirms that μα 
+
+> x
+
+is a well-defined probability measure on V.
+
+2.1.2. Entropy between local random walks 
+
+For any α ∈ (0 , 1) and edge e = xy ∈ E, let μα 
+
+> x
+
+and μα 
+
+> y
+
+be paired local random walks associated with e defined above. We define the edge entropy of e as the symmetric KL divergence between 
+
+μα 
+
+> x
+
+and μα 
+
+> y
+
+:
+
+Θα 
+
+> e
+
+=
+
+X 
+
+> z∈Nx∪Ny
+
+μα 
+
+> x
+
+(z) log μα 
+
+> x
+
+(z)
+
+μα 
+
+> y
+
+(z) + μα 
+
+> y
+
+(z) log μα 
+
+> y
+
+(z)
+
+μα 
+
+> x
+
+(z)
+
+!
+
+. (2.5) Since the function f (s) = − log s is convex on (0 , +∞), we apply Jensen’s inequality to (2.3) and (2.4) to derive the non-negativity of the edge entropy: 
+
+Θα 
+
+> e
+
+= −
+
+X 
+
+> z∈Nx∪Ny
+
+μα 
+
+> x
+
+(z) log μα 
+
+> y
+
+(z)
+
+μα 
+
+> x
+
+(z) −
+
+X 
+
+> z∈Nx∪Ny
+
+μα 
+
+> y
+
+(z) log μα 
+
+> x
+
+(z)
+
+μα 
+
+> y
+
+(z)
+
+≥ − log 
+
+X 
+
+> z∈Nx∪Ny
+
+μα 
+
+> x
+
+(z) μα 
+
+> y
+
+(z)
+
+μα 
+
+> x
+
+(z)
+
+ − log 
+
+X 
+
+> z∈Nx∪Ny
+
+μα 
+
+> y
+
+(z) μα 
+
+> x
+
+(z)
+
+μα 
+
+> y
+
+(z)
+
+
+
+= 0. (2.6) Moreover, Θα 
+
+> e
+
+= 0 if and only if μα 
+
+> x
+
+(z) = μα 
+
+> y
+
+(z) for all z ∈ Nx ∪ Ny.
+
+2.1.3. Local entropy flow 
+
+For any α ∈ (0 , 1) and edge e = xy ∈ E, let w0,e > 0 be the initial weight of e. We define the local random walk-based entropy flow as: 
+
+
+
+w′
+
+> e
+
+(t) = Θ α 
+
+> e
+
+(t), t > 0,
+
+we(t) > 0, t > 0,
+
+we(0) = w0,e, ∀e ∈ E.
+
+(2.7) Here Θα 
+
+> e
+
+(t) is the edge entropy of e computed with respect to the time-varying weight vector 
+
+w(t) = (we(t)) e∈E at time t, according to (2.5). Since Θα 
+
+> e
+
+(t) ≥ 0 for all t ≥ 0 by (2.6), the derivative w′
+
+> e
+
+(t) is non-negative along the flow. It follows that we(t) ≥ we(0) = w0,e > 0 for all 
+
+t ≥ 0 and every e ∈ E.42.1.4. Main results 
+
+Let Rm 
+
+> +
+
+= {a = (a1, a2, . . . , am) ∈ Rm : a j > 0 for all 1 ≤ j ≤ m}. The following theorem establishes the existence, uniqueness, and long-time convergence of global solutions to the local entropy flow (2.7). 
+
+Theorem 2.1. Let G = (V, E, w0) be a connected finite weighted graph with initial weight w0 ∈
+
+Rm 
+
+> +
+
+. Then for any α ∈ (0 , 1) , the local entropy flow (2.7) admits a unique global solution w(t) =
+
+(we(t)) e∈E ∈ Rm 
+
+> +
+
+for all t ∈ [0 , +∞).Moreover, exactly one of the following two alternatives holds for the solution: (i) For every e ∈ E, w e(t) is non-decreasing and lim  
+
+> t→+∞
+
+we(t) = + ∞;(ii) For every e ∈ E, w e(t) is non-decreasing and converges to some positive limit w ∗ 
+
+> e
+
+> 0 as t → +∞. Moreover, lim  
+
+> t→+∞
+
+Θα 
+
+> e
+
+(t) = 0 for all e ∈ E, where Θ∗ 
+
+> e
+
+is the entropy on the edge e with respect to the weights w∗ = (w∗
+
+> e
+
+)e∈E .
+
+If G is disconnected, the above theorem holds independently on each connected component, since the local entropy flow does not interact across di ff erent components. Next, we introduce a discrete version of the continuous local entropy flow (2.7) for numerical implementation. Fix a time step size s > 0, and let t j = js for j = 0, 1, 2, · · · . The discrete local entropy flow is defined as: 
+
+we(t j+1) = we(t j) + sΘα 
+
+> e
+
+(t j),
+
+we(t j) > 0, j = 0, 1, 2, · · · ,
+
+we(0) = w0,e, ∀e ∈ E.
+
+(2.8) Concerning the existence, uniqueness, and convergence of a solution to (2.8), we have an analo-gous result to Theorem 2.1 in [65]. 
+
+Theorem 2.2. Let G = (V, E, w0) be a connected finite weighted graph as in Theorem 2.1. Then for any α ∈ (0 , 1) and initial weight w0 ∈ Rm 
+
+> +
+
+, the discrete local entropy flow (2.8) admits a unique solution w(t j) = (we(t j)) e∈E for all j = 0, 1, 2, · · · .Moreover, exactly one of the following two alternatives holds: (i) For every e ∈ E, w e(t j) is non-decreasing and lim  
+
+> j→+∞
+
+we(t j) = + ∞;(ii) For every e ∈ E, w e(t j) is non-decreasing and converges to some positive limit w ∗ 
+
+> e
+
+> 0 as j → +∞. In this case, lim  
+
+> j→+∞
+
+Θα 
+
+> e
+
+(t j) = 0 for all e ∈ E. 
+
+We note that the support of the local random walk at the edge e = xy is B1(x) ∪ B1(y), where 
+
+B1(x) denotes the ball centered at x with radius 1. Here, the radius denotes the combinatorial distance. Similarly, for any integer ℓ ≥ 1, if Bℓ(x) ∪ Bℓ(y) is a non-trivial subset of V, one can define local random walks supported on Bℓ(x) ∪ Bℓ(y). The nowhere-zero random walk in [65] corresponds to the extreme case where the support is the entire set of vertex V. By replacing 
+
+μα 
+
+> x
+
+and μα 
+
+> y
+
+with random walks supported in Bℓ(x) ∪ Bℓ(y), we can define the corresponding edge entropy Θα 
+
+> e
+
+and entropy flow. The analogous results of Theorems 2.1 and 2.2 still hold for such generalized flows. 52.2. Cohesion flow 
+
+In this subsection, we define the cohesion based on local neighborhood structures and con-struct the corresponding cohesion flow. We then present the main theoretical results on its well-posedness and long-time behavior, together with a discrete version for numerical implementa-tion. 
+
+2.2.1. Cohesion 
+
+Let G = (V, E, w) be a connected finite weighted graph, where V = {x1, x2, . . . , xn} is the ver-tex set, E = {e1, e2, . . . , em} is the edge set, and w = (we)e∈E is the edge weight vector satisfying 
+
+we > 0 for all e ∈ E. For any vertex x ∈ V, we denote its closed neighborhood by 
+
+Nx = {u ∈ V : u ∼ x or u = x}, Ny = {u ∈ V : u ∼ y or u = y}.
+
+For any edge e = xy ∈ E, we denote the set of common neighbors of x and y by 
+
+Nxy = {z ∈ V : z ∼ x and z ∼ y}.
+
+To characterize the local structural relationship around the edge e = xy , we define 
+
+Axy =
+
+X 
+
+> u∈Nx\Ny
+
+1
+
+wxu 
+
++
+
+X
+
+> u∈Ny\Nx
+
+1
+
+wyu 
+
+, (2.9) and 
+
+Bxy =
+
+X
+
+> z∈Nxy
+
+1
+
+wxz 
+
++ 1
+
+wyz 
+
+!
+
+. (2.10) We then define the quantity of local structure associated with the edge e = xy by 
+
+eCxy =
+
+
+
+Axy − Bxy 
+
+Axy + Bxy 
+
+, if Axy + Bxy > 0,
+
+0, if Axy + Bxy = 0,
+
+(2.11) where Axy and Bxy are given by (2.9) and (2.10), respectively. The cohesion of e = xy is defined by 
+
+Cxy = exp( eCxy ), (2.12) where eCxy is defined in (2.11). Since −1 ≤ eCxy ≤ 1, it follows from (2.12) that e−1 ≤ Cxy ≤ e.
+
+2.2.2. Cohesion flow 
+
+For any edge e = xy ∈ E, let w0,e > 0 be the initial weight of e. We define the cohesion flow as 
+
+w′
+
+> e
+
+(t) = Ce(t), t > 0,
+
+we(t) > 0, t > 0,
+
+we(0) = w0,e, ∀e ∈ E.
+
+(2.13) Here Ce(t) denotes the cohesion of edge e computed with respect to weight vector w(t) =
+
+(we(t)) e∈E at time t. Since Ce(t) > 0 for all t ≥ 0, we have w′
+
+> e
+
+(t) > 0, and hence we(t) is strictly increasing and satisfies we(t) ≥ we(0) = w0,e > 0 for all t ≥ 0 and every e ∈ E.6Next, we introduce a discrete version of the continuous cohesion flow (2.13) for numerical implementation. Fix a time step size s > 0, and let t j = js , j = 0, 1, 2, · · · . The discrete cohesion flow is defined as 
+
+we(t j+1) = we(t j) + sC e(t j),
+
+we(t j) > 0, j = 0, 1, 2, · · · ,
+
+we(0) = w0,e, ∀e ∈ E.
+
+(2.14) Here Ce(t j) denotes the cohesion computed with respect to the weight vector w(t j) = (we(t j)) e∈E .Since Ce(t j) > 0 for all j ≥ 0, the sequence {we(t j)}∞ 
+
+> j=0
+
+is strictly increasing for every edge e ∈ E.
+
+2.2.3. Main results 
+
+Analogous to the results of the local entropy flow, we have the following theorems for the cohesion flow. 
+
+Theorem 2.3. Let G = (V, E, w0) be a connected finite weighted graph with initial weight w0 ∈
+
+Rm 
+
+> +
+
+. Then the cohesion flow (2.13) admits a unique global solution w(t) = (we(t)) e∈E ∈ Rm 
+
+> +
+
+for all t ∈ [0 , +∞). Moreover, for every edge e ∈ E, w e(t) is strictly increasing and lim  
+
+> t→+∞
+
+we(t) = + ∞.
+
+Next, we establish the corresponding result for the discrete cohesion flow (2.14). 
+
+Theorem 2.4. Let G = (V, E, w0) be a connected finite weighted graph with w0 ∈ Rm 
+
+> +
+
+. Then for any step size s > 0, the discrete cohesion flow (2.14) admits a unique solution w(t j) =
+
+(we(t j)) e∈E for all j = 0, 1, 2, · · · . Moreover, for every edge e ∈ E, w e(t j) is strictly increasing and lim  
+
+> j→+∞
+
+we(t j) = + ∞.
+
+The proofs of Theorems 2.1- 2.4 will be presented in Section 4. 
+
+3. Examples 
+
+In this section, we investigate the behavior of the local entropy flow and the cohesion flow through several examples. We first present the computation of the two flows in both continuous and discrete settings, together with the corresponding edge weight evolution processes. We then show that both flows can reveal the community structure of a network. Finally, we provide a representative example to demonstrate that the two flows may exhibit di ff erent behaviors in certain cases. We begin with an example of the continuous flows. 
+
+Example 3.1. Let α ∈ (0 , 1) , and let G = (V, E, w0) be the regular hexagon shown in Figure 1. The vertex set is V = {x, y, z, u, v, w}, the edge set is E = {xy , yz , zu , uv , vw , wx }, and all edges are assigned an initial weight of 1.By the symmetry of the regular hexagon, the edge entropy is identical for all edges. We denote the entropy vector by Θα = (Θα
+
+> xy
+
+, Θα
+
+> yz
+
+, Θα
+
+> zu
+
+, Θα
+
+> uv
+
+, Θα
+
+> vw
+
+, Θα
+
+> wx
+
+), where Θα 
+
+> e
+
+(t) takes the same value for all e ∈ E. The continuous local entropy flow 
+
+w′(t) = Θα(t), w(0) = w0
+
+7admits a unique global solution with uniform edge weights w(t) = (w(t), w(t), w(t), w(t), w(t), w(t)) ,where w(t) = 1 +
+
+"
+
+α(1 + α) log 21 − α + (1 − α)(2 − 3α) log 2(1 − α)
+
+α
+
+#
+
+t, t ∈ [0 , +∞).
+
+Similarly, all edges have the same cohesion value. For any edge e ∈ E, the two endpoints have one exclusive neighbor and no common neighbors. Hence C e = e. The continuous cohesion flow 
+
+w′(t) = C(t), w(0) = w0
+
+admits the unique global solution w(t) = (w(t), w(t), w(t), w(t), w(t), w(t)) , where w(t) = 1 + et , t ∈ [0 , +∞).
+
+x y
+
+z
+
+uv
+
+w
+
+> Figure 1: Regular hexagon graph
+
+We next present an example of the two discrete flows. 
+
+Example 3.2. We consider a graph consisting of two squares connected by four edges, as shown in Figure 2. All edges are assigned an initial weight of 1.Take the edge x 1 x2 as an illustration. Its 1-step neighborhoods are Nx1 = {x1, x2, x4, x5} and 
+
+Nx2 = {x2, x1, x3, x6}. Since Nx2 \ Nx1 , ∅, the paired local random walks are given by 
+
+μα 
+
+> x1
+
+(z) =
+
+
+
+α, z = x1, 
+
+> α(1 −α)3
+
+, z ∈ { x2, x4, x5}, 
+
+> (1 −α)2
+> 2
+
+, z ∈ { x3, x6},μα 
+
+> x2
+
+(z) =
+
+
+
+α, z = x2, 
+
+> α(1 −α)3
+
+, z ∈ { x1, x3, x6}, 
+
+> (1 −α)2
+> 2
+
+, z ∈ { x4, x5}.
+
+A straightforward calculation yields the initial edge entropy 
+
+Θα  
+
+> x1x2
+
+(0) =
+
+X 
+
+> z∈Nx1∪Nx2
+
+μα 
+
+> x1
+
+(z) log μα 
+
+> x1
+
+(z)
+
+μα 
+
+> x2
+
+(z) + μα 
+
+> x2
+
+(z) log μα 
+
+> x2
+
+(z)
+
+μα 
+
+> x1
+
+(z)
+
+!
+
+= 4α + 2α2
+
+3 log 31 − α + 2(1 − α)(5 α − 3) 3 log 2α
+
+3(1 − α) .
+
+Recall the discrete local entropy flow (2.8) , where t j = js with s > 0 and j = 0, 1, 2, · · · . By the symmetry of the graph and the uniform initial edge weights, the initial entropy is identical for all edges, i.e., Θα 
+
+> e
+
+(0) = Θ α  
+
+> x1x2
+
+(0) for every e ∈ E. It follows that all edge weights remain equal at any time t: we(t) = wx1 x2 (t), ∀e ∈ E, ∀t > 0.
+
+8The edge entropy is constant along the flow: 
+
+Θα 
+
+> e
+
+(t) ≡ Θα 
+
+> e
+
+(0) = Θ α  
+
+> x1x2
+
+(0) , ∀e ∈ E, ∀t > 0.
+
+Therefore, the edge weight at time t j is given by wx1 x2 (t j) = 1 + s
+
+> j−1
+
+X
+
+> k=0
+
+Θα  
+
+> x1x2
+
+(tk) = 1 + js Θα  
+
+> x1x2
+
+(0) , ∀ j = 1, 2, · · · .
+
+In particular, if we take α = 0.5, then we(t j) = 1 + 23 log 2 + log 3 
+
+!
+
+js , ∀e ∈ E, ∀ j = 1, 2, · · · .
+
+Next, we compute the cohesion for each edge. Consider again the edge e = x1 x2. We first compute the sets of exclusive and common neighbors: 
+
+Nx1 \ Nx2 = {x4, x5}, Nx2 \ Nx1 = {x3, x6}, Nx1 x2 = ∅.
+
+Hence, A x1 x2 = 4, B x1 x2 = 0, which yields C x1 x2 = exp(1) = e. By symmetry of the graph, the same calculation holds for every edge e ∈ E, and thus Ce(t j) ≡ e, ∀e ∈ E, ∀ j ≥ 0.
+
+Consequently, the discrete cohesion flow (2.14) reduces to we(t j+1) = we(t j) + se , we(0) = 1,
+
+which admits the explicit solution we(t j) = 1 + jes , ∀e ∈ E, ∀ j ≥ 0.
+
+x1 x2
+
+x3x4
+
+x5 x6
+
+x7x8
+
+> Figure 2: Two squares connected by four edges
+
+We then demonstrate community detection via the discrete local entropy flow and the cohe-sion flow in the following example. 
+
+Example 3.3. Let G = (V, E, w0) be a graph composed of two triangles connected by the edge x3 x4, as shown in Figure 3. All edges are assigned an initial weight of 1. Take α = 0.5. The initial edge entropies corresponding to w0 are computed as Θα  
+
+> x3x4
+
+(0) = 1.56 , Θα  
+
+> x1x2
+
+(0) = Θ α  
+
+> x5x6
+
+(0) = 0.35 ,
+
+9Θα  
+
+> x1x3
+
+(0) = Θ α  
+
+> x2x3
+
+(0) = Θ α  
+
+> x4x5
+
+(0) = Θ α  
+
+> x4x6
+
+(0) = 0.93 . Choose step size s = 0.1 and t j = js. The discrete local entropy flow is given by we(t j+1) = we(t j) + sΘα 
+
+> e
+
+(t j), we(0) = 1.
+
+At time t 10 , the edge weights evolve to w x3 x4 (t10 ) = 2.47 , wx1 x2 (t10 ) = wx5 x6 (t10 ) = 1.42 , wx1 x3 (t10 ) =
+
+wx2 x3 (t10 ) = wx4 x5 (t10 ) = wx4 x6 (t10 ) = 1.91 . The initial cohesion values are given by C x3 x4 (0) = e, Cx1 x2 (0) = Cx5 x6 (0) = e−1, C x1 x3 (0) = Cx2 x3 (0) = Cx4 x5 (0) = Cx4 x6 (0) = e−1/3. The discrete cohesion flow is given by we(t j+1) = we(t j) + sC e(t j), we(0) = 1.
+
+At time t 10 , the edge weights evolve to w x3 x4 (t10 ) = 3.72 , w x1 x2 (t10 ) = wx5 x6 (t10 ) = 1.37 , wx1 x3 (t10 ) =
+
+wx2 x3 (t10 ) = wx4 x5 (t10 ) = wx4 x6 (t10 ) = 1.59 . Both flows consistently amplify the di ff erence between inter-community and intra-community edges. In both cases, the bridge edge x 3 x4 exhibits the fastest growth rate, and its removal decomposes the graph into two disconnected triangles, which correspond to two natural communities. This example demonstrates that both flows successfully identify the bridge edge connecting the two communities and therefore recover the underlying community structure. w = 1 w = 1
+
+w = 1
+
+x1
+
+x2
+
+x3 x4
+
+x5
+
+x6
+
+> entropy flow
+
+w = 1.42 
+
+w = 1.91 
+
+w = 2.47 
+
+x1
+
+x2
+
+x3 x4
+
+x5
+
+x6
+
+> surgery
+
+x1
+
+x2
+
+x3 x4
+
+x5
+
+x6
+
+Figure 3: Community detection via discrete local entropy flow 
+
+In the final example, we illustrate that the local entropy flow and the cohesion flow may yield di ff erent community partitions. 
+
+Example 3.4. Let G = (V, E, w0) be the graph shown in Figure 4. All edges are assigned initial weight 1, and let α = 0.5. The initial values of the edge entropy are Θα 
+
+> x1y1
+
+(0) = Θ α 
+
+> y1z1
+
+(0) =Θα  
+
+> z1x1
+
+(0) = 1.98 , Θα  
+
+> x1x2
+
+(0) = Θ α  
+
+> x1x4
+
+(0) = Θ α 
+
+> y1y2
+
+(0) = Θ α 
+
+> y1y4
+
+(0) = Θ α 
+
+> z1z2
+
+(0) = Θ α 
+
+> z1z4
+
+(0) = 1.54 ,and Θα  
+
+> x2x3
+
+(0) = Θ α  
+
+> x3x4
+
+(0) = Θ α 
+
+> y2y3
+
+(0) = Θ α 
+
+> y3y4
+
+(0) = Θ α 
+
+> z2z3
+
+(0) = Θ α 
+
+> z3z4
+
+(0) = 1.22 . Using step size s = 0.1, the discrete local entropy flow (2.8) yields w x1y1 (t10 ) = wy1z1 (t10 ) = wz1 x1 (t10 ) = 2.96 ,wx1 x2 (t10 ) = wx1 x4 (t10 ) = wy1y2 (t10 ) = wy1y4 (t10 ) = wz1z2 (t10 ) = wz1z4 (t10 ) = 2.55 , and w x2 x3 (t10 ) =
+
+wx3 x4 (t10 ) = wy2y3 (t10 ) = wy3y4 (t10 ) = wz2z3 (t10 ) = wz3z4 (t10 ) = 2.23 . Deleting the three edges with 
+
+10 the largest weights, namely x 1y1, y 1z1, and z 1 x1, the graph G is partitioned into three connected components. The corresponding initial values of the cohesion are C x1y1 (0) = Cy1z1 (0) = Cz1 x1 (0) = 1.40 ,while all remaining edges satisfy C e(0) = 2.72 . Using the same step size s = 0.1, after the discrete cohesion flow (2.14) , at time t 10 , the evolved edge weights are w x1y1 (t10 ) = wy1z1 (t10 ) =
+
+wz1 x1 (t10 ) = 2.21 , while all remaining edges satisfy w e(t10 ) = 3.72 . Deleting the three edges with the largest weights produces a community partition di ff erent from that obtained by the local entropy flow. This example shows that the local entropy flow and the cohesion flow may rank edges di ff erently, and hence may lead to di ff erent community detection results. x2
+
+x3
+
+x4
+
+y4
+
+y3
+
+y2 z4
+
+z3
+
+z2
+
+x1
+
+y1 z1
+
+> Figure 4: Three squares connected by a triangle
+
+4. Proofs of the main theorems 
+
+In this section, we present the proofs of the existence, uniqueness, and convergence of so-lutions to the continuous local entropy flow (2.7) and the discrete local entropy flow (2.8). All proofs are established based on classical ordinary di ff erential equation (ODE) theory. We also provide the corresponding proofs for the cohesion flow (2.13) and the discrete cohesion flow (2.14). 
+
+Proof of Theorem 2.1 . We follow the proof framework of Theorem 2.1 in our previous work [65], with adjustments adapted to the local random walk setting. Let α ∈ (0 , 1), and for any edge 
+
+e = xy ∈ E, let Θα 
+
+> e
+
+be the edge entropy defined in (2.5). The proof is divided into three steps. 
+
+Step 1: Short-time existence and uniqueness of solutions 
+
+In view of (2.6), we have 
+
+Θα 
+
+> e
+
+≥ 0 (4.1) for all e ∈ E, with equality Θα 
+
+> e
+
+= 0 if and only if μα 
+
+> x
+
+(z) = μα 
+
+> y
+
+(z) for all z ∈ Nx ∪ Ny.Let E = {e1, e2, . . . , em}, and denote 
+
+Rm 
+
+> +
+
+= {w = (w1, w2, . . . , wm) ∈ Rm : w j > 0 for all 1 ≤ j ≤ m}.
+
+Define the map F : Rm 
+
+> +
+
+→ Rm by 
+
+F(w) = (F1(w), F2(w), . . . , Fm(w)) ⊤,
+
+11 where F j(w) = Θ α  
+
+> ej
+
+is the edge entropy of e j computed with respect to the weight vector w.By the Picard-Lindelöf theorem, it su ffi ces to show that F is locally Lipschitz continuous on 
+
+Rm 
+
+> +
+
+. For any compact subset Ω ⊂ Rm 
+
+> +
+
+, and any two weight vectors w, ew ∈ Ω, let μα 
+
+> x
+
+and eμα 
+
+> x
+
+be the local random walks induced by w and ew, respectively. For each edge e j = x jy j ∈ E, there exists a constant C > 0, depending only on m, e j, and the distance between Ω and the boundary ∂Rm 
+
+> +
+
+,such that 
+
+|μα  
+
+> xj
+
+(z) − eμα  
+
+> xj
+
+(z)| + |μα  
+
+> yj
+
+(z) − eμα  
+
+> yj
+
+(z)| ≤ C∥w − ew∥
+
+for all z ∈ Nx j ∪ Ny j . A straightforward calculation further yields 
+
+|F j(w) − F j(ew)| ≤ C∥w − ew∥
+
+for all 1 ≤ j ≤ m, which confirms that F is local Lipschitz on Rm 
+
+> +
+
+. Thus there exists T0 > 0 such that the local entropy flow (2.7) admits a unique solution w(t) = (we1 (t), we2 (t), . . . , wem (t)) on the time interval [0 , T0]. 
+
+Step 2: Global existence of solutions 
+
+Let 
+
+T ∗ = sup T > 0 : the flow (2.7) admits a unique solution on [0 , T ] .
+
+We prove T ∗ = + ∞ by contradiction. Suppose T ∗ < +∞. Then the unique solution w(t) of the initial value problem 
+
+w′(t) = F(w(t)) , t ∈ [0 , T ∗),
+
+we(t) > 0, ∀e ∈ E, t ∈ [0 , T ∗),
+
+we(0) = w0,e, ∀e ∈ E
+
+cannot be extended beyond T ∗.From the non-negativity of edge entropy (4.1), we have w′
+
+> e
+
+(t) = Θ α 
+
+> e
+
+(t) ≥ 0 for all e ∈ E and 
+
+t ∈ [0 , T ∗). Thus 
+
+we(t) ≥ w0,e > 0, ∀t ∈ [0 , T ∗), ∀e ∈ E.
+
+Combined with the definition of Θα 
+
+> e
+
+, this implies 
+
+Θα 
+
+> e
+
+(t) ≤ C
+
+1 + log 
+
+X
+
+> τ∈E
+
+wτ(t)
+
+
+
+for some constant C > 0 depending only on m, n, and the initial weight w0. Substituting this into the flow equation (2.7), we obtain 
+
+ddt 
+
+X
+
+> τ∈E
+
+wτ(t)
+
+ ≤ C
+
+1 + log 
+
+X
+
+> τ∈E
+
+wτ(t)
+
+ ≤ C
+
+1 +
+
+X
+
+> τ∈E
+
+wτ(t)
+
+ .
+
+By Grönwall’s inequality, we have 0 < min  
+
+> τ∈E
+
+w0,τ ≤ we(t) ≤
+
+X
+
+> τ∈E
+
+wτ(t) ≤ Ce Ct , ∀t ∈ [0 , T ∗).
+
+This shows that every component of w(t) is uniformly bounded from above, and admits a uni-form positive lower bound on [0 , T ∗). By the ODE extension theorem, the solution w(t) can be 12 extended to [0 , T1) for some T1 > T ∗, which contradicts the definition of T ∗. Hence T ∗ = + ∞,and the flow admits a unique global solution on [0 , +∞). 
+
+Step 3: Long-time convergence of the solution 
+
+Since w′
+
+> τ
+
+(t) = Θ ατ (t) ≥ 0 for all t ≥ 0, for each edge τ ∈ E, wτ(t) is non-decreasing in t. Thus, for every τ ∈ E, either wτ(t) → +∞ or wτ(t) → w∗ 
+
+> τ
+
+≥ w0,τ > 0 as t → +∞. We now prove that exactly one of the following two alternatives holds: (i) wτ(t) → +∞ for all τ ∈ E;(ii) There exists w∗ 
+
+> τ
+
+> 0 such that wτ(t) → w∗ 
+
+> τ
+
+for all τ ∈ E.We proceed by contradiction. Suppose that neither (i) nor (ii) holds. Since G is connected, there must exist two edges sharing a common vertex, say τ1 = xy and τ2 = xz , such that 
+
+wτ1 (t) → w∗ 
+
+> τ1
+
+< +∞, as t → +∞, (4.2) and 
+
+wτ2 (t) → +∞, as t → +∞. (4.3) Recall that the local random walk starting from x satisfies 
+
+μα 
+
+> x
+
+(y) =
+
+
+
+(1 − α) wxy  
+
+> P
+> u∼x
+> wxu
+
+, if Ny \ Nx = ∅,α(1 − α) wxy  
+
+> P
+> u∼x
+> wxu
+
+, if Ny \ Nx , ∅,
+
+and μα 
+
+> y
+
+(y) = α by definition. For any t ≥ 0, we have 
+
+μα 
+
+> y
+
+(y) log μα 
+
+> y
+
+(y)
+
+μα 
+
+> x
+
+(y) ≥ α log α Pu∼x wxu (t)(1 − α)wxy (t)
+
+≥ α log α
+
+1 − α + α log wτ2 (t)
+
+wτ1 (t) .
+
+Combined with the universal lower bound 
+
+μα 
+
+> y
+
+(y) log μα 
+
+> y
+
+(y)
+
+μα 
+
+> x
+
+(y) ≥ μα 
+
+> y
+
+(y) log μα 
+
+> y
+
+(y) ≥ − e−1,
+
+we obtain 
+
+Θατ1 (t) ≥ α log wτ2 (t)
+
+wτ1 (t) − C (4.4) for some constant C > 0 depending only on α and n. From (4.2), (4.3) and (4.4), there exists 
+
+T > 0 such that 
+
+Θατ1 (t) ≥ 1, ∀t ≥ T.
+
+As a consequence, we have 
+
+wτ1 (t) ≥ wτ1 (T ) +
+
+Z tT
+
+Θατ1 (s)ds ≥ t − T.
+
+Letting t → +∞, we get wτ1 (t) → +∞, which contradicts (4.2). Hence either (i) or (ii) must hold. 13 It remains to show that lim t→+∞ Θα 
+
+> e
+
+(t) = 0 for all e ∈ E in case (ii). For each edge τ, since 
+
+wτ(t) → w∗ 
+
+> τ
+
+> 0, the edge entropy converges to Θ∗
+
+> τ
+
+, which is the entropy of τ with respect to the steady weight w∗ = (w∗
+
+> τ
+
+)τ∈E . Suppose Θ∗ 
+
+> τ
+
+, 0 for some τ. Then Θ∗ 
+
+> τ
+
+> 0 by (4.1), and by the mean value theorem, 
+
+wτ(t + 1) − wτ(t) = w′
+
+> τ
+
+(ξt) = Θ ατ (ξt) → Θ∗ 
+
+> τ
+
+> 0, as t → +∞,
+
+where ξt ∈ [t, t + 1]. This contradicts the convergence of wτ(t) to a finite limit w∗
+
+> τ
+
+. Hence Θ∗ 
+
+> τ
+
+= 0for all τ ∈ E, which completes the proof. □
+
+Proof of Theorem 2.2 . Since the discrete flow is an explicit forward iterative scheme, the exis-tence and uniqueness of the solution to (2.8) hold trivially for all j = 0, 1, 2, · · · .We now focus on the long-time convergence of the solution and the proof is similar to that of Theorem 2.1. For each edge τ ∈ E, since wτ(t j+1) − wτ(t j) = sΘατ (t j) ≥ 0 for all j ≥ 0, the weight sequence {wτ(t j)} j≥0 is non-decreasing. Therefore, for every τ ∈ E, either wτ(t j) → +∞
+
+or wτ(t j) → w∗ 
+
+> τ
+
+≥ w0,τ > 0 as j → +∞. It remains to prove that exactly one of the following two alternatives holds: 
+
+wτ(t j) → w∗ 
+
+> τ
+
+< +∞ for all τ ∈ E, (4.5) or 
+
+wτ(t j) → +∞ for all τ ∈ E. (4.6) Suppose neither (4.5) nor (4.6) holds. Since G is connected, there must exist two edges sharing a common vertex, say τ1 = xy and τ2 = xz , such that 
+
+wτ1 (t j) → w∗ 
+
+> τ1
+
+< +∞, as j → +∞,
+
+and 
+
+wτ2 (t j) → +∞, as j → +∞.
+
+Note that the lower bound inequality (4.4) derived in the proof of Theorem 2.1 relies only on the definition of local random walks and the positivity of edge weights, and thus holds equally for the discrete setting at every iteration t j. That is, 
+
+Θατ1 (t j) ≥ α log wτ2 (t j)
+
+wτ1 (t j) − C
+
+for some constant C > 0 depending only on α and n. Since wτ2 (t j) → +∞ and wτ1 (t j) → w∗ 
+
+> τ1
+
+<
+
++∞, there exists a positive integer N such that 
+
+Θατ1 (t j) ≥ 1, ∀ j ≥ N.
+
+For all j > N, substituting this into the discrete flow update rule yields 
+
+wτ1 (t j) = wτ1 (tN ) + s
+
+> j−1
+
+X
+
+> k=N
+
+Θατ1 (tk) ≥ s( j − N).
+
+Letting j → +∞, we obtain wτ1 (t j) → +∞, which contradicts the assumption wτ1 (t j) → w∗ 
+
+> τ1
+
+<
+
++∞. Hence either (4.5) or (4.6) must hold. 14 Finally, we prove that lim  
+
+> j→+∞
+
+Θατ (t j) = 0 for all τ ∈ E in the case of (4.5). For each edge τ, if 
+
+wτ(t j) → w∗ 
+
+> τ
+
+< +∞ as j → +∞, then the di ff erence of the convergent sequence satisfies lim 
+
+> j→+∞
+
+wτ(t j+1) − wτ(t j) = 0.
+
+By the discrete flow update rule, wτ(t j+1) − wτ(t j) = sΘατ (t j) with s > 0. It follows immediately that lim  
+
+> j→+∞
+
+Θατ (t j) = 0,
+
+which completes the proof. □
+
+Proof of Theorem 2.3. The cohesion Ce = exp( eCxy ) is a composition of rational functions and the exponential function, hence continuously di ff erentiable on Rm 
+
+> +
+
+. Consequently, the vector field of the ODE system (2.13) is local Lipschitz on Rm 
+
+> +
+
+. By the Picard-Lindelöf theorem, the cohesion flow (2.13) admits a unique solution on [0 , T ∗). Since −1 ≤ eCxy ≤ 1, we have e−1 ≤ Ce ≤ e, and hence 
+
+e−1 ≤ w′
+
+> e
+
+(t) ≤ e, ∀e ∈ E.
+
+Integrating from 0 to t yields 
+
+w0,e + e−1t ≤ we(t) ≤ w0,e + et , ∀t ≥ 0.
+
+By the ODE extension theorem, the solution can be extended T ∗ = + ∞. The lower bound further implies that each we(t) is strictly increasing and we(t) → +∞. This completes the proof. □
+
+Proof of Theorem 2.4. The discrete cohesion flow is defined by the explicit recurrence 
+
+we(t j+1) = we(t j) + sC e(t j), j = 0, 1, 2, · · · 
+
+Given the initial weights we(0) = w0,e > 0, the right-hand side is uniquely determined at each step, so the sequence {we(t j)} j≥0 exists and is unique for all j. Since e−1 ≤ Ce(t j) ≤ e for every edge e, it follows that 
+
+se −1 ≤ we(t j+1) − we(t j) ≤ se .
+
+Summing these inequalities from k = 0 to j − 1 yields 
+
+w0,e + je −1 s ≤ we(t j) ≤ w0,e + jes , j ≥ 0.
+
+Thus, {we(t j)} j≥0 is strictly increasing for all j, and the lower bound implies we(t j) → +∞ as 
+
+j → ∞ , completing the proof. □
+
+5. Applications and numerical experiments 
+
+In this section, we evaluate the proposed local entropy flow (LEF) and cohesion flow (CF) on community detection and node classification. We denote the global entropy flow from our previous work [65] as GEF, and the combination of CF and LEF as CLEF. The proposed graph evolution mechanisms are implemented through the discrete local entropy flow (2.8) and the discrete cohesion flow (2.14), which serve as numerical realizations of the continuous flows (2.7) 15 and (2.13). Theorems 2.2 and 2.4 guarantee that these iterative schemes admit unique solutions for all iterations. For community detection, we first examine three strategies: LEF alone, CF alone, and their sequential combination CLEF. We then compare CLEF with several classical algorithms and Ricci curvature-based methods. In addition, to evaluate the role of local entropy in the two-stage process, we consider CGEF (CF followed by GEF) as a comparison baseline. For node classification, we adopt the GEGCN architecture [37] and replace its Ricci flow-based graph evolution with our entropy-based mechanisms. We evaluate LEF and CLEF against a range of baseline methods on both homophilic and heterophilic datasets. Results for GEF and CGEF are also reported to compare local and global entropy evolution. Overall, LEF and CF are both e ff ective as mechanisms for graph evolution. CLEF yields more significant improvements for community detection, whereas the di ff erences among entropy-based variants are relatively minor for node classification. 
+
+5.1. Community detection 
+
+Community detection aims to partition a graph into densely connected groups with sparse inter-group connections, with broad applications across disciplines [9, 21, 53]. Classical ap-proaches include modularity optimization, spectral clustering, and probabilistic graphical mod-els [12, 18, 21, 40]. Recently, discrete Ricci curvature and Ricci flow have emerged as e ff ective geometric tools for graph analysis [29, 34, 42, 54], and our previous work introduced GEF as an information-theoretic alternative [65]. 
+
+5.1.1. Algorithm and experimental setup 
+
+We evaluate three strategies for community detection: (i) LEF alone, (ii) CF alone, and (iii) CLEF (CF + LEF). All strategies follow the same general procedure: evolve edge weights according to the corresponding discrete flow, then remove edges with large weights and treat the remaining connected components as communities. The CLEF pipeline is outlined in Algo-rithm 1, the other strategies follow the same edge evolution and removal procedure using their respective flow rules. We evaluate all methods on three widely used real-world benchmark networks: Karate [61], Football [21], and Facebook [30]. We adopt three evaluation metrics: Adjusted Rand Index (ARI), Normalized Mutual Information (NMI), and Modularity (Q) [16, 24, 41]. We compare our methods with 8 representative baseline approaches: 
+
+• Classical methods: Girvan-Newman [21], greedy modularity maximization [12, 46], and label propagation [13]; 
+
+• Ricci curvature-based methods: DORF [42], NDORF, NDSRF [29], and two variants Rho and RhoN [34]. Hyperparameters are selected via empirical analysis. For all strategies, we fix the step size 
+
+s = 0.1 and set α = 0.5 for the entropy-based flows. For CF, we set the number of iterations to 
+
+Nc = 30 for Karate, Nc = 5 for Football, and Nc = 30 for Facebook. For LEF, we set Ne = 10 uniformly across all three datasets. For CLEF, we set Nc = 30 and Ne = 40 on Karate, Nc = 30 and Ne = 10 on Football, and Nc = 30 and Ne = 10 on Facebook. For CGEF, Ng denotes the number of iterations of the global entropy flow. We set Nc = 10 and Ng = 20 on Karate, Nc = 10 and Ng = 10 on Football, and Nc = 20 and Ng = 11 on Facebook. 16 Algorithm 1: Community detection via CLEF (CF + LEF) 
+
+Input: Connected graph G = (V, E, w0); parameters α ∈ (0 , 1); step sizes sc, se > 0; number of cohesion iterations Nc; number of entropy iterations Ne.
+
+Output: Community partition of G.
+
+Step 1: Cohesion-driven edge evolution for i = 1, 2, . . . , Nc do 
+
+Compute edge cohesion Ce(ti−1) for all e ∈ E;Update edge weights: we(ti) ← we(ti−1) + sc · Ce(ti−1); 
+
+end Step 2: Entropy-driven edge evolution for j = 1, 2, . . . , Ne do 
+
+Construct local random walk distributions for all nodes in G;Compute edge entropy Θe(t j−1) for all e ∈ E;Update edge weights: we(t j) ← we(t j−1) + se · Θe(t j−1); 
+
+end Step 3: Community extraction for θ = max  
+
+> e∈E
+
+we, . . . , min  
+
+> e∈E
+
+do 
+
+Remove all edges with we ≥ θ from E;Extract connected components as candidate communities; Evaluate the quality of the current partition; 
+
+end return the partition with the best quality score. 
+
+5.1.2. Experimental results and analysis 
+
+We first examine the performance of the three proposed strategies. As shown in Table 1, both LEF and CF are e ff ective on certain datasets, but their performance is not consistent across all cases. Specifically, LEF performs reasonably well on Karate (ARI =0.48) and achieves strong modularity on Facebook (Q =0.93), but it performs poorly on Football (ARI 0.03). In contrast, CF achieves strong results on Football (ARI =0.93, NMI =0.94), but its performance is weaker on Karate (ARI =0.16) and Facebook (ARI =0.67). These results indicate that each flow captures di ff erent structural characteristics of the network, but neither provides uniformly strong perfor-mance across all datasets. In contrast, the two-stage combination CLEF achieves consistently strong performance across all datasets. On Karate, it attains the best ARI (0.83) and NMI (0.78). On Football, it matches the best-performing methods (ARI =0.93, NMI =0.94). On Facebook, it achieves the highest ARI (0.72) and competitive modularity. These results confirm that the sequential combination of CF and LEF e ff ectively integrates their complementary strengths, yielding robust community detec-tion performance. We further compare CLEF with 8 baseline methods. Table 2 reports the performance of all methods on the three datasets. On Karate, CLEF achieves an ARI of 0.83 and an NMI of 0.78, which are higher than those obtained by all baseline methods. Its modularity is 0.80, lower than RhoN (0.84) but comparable to several other methods. On Football, CLEF achieves an ARI of 0.93, an NMI of 0.94, and a modularity of 0.92, matching the best results among the baseline methods. On Facebook, CLEF achieves the best ARI (0.72) among all methods, while its NMI 17 Table 1: Performance of the three proposed strategies 
+
+Karate Football Facebook Methods ARI NMI Q ARI NMI Q ARI NMI QLEF 0.48 0.55 0.82 0.03 0.68 0.50 0.04 0.51 0.93 
+
+CF 0.16 0.39 0.70 0.93 0.94 0.91 0.67 0.70 0.86 CLEF 0.83 0.78 0.80 0.93 0.94 0.92 0.72 0.70 0.93 
+
+(0.70) and modularity (0.93) are slightly lower than those of RhoN (0.72 and 0.95, respectively). Overall, these results suggest that the proposed two-stage framework performs competitively across the three benchmark networks. 
+
+> Table 2: Comparison of CLEF with baseline methods
+
+Karate Football Facebook Methods ARI NMI Q ARI NMI Q ARI NMI QGirvan-Newman 0.77 0.73 0.48 0.14 0.36 0.50 0.03 0.16 0.01 Greedy Modularity 0.57 0.56 0.58 0.47 0.70 0.82 0.49 0.68 0.55 Label Propagation 0.38 0.36 0.54 0.75 0.87 0.90 0.39 0.65 0.51 DORF 0.59 0.57 0.69 0.93 0.94 0.91 0.67 0.73 0.68 NDORF 0.59 0.57 0.69 0.93 0.94 0.91 0.68 0.73 0.68 NDSRF 0.59 0.57 0.68 0.93 0.94 0.91 0.68 0.73 0.68 Rho 0.77 0.68 0.82 0.89 0.92 0.90 0.64 0.72 0.63 RhoN 0.77 0.68 0.84 0.89 0.93 0.92 0.69 0.72 0.95 
+
+CLEF 0.83 0.78 0.80 0.93 0.94 0.92 0.72 0.70 0.93 
+
+In addition, we report the performance of CGEF (CF followed by GEF) as a supplementary comparison. Table 3 shows that CLEF and CGEF achieve nearly identical results across all three datasets, indicating that the choice between local and global entropy flow in the second stage has minimal impact on performance. 
+
+> Table 3: Comparison of CLEF and CGEF
+
+Karate Football Facebook Methods ARI NMI Q ARI NMI Q ARI NMI QCLEF 0.83 0.78 0.80 0.93 0.94 0.92 0.72 0.70 0.93 CGEF 0.83 0.78 0.81 0.93 0.94 0.92 0.72 0.71 0.94 
+
+To further illustrate the results, we visualize the community partitions obtained by CLEF on the three benchmark networks in Figure 5. The proposed method successfully identifies community structures on all three networks. Densely connected regions are assigned to the same community, while inter-community bridge edges are e ff ectively removed during the flow process, resulting in clear community partitions. 18 (a) Karate (Original) (b) Football (Original) (c) Facebook (Original)   
+
+> (d) Karate (Detected communities) (e) Football (Detected communities) (f) Facebook (Detected communities)
+> Figure 5: Visualization of community detection results
+
+5.2. Node classification 
+
+Node classification is another core task in graph learning, which aims to predict labels for unlabeled nodes based on both node features and the underlying graph structure. Graph neu-ral networks (GNNs) have achieved remarkable success on this task by iteratively aggregating information from local neighborhoods [23, 27, 56]. Recently, geometric graph learning meth-ods, especially curvature-based approaches, have attracted increasing attention for their abil-ity to characterize complex structural properties of graphs and improve representation learning [51, 60]. Among them, GEGCN [37] uses discrete Ollivier Ricci flow to model graph evolu-tion, and achieves excellent performance on both homophilic and heterophilic node classification tasks. 
+
+5.2.1. Algorithm and experimental setup 
+
+To evaluate the e ff ectiveness of the proposed flows on node classification, we adopt the GEGCN framework [37] as our backbone architecture, replacing its Ricci flow-based graph evo-lution with our entropy-driven mechanisms. Specifically, we consider two strategies derived from our proposed flows: LEF alone and CLEF (CF +LEF). For each strategy, we first evolve edge weights over multiple iterations to generate temporal sequences of weights and entropy. Following the GEGCN pipeline, these sequences are encoded by an LSTM to capture structural dynamics, producing edge importance scores that are then incorporated into a graph convolu-tional network for label prediction. Our primary aim is to investigate whether the temporal sequences generated by the proposed flows can e ff ectively guide graph evolution and improve node representation learning, while retaining the full GEGCN architecture for fair comparison. 19 For clarity, we present the complete procedure for CLEF in Algorithm 2; LEF follows the same pipeline, with the only di ff erence being the absence of the cohesion flow step. 
+
+Algorithm 2: Node classification via CLEF (CF +LEF) 
+
+Input: Graph G = (V, E, w0) with node features X; parameters α ∈ (0 , 1); step sizes 
+
+sc, se > 0; number of cohesion iterations Nc; number of entropy iterations Ne.
+
+Output: Predicted node labels ˆ Y.
+
+Step 1: Cohesion-driven graph evolution for i = 0, 1, . . . , Nc − 1 do 
+
+Compute edge cohesion Ce(ti) for all e ∈ E;Update edge weights we(ti + 1) ← we(ti) + sc · Ce(ti); 
+
+end Step 2: Entropy-driven graph evolution for j = 0, 1, . . . , Ne − 1 do 
+
+Compute edge entropy Θe(t j) for all e ∈ E;Update edge weights we(t j + 1) ← we(t j) + se · Θe(t j); 
+
+end 
+
+Obtain edge weight sequences {we(t)}Nc+Ne 
+
+> t=0
+
+and entropy sequences {Θe(t)}Nc+Ne 
+
+> t=0
+
+;
+
+Step 3: Structural dynamics encoding 
+
+Encode the joint sequence {[Θe(t), we(t)] }Nc+Ne 
+
+> t=0
+
+using an LSTM to obtain edge representations; Compute edge importance scores a∗ 
+
+> e
+
+from the edge representations; Construct the weighted adjacency matrix ˜ A∗ and normalize it to ˆ A∗;
+
+Step 4: Entropy-aware graph convolution 
+
+Initialize node representations H(0) = X;
+
+for ℓ = 0, 1, . . . , L − 1 do 
+
+H(ℓ+1) = σ( ˆ A∗ H(ℓ)W(ℓ)); 
+
+end 
+
+Compute predicted labels ˆ Y = softmax( H(L)); 
+
+return ˆY.We evaluate the proposed framework on 10 benchmark datasets covering both homophilic and heterophilic graph structures. 
+
+• Homophilic datasets: Cora, Citeseer, Pubmed [48], Coauthor CS, Amazon Photos [38]. Following the experimental protocol in [51], we partition the nodes into 20% for training, 10% for validation, and 70% for test. 
+
+• Heterophilic datasets: Cornell, Texas, Wisconsin (WebKB collection) [15], Chameleon [47], Actor [52]. We follow the split 60% /20% /20% for training, validation, and testing, respectively [55]. And the test set is always fixed rather than randomly sampled, and the remaining nodes are then randomly divided into training and validation sets. This is to ensure that the test set is not used for any training or hyperparameter tuning prior to final evaluation. Detailed statistics of the datasets are summarized in Tables 4 and 5. 20 Table 4: Statistics of homophilic datasets                                                             
+
+> Dataset Nodes Edges Features Classes Homophily (H(G))
+> Cora 2708 5278 1433 70.83 Citeseer 3327 4552 3703 60.72 Pubmed 19717 44324 500 30.79 Coauthor CS 18333 81894 6805 15 0.83 Amazon Photos 7487 119043 745 80.85
+> Table 5: Statistics of heterophilic datasets
+> Dataset Nodes Edges Features Classes Homophily (H(G))
+> Cornell 183 280 1703 50.30 Texas 183 295 1703 50.11 Wisconsin 251 466 1703 50.21 Chameleon 2277 31421 2325 50.23 Actor 7600 26752 932 50.24
+
+We compare LEF and CLEF with a comprehensive collection of baseline methods. For ho-mophilic datasets, the compared methods cover classical graph neural networks including MLP, GCN [27], GAT [56], and GraphSAGE [23], as well as models with enhanced information prop-agation capabilities, such as JKNet [59], APPNP [19], GPRGNN [10], MoNet [39], and UFG-Conv [62]. We also incorporate geometry-based approaches, namely CurvGN [60], RC-UFG [51], and GEGCN. For heterophilic benchmarks, we further adopt methods specifically designed to handle non-homophilous graph structures, including di ff usion-based models such as DIGL [20] and fully-adjacent augmentation ( +FA) [1], as well as graph rewiring techniques exempli-fied by SDRF [55]. Moreover, the global entropy flow (GEF) is included for evaluation under both homophilic and heterophilic settings, enabling a direct and fair performance comparison between the proposed local formulation and its global counterpart. For LEF, we fix the step size s = 0.1, α = 0.5, and Ne = 10 on all datasets. For CLEF, we first apply CF with step size sc = 0.1 for Nc = 10 iterations, then apply LEF with se = 0.01 and α = 0.5 for Ne = 10 iterations. For completeness, we also evaluate GEF with the same settings as LEF, and CGEF with the same two-stage settings as CLEF. All results are averaged over 10 independent runs. Hyperparameters are selected via random search based on validation performance. 
+
+5.2.2. Experimental results and analysis 
+
+We first compare LEF and CLEF with the baseline methods. Table 6 reports the node classifi-cation accuracy on homophilic datasets. On Cora, LEF achieves 86.6%, slightly below GEGCN (86.7%), and CLEF achieves 85.8%. On Citeseer, LEF and CLEF achieve 74.4% and 74.0%, respectively, lower than GEGCN (76.6%) and APPNP /GPRGNN (75.9%). On Pubmed, both LEF (88.3%) and CLEF (88.5%) outperform GEGCN (87.4%). On Coauthor CS, LEF and CLEF both achieve the highest accuracy (95.2%). On Amazon Photos, LEF (94.5%) and CLEF (94.6%) outperform GEGCN (94.1%). Overall, both LEF and CLEF perform competitively against the baseline methods, with CLEF achieving slightly higher accuracy than LEF on Pubmed and Amazon Photos, while they tie on Coauthor CS. 21 Table 6: Node classification accuracy (%) on homophilic datasets (mean ± std over 10 runs) 
+
+Method Cora Citeseer Pubmed Coauthor CS Amazon Photos MLP 55.1 ±1.4 59.1 ±1.2 71.4 ±0.8 88.3 ±0.7 69.6 ±3.8 MoNet 81.7 ±0.4 71.2 ±0.7 78.6 ±0.5 90.8 ±0.6 91.2 ±1.3 GCN 81.5 ±0.5 70.9 ±0.5 79.0 ±0.3 91.1 ±0.5 91.2 ±1.2 GraphSAGE 79.2 ±7.7 71.6 ±1.9 77.4 ±2.2 91.3 ±2.8 91.4 ±1.4 GAT 83.0 ±0.7 72.5 ±0.7 79.0 ±0.3 90.5 ±0.6 85.1 ±2.3 JKNet 83.7 ±0.7 72.5 ±0.4 82.6 ±0.5 91.1 ±0.3 86.1 ±1.1 APPNP 83.5 ±0.7 75.9 ±0.6 80.2 ±0.3 91.5 ±0.1 87.0 ±0.9 GPRGNN 83.8 ±0.9 75.9 ±0.7 82.3 ±0.2 91.8 ±0.1 87.0 ±0.9 CurvGN 82.6 ±0.6 71.5 ±0.8 78.8 ±0.6 92.9 ±0.4 92.5 ±0.5 UFGConv_S 83.0 ±0.5 71.0 ±0.6 79.4 ±0.4 92.1 ±0.2 92.1 ±0.5 UFGConv_R 83.6 ±0.6 72.7 ±0.6 79.6 ±0.4 93.0 ±0.7 92.5 ±0.2 RC-UFG (Hom) 84.4 ±0.7 72.5 ±0.7 82.9 ±0.2 94.2 ±0.9 93.5 ±0.7 RC-UFG (Het) 80.6 ±0.4 71.7 ±0.6 79.6 ±0.4 90.4 ±1.2 89.5 ±1.9 GEGCN 86.7 ±1.2 76.6 ±1.1 87.4 ±0.4 93.2 ±0.4 94.1 ±0.5 LEF 86.6 ±0.2 74.4 ±0.3 88.3 ±0.2 95.2 ±0.1 94.5 ±0.2 
+
+CLEF 85.8 ±0.3 74.0 ±0.3 88.5 ±0.1 95.2 ±0.0 94.6 ±0.2 
+
+Table 7 reports the results on heterophilic datasets. On Cornell, LEF achieves 75.14% and CLEF achieves 75.68%, both substantially higher than GEGCN (68.61%). On Texas, LEF achieves 78.38% and CLEF achieves 79.46%, compared with GEGCN (70.27%). On Wis-consin, LEF achieves 81.96% and CLEF achieves 83.14%, compared with GEGCN (67.39%). On Chameleon, LEF achieves 66.73%, higher than GEGCN (60.72%), while CLEF achieves 64.93%. On Actor, LEF (35.31%) and CLEF (35.51%) are slightly lower than GEGCN (37.18%). Overall, both LEF and CLEF outperform GEGCN on four out of five datasets, with CLEF achiev-ing higher accuracy than LEF on Cornell, Texas, and Wisconsin, while LEF performs better on Chameleon.   
+
+> Table 7: Node classification accuracy (%) on heterophilic datasets (mean ±std over 10 runs)
+
+Method Cornell Texas Wisconsin Chameleon Actor GCN 52.69 ±0.21 61.19 ±0.49 54.60 ±0.86 41.33 ±0.18 23.84 ±0.43 Undirected 53.20 ±0.53 63.38 ±0.87 51.37 ±1.15 42.02 ±0.30 21.45 ±0.47 
+
++FA 58.29 ±0.49 64.82 ±0.29 55.48 ±0.62 42.67 ±0.17 24.14 ±0.43 DIGL 58.26 ±0.50 62.03 ±0.43 49.53 ±0.27 42.02 ±0.13 24.77 ±0.32 DIGL +Undirected 59.54 ±0.64 63.54 ±0.38 52.23 ±0.54 42.68 ±0.12 25.45 ±0.30 SDRF 54.60 ±0.39 64.46 ±0.38 55.51 ±0.27 42.73 ±0.15 28.42 ±0.75 SDRF +Undirected 57.54 ±0.34 67.02 ±0.40 56.55 ±0.86 44.46 ±0.17 28.35 ±0.06 GEGCN 68.61 ±0.26 70.27 ±0.69 67.39 ±0.93 60.72 ±0.16 37.18 ±0.30 
+
+LEF 75.14 ±2.13 78.38 ±9.70 81.96 ±7.67 66.73 ±0.82 35.31 ±0.52 CLEF 75.68 ±2.85 79.46 ±3.86 83.14 ±3.36 64.93 ±4.08 35.51 ±0.01 
+
+As a supplementary comparison, we also examine the performance of GEF and CGEF along-side LEF and CLEF. Tables 8 and 9 report the results on homophilic and heterophilic datasets, respectively. The four strategies achieve comparable results across all datasets, with di ff erences generally within 1%, suggesting that the choice of entropy formulation and the inclusion of co-hesion preprocessing have limited influence on node classification performance. 22 Table 8: Comparison of four strategies on homophilic datasets (%) 
+
+Method Cora Citeseer Pubmed Coauthor CS Amazon Photos LEF 86.6 ±0.2 74.4 ±0.3 88.3 ±0.2 95.2 ±0.1 94.5 ±0.2 GEF 86.3 ±0.2 73.2 ±0.3 88.3 ±0.1 94.9 ±0.1 94.7 ±0.1 CLEF 85.8 ±0.3 74.0 ±0.3 88.5 ±0.1 95.2 ±0.0 94.6 ±0.2 CGEF 86.4 ±0.3 74.9 ±0.2 88.6 ±0.1 94.9 ±0.1 94.8 ±0.1 
+
+> Table 9: Comparison of four strategies on heterophilic datasets (%)
+
+Method Cornell Texas Wisconsin Chameleon Actor LEF 75.14 ±2.13 78.38 ±9.70 81.96 ±7.67 66.73 ±0.82 35.31 ±0.52 GEF 74.32 ±1.91 77.84 ±4.19 81.76 ±7.04 64.93 ±0.73 35.49 ±0.52 CLEF 75.68 ±2.85 79.46 ±3.86 83.14 ±3.36 64.93 ±4.08 35.51 ±0.01 CGEF 74.86 ±4.24 79.73 ±1.91 82.35 ±4.43 66.67 ±0.87 34.86 ±0.81 
+
+5.2.3. Ablation studies and sensitivity analysis 
+
+We first conduct ablation studies and sensitivity analysis specifically for the LEF component, since the e ff ectiveness of the cohesion flow has already been validated by comparing LEF with CLEF and GEF with CGEF in the main experiments. Here we focus on the contribution of the temporal entropy evolution modeling within the LEF framework. We compare the full LEF model with four variants: (1) LAST: using only the entropy at the final iteration; (2) Mean: averaging the entropy over all iterations; (3) MLP: using a multi-layer perceptron to encode the entropy sequence; (4) Random: replacing the original entropy sequence with a random one to eliminate all temporal evolutionary patterns. All variants share the same graph convolution backbone. 
+
+> Figure 6: Ablation study results on test accuracy for LEF
+
+23 As shown in Figure 6, the full LEF model consistently achieves the highest accuracy on all three datasets, confirming that modeling the temporal dynamics of entropy yields superior node representations compared to static or simple aggregation methods. The Random variant severely degrades performance on heterophilic datasets (Texas and Wisconsin), while remaining relatively high on the large homophilic dataset Pubmed. This indicates that meaningful temporal entropy information is critical for accurate classification on heterophilic graphs, while the origi-nal graph structure itself carries stronger signals on large homophilic graphs, making the model less sensitive to noise in edge importance. Overall, the ablation results validate that the entropy-aware graph evolution within the LEF component e ff ectively captures dynamic structural information, leading to robust performance improvements across diverse graph types. We further analyze the sensitivity of LEF performance to the number of entropy flow itera-tions N, with results shown in Figure 7. For all three datasets, performance rises markedly with the increase of N, and then stabilizes or slightly drops when iterations become excessive. Across all datasets, the optimal range of N lies between 6 and 8, achieving a good balance between classification accuracy and computational cost. 
+
+> Figure 7: Impact of the number of LEF iterations on test accuracy
+
+5.3. Theoretical computational complexity analysis 
+
+In this section, we provide a rigorous analysis of the computational complexity of LEF and CF, and compare them with GEF and discrete Ricci flow methods. Let G = (V, E, w) be a connected weighted graph with n vertices, m edges, and the average degree D = 2m/n. Let N be the number of iterations of the discrete entropy flow. We analyze the per-iteration complexity of LEF, CF, GEF [65], and Ollivier Ricci flow [42] as follows. 
+
+Cohesion flow (CF). For each edge e = xy ∈ E, computing the cohesion Cxy requires evaluating the sets of exclusive neighbors Nx \ Ny, Ny \ Nx, and common neighbors Nxy . These sets can be obtained by simple neighborhood lookups, and each involves at most O(D) vertices. The quantities Axy and Bxy are then computed via reciprocal weight summations over these sets, 24 again with complexity O(D). The normalization and exponential operation for eCxy and Cxy are performed in constant time per edge. Consequently, computing the cohesion for all m edges has a per-iteration complexity of O(mD ). 
+
+Local entropy flow (LEF). For each vertex x, computing the local random walk μα 
+
+> x
+
+only involves its 1-step neighborhood, with a complexity of O(D). Thus, computing all local random walks for the entire graph has a complexity of O(nD ) = O(m). For each edge e = xy , computing the edge entropy Θα 
+
+> e
+
+involves summation over the set Nx ∪ Ny, whose size is bounded by O(D). Thus, computing the entropy for all m edges has a complexity of O(mD ). The edge weight update step is element-wise, with a complexity of O(m). Overall, the per-iteration complexity of LEF is 
+
+O(mD ). 
+
+Global entropy flow (GEF). For GEF, the nowhere-zero random walk μα 
+
+> x
+
+has support on the en-tire vertex set V (size n), so computing a single random walk has a complexity of O(n). Comput-ing all random walks for the graph has a complexity of O(n2). For each edge e = xy , computing the edge entropy involves summation over all n vertices, leading to a per-iteration complexity of 
+
+O(mn ) for all edges. 
+
+Ollivier Ricci flow. The computational complexity of the discrete Ollivier Ricci flow is dom-inated by all-pairs shortest path calculation and optimal transport solving for each edge. We run Dijkstra’s algorithm for every node to compute single-source shortest paths, with a per-node complexity of O(m + n log n) and a total cost of O(nm + n2 log n) across all n nodes. Solving the discrete optimal transport problem between the two endpoints of an edge has a complexity of O(D3) [42, 29], leading to a total cost of O(mD 3) for all m edges. Overall, the per-iteration complexity is O(mn + n2 log n + mD 3). The sparse networks or scale-free networks are most common real-world networks. In the sparse scenario, we can assume that D = O(1) (i.e. n = O(m)). Under this assumption, both LEF and CF achieve a linear complexity O(m), GEF reduces to a quadratic complexity O(m2), and the discrete Ricci flow su ff ers from a super-quadratic complexity O(m2 log m). For scale-free networks, the average degree D grows slowly with the number of vertices, typically as 
+
+D = O(log n). Under this assumption, LEF and CF both maintain a nearly linear complexity 
+
+O(m log n), with only a mild logarithmic factor overhead from the slowly growing average de-gree, GEF has a complexity O(mn ), and the discrete Ricci flow has a super-quadratic complexity 
+
+O(mn + n2 log n + m log 3 n). In summary, LEF and CF achieves a dramatic reduction in computational cost compared with both GEF and Ricci flow, especially for large-scale real-world networks, which is fully validated by our empirical running time experiments. 
+
+6. Concluding remarks 
+
+In this work, we propose two quantities for weighted graphs, local entropy and cohesion, and construct their associated flows, LEF and CF, for edge weight evolution. We further introduce a two-stage framework, CLEF, which applies CF followed by LEF for subsequent evolution. We establish rigorous theoretical results for both flows, including global existence, unique-ness, and long-time convergence. Experimental results on community detection and node classi-fication demonstrate the e ff ectiveness of the proposed methods, with CLEF achieving competi-tive performance on benchmark networks. Complexity analysis confirms that LEF and CF attain 25 near-linear complexity on sparse graphs, substantially outperforming GEF and discrete Ricci flow methods in scalability. Overall, the proposed framework provides a theoretically grounded and computationally ef-ficient approach to graph learning. Future work includes extensions to directed and dynamic graphs, as well as broader graph learning tasks. 
+
+Acknowledgements 
+
+This research is partly supported by the National Natural Science Foundation of China (No. 12271039). 
+
+Declarations Data availability : All data needed are available freely at https: // github.com /12tangze12 /local-random-walk-based-entropy-flow. 
+
+Conflict of interest : The authors declared no potential conflicts of interest with respect to the research, authorship, and publication of this article. 
+
+Ethics approval : The research does not involve humans and /or animals. The authors declare that there are no ethics issues to be approved or disclosed. 
+
+References 
+
+[1] U. Alon, E. Yahav, On the bottleneck of graph neural networks and its practical implica-tions, in: International Conference on Learning Representations, 2021. [2] K. Anand, G. Bianconi, Entropy measures for networks: Toward an information theory of complex topologies, Phys. Rev. E 80 (4) (2009) 045102. [3] S. Bai, B. Hua, Y. Lin, S. Liu, On the Ricci flow on trees, arXiv: 2509.22140, 2025. [4] S. Bai, A. Huang, L. Lu, S. T. Yau, On the sum of Ricci-curvatures for weighted graphs, Pure Appl. Math. Q. 17 (2021) 1599-1617. [5] S. Bai, R. Li, S. Liu, X. Lai, Ricci flow on weighted digraphs with balancing factor, arXiv:2509.19989, 2025. [6] S. Bai, Y. Lin, L. Lu, Z. Wang, S. Yau, Ollivier Ricci-flow on weighted graphs, Amer. J. Math. 146 (2024) 1723-1747. [7] S. Bai, S. Liu, X. Lai, The weighted Forman and Lin-Lu-Yau Ricci flow on graphs, arXiv:2601.02673, 2026. [8] F. Bauer, J. Jost, S. P. Liu, Ollivier-Ricci curvature and the spectrum of the normalized graph Laplace operator. Math. Res. Lett. 19 (2012) 1185-1205. [9] S. Bhowmick, B. Seah, Clustering and summarizing protein-protein interaction networks: a survey, IEEE Trans. Knowl. Data Eng. 28 (2015) 638-658. [10] E. Chien, J. Peng, P. Li, O. Milenkovic, Adaptive universal generalized pagerank graph neural network, in: Int. Conf. Learning Representations (ICLR), 2021. [11] B. Chow, F. Luo, Combinatorial Ricci flows on surfaces, J. Di ff erential Geometry 63 (2008) 97-129. [12] A. Clauset, M. Newman, C. Moore, Finding community structure in very large networks, Phys. Rev. E 70 (2004) 066111. 26 [13] G. Cordasco, L. Gargano, Community detection via semi-synchronous label propagation algorithms, 2010 IEEE International Workshop on: Business Applications of Social Net-work Analysis (BASNA), 1-8. [14] T. M. Cover, J. A. Thomas, Elements of Information Theory, Wiley, 2nd edn., 2005. [15] M. Craven, D. DiPasquo, D. Freitag, A. McCallum, T. Mitchell, K. Nigam, S. Slattery, Learning to extract symbolic knowledge from the World Wide Web, in: Proceedings of the Fifteenth National /Tenth Conference on Artificial Intelligence /Innovative Applications of Artificial Intelligence, AAAI’98 /IAAI’98, pp. 509-516, 1998. [16] L. Danon, A. Díaz-Guilera, J. Duch, A. Arenas, Comparing community structure identifi-cation, J. Stat. Mech. Theory Exp. (2005) P09008. [17] M. Dehmer, Information processing in complex networks: Graph entropy and information functionals, Appl. Math. Comput. 201 (2012) 82-94. [18] S. Fortunato, Community detection in graphs, Phys. Rep. 486 (2010) 75-174. [19] J. Gasteiger, A. Bojchevski, S. Günnemann, Predict then propagate: Graph neural networks meet personalized PageRank, in: Int. Conf. Learning Representations (ICLR), 2019. [20] J. Gasteiger, S. Weißenberger, S. Günnemann, Di ff usion improves graph learning, in: Pro-ceedings of the 33rd International Conference on Neural Information Processing Systems, pp. 13366-13378, Red Hook, NY, USA, 2019. [21] M. Girvan, M. E. J. Newman, Community structure in social and biological networks, Proc. Natl. Acad. Sci. 99 (2002) 7821-7826. [22] R. Hamilton, Three-manifolds with positive ricci curvature, J. Di ff er. Geom. 17 (1982) 255-306. [23] W. L. Hamilton, R. Ying, J. Leskovec, Inductive representation learning on large graphs, in: Proc. 31st Int. Conf. Neural Inf. Process. Syst. (NeurIPS), pp. 1025-1035, 2017. [24] L. Hubert, P. Arabie, Comparing partitions, J. Classif. 2 (1985) 193-218. [25] H. Je ff reys, Theory of Probability, Oxford University Press, 1998. [26] J. Jost, S. P. Liu, Ollivier’s Ricci Curvature, Local Clustering and Curvature-Dimension Inequalities on Graphs. Discrete Comput. Geom. 51 (2014) 300-322. [27] T. N. Kipf, M. Welling, Semi-supervised classification with graph convolutional networks, in: Int. Conf. Learning Representations (ICLR), 2017. [28] S. Kullback, R. A. Leibler, On information and su ffi ciency, Ann. Math. Statist. 22 (1951) 79-86. [29] X. Lai, S. Bai, Y. Lin, Normalized discrete Ricci flow used in community detection, Phys. A 597 (2022) 127251. [30] J. Leskovec, SNAP datasets: Stanford large network dataset collection, http://snap. stanford.edu/data , 2014. [31] R. Li, F. Münch, The convergence and uniqueness of a discrete-time nonlinear Markov chain, J. Funct. Anal. 290 (2026) 111367. [32] Y. Lin, S. Liu, The Ricci flow with prescribed curvature on graphs, arXiv:2603.10479, 2026. [33] Y. Lin, L. Lu, S. T. Yau, Ricci curvature of graphs, Tohoku Math. J. 63 (2011) 605-627. [34] J. Ma, Y. Yang, A modified Ricci flow on arbitrary weighted graph, J. Geom. Anal. 35 (2025) 332. [35] J. Ma, Y. Yang, Evolution of weights on a connected finite graph, arXiv:2411.06393, 2024. [36] J. Ma, Y. Yang, Piecewise-linear Ricci curvature flows on weighted graphs, arXiv:2505.15395, 2025. [37] J. Ma, Y. Yang, J. Zhao, L. Zhao, Geometric evolution graph convolutional networks: En-27 hancing graph representation learning via Ricci flow, arXiv:2603.26178, 2026. [38] J. McAuley, C. Targett, Q. Shi, A. van den Hengel, Image-based recommendations on styles and substitutes, in: Proceedings of the 38th International ACM SIGIR Conference on Research and Development in Information Retrieval, SIGIR’15, pp. 43-52, 2015. [39] F. Monti, D. Boscaini, J. Masci, E. Rodola, J. Svoboda, M.M. Bronstein, Geometric deep learning on graphs and manifolds using mixture model CNNs, in: Proc. IEEE Conf. Com-put. Vis. Pattern Recognit. (CVPR), pp. 5115-5124, 2017. [40] M. Newman, Modularity and community structure in networks, Proc. Natl. Acad. Sci. 103 (2006) 8577-8582. [41] M. Newman, Networks , Oxford Univ. Press (2018). [42] C. C. Ni, Y. Y. Lin, F. Luo, J. Gao, Community detection on networks with Ricci flow, Sci. Rep. 9 (2019) 9984. [43] Y. Ollivier, Ricci curvature of metric spaces, C. R. Math. 345 (2007) 643-646. [44] Y. Ollivier, Ricci curvature of markov chains on metric spaces, J. Funct. Anal. 256 (2009) 810-864. [45] G. Perelman, The entropy formula for the Ricci flow and its geometric applications, arXiv:0211159, 2002. [46] J. Reichardt, S. Bornholdt, Statistical mechanics of community detection, Phys. Rev. E 74 (2006) 016110. [47] B. Rozemberczki, C. Allen, R. Sarkar, Multi-scale attributed node embedding, J. Complex Networks 9(2) (2021) cnab014. [48] P. Sen, G. Namata, M. Bilgic, L. Getoor, B. Gallagher, T. Eliassi-Rad, Collective classifi-cation in network data, AI Magazine, 29(3) (2008) 93-106. [49] P. Sengupta, N. Azarhooshang, R. Albert, B. DaGupta, Finding influential cores via nor-malized Ricci flows in directed and undirected hypergraphs with applications, Phys. Rev. E 111 (2025) 044316. [50] C. E. Shannon, A mathematical theory of communication, Bell System Tech. J. 27 (1948) 379-423. [51] D. Shi, Y. Guo, Z. Shao, J. Gao, How curvature enhances the adaptation power of framelet GCNs, arXiv:2307.09768, 2023. [52] J. Tang, J. Sun, C. Wang, Z. Yang, Social influence analysis in large-scale networks, in: Proc. 15th ACM SIGKDD Int. Conf. Knowledge Discovery and Data Mining (KDD’09), New York, NY, USA, 2009, pp. 807-816. [53] S. Tauro, C. Palmer, G. Siganos, M. Faloutsos, A simple conceptual model for the internet topology, GLOBE COM’01 IEEE Global Telecommun. Conf. 3 (2001) 1667-1671. [54] Y. Tian, J. Ma, Y. Yang, L. Zhao, Community detection of undirected hypergraphs by Ricci flow, Phys. Rev. E 112 (2025) 044311. [55] J. Topping, F. DiGiovanni, B. P. Chamberlain, X. Dong, M. M. Bronstein, Understanding over-squashing and bottlenecks on graphs, in: Int. Conf. Learning Representations (ICLR), 2022. [56] P. Veliˇ ckovi´ c, G. Cucurull, A. Casanova, A. Romero, P. Liò, Y. Bengio, Graph attention networks, in: Int. Conf. Learning Representations (ICLR), 2018. [57] M. Weber, J. Jost, E. Saucan, Forman-Ricci flow for change detection in large dynamic data sets, Axioms 5 (2016) 26. [58] M. Weber, E. Saucan, J. Jost, Characterizing complex networks with Forman-Ricci curva-ture and associated geometric flows, J. Complex Networks 5 (2017) 527-550. [59] K. Xu, C. Li, Y. Tian, T. Sonobe, K. Kawarabayashi, S. Jegelka, Representation learning on 28 graphs with jumping knowledge networks, in: Proc. Int. Conf. Machine Learning (ICML), PMLR, pp. 5453-5462, 2018. [60] Z. Ye, K. S. Liu, T. Ma, J. Gao, C. Chen, Curvature graph network, in: Int. Conf. Learn. Represent. (ICLR), 2020. [61] W. Zachary, An information flow model for conflict and fission in small groups, J. Anthro-pol. Res. 33 (1977) 452-473. [62] X. Zheng, B. Zhou, J. Gao, Y. Wang, P. Lió, M. Li, G. Montufar, How framelets enhance graph neural networks, in: Int. Conf. Mach. Learn. (ICML), PMLR, pp. 12761-12771, 2021. [63] J. Zhao, J. Ma, Y. Yang, L. Zhao, Core detection via Ricci curvature flows on weighted graphs, Physica A 692 (2026) 131525. [64] J. Zhao, J. Ma, Y. Yang, L. Zhao, Finding core subgraphs of directed graphs via discrete Ricci curvature flow, arXiv:2512.07899, 2025. [65] J. Zhao, J. Ma, Y. Yang, L. Zhao, An e ffi cient entropy flow on weighted graphs: theory and applications, arXiv:2604.08144, 2026. 29

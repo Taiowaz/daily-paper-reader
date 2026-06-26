@@ -1,0 +1,443 @@
+Title: Communicability-Inspired Positional Encoding (CIPE)
+
+URL Source: https://arxiv.org/pdf/2606.25293v1
+
+Published Time: Thu, 25 Jun 2026 00:26:18 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+> 1
+
+# Communicability-Inspired Positional Encoding (CIPE) 
+
+## Yipeng Zhang, Zhongtian Sun, Pietro Li ` o, and Kelin Xia 
+
+✦
+
+Abstract —Positional encodings (PEs) are essential for Transformers. Yet designing effective PEs for non-Euclidean graphs remains challeng-ing. Such encodings should ideally induce an Attention-Compatible Geometry for self-attention: not merely describing graph structure, but defining a geometry whose inner products reflect meaningful structural relatedness. To realize this geometry, we propose Communicability-Inspired Positional Encoding (CIPE), built from communicability, a mea-sure between pairs of nodes that aggregates contributions from paths of all lengths. By construction, CIPE inner products recover commu-nicability, converting global multi-path connectivity into an attention-ready similarity geometry. For practical Transformer training, we intro-duce dimensionality alignment, mapping graph-size-dependent CIPE representations to prescribed dimensions while faithfully preserving the induced geometry. Empirically, CIPE improves structure-agnostic Trans-formers by 35.5% on average across seven benchmarks, outperforming representative PEs; it also consistently improves structure-biased graph Transformers, where competing PEs often yield only marginal benefits. These results position CIPE as a principled framework for attention-compatible graph positional encodings. 
+
+Index Terms —Graph Positional Encoding, Communicability, Graph Transformers 
+
+## 1 INTRODUCTION 
+
+# TRANSFORMERS have achieved remarkable success across domains such as natural language processing and computer vision, largely because self-attention captures long-range dependencies [1]–[6]. However, self-attention is inherently permutation-invariant: without explicit po-sitional information, it treats the input as an unordered set. Positional encodings (PEs) are therefore essential for injecting positional or relational structure into Transformer models, enabling attention to depend on the relative or absolute positions of input elements. In sequential domains, positional mechanisms have evolved from the original si-nusoidal encoding [1] to relation-aware designs, including relative positional representations [7], positional biases [8], 
+
+This work was supported in part by the Singapore Ministry of Education Aca-demic Research Fund Tier 1 grant RG16/23, Tier 2 grants MOE-T2EP20125-0004. (corresponding authors: Yipeng Zhang and Kelin Xia.) Yipeng Zhang and Kelin Xia are with the Division of Mathematical Sci-ences, School of Physical and Mathematical Sciences, Nanyang Technological University, Singapore 637371, Singapore. (e-mail: yipeng001@e.ntu.edu.sg; xiakelin@ntu.edu.sg). Zhongtian Sun is with the School of Computing, University of Kent, Canter-bury, Kent CT2 7NZ, UK. (e-mail: z.sun-256@kent.ac.uk). Pietro Li` o is with the Department of Computer Science and Technology, University of Cambridge, 15 JJ Thomson Avenue, Cambridge CB3 0FD, UK. (e-mail: pl219@cam.ac.uk). 
+
+[9], and rotary schemes such as Rotary Positional Encoding (RoPE) [10]. These developments highlight a key principle: because self-attention operates through similarity compar-isons in representation space, the induced similarity ge-ometry is central to Transformer behavior. RoPE explicitly realizes this principle by endowing that geometry with relative positional structure, making it one of the most widely adopted positional mechanisms for sequence Trans-formers [11]. The design of positional encoding becomes substantially more challenging for non-Euclidean data in geometric deep learning, especially graphs, which lack a canonical ordering and have inherently irregular structural relations [12]. Early graph encodings used simple node-level descriptors, such as degrees or related local statistics, to provide basic struc-tural information [13]–[15]. Subsequent methods introduced richer graph structural encodings, including random-walk-based and cycle-based schemes [16]–[18]. Another major line of work developed spectral and diffusion-based po-sitional or structural encodings, represented by Laplacian eigenvector-based encodings such as LapPE [19], [20] and heat-kernel-based encodings such as HKSE [21], [22]. More recent graph Transformer frameworks further combine or learn structural and positional information, as in GPS [23] and GPSE [17]. Together with other studies on graph posi-tional and structural encodings [11], [24], [25], these devel-opments reveal a rich landscape of methods for encoding graph structure. Nevertheless, most existing methods still capture only partial aspects of graph structure. Few encod-ings are designed to reflect the full multi-path organization of a graph in a unified manner. Moreover, even when rich structural information is encoded, it is rarely organized into a representation geometry in which inner-product similarity directly reflects meaningful graph structural relatedness and is therefore directly usable by self-attention. A key design question in graph positional encoding is which graph relation should serve as the basis for positional representation. In this regard, communicability is particu-larly appealing. It has long been recognized as a funda-mental graph descriptor, measuring how easily information propagates through a network, and has proved effective in graph-analytic tasks such as clustering, vertex similarity, and role discovery [26]–[28]. Intuitively, communicability aggregates contributions from all possible connecting paths between two vertices, rather than relying only on adja-cency or shortest-path proximity. Originally introduced in            
+
+> arXiv:2606.25293v1 [cs.LG] 24 Jun 2026 2
+> Fig. 1. CIPE turns diffusion-based communicability into an attention-compatible positional geometry for graph Transformers. A Heat diffusion on a graph initialized from a unit source, illustrating how node-wise signal propagates over the graph. BFor each node, CIPE is constructed from the graph-wide diffusion profile obtained by placing a unit heat source at that node and evolving the diffusion process for time t/ 2.CThe key property of CIPE: the inner product between two node encodings directly recovers their diffusion-based communicability, a pairwise quantity that aggregates contributions from all possible connecting paths between the two nodes with different weights according to path length. This satisfies the Attention-Compatible Geometry condition by making the similarity computation used by self-attention directly reflect graph structural relatedness. DFor practical deployment, CIPE is normalized and dimensionally aligned into a prescribed shared embedding space while preserving its communicability-induced inner-product geometry as faithfully as possible, then concatenated with node features and fed into Transformer layers for graph representation learning.
+
+network science [29], [30], it combines local and global connectivity through length-weighted path contributions. This enables it to capture the broader potential for in-formation transmission and structural influence across the graph. Communicability-based embeddings further reveal meaningful geometric and functional organization in com-plex systems, linking communicability to network efficiency, robustness, and higher-order coordination [27], [31]–[34]. These observations suggest that communicability provides a natural foundation for graph positional encodings that capture globally distributed, multi-path structure. Motivated by these observations, we propose Communicability-Inspired Positional Encoding (CIPE) for graph Transformers. Rather than introducing another structure descriptor, CIPE constructs a positional geometry over graph nodes whose inner products reflect pairwise communicability, making the induced similarity geometry naturally compatible with self-attention. We refer to this design principle as the Attention-Compatible Geometry 
+
+condition. Starting from the discrete diffusion equation on graphs, CIPE is derived from the analytical solution of the associated graph operator, yielding node encodings that combine local connectivity and long-range multi-path interactions in a common similarity geometry. Its key property is that the inner product between the positional encodings of two vertices recovers their diffusion-based communicability, so node pairs with stronger multi-path structural relatedness have higher positional similarity. Thus, CIPE organizes global graph structure in the same inner-product geometry used by attention. In particular, when specialized to one-dimensional sequences, the CIPE construction exhibits a desirable property on periodic sequences, equivalently cycle graphs: its inner products, similar to RoPE, depend only on relative positional offsets. This suggests potential future relevance to intrinsically periodic sequence representations, such as polymer SMILES. A central practical challenge is that raw CIPE is graph-size dependent, whereas Transformer architectures require positional representations from different graphs to lie in a common embedding space. To bridge this mismatch, we introduce a dimensionality alignment procedure based on inner-product preservation, which maps CIPE into a prescribed dimension while minimizing distortion of its communicability-induced similarity geometry. Thus, CIPE can be compressed or expanded for downstream require-ments while preserving the geometry most relevant to self-attention as faithfully as possible. Figure 1 illustrates the communicability-driven construction of CIPE and its inte-gration into Transformer-based graph learning. Extensive experiments on 14 benchmarks—including ten molecular property prediction tasks from MoleculeNet [35] 3
+
+(seven classification and three quantum-chemistry regres-sion datasets) and four non-molecular graph classification benchmarks from TUDataset [36] (covering social-network and bio/protein graphs)—demonstrate that CIPE consis-tently outperforms existing positional encodings. In par-ticular, CIPE delivers especially pronounced improvements on structure-agnostic Transformer backbones, while contin-uing to provide additional gains even when incorporated into graph Transformer architectures that already encode structural bias. Moreover, despite using only a few Trans-former layers, the resulting models remain competitive with widely used graph learning baselines. Taken together, these findings suggest that communicability offers not only a powerful description of graph structure, but also a princi-pled foundation for designing positional geometry naturally compatible with attention. The main contributions of this work are summarized as follows:  
+
+> •
+
+We introduce CIPE, a graph positional encoding that leverages communicability to construct a globally in-formative positional geometry naturally compatible with the self-attention mechanism in Transformers.  
+
+> •
+
+We develop a stable dimensionality alignment frame-work that maps CIPE to a prescribed embedding dimension while preserving pairwise inner products as faithfully as possible, thereby enabling its practical use on graphs of varying sizes.  
+
+> •
+
+We demonstrate across diverse graph types, learning tasks, and Transformer backbones that CIPE consis-tently improves performance, with gains that sub-stantially exceed those of existing positional encod-ings. 
+
+## 2 RELATED WORK 
+
+2.1 Positional Encodings for Sequence Data 
+
+For sequence data, positional encoding has been extensively studied as a mechanism for incorporating order informa-tion into self-attention. The original Transformer introduced fixed sinusoidal positional encodings, which inject absolute token positions by adding deterministic trigonometric vec-tors to input embeddings [1]. This design gives each position a distinct representation and allows the model to use posi-tional information without recurrent or convolutional struc-tures. However, because the positional signal is supplied only through the input embeddings, the attention operation itself is not explicitly parameterized by the relative distance between two tokens. Subsequent works therefore moved from absolute posi-tion injection toward relation-aware attention mechanisms. Shaw et al. [7] extended self-attention with relative position representations, enabling attention to explicitly consider the distance between sequence elements rather than relying only on absolute positional vectors. This changes positional encoding from a token-wise input feature into a pairwise relation used inside the attention computation. Bias-based methods further simplify this idea by adding position-dependent terms directly to attention logits. For example, T5 uses relative position biases in its text-to-text Trans-former framework [8], while ALiBi adds linear distance-dependent biases to query-key attention scores, allowing models trained on shorter sequences to extrapolate to longer ones [9]. These methods show that positional information can be injected not only through node or token represen-tations, but also by directly modifying the similarity scores used by attention. Rotary Positional Encoding (RoPE) provides a particu-larly relevant example for this work. Instead of adding a positional vector to token embeddings or adding a scalar bias to attention logits, RoPE encodes positions through rotations applied to query and key representations [10]. As a result, the inner product between rotated query and key vectors becomes explicitly dependent on their relative positional offset. This makes RoPE more than a positional descriptor: it induces an inner-product geometry in which the similarity computation of self-attention reflects relative sequence structure. This perspective is also consistent with broader analyses showing that positional information in Transformers can be understood through how different en-coding schemes modify the geometry and computation of attention [11]. In this sense, RoPE represents an important example of an attention-compatible positional geometry for ordered sequence data. 
+
+2.2 Positional Encodings for Graph Data 
+
+Early positional encodings for graph data used simple node-level descriptors, such as degrees, local neighborhood statis-tics, or recursively aggregated structural features [13]–[15]. The main idea of these designs is to attach basic structural attributes to each node, so that the model can distinguish nodes not only by their original features but also by their local structural roles. To incorporate richer graph structural information into node or graph encodings, later works introduced structural encodings (SEs), which characterize graphs through graph-derived structural patterns. Cycle-counting encodings, such as CycleSE, use the number of cycles of different lengths as structural signals, aiming to capture higher-order topologi-cal patterns beyond local neighborhoods [17], [18]. Random Walk Structural Encoding (RWSE) instead describes a node through multi-step random-walk behavior, especially the probabilities that walks starting from the node return to it at different lengths [16]. In this way, RWSE provides a diffusion-like structural signature based on random-walk dynamics. Heat-kernel-based structural encodings, such as HKSE, follow a related diffusion perspective but use heat propagation on graphs to summarize how information spreads from each node across multiple scales [21], [22]. Another classical direction is based on spectral graph representations. Laplacian eigenvector-based positional en-codings, such as LapPE, construct node coordinates from the eigenvectors of the graph Laplacian [19]. This makes LapPE conceptually analogous to sinusoidal positional en-codings for sequences: both use frequency-like components to provide positional information, but LapPE replaces fixed sequence frequencies with graph-dependent spectral com-ponents. At the same time, spectral graph encodings are known to suffer from sign ambiguity, basis non-uniqueness, and sensitivity to structural perturbations [20]. More recent works have moved from manually specified graph encodings toward frameworks that integrate or learn 4
+
+positional and structural information. GPS treats positional and structural encodings as an explicit module in a scalable graph Transformer architecture, showing that the choice of PE/SE is an important component when combining local message passing with global attention [23]. GPSE is more directly focused on encoding design: it learns transferable positional and structural representations through pretrain-ing objectives, rather than relying on a single hand-crafted encoding for each task [17]. Together with other studies on graph positional and structural encodings [11], [24], [25], these developments reveal a rich landscape of methods for injecting graph structure into Transformer-based graph learning. Overall, existing graph PEs and SEs have progressively enriched node representations with local, global, spectral, diffusion-based, and learned structural information. This line of work has greatly expanded the ways in which graph structure can be encoded for downstream learning. How-ever, most existing designs are descriptor-oriented: they focus on what structural information should be encoded, but not on how the resulting positional geometry interacts with the inner-product similarity used by self-attention. From the perspective of graph Transformers, this leaves a mismatch between graph structural encoding and the geometry of the attention mechanism. This motivates the attention-compatible geometry principle developed in this work, where positional encodings are constructed so that their inner products directly realize a meaningful graph-theoretic measure of structural relatedness. 
+
+2.3 Communicability on Graphs 
+
+Communicability is a classical graph-theoretic concept for measuring how effectively two vertices are connected through the network [29], [30]. Its key idea is to move beyond adjacency and shortest-path distance by accounting for the collective contribution of walks connecting two vertices. Short walks capture strong local proximity, while longer walks still contribute to indirect structural influence with smaller weights. As a result, communicability provides a unified measure that combines local connectivity, indirect interactions, and global multi-path organization. This all-path perspective has made communicability useful for analyzing complex networks. It has been used to characterize vertex similarity, clustering, role discovery, and the potential for information transmission across net-works [26]–[28]. Communicability graph methods further use pairwise communicability to reveal community struc-tures, where groups of vertices are identified by stronger in-ternal communicability than external communicability [37]. Related extensions, such as communicability betweenness, quantify how much a node participates in communication between other pairs of nodes by considering information flow through all possible routes rather than only shortest paths [38]. Communicability has also led to geometric interpreta-tions of graph structure. Communicability distance defines a distance-like measure between vertices by comparing their self-communicability and mutual communicability, en-abling networks to be studied in Euclidean communica-bility spaces [39]. Hyperspherical embeddings of graphs and networks in communicability spaces further show that communicability can induce meaningful geometric repre-sentations of network organization [32]. Communicability angle provides another geometric view, relating pairwise communicability to the spatial efficiency of networks and revealing structural organization in a variety of real-world systems [34]. These studies suggest that communicability is not merely a scalar graph statistic, but a rich structural principle connecting paths, information flow, similarity, and geometry. Communicability provides a principled measure of pair-wise structural relatedness, reflecting both local connectiv-ity and globally distributed multi-path interactions. Mo-tivated by this perspective, we design CIPE to translate communicability-based structural relatedness into node-wise positional encodings. Specifically, CIPE constructs a positional geometry in which the inner product between two node encodings directly reflects the communicability-quantified relation between the corresponding vertices. 
+
+## 3 METHODOLOGY 
+
+3.1 Preliminary 
+
+3.1.1 Graph Laplacian 
+
+Let G = ( V, E ) be an undirected graph with n vertices, adjacency matrix A ∈ { 0, 1}n×n, and degree matrix D =diag( d1, . . . , d n), where di = Pnj=1 Aij . The combinatorial graph Laplacian is defined as 
+
+L = D − A. (1) This operator serves as the discrete analogue of the Laplace operator and underlies diffusion dynamics on the graph. 
+
+3.1.2 Diffusion Equation on Graphs 
+
+Given an initial signal u0 ∈ Rn on the vertices of G, the continuous-time diffusion process on the graph is governed by 
+
+ddt u(t) = −L u (t), u(0) = u0. (2) Its analytical solution is 
+
+u(t) = e−tL u0, (3) where e−tL is the graph heat kernel. In particular, if the initial signal is a unit impulse at vertex vj , i.e., u(0) = δj , then 
+
+u(t) = e−tL δj ,
+
+and the amount of signal at vertex vi at time t is 
+
+ui(t) = δ⊤ 
+
+> i
+
+e−tL δj = ( e−tL )ij .
+
+Thus, the entry (e−tL )ij quantifies how much signal reaches vertex vi from an initial unit mass placed at vertex vj after diffusion time t.5
+
+3.1.3 Communicability from a Diffusion Perspective 
+
+The heat kernel e−tL provides a natural way to quantify how strongly two vertices are related under graph diffusion. In particular, the entry (e−tL )ij measures how much signal reaches vertex vi at time t when the process starts from a unit impulse at vertex vj . Unlike shortest-path distance or purely local structural descriptors, this quantity reflects the cumulative effect of propagation through the graph as a whole. Motivated by this interpretation, we define the diffusion-based communicability between vertices vi and vj as 
+
+Fij := ( e−tL )ij . (4) This quantity serves as a global measure of how efficiently information can propagate between the two vertices under the diffusion process. To remove the effect of absolute scale and focus on rel-ative relatedness, we further introduce the communicability cosine similarity [28]: 
+
+cos θij := Fij 
+
+pFii Fjj 
+
+. (5) This normalized quantity measures the angular similarity between vertices in the diffusion-induced space. A value of 
+
+cos θij close to 1 indicates that vi and vj are strongly related relative to their own self-communicability, and therefore occupy closely aligned positions in the global diffusion geometry of the graph. 
+
+3.2 Communicability-Inspired Positional Encoding (CIPE) 
+
+We now construct a positional encoding whose inner-product geometry directly realizes diffusion-based commu-nicability. For a graph G with Laplacian L, we define the Communicability-Inspired Positional Encoding (CIPE) of vertex vi as 
+
+CIPE i = e− t 
+
+> 2L
+
+δi ∈ Rn, (6) where δi is the Kronecker delta vector supported on ver-tex vi. Equivalently, CIPE i is the diffusion state at time 
+
+t/ 2 generated by a unit impulse placed at vertex vi, and each coordinate records how much signal has reached the corresponding vertex after half the diffusion time. The choice of t/ 2 is essential rather than arbitrary. In-deed, for any two vertices vi and vj , we have 
+
+⟨CIPE i, CIPE j ⟩ = δ⊤ 
+
+> i
+
+e− t 
+
+> 2L
+
+e− t 
+
+> 2L
+
+δj = δ⊤ 
+
+> i
+
+e−tL δj = ( e−tL )ij .
+
+(7) Thus, the inner product between CIPE i and CIPE j exactly recovers the diffusion-based communicability between vi
+
+and vj at time t. In this way, CIPE turns communicability into a positional geometry over nodes, making structural relatedness directly usable through inner-product similarity. 
+
+3.3 Desirable Properties of CIPE 
+
+Theorem 1. For a graph G with Laplacian L and communicability-inspired positional encoding defined as above, the following properties hold: 1) Discriminativity: 
+
+CIPE i̸ = CIPE j for i̸ = j. 
+
+2) Attention-compatible geometry: 
+
+⟨CIPE i, CIPE j ⟩ = F (vi, v j ),
+
+where F (vi, v j ) is a function that captures a mean-ingful structural relation between vertices vi and vj .3) Stability: For any two graphs G and G′ that differ by a small perturbation of their structure, there exists M > 0 such that 
+
+∥CIPE i(G′) − CIPE i(G)∥ ≤ M · d(G′, G ).
+
+Here, d(G′, G ) denotes a metric that quantifies the structural discrepancy between the two graphs. These three properties highlight why CIPE is well suited as a positional encoding mechanism for graph-structured data. Discriminativity ensures that different vertices are assigned distinct encodings, so that the Transformer can distinguish nodes based on position rather than collaps-ing them into indistinguishable embeddings. Attention-compatible geometry means that the inner product between two positional encodings reflects a meaningful structural relation between the corresponding vertices, making the encoding naturally compatible with the similarity compu-tation underlying self-attention. In the case of CIPE, this structural relation is instantiated by diffusion-based com-municability, namely 
+
+F (vi, v j ) = ( e−tL )ij .
+
+Finally, Stability guarantees that small perturbations of the graph structure induce only bounded changes in the positional encoding, which is important for robustness in practical applications. 
+
+3.4 Normalization of CIPE 
+
+The raw CIPE matrix records absolute diffusion responses and is therefore influenced by graph size and density. To obtain a scale-independent representation of relative com-municability, we normalize CIPE at the matrix level using a symmetric normalization scheme. Let 
+
+CIPE = e− t  
+
+> 2L
+
+∈ Rn×n,
+
+where the i-th row corresponds to the encoding CIPE i of vertex vi. We define the normalized encoding matrix as 
+
+\CIPE = D− 12 CIPE D− 12 , Dii = (CIPE) ii = ( e− t 
+
+> 2L
+
+)ii .
+
+(8) Under this normalization, each entry of \CIPE becomes 
+
+( \CIPE) ij = (e− t 
+
+> 2L
+
+)ij 
+
+q
+
+(e− t 
+
+> 2L
+
+)ii (e− t 
+
+> 2L
+
+)jj 
+
+= cos θij ,
+
+which is exactly the communicability cosine introduced in Section 3.1.3. Thus, normalization converts CIPE from an absolute diffusion-response encoding into a relative communicability geometry: instead of measuring raw signal magnitude, each 6
+
+entry now reflects the angular relation between two vertices in the diffusion-induced space. In this form, \CIPE directly encodes the relative communicability structure of the graph, enabling consistent comparison across graphs of different sizes and densities. 
+
+3.5 Dimensionality Alignment of CIPE 
+
+A fundamental practical challenge is that raw CIPE has graph-dependent dimensionality equal to the number of vertices. This is incompatible with parameter-sharing ar-chitectures such as Transformers, which require positional encodings from different graphs to lie in a common em-bedding space. We therefore introduce a dimensionality alignment procedure that maps CIPE into a prescribed dimension d while preserving its communicability-induced inner-product geometry as faithfully as possible. Let the normalized positional encoding matrix be \CIPE ,whose i-th row is the normalized encoding of vertex vi. We seek a fixed-dimensional encoding matrix 
+
+CIPE (d) ∈ Rn×d,
+
+such that pairwise inner products between rows of CIPE (d)
+
+approximate those of \CIPE . Equivalently, we solve 
+
+min 
+
+> CIPE (d)∈Rn×d
+
+CIPE (d)CIPE (d)⊤
+
+− \CIPE \CIPE ⊤ 
+
+> F
+
+, (9) so that 
+
+⟨CIPE (d) 
+
+> i
+
+, CIPE (d) 
+
+> j
+
+⟩ ≈ ⟨ \CIPE i, \CIPE j ⟩.
+
+This formulation makes explicit that the goal is not merely dimensionality reduction, but the faithful trans-fer of communicability-induced geometry into a fixed-dimensional representation. Let the eigendecomposition of the target Gram matrix be 
+
+\CIPE \CIPE ⊤
+
+= U ΣU ⊤,
+
+where U = ( u1, . . . , u n) ∈ Rn×n is orthogonal and Σ = diag( σ1, . . . , σ n) with σ1 ≥ · · · ≥ σn ≥ 0. The rank-d family of minimizers of (9) is 
+
+CIPE (d)∗
+
+= UdΣ1/2 
+
+> d
+
+D, 
+
+where Ud ∈ Rn×d contains the top-d eigenvectors, Σd ∈
+
+Rd×d contains the corresponding eigenvalues, and D ∈
+
+Rd×d is any orthogonal matrix. If d > n , we zero-pad Ud
+
+and Σd to match the target dimension. To promote a more uniform distribution of information across the output dimensions, we first introduce a near-orthogonal projection 
+
+Pn,d = OnJn,d Od ∈ Rn×d, (10) where On and Od are orthogonal DCT matrices of sizes 
+
+n × n and d × d, respectively, and Jn,d is the n × d diagonal matrix with ones on the main diagonal. We then choose the orthogonal matrix Dopt that best aligns UdΣ1/2 
+
+> d
+
+with the projected data \CIPE Pn,d by solving 
+
+min  
+
+> D∈O (d)
+
+UdΣ1/2 
+
+> d
+
+D − \CIPE Pn,d F .
+
+If  UdΣ1/2
+
+> d
+
+  \CIPE Pn,d 
+
+⊤ = XΓY ⊤
+
+is the corresponding singular value decomposition, then the optimal orthogonal matrix is Dopt = XY ⊤, yielding the refined encoding 
+
+CIPE opt = UdΣ1/2 
+
+> d
+
+XY ⊤ ∈ Rn×d. (11) The resulting CIPE opt serves as the fixed-dimensional positional encoding supplied to downstream Transformer layers. In this way, dimensionality alignment makes CIPE deployable across graphs of varying sizes while preserving the original inner-product geometry as closely as possible in the prescribed dimension. 
+
+3.6 Properties Preserved After Dimensionality Align-ment 
+
+The dimensionality alignment procedure is designed to preserve the favorable properties of CIPE as much as pos-sible when projecting it into a fixed-dimensional space. A complete theorem together with its proof is provided in the Supplementary Information. Here, we summarize the main implications. First, when the target dimension satisfies d ≥ n, the aligned encoding retains all properties of the original CIPE exactly. In particular, discriminativity, attention-compatible geometry, and stability are preserved without loss. The nontrivial case is therefore the practically relevant regime 
+
+d < n , where compression is unavoidable. In this compressed regime, the most important property preserved by construction is the inner-product geometry. Specifically, the aligned encoding CIPE opt preserves the pairwise inner products of the normalized CIPE as well as any n × d embedding possibly can, in the sense of mini-mizing the Frobenius error between Gram matrices. Thus, although exact preservation is generally impossible when 
+
+d < n , the communicability-induced geometry is retained in an optimal sense within the prescribed dimension. Beyond this optimal inner-product preservation, dis-criminativity is retained almost everywhere for d > 1, so that distinct vertices remain distinguishable in generic cases after alignment. Moreover, under a standard spectral gap condition σd > σ d+1 , the aligned encoding is independent of arbitrary eigenvector choices within the top-d subspace and varies continuously under small perturbations of the graph. This yields a stable fixed-dimensional positional encoding that avoids the eigenvector ambiguity issues often associated with classical spectral positional encodings. Taken together, these observations show that dimension-ality alignment does not merely compress CIPE, but trans-fers its communicability-induced positional geometry into a shared embedding space while retaining the properties most relevant for downstream Transformer deployment. 
+
+3.7 Scalable Approximation for Large Graphs 
+
+For a graph G with n vertices, the exact construction of CIPE becomes expensive on large graphs. Similar to other spectral positional encodings, both the computation of the heat kernel e−tL and the dimensionality alignment step involve eigendecompositions of n × n matrices, leading in 7
+
+general to an overall time complexity of order O(n3). This substantially limits the scalability of the exact formulation. To extend CIPE to larger graphs, we introduce a de-terministic low-dimensional approximation based on the near-orthogonal matrix Pn,d defined in (10). Instead of constructing the full graph-size-dependent CIPE, we use 
+
+^CIPE (d)
+
+:= e−tL/ 2Pn,d ∈ Rn×d
+
+as the large-graph positional representation. Since Pn,d ap-proximately preserves orthogonality, the resulting inner-product matrix still preserves the heat-kernel-induced sim-ilarity geometry to a considerable extent, while directly producing a fixed d-dimensional positional encoding. To compute e−tL/ 2Pn,d efficiently, we do not explicitly form the full matrix e−tL/ 2 and then multiply it by Pn,d . In-stead, we approximate this block heat-kernel action directly using a Chebyshev polynomial approximation of the heat operator, following the fast spectral filtering strategy in [40], [41]. In this way, the computation reduces to a sequence of sparse matrix–thin matrix multiplications involving L and matrices of size n × d.Under this approximation, constructing Pn,d costs 
+
+O(nd ), while evaluating the degree-K Chebyshev approx-imation requires O(Kmd ) operations for a graph with m
+
+edges. Therefore, the overall time complexity becomes 
+
+O(nd + Kmd ),
+
+which reduces to O(Knd ) for sparse graphs with m = O(n).When d is fixed and K remains moderate, this is substan-tially lower than the O(n3) complexity of the exact spectral construction, making the approximation suitable for large-scale graph positional encoding. 
+
+## 4 EXPERIMENTS 
+
+4.1 Experimental protocol and baselines 
+
+To separate the structural contribution of positional en-coding from its interaction with existing graph inductive bias, we design two complementary experimental settings. First, we add positional encodings to a structure-agnostic Vanilla Transformer (VTr) backbone, which contains neither message passing nor graph-specific modules, so that perfor-mance gains mainly reflect the structural signal introduced by the encoding. Second, we add positional encodings to a structure-biased Message-Passing Transformer (MPTr) back-bone, where a single GINE layer provides local message-passing bias before the Transformer layers, to test whether CIPE remains beneficial when structural inductive bias is already present. We evaluate on 14 benchmarks spanning graph clas-sification and molecular property prediction: four TU-Dataset graph classification datasets (IMDB-B, IMDB-M, PROTEINS, ENZYMES), three molecular regression datasets (QM7, QM8, QM9), and seven MoleculeNet molecular clas-sification datasets (BACE, BBBP, ClinTox, SIDER, Tox21, HIV, MUV). We report accuracy for TUDataset, MAE for QM7/8/9, and ROC-AUC for MoleculeNet, averaged across tasks for multi-task datasets. We compare CIPE with representative positional and structural encoding baselines, including LapPE, RWSE, Cy-cleSE, and HKSE. All encodings are projected to the same di-mensionality and injected through the same scheme, namely concatenation to node features before the Transformer, en-suring a controlled comparison. Beyond these controlled PE comparisons, we include representative MoleculeNet baselines to contextualize over-all model competitiveness under the same scaffold-split protocol. These baselines cover two mainstream fam-ilies of graph learning models: GNN-based methods that rely on message passing, and graph Transformer-based methods that model global interactions via self-attention on graphs. The GNN-based baselines include widely used self-supervised pre-training paradigms, includ-ing SSL pre-training [42], GraphCL [43], InfoGraph [44], JOAOv2 [44], GraphMAE [45], and GraphLoG [46]. The graph Transformer-based baselines include GraphGPS [23], AttentiveFP [47], and G2PT [48]. In addition, we consider GPSE augmented [49], which incorporates a self-supervised learned structural encoding as an auxiliary signal for down-stream prediction. Further implementation details, including full feature specifications and hyperparameter configurations, are pro-vided in the Supplementary Information, Section 1 and Tables S1 and S2. 
+
+4.2 Positional encoding on Structure-Agnostic Trans-former 
+
+We first evaluate positional encodings on the structure-agnostic Vanilla Transformer (VTr), where performance dif-ferences primarily reflect the structural signal injected by the encoding itself. As shown in Table 1, CIPE delivers the strongest performance on all seven benchmarks, consis-tently outperforming both the vanilla model and all compet-ing positional/structural encodings. This setting is particu-larly informative because VTr contains no message passing, edge-aware operations, or other graph-specific inductive bi-ases; consequently, performance differences primarily reflect how effectively each encoding injects structural information into self-attention. Overall, CIPE delivers not only the strongest but also the most consistently superior gains among all tested po-sitional/structural encodings. On the four TUDataset graph classification benchmarks, CIPE improves accuracy over VTr by an average of 49.0%, with especially pronounced gains on IMDB-B, IMDB-M, and ENZYMES. On the QM7/8/9 molecular regression tasks, CIPE reduces MAE by an aver-age of 17.5%, with the largest reduction observed on QM9. Under this controlled setting, performance gains depend largely on the structural signal contributed by the positional encoding and on how naturally that signal interfaces with the Transformer backbone. The superior performance of CIPE therefore suggests that it is the most effective among the tested encodings in both injecting graph structure and rendering it usable by self-attention. The clearest evidence comes from IMDB-B and IMDB-M, two social-network benchmarks without node attributes. In such settings, a structure-agnostic Transformer has little access to informative graph structure unless the positional 8    
+
+> TABLE 1 Performance of positional encoding on the structure-agnostic vanilla Transformer (VTr). Results are reported as mean ±standard deviation over 5 runs. For TUDataset we report accuracy (ACC, ↑) and for QM7/8/9 we report mean absolute error (MAE, ↓). The last row shows relative improvement of VTr+CIPE over VTr. Best results are highlighted in bold.
+
+Model IMDB-B IMDB-M PROTEINS ENZYMES QM7 QM8 QM9 Metric ACC( ↑) MAE( ↓)No. Graphs 1000 1500 1133 600 6830 21786 133885 Avg. nodes 19.77 13.00 39.06 32.63 16 16 18 No. tasks 1 1 1 1 1 12 16 VTr 0.500 (0 .000) 0.333 (0 .000) 0.749 (0 .020) 0.347 (0 .014) 72.4 (1 .0) 0.0222 (0 .0002) 0.01207 (0 .00009) 
+
+VTr+LapPE 0.512 (0 .024) 0.488 (0 .020) 0.787 (0 .012) 0.313 (0 .052) 70.4 (1 .7) 0.0223 (0 .0003) 0.01032 (0 .00007) 
+
+VTr+RWSE 0.584 (0 .105) 0.514 (0 .010) 0.802 (0 .008) 0.437 (0 .032) 70.2 (1 .9) 0.0215 (0 .0003) 0.00889 (0 .00011) 
+
+VTr+CycleSE 0.608 (0 .008) 0.529 (0 .003) 0.788 (0 .016) 0.327 (0 .025) 68.2 (0 .4) 0.0217 (0 .0002) 0.01036 (0 .00010) 
+
+VTr+HKSE 0.561 (0 .067) 0.498 (0 .006) 0.793 (0 .022) 0.453 (0 .021) 67.9 (1 .5) 0.0210 (0 .0003) 0.00888 (0 .00012) 
+
+VTr+CIPE (ours) 0.742 (0 .028) 0.541 (0 .005) 0.822 (0 .017) 0.609 (0 .035) 63.8 (1 .1) 0.0206 (0 .0003) 0.00805 (0 .00012) 
+
+Improvement (%) +48.4% +62.5% +9.7% +75.5% +11.9% +7.2% +33.3% 
+
+encoding itself induces a meaningful geometry over nodes. The substantial advantage of CIPE over LapPE, RWSE, CycleSE, and HKSE on these datasets suggests that com-municability provides a graph-wide notion of structural relatedness whose induced similarity geometry is especially well matched to self-attention when positional information is the dominant structural signal. This advantage extends beyond nearly purely structural benchmarks to PROTEINS, ENZYMES, and the QM7/8/9 molecular regression tasks. The strong gains on ENZYMES and QM9 suggest that CIPE remains effective when predic-tion depends on richer nonlocal or scaffold-level dependen-cies. Together, these results support CIPE as an encoding that captures multi-path graph relatedness and presents it in a form directly usable by self-attention. 
+
+4.3 Positional encoding on Structure-Biased Trans-former 
+
+We next consider a stronger setting in which the backbone already incorporates structural inductive bias through mes-sage passing. Specifically, we evaluate CIPE on a structure-biased Message-Passing Transformer (MPTr), where a GINE layer first injects local neighborhood information before the Transformer layers. As shown in Table 2, CIPE remains consistently beneficial in this setting and emerges as the strongest positional encoding choice for the MPTr backbone across all seven MoleculeNet benchmarks. Overall, MPTr consistently benefits from CIPE even though it already contains structural inductive bias. The gains are largest on BACE, BBBP, and HIV, remain visible on Tox21 and MUV, and are smaller on ClinTox and SIDER. This pattern suggests that CIPE is most beneficial when prediction depends on structural information that is not fully captured by local message passing alone, while smaller gains arise when the baseline is already near saturation or when local structural cues account for much of the predictive signal. Importantly, CIPE also yields larger gains on MPTr than LapPE, RWSE, CycleSE, or HKSE, whose effects on this structure-biased backbone are typically small and some-times negative. This contrast suggests that CIPE provides structural information complementary to message passing rather than redundant with it. By encoding graph-wide multi-path relatedness as an inner-product geometry, CIPE supplies a signal that local neighborhood aggregation does not fully capture and that self-attention can directly exploit. Beyond the MPTr variants, Table 2 also compares our method with a broader set of widely used molecular graph models, including GNN-based methods, self-supervised pre-training baselines, and graph Transformer-based mod-els. This comparison shows that the advantage of CIPE is not limited to controlled PE-vs-PE comparisons on the same backbone: MPTr+CIPE remains broadly competitive with these established baselines and achieves stronger perfor-mance on multiple datasets. These results further support CIPE as a lightweight yet principled mechanism for inject-ing complementary global structural information in a form directly usable by self-attention. 
+
+4.4 Sensitivity Analysis 
+
+We examine the sensitivity of MPTr+CIPE to two key hyper-parameters: the positional dimension dpe and the diffusion time t. As shown in Table 3, performance varies smoothly across the tested ranges, indicating that CIPE is robust to both the degree of dimensional compression and the structural scale induced by diffusion. MPTr+CIPE is generally stable with respect to the po-sitional dimension dpe . As shown in Table 3, the setting 
+
+dpe =64 serves as a strong default across MoleculeNet, achieving the best ROC-AUC on six of the seven datasets, while dpe =32 causes only modest degradation in most cases. BACE is the main exception, where the best result is obtained at dpe =128 , consistent with its larger average graph size. Since dimensionality alignment aims to preserve diffusion-induced inner products after projection, larger graphs may require a larger target dimension to reduce compression-induced distortion. MPTr+CIPE is also robust to the diffusion time t, with 
+
+t=0 .5 providing a reliable default across datasets. The diffusion time controls the structural scale encoded by CIPE: smaller values emphasize shorter-range connectivity, whereas larger values aggregate evidence over longer and 9
+
+TABLE 2 Performance on MoleculeNet datasets under the scaffold split. All scores are ROC-AUC ( ↑). Results for MPTr-based variants are reported as mean ± standard deviation over 5 runs. External baseline results are collected from prior work. Best results are highlighted in bold. 
+
+Model BACE BBBP ClinTox SIDER Tox21 HIV MUV No. molecules 1513 2039 1478 1427 7831 41127 93808 Avg. atoms 65 46 50.58 65 36 46 43 No. tasks 1 1 2 27 12 1 17 SSL pre-training [42] 0.799 (0 .009) 0.688 (0 .008) 0.718 (0 .041) 0.610 (0 .007) 0.767 (0 .004) 0.773 (0 .010) 0.758 (0 .017) 
+
+GraphCL pre-trained [43] 0.754 (0 .014) 0.697 (0 .007) 0.760 (0 .027) 0.605 (0 .009) 0.739 (0 .007) 0.785 (0 .012) 0.698 (0 .027) 
+
+InfoGraph pre-trained [44] 0.648 (0 .008) 0.663 (0 .006) 0.663 (0 .006) 0.571 (0 .008) 0.681 (0 .006) 0.702 (0 .006) 0.443 (0 .006) 
+
+JOAOv2 pre-trained [44] 0.674 (0 .007) 0.664 (0 .009) 0.645 (0 .009) 0.591 (0 .007) 0.682 (0 .008) 0.684 (0 .005) 0.474 (0 .008) 
+
+GraphMAE [45] 0.831 (0 .009) 0.720 (0 .006) 0.823 (0 .012) 0.603 (0 .011) 0.755 (0 .006) 0.772 (0 .010) 0.763 (0 .024) 
+
+GraphLoG [46] 0.835 (0 .012) 0.725 (0 .008) 0.767 (0 .033) 0.612 (0 .011) 0.757 (0 .005) 0.778 (0 .008) 0.760 (0 .011) 
+
+GraphGPS [23] 0.715 (0 .060) 0.562 (0 .044) 0.792 (0 .036) 0.602 (0 .011) 0.714 (0 .007) 0.660 (0 .094) 0.652 (0 .016) 
+
+AttentiveFP [47] 0.784 (0 .022) 0.663 (0 .018) 0.847 (0 .003) 0.606 (0 .032) 0.781 (0 .005) 0.757 (0 .014) 0.786 (0 .015) 
+
+G2PT [48] 0.823 (0 .016) 0.710 (0 .004) 0.821 (0 .011) 0.619 (0 .002) 0.750 (0 .003) 0.763 (0 .004) 0.745 (0 .003) 
+
+GPSE augmented [49] 0.808 (0 .031) 0.662 (0 .009) 0.788 (0 .038) 0.611 (0 .016) 0.774 (0 .008) 0.772 (0 .015) 0.766 (0 .012) 
+
+MPTr 0.792 (0 .013) 0.709 (0 .008) 0.977 (0 .003) 0.835 (0 .002) 0.776 (0 .007) 0.758 (0 .015) 0.701 (0 .012) 
+
+MPTr+LapPE 0.808 (0 .015) 0.660 (0 .012) 0.976 (0 .002) 0.838 (0 .003) 0.777 (0 .006) 0.760 (0 .015) 0.695 (0 .021) 
+
+MPTr+RWSE 0.795 (0 .021) 0.717 (0 .016) 0.977 (0 .002) 0.839 (0 .003) 0.778 (0 .006) 0.757 (0 .011) 0.699 (0 .022) 
+
+MPTr+CycleSE 0.801 (0 .015) 0.713 (0 .011) 0.976 (0 .001) 0.842 (0 .003) 0.780 (0 .002) 0.773 (0 .013) 0.696 (0 .010) 
+
+MPTr+HKSE 0.746 (0 .078) 0.658 (0 .016) 0.978 (0 .002) 0.843 (0 .004) 0.789 (0 .009) 0.776 (0 .010) 0.709 (0 .010) 
+
+MPTr+CIPE (ours) 0.855 (0 .007) 0.766 (0 .005) 0.984 (0 .002) 0.849 (0 .003) 0.795 (0 .004) 0.799 (0 .012) 0.718 (0 .018) 
+
+TABLE 3 Sensitivity analysis of CIPE on MoleculeNet (ROC-AUC ↑) under the MPTr backbone. Left block varies the positional encoding dimension dpe , and right block varies the diffusion time t. Results are reported as mean ± std over 5 runs under the same training budget. Best results are highlighted in bold. 
+
+## dpe t
+
+## Dataset 32 64 128 0.25 0.50 0.75 BACE 0.815 (0 .017) 0.822 (0 .013) 0.855 (0 .007) 0.837 (0 .011) 0.842 (0 .007) 0.855 (0 .007) 
+
+## BBBP 0.667 (0 .016) 0.766 (0 .005) 0.705 (0 .012) 0.671 (0 .015) 0.766 (0 .005) 0.650 (0 .023) 
+
+## ClinTox 0.977 (0 .003) 0.984 (0 .002) 0.980 (0 .002) 0.979 (0 .003) 0.977 (0 .006) 0.984 (0 .002) 
+
+## SIDER 0.841 (0 .004) 0.849 (0 .003) 0.837 (0 .001) 0.842 (0 .005) 0.849 (0 .003) 0.841 (0 .004) 
+
+## Tox21 0.789 (0 .005) 0.795 (0 .010) 0.787 (0 .006) 0.790 (0 .008) 0.795 (0 .010) 0.788 (0 .004) 
+
+## HIV 0.787 (0 .011) 0.799 (0 .012) 0.789 (0 .016) 0.789 (0 .008) 0.799 (0 .012) 0.790 (0 .013) 
+
+## MUV 0.707 (0 .010) 0.718 (0 .018) 0.712 (0 .012) 0.707 (0 .034) 0.705 (0 .025) 0.718 (0 .018) 
+
+more indirect paths. Table 3 shows that t=0 .5 achieves the best performance on BBBP, SIDER, Tox21, and HIV, while remaining close to optimal on the remaining benchmarks. Meanwhile, BACE, ClinTox, and MUV attain their best scores at t=0 .75 , suggesting that larger or structurally more involved graphs may benefit from slightly deeper diffusion. Overall, the variation across t ∈ { 0.25 , 0.5, 0.75 } remains modest, indicating that CIPE is not overly sensitive to the precise diffusion scale and can be tuned effectively with a coarse grid. Taken together, these results indicate that CIPE is prac-tically robust with respect to both embedding dimension and diffusion scale. A moderate target dimension ( dpe =64 )and a middle-range diffusion time ( t=0 .5) are sufficient in most cases, suggesting that CIPE can be tuned with coarse hyperparameter choices rather than finely optimized settings. Additional sensitivity analyses with respect to the learning rate, batch size, and Transformer hidden dimension are reported in the Supplementary Information, Tables S3– S5. 
+
+## 5 CONCLUSION 
+
+We presented Communicability-Inspired Positional Encod-ing (CIPE), a graph positional encoding framework that goes beyond encoding structural information as auxiliary node descriptors. CIPE is designed to align graph structural representations with the inner-product similarity mecha-nism of self-attention. By deriving node encodings from diffusion-based communicability, CIPE induces a positional geometry in which pairwise inner products directly reflect global, multi-path structural relatedness between vertices. This construction provides an attention-compatible way to inject graph-wide connectivity into Transformer models. 10 
+
+To support practical use across graphs of different sizes, we further introduced a dimensionality alignment procedure for mapping graph-size-dependent CIPE rep-resentations to a prescribed embedding dimension. The alignment is formulated to preserve the communicability-induced inner-product geometry as faithfully as possi-ble, yielding a fixed-dimensional and numerically stable positional encoding for graph Transformers. Experiments on 14 benchmarks covering molecular property predic-tion, quantum-chemical regression, and social-network and bio/protein graph classification demonstrate the effective-ness of CIPE. CIPE achieves substantial improvements on structure-agnostic Transformers, where positional encoding serves as the primary source of graph structure, and also provides consistent gains on structure-biased graph Trans-formers, indicating its complementarity to local message passing. Overall, this work establishes an operator-driven paradigm for graph positional encoding in Transformers. It highlights that effective graph PEs should not only cap-ture informative structural signals, but also organize them into geometries compatible with attention, with attention-compatible inner-product structure being a central design criterion. This perspective may inform future positional encoding designs based on other domain-relevant operators and broader classes of structured data. 
+
+## ACKNOWLEDGMENTS 
+
+This work was supported in part by the Singapore Min-istry of Education Academic Research Fund Tier 1 grant RG16/23, Tier 2 grants MOE-T2EP20125-0004. 
+
+## REFERENCES 
+
+[1] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, “Attention is all you need,” 
+
+Advances in neural information processing systems , vol. 30, 2017. [2] G. Tang, M. M ¨ uller, A. R. Gonzales, and R. Sennrich, “Why self-attention? a targeted evaluation of neural machine translation architectures,” in Proceedings of the 2018 conference on empirical methods in natural language processing , 2018, pp. 4263–4272. [3] J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, “Bert: Pre-training of deep bidirectional transformers for language under-standing,” in Proceedings of the 2019 conference of the North American chapter of the association for computational linguistics: human language technologies, volume 1 (long and short papers) , 2019, pp. 4171–4186. [4] A. Gillioz, J. Casas, E. Mugellini, and O. Abou Khaled, “Overview of the transformer-based models for nlp tasks,” in 2020 15th Conference on computer science and information systems (FedCSIS) .IEEE, 2020, pp. 179–183. [5] A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn, X. Zhai, T. Unterthiner, M. Dehghani, M. Minderer, G. Heigold, S. Gelly 
+
+et al. , “An image is worth 16x16 words: Transformers for image recognition at scale,” arXiv preprint arXiv:2010.11929 , 2020. [6] S. Khan, M. Naseer, M. Hayat, S. W. Zamir, F. S. Khan, and M. Shah, “Transformers in vision: A survey,” ACM computing surveys (CSUR) , vol. 54, no. 10s, pp. 1–41, 2022. [7] P. Shaw, J. Uszkoreit, and A. Vaswani, “Self-attention with relative position representations,” arXiv preprint arXiv:1803.02155 , 2018. [8] C. Raffel, N. Shazeer, A. Roberts, K. Lee, S. Narang, M. Matena, Y. Zhou, W. Li, and P. J. Liu, “Exploring the limits of transfer learning with a unified text-to-text transformer,” Journal of machine learning research , vol. 21, no. 140, pp. 1–67, 2020. [9] O. Press, N. Smith, and M. Lewis, “Train short, test long: Attention with linear biases enables input length extrapolation,” in 
+
+International Conference on Learning Representations , 2022. [Online]. Available: https://openreview.net/forum?id=R8sQPpGCv0 [10] J. Su, M. Ahmed, Y. Lu, S. Pan, W. Bo, and Y. Liu, “Roformer: Enhanced transformer with rotary position embedding,” Neuro-computing , vol. 568, p. 127063, 2024. [11] P. Dufter, M. Schmitt, and H. Sch ¨ utze, “Position information in transformers: An overview,” Computational Linguistics , vol. 48, no. 3, pp. 733–763, 2022. [12] M. M. Bronstein, J. Bruna, T. Cohen, and P. Veliˇ ckovi´ c, “Geometric deep learning: Grids, groups, graphs, geodesics, and gauges,” 
+
+arXiv preprint arXiv:2104.13478 , 2021. [13] N. Shervashidze, P. Schweitzer, E. J. Van Leeuwen, K. Mehlhorn, and K. M. Borgwardt, “Weisfeiler-lehman graph kernels.” Journal of Machine Learning Research , vol. 12, no. 9, 2011. [14] K. Henderson, B. Gallagher, L. Li, L. Akoglu, T. Eliassi-Rad, H. Tong, and C. Faloutsos, “It’s who you know: graph mining using recursive structural features,” in Proceedings of the 17th ACM SIGKDD international conference on Knowledge discovery and data mining , 2011, pp. 663–671. [15] K. Henderson, B. Gallagher, T. Eliassi-Rad, H. Tong, S. Basu, L. Akoglu, D. Koutra, C. Faloutsos, and L. Li, “Rolx: structural role extraction & mining in large graphs,” in Proceedings of the 18th ACM SIGKDD international conference on Knowledge discovery and data mining , 2012, pp. 1231–1239. [16] V. P. Dwivedi, C. K. Joshi, A. T. Luu, T. Laurent, Y. Bengio, and X. Bresson, “Benchmarking graph neural networks,” Journal of Machine Learning Research , vol. 24, no. 43, pp. 1–48, 2023. [17] S. Cant ¨ urk, R. Liu, O. Lapointe-Gagn´ e, V. L´ etourneau, G. Wolf, D. Beaini, and L. Ramp´ aˇ sek, “Graph positional and structural encoder,” arXiv preprint arXiv:2307.07107 , 2023. [18] Z. Yan, T. Ma, L. Gao, Z. Tang, C. Chen, and Y. Wang, “Cycle invariant positional encoding for graph representation learning,” in Learning on Graphs Conference . PMLR, 2024, pp. 4–1. [19] V. P. Dwivedi and X. Bresson, “A generalization of transformer networks to graphs,” arXiv preprint arXiv:2012.09699 , 2020. [20] Y. Huang, W. Lu, J. Robinson, Y. Yang, M. Zhang, S. Jegelka, and P. Li, “On the stability of expressive positional encodings for graphs,” arXiv preprint arXiv:2310.02579 , 2023. [21] D. Kreuzer, D. Beaini, W. Hamilton, V. L´ etourneau, and P. Tossou, “Rethinking graph transformers with spectral attention,” Advances in Neural Information Processing Systems , vol. 34, pp. 21 618–21 629, 2021. [22] G. Mialon, D. Chen, M. Selosse, and J. Mairal, “Graphit: Encoding graph structure in transformers,” arXiv preprint arXiv:2106.05667 ,2021. [23] L. Ramp´ aˇ sek, M. Galkin, V. P. Dwivedi, A. T. Luu, G. Wolf, and D. Beaini, “Recipe for a general, powerful, scalable graph transformer,” Advances in Neural Information Processing Systems ,vol. 35, pp. 14 501–14 515, 2022. [24] E. Min, R. Chen, Y. Bian, T. Xu, K. Zhao, W. Huang, P. Zhao, J. Huang, S. Ananiadou, and Y. Rong, “Transformer for graphs: An overview from architecture perspective,” arXiv preprint arXiv:2202.08455 , 2022. [25] G. Corso, H. Stark, S. Jegelka, T. Jaakkola, and R. Barzilay, “Graph neural networks,” Nature Reviews Methods Primers , vol. 4, no. 1, p. 17, 2024. [26] E. A. Leicht, P. Holme, and M. E. Newman, “Vertex similarity in networks,” Physical Review E—Statistical, Nonlinear, and Soft Matter Physics , vol. 73, no. 2, p. 026120, 2006. [27] M. Pereda and E. Estrada, “Visualization and machine learning analysis of complex networks in hyperspherical space,” Pattern Recognition , vol. 86, pp. 320–331, 2019. [28] E. Estrada, “Communicability cosine distance: similarity and sym-metry in graphs/networks,” Computational and Applied Mathemat-ics , vol. 43, no. 1, p. 49, 2024. [29] E. Estrada and N. Hatano, “Communicability in complex net-works,” Physical Review E—Statistical, Nonlinear, and Soft Matter Physics , vol. 77, no. 3, p. 036111, 2008. [30] E. Estrada, The Structure of Complex Networks: Theory and Applica-tions . New York: OUP Oxford, 2011. [31] P. Grindrod, M. C. Parsons, D. J. Higham, and E. Estrada, “Com-municability across evolving networks,” Physical Review E , vol. 83, no. 4, p. 046120, 2011. [32] E. Estrada, M. Sanchez-Lirola, and J. A. De La Pe ˜ na, “Hyper-spherical embedding of graphs and networks in communicability spaces,” Discrete Applied Mathematics , vol. 176, pp. 53–77, 2014. [33] E. Estrada, N. Hatano, and M. Benzi, “The physics of communi-cability in complex networks,” Physics reports , vol. 514, no. 3, pp. 89–119, 2012. 11 
+
+[34] E. Estrada and N. Hatano, “Communicability angle and the spatial efficiency of networks,” SIAM Review , vol. 58, no. 4, pp. 692–715, 2016. [35] Z. Wu, B. Ramsundar, E. N. Feinberg, J. Gomes, C. Geniesse, A. S. Pappu, K. Leswing, and V. Pande, “Moleculenet: a benchmark for molecular machine learning,” Chemical science , vol. 9, no. 2, pp. 513–530, 2018. [36] C. Morris, N. M. Kriege, F. Bause, K. Kersting, P. Mutzel, and M. Neumann, “Tudataset: A collection of benchmark datasets for learning with graphs,” in ICML 2020 Workshop on Graph Represen-tation Learning and Beyond (GRL+ 2020) , 2020. [37] E. Estrada and N. Hatano, “Communicability graph and com-munity structures in complex networks,” Applied Mathematics and Computation , vol. 214, no. 2, pp. 500–511, 2009. [38] E. Estrada, D. J. Higham, and N. Hatano, “Communicability betweenness in complex networks,” Physica A: Statistical Mechanics and its Applications , vol. 388, no. 5, pp. 764–774, 2009. [39] E. Estrada, “Complex networks in the euclidean space of commu-nicability distances,” Physical Review E—Statistical, Nonlinear, and Soft Matter Physics , vol. 85, no. 6, p. 066122, 2012. [40] D. K. Hammond, P. Vandergheynst, and R. Gribonval, “Wavelets on graphs via spectral graph theory,” Applied and computational harmonic analysis , vol. 30, no. 2, pp. 129–150, 2011. [41] A. H. Al-Mohy and N. J. Higham, “Computing the action of the matrix exponential, with an application to exponential integra-tors,” SIAM journal on scientific computing , vol. 33, no. 2, pp. 488– 511, 2011. [42] W. Hu, B. Liu, J. Gomes, M. Zitnik, P. Liang, V. Pande, and J. Leskovec, “Strategies for pre-training graph neural networks,” in International Conference on Learning Representations (ICLR) , 2020. [43] Y. You, T. Chen, Y. Sui, T. Chen, Z. Wang, and Y. Shen, “Graph contrastive learning with augmentations,” Advances in neural in-formation processing systems , vol. 33, pp. 5812–5823, 2020. [44] H. Wang, J. Kaddour, S. Liu, J. Tang, J. Lasenby, and Q. Liu, “Evaluating self-supervised learning for molecular graph embed-dings,” Advances in Neural Information Processing Systems , vol. 36, pp. 68 028–68 060, 2023. [45] Z. Hou, X. Liu, Y. Cen, Y. Dong, H. Yang, C. Wang, and J. Tang, “Graphmae: Self-supervised masked graph autoencoders,” in Pro-ceedings of the 28th ACM SIGKDD conference on knowledge discovery and data mining , 2022, pp. 594–604. [46] M. Xu, H. Wang, B. Ni, H. Guo, and J. Tang, “Self-supervised graph-level representation learning with local and global struc-ture,” in International conference on machine learning . PMLR, 2021, pp. 11 548–11 558. [47] Z. Xiong, D. Wang, X. Liu, F. Zhong, X. Wan, X. Li, Z. Li, X. Luo, K. Chen, H. Jiang et al. , “Pushing the boundaries of molecular representation for drug discovery with the graph attention mecha-nism,” Journal of Medicinal Chemistry , vol. 63, no. 16, pp. 8749–8760, 2019. [48] X. Chen, Y. Wang, J. He, Y. Du, S. Hassoun, X. Xu, and L. Liu, “Graph generative pre-trained transformer,” in International Con-ference on Machine Learning . PMLR, 2025, pp. 9176–9197. [49] S. Cant ¨ urk, R. Liu, O. Lapointe-Gagn´ e, V. L´ etourneau, G. Wolf, D. Beaini, and L. Ramp´ aˇ sek, “Graph positional and structural en-coder,” in Proceedings of the 41st International Conference on Machine Learning , 2024, pp. 5533–5566.

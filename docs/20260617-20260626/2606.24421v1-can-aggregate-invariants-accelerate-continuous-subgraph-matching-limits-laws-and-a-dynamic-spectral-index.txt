@@ -1,0 +1,503 @@
+Title: Can Aggregate Invariants Accelerate Continuous Subgraph Matching? Limits, Laws, and a Dynamic Spectral Index
+
+URL Source: https://arxiv.org/pdf/2606.24421v1
+
+Published Time: Wed, 24 Jun 2026 00:52:06 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# Can Aggregate Invariants Accelerate Continuous Subgraph Matching? Limits, Laws, and a Dynamic Spectral Index 
+
+# Minghao Chen 
+
+Tencent Technology Shenzhen, China monychen@tencent.com 
+
+# Jiale Zheng 
+
+HUAWEI Noah’s Ark Lab Shenzhen, China zhengjiale2@huawei.com 
+
+## ABSTRACT 
+
+Spectral filtering recently delivered substantial pruning for static 
+
+subgraph matching: Laplacian interlacing rejects candidates whose neighborhoods cannot host the query. We study whether such ag-gregate structural tests can accelerate continuous subgraph match-ing (CSM) over dynamic graphs, and answer in three parts. First, lazily maintained spectral bounds are infeasible exactly where spec-tral pruning has value: we characterize the tightest safe rule over a formalized perturbation relaxation and show that even it loses essen-tially all pruning power within four touching updates. Second, exact maintenance is affordable when selective: pruning utility and re-computation cost are anti-correlated across vertices—hubs provably never prune—so recomputing small-neighborhood spectra on touch sustains exact local spectra at microseconds per update, complete by construction. Third, integrated into a decoupled CSM bench-mark against an identical-minus-spectra control, the tests remove up to 51% of candidates or safely skip up to 47% of update enumer-ations, yet enumeration intermediates remain unchanged—beyond the gates’ skipped first-level bindings, typically zero—across two engines, four real graphs, two stream types, and 77 solved queries; a constructed radius-stratified workload confirms the instrument detects the exception when one exists ( −99 .9% intermediates, 748 ×
+
+faster). Aggregate tests accelerate what scales with candidate sets— construction, list scans—never adjacency-guided exploration. We distill an intermediate-invariance methodology for evaluating CSM filters and release a reusable dynamic local-spectra index. 
+
+PVLDB Artifact Availability: 
+
+The source code, data, and/or other artifacts have been made available at https://github.com/minghaochen/selspec-csm. 
+
+## 1 INTRODUCTION 
+
+Continuous subgraph matching (CSM) monitors all embeddings of a query graph 𝑄 in a data graph 𝐺 that receives a stream of edge insertions and deletions, reporting the matches created or de-stroyed by each update [ 13 , 17 , 19 , 26 ]. Its applications—intrusion detection, fraud-ring monitoring, real-time recommendation—share two characteristics: updates arrive at high rates, and queries of in-terest are large and structurally complex. Published CSM indexes filter with labels, degrees, and neighborhood label multisets, re-fined by consistency propagation over candidate adjacency (edge views, dynamic candidate spaces) [ 7, 23 , 25 ]; recent work adds synopsis-based dominance embeddings [ 27 ]. What none uses is an aggregate structural invariant —spectra, closed-walk counts—of candidate neighborhoods; and notably, consistency propagation operates on exactly the adjacency structure that, as we will show, carries enumeration cost, which is part of why aggregate tests find no purchase. When labels are uninformative or queries grow large (PILOS reports label-based filters failing wholesale beyond roughly sixteen query vertices [ 20 ]), the label-based signals collapse and enumeration explodes. Static subgraph matching recently found a richer signal. PI-LOS [ 20 ] indexes, for every data vertex, the top eigenvalues of the Laplacian of its ℎ-hop neighborhood, and prunes a candidate whenever the query neighborhood’s spectrum cannot interlace into the candidate’s: a subgraph’s padded Laplacian spectrum is dom-inated position-wise by its supergraph’s, so the test is one-sided safe. On low-label graphs and large queries this removes roughly a quarter of candidates and solves query sizes at which all label-based methods time out. Spectra encode neighborhood-global structure— connectivity mass, expansion, cycle content—that no label or degree filter sees. The obvious research program, and the one this paper set out to execute, is to bring spectral filtering to CSM. Two designs suggest themselves immediately. Lazy bounds : a single edge update perturbs a neighborhood Laplacian by a rank-one term of norm at most 2, so Weyl-type inequalities maintain certified eigenvalue intervals at 𝑂 (1) per update, refreshed occasionally. Exact recomputation :neighborhood spectra are recomputed whenever touched. Both preserve the one-sided safety of interlacing, hence completeness. The questions are whether either is affordable, and whether the resulting pruning helps. This paper answers both questions completely, and the answers are not what we expected when we began. Our study proceeded through three experiment-driven reversals, each of which reshaped the design; we report all three because the intermediate failures carry as much information as the final system. 
+
+Reversal 1: lazy bounds are impossible where they matter. Pruning margins—the gaps Í𝑡 max (0, 𝜆 𝑡 (𝑄 ) − 𝜆 𝑡 (𝑣 )) separating query from candidate spectra—are 𝑂 (1) in exactly the sparse-neighborhood regime where spectral pruning fires, while each touching edge injects eigenvalue mass 2. We prove an optimality result over a formalized perturbation relaxation: the tightest safe rule observing only the stale spectrum and an insert count is the disjunction of a trace-budget test (via majorization) with composed interlacing-shift ceilings; and we show empirically that even this optimal rule retains under 60% of pruning power after one touching update and essentially none after four (§3). The entire lazy-bound family is thereby closed off. 
+
+Reversal 2: exactness is affordable—selectively. The same spar-sity that kills lazy bounds makes exact recomputation cheap: a 32-vertex neighborhood Laplacian solve costs tens of microseconds. 
+
+> arXiv:2606.24421v1 [cs.AI] 23 Jun 2026
+
+Moreover, pruning utility and maintenance cost are anti-correlated 
+
+across vertices: we prove that any vertex whose ℎ-hop ball contains a vertex of degree ≥ | 𝑉 (𝑄 )| can never be pruned on its leading eigenvalue—hubs are spectrally unprunable—and measure that ver-tices with balls above 64 nodes never prune at all, while carrying the largest solve costs. A selective exact index ( SelSpec ) that deploys spectra only on small-ball, label-relevant vertices and recomputes on touch retains 96 −100% of pruning benefit at ∼ 300 𝜇𝑠 per update, completeness holding by construction (§4). 
+
+Reversal 3: the pruning does not transfer. We integrated SelSpec 
+
+into a state-of-the-art decoupled CSM evaluation framework [ 7]as a drop-in index layer, against the strictest possible control: the identical pipeline minus the spectral test. Candidates fall by 9−51% ,growing with query size as in the static setting; the number of incremental matches is preserved exactly. Yet across three query scales and two label regimes, the count of enumeration interme-diates is exactly equal with and without spectral filtering: every vertex the spectral test removes is one the adjacency-guided delta enumeration never visits. We then designed a CSM-native mecha-nism unavailable to static matching—an anchored gate that skips a whole delta enumeration when the sub-query within radius 𝜌 of the matched query edge cannot embed in the ball around the up-dated data edge—and extended it beyond spectra to triangle counts, which are subgraph-monotone closed-walk invariants outside the reach of degree information. The gates fire on 5−47% of updates, never wrongly; the intermediates remain identical a fourth and a fifth time (§5, §6). These five replications, together with a spectral-graph-theoretic explanation, yield the central result of the paper: 
+
+Aggregate-invariant boundary regularity. In update-driven CSM whose pipeline already satu-rates label/degree filtering, subgraph-monotone ag-gregate tests—Laplacian interlacing, vertex and edge counts, triangle counts—pruned only work that adjacency-guided enumeration discarded within its first expansion levels, in every natural workload we measured; the expensive failures were injective-assignment-level, invisible to every aggregate. The Laplacian case is not an accident: by the Grone–Merris–Bai theorem, the Laplacian spectrum is majorized by the conjugate degree sequence, so top-eigenvalue interlacing is, up to majoriza-tion slack, a degree-sequence test—and degree mass is precisely what CSM pipelines already filter. The regularity also delimits its own scope: aggregate pruning pays exactly where cost scales with candidate-set size—static pipelines’ candidate-space construction and the per-level candidate-list scans of list-driven engines, which is where PILOS’s gains live and why they cannot transfer to delta enu-meration, which has no construction term; and consumers that are not adjacency-guided (periodic batch re-enumeration, approximate-matching admission control) remain valid targets for the gate ma-chinery we built. 
+
+Contributions. In summary: 
+
+• Impossibility of lazy spectral maintenance (§3): the disjunction of a trace-budget test and composed interlacing-shift ceilings is the tightest safe rule over a formalized per-turbation relaxation of (stale spectrum, insert count), and even it collapses within 𝑂 (1) touches in the regime where spectral pruning fires. 
+
+• A selective exact maintenance primitive (§4): an anti-correlation law and a hub-exclusion theorem justify deploy-ing exact spectra only where they can prune; the resulting index maintains exact local spectra at microsecond update cost, independent of graph size, and is reusable for any dynamic-graph application consuming local spectra. 
+
+• The aggregate-invariant boundary regularity (§5): repli-cated across the nine configurations of Table 2 ( 87 co-solved queries) with zero completeness violations, explained via Grone–Merris–Bai and an aggregate-versus-assignment argument; plus AnchorGate , a safe, novel update-level mechanism whose CSM behavior completes the regular-ity and whose validity persists for non-adjacency-guided consumers. 
+
+• A methodology (§6): the intermediate-invariance test, which detects when candidate reductions are enumeration-irrelevant; we show candidate counts mislead in both di-rections, extending the caveat raised by recent CSM bench-marking work [7]. 
+
+## 2 PRELIMINARIES 2.1 Continuous Subgraph Matching 
+
+A data graph 𝐺 = (𝑉 , 𝐸, ℓ ) and query graph 𝑄 = (𝑉 𝑄 , 𝐸 𝑄 , ℓ ) carry vertex labels ℓ (·) . An embedding is an injective mapping 𝑓 : 𝑉 𝑄 → 𝑉 
+
+preserving labels and edges. Given a stream of edge insertions and deletions applied to 𝐺 , CSM reports after each update the set (or count) of embeddings created or destroyed. All competitive CSM systems follow an index–enumerate paradigm [ 7 , 13 , 17 , 19 , 26 ]: an index maintains, for each query vertex 𝑢 , a candidate set 𝐶 (𝑢 ) ⊆ 𝑉 
+
+(and often candidate edge views for query edges); each update trig-gers a delta enumeration anchored at the updated edge, exploring only candidates adjacent to the partial embedding under construc-tion. We call this exploration adjacency-guided : a candidate partici-pates only if reachable from the anchor through candidate edges. The standard vertex filters are LDF (label and degree) and NLF (per-label neighbor counts); both are subgraph-monotone necessary conditions. 
+
+## 2.2 Neighborhood Spectra and Safe Pruning 
+
+For 𝑆 ⊆ 𝑉 let 𝐺 [𝑆 ] denote the induced subgraph and 𝐿 (𝑆 ) its combinatorial Laplacian. Let 𝐵 ℎ (𝑣 ) be the set of vertices within distance ℎ of 𝑣 , and let 𝜆 1 (𝑆 ) ≥ 𝜆 2 (𝑆 ) ≥ · · · be the eigenvalues of 
+
+𝐿 (𝑆 ), padded with zeros beyond |𝑆 |. Two classical facts give one-sided safety. First, adding edges adds a PSD term to the Laplacian, and padding appends zeros, so if 𝐻 embeds into 𝐺 [𝑆 ] as a subgraph then 𝜆 𝑡 (𝐻 ) ≤ 𝜆 𝑡 (𝑆 ) for all 𝑡 . Second, embeddings do not increase distances, so an embedding 𝑓 maps the query ball 𝐵 ℎ (𝑢 ) ∩ 𝑄 into 
+
+𝐺 [𝐵 ℎ (𝑓 (𝑢 ))] .
+
+> 2
+
+We write 𝜆 𝑄 𝑡 (𝑢 ) := 𝜆 𝑡 
+
+ 𝑄 [𝐵 ℎ (𝑢 ) ∩ 𝑉 𝑄 ] for the query-side ball spectrum at 𝑢 and 𝜆 𝐺 𝑡 (𝑣 ) := 𝜆 𝑡 
+
+ 𝐺 [𝐵 ℎ (𝑣 )]  for the data-side ball spectrum at 𝑣 .
+
+Lemma 1 (Interlacing safety [ 20 ]). If 𝑓 is an embedding with 
+
+𝑓 (𝑢 ) = 𝑣 , then 𝜆 𝑄 𝑡 (𝑢 ) ≤ 𝜆 𝐺 𝑡 (𝑣 ) for all 𝑡 . Hence pruning 𝑣 from 𝐶 (𝑢 )
+
+whenever ∃𝑡 : 𝜆 𝑄 𝑡 (𝑢 ) > 𝜆 𝐺 𝑡 (𝑣 ) never removes a true match. 
+
+The same argument applies to any subgraph-monotone aggregate invariant 𝜙 : if 𝐻 ⊆ 𝐺 [𝑆 ] implies 𝜙 (𝐻 ) ≤ 𝜙 (𝑆 ), then 𝜙 (𝑄 -side ) >
+
+𝜙 (data-side ) is a safe pruning test. Vertex and edge counts, all Laplacian eigenvalues, and closed-walk counts tr (𝐴 𝑘 ) (e.g. 𝑘 =3: six times the triangle count) are all subgraph-monotone. This family is the object of our study. 
+
+## 3 LAZY SPECTRAL BOUNDS ARE INFEASIBLE 
+
+A single edge insertion inside 𝐵 ℎ (𝑣 ) perturbs 𝐿 (𝐵 ℎ (𝑣 )) by 𝐸 =
+
+(𝑒 𝑎 − 𝑒 𝑏 )( 𝑒 𝑎 − 𝑒 𝑏 )⊤, PSD with ∥𝐸 ∥2 = 2; deletions subtract such a term. Weyl’s inequalities [ 11 ] control the eigenvalue movement under such perturbations. The lazy program maintains certified upper bounds ¯𝜆 on the data-side spectrum: deletions only lower true eigenvalues (bounds stay valid for free), and insertions are absorbed by cheap bound updates, with full recomputation deferred until the bounds lose discriminating power. Pruning with upper bounds is safe by Lemma 1. The question is how fast the power decays. 
+
+## 3.1 Three Bound Families and an Optimality Result 
+
+Flat Weyl. ¯𝜆 𝑖 += 2 per inserted edge, for every 𝑖 . A subtlety with real systems: one edge update can pull a new vertex carrying 
+
+𝑘 > 1 edges into the ball; accounting +2 per update rather than per induced edge is unsafe (we observed genuine violations), so the reverse index must track induced edge deltas. 
+
+Rank-one shift. For one inserted edge, 𝜆 ′ 
+
+> 1
+
+≤ 𝜆 1 + 2 but 𝜆 ′ 
+
+> 𝑖
+
+≤ 𝜆 𝑖 −1
+
+for 𝑖 ≥ 2 (Weyl with 𝜇 2 (𝐸 ) = 0): the bound vector shifts rather than inflates, tightening the flat rule by ∼40% in our measurements. 
+
+Trace budget. 𝑘 inserted edges add total eigenvalue mass ex-actly 2𝑘 , and each eigenvalue can only increase. For the stale spec-trum 𝑑 (descending) to come to dominate the query spectrum 
+
+𝑞 , the minimal mass needed is the majorization cost 𝐶 (𝑞, 𝑑 ) =
+
+Í𝑡 max (0, 𝑞 𝑡 − 𝑑 𝑡 ). Hence prune iff 𝐶 (𝑞, 𝑑 stale ) > 2𝑘 ins (1) is safe, costs 𝑂 (𝑟 ), and dominates both per-component rules when-ever several components sit near their margins. Neither per-component family subsumes the other, and neither does the trace rule alone: the shift constraint can disprove domina-tion when the mass budget cannot (a large 𝑞 𝑖 above the ceiling 𝑑 𝑖 −𝑘 ), and vice versa. To speak of optimality we must fix the constraint set. Define the perturbation relaxation R ( 𝑑, 𝑘 ) as the set of descend-ing sequences 𝜆 ′ satisfying the three families we can prove for 𝑘 
+
+composed rank-one PSD insertions: (M) 𝜆 ′ 
+
+> 𝑖
+
+≥ 𝑑 𝑖 (monotonicity); (S) 𝜆 ′ 
+
+> 𝑖
+
+≤ 𝑐 𝑖 := min 0≤ 𝑗 ≤min (𝑘, 𝑖 −1)
+
+ 𝑑 𝑖 − 𝑗 +2(𝑘 −𝑗 ), the lattice-path min-imum over all interleavings of the per-step alternatives “interlace one position” or “gain at most norm 2”—mixed paths can dominate both pure options when the spectrum decays steeply, so neither the pure shift 𝑑 𝑖 −𝑘 nor the pure norm bound is the minimizer in general; (T) Í𝑖 ≤𝑟 (𝜆 ′ 
+
+> 𝑖
+
+− 𝑑 𝑖 ) ≤ 2𝑘 (trace budget). Our measured rule composes the per-step pointwise minimum 𝑏 ′ 
+
+> 1
+
+= 𝑏 1 +2, 𝑏 ′ 
+
+> 𝑖
+
+= min (𝑏 𝑖 −1, 𝑏 𝑖 +2) 𝑘 
+
+times, which is exactly the dynamic program computing the ceilings 
+
+𝑐 𝑖 . R ignores graph realizability and the finer interpolating Weyl inequalities (whose perturbation eigenvalues are not observable from 𝑘 alone), so it over-approximates the truly reachable spectra: rules safe w.r.t. R are safe in reality. 
+
+Theorem 1 (Optimal rule in the relaxation). The rule “prune iff 𝐶 (𝑞, 𝑑 stale ) > 2𝑘 ins or ∃𝑖 : 𝑞 𝑖 exceeds its ceiling in (S)” is the tightest safe rule over R ( 𝑑 stale , 𝑘 ins ): it prunes exactly when no 𝜆 ′ ∈ R 
+
+dominates 𝑞 .
+
+Proof sketch. The pointwise-minimal candidate 𝜆 ′ 
+
+> 𝑖
+
+= max (𝑞 𝑖 , 𝑑 𝑖 )
+
+is descending (maximum of two descending sequences), satisfies (M) by construction, satisfies (S) iff every 𝑞 𝑖 respects its ceiling, and consumes mass exactly 𝐶 (𝑞, 𝑑 ), the minimum any dominating sequence must spend under (M). Hence a dominating member of R
+
+exists iff both conditions hold. □
+
+We state plainly what this does and does not claim: optimality is relative to R; a rule exploiting structure outside R (e.g. graph realizability) could in principle be tighter. The collapse below is measured for the optimal-in-R rule itself, and Observation 1 ex-plains why any rule whose admissible set inflates with injected trace mass meets the same fate. 
+
+## 3.2 Collapse 
+
+Theorem 1 makes the empirical question sharp: if even the optimal-in-R rule fails, every rule in this information class fails. On sparse graphs with dense queries—the regime where exact interlacing prunes 7–27% of candidates beyond NLF (§6)—we measured reten-tion, the fraction of exact-spectrum prunes still made by each rule, as a function of the number 𝜏 of touching updates since refresh (Figure 3b). Flat Weyl, the composed ceilings 𝑐 𝑖 , and the optimal trace ∨ceiling rule retain 54 /56 /58% at 𝜏 =1, 14 /16 /19% at 𝜏 =2, and nothing beyond 𝜏 =4. The mechanism is structural: prune margins 
+
+𝐶 (𝑞, 𝑑 ) concentrate between 1 and 8 in sparse neighborhoods, while each touching update injects mass ≈5 on average—margins and perturbations share a scale, so no bound family can hold a useful in-variant across even a handful of updates. Safety was never violated (with correct edge accounting); power simply evaporates. 
+
+Observation 1. The regimes are inseparable: spectral pruning requires sparse, small neighborhoods (rich ones dominate every query spectrum), and sparse, small neighborhoods are exactly where one edge is a large relative perturbation. Lazy maintenance is infeasible precisely where it would be useful. 
+
+## 4 SELECTIVE EXACT MAINTENANCE 
+
+Observation 1 has a constructive reading: in the useful regime, neighborhoods are small, so exact recomputation is cheap. The design question becomes where exactness must be paid.    
+
+> 3undeployed (pass-through)
+> deployed exact 𝜆 1..𝑟
+> evicted (pass-through)
+> first consult; lazy solve
+> |𝐵 ℎ(𝑣 ) | >𝑆 max
+> touch: re-solve
+> +resync
+
+Figure 1: SelSpec vertex lifecycle. Deployment is lazy (first consult), refresh is eager on touch (Theorem 3’s resync), evic-tion is permanent and always safe. 
+
+## 4.1 The Anti-Correlation Law and Hub Exclusion 
+
+Theorem 2 (Hub exclusion, top-𝑡 form). Let 𝑑 𝑡 denote the 𝑡 -th largest degree within 𝐺 [𝐵 ℎ (𝑣 )] and 𝑞 max = max 𝑄 |𝑉 𝑄 | over registered queries. If 𝑑 𝑡 ≥ 𝑞 max +𝑡 − 1, then the component-𝑡 test 𝜆 𝑄 𝑡 (𝑢 ) > 𝜆 𝐺 𝑡 (𝑣 )
+
+never fires for any registered query: the Brouwer–Haemers bound 
+
+𝜆 𝑡 (𝐿 ) ≥ 𝑑 𝑡 − 𝑡 + 2, valid under its mild edge-count precondition [ 5](satisfied here, since a vertex of degree 𝑑 𝑡 ≥ 𝑡 supplies the required edges), gives 𝜆 𝐺 𝑡 (𝑣 ) ≥ 𝑞 max + 1, while every query-ball eigenvalue is at most its vertex count ≤ 𝑞 max .
+
+In particular ( 𝑡 =1) a single vertex of degree ≥ 𝑞 max inside the ball kills the leading component; empirically, a short run of high-degree vertices kills the top components, which carry 88 –100% of observed prunes. Empirically the exclusion extends far beyond component 1: across an Erdős–Rényi family, a Watts–Strogatz family, and a real collabo-ration network, the per-vertex pruning frequency against a dense query workload decays monotonically with ball size— 0.90 , 0.60 ,
+
+0.24 , 0.065 , 0.000 for ball sizes 1−8, 9−16 , 17 −32 , 33 −64 , ≥ 65 on the real graph (Figure 3d)—while per-solve cost grows with ball size. Utility and cost are anti-correlated: the most expensive vertices to maintain are precisely those that never prune . Component attri-bution shows the top two eigenvalues fire 88 −100% of all prunes, so 𝑟 ∈ { 2, 4} components suffice—two to four floats per deployed vertex. 
+
+## 4.2 The SelSpec Index 
+
+SelSpec deploys spectra on the vertex set {𝑣 : |𝐵 ℎ (𝑣 )| ≤ 𝑆 max },intersected with label-relevant candidates of registered queries. A vertex’s lifecycle (Figure 1) is: lazy deploy on first consult (its spectrum is computed when a query first tests it, so build cost scales with consulted candidates, not |𝑉 |); eager refresh on every touching update while deployed; evict when the ball outgrows 𝑆 max . Spectra are maintained exactly :
+
+• Trigger. An update (𝑎, 𝑏 ) changes 𝐺 [𝐵 ℎ (𝑣 )] iff both end-points lie in the (new) ball; a reverse ball-membership index locates affected deployed vertices in 𝑂 (1) amortized. 
+
+• Recompute on touch. Affected spectra are recomputed by a dense symmetric eigensolve on ≤ 𝑆 max vertices (tens of microseconds via LAPACK); vertices whose balls outgrow 
+
+𝑆 max are evicted : marked pass-through and dropped from the reverse index at its next compaction. Eviction is perma-nent in our implementation—a ball that later shrinks back below 𝑆 max is not re-deployed, which forfeits pruning on that vertex but never completeness (pass-through admits everything); re-deployment would only require re-running the lazy first-consult path. 
+
+• Bidirectional resync. An insertion can raise an affected vertex’s spectrum, re-legalizing a previously pruned candi-date; affected vertices are therefore re-checked against all label-matching query vertices in both directions. Deletions only lower true spectra, so stale entries over-admit—never over-prune—and completeness is unconditional. 
+
+Theorem 3 (Completeness). Under any update sequence, Sel-Spec ’s candidate sets contain every vertex participating in any em-bedding. 
+
+Proof sketch. Spectra consulted at pruning time are exact for deployed vertices (eager refresh on touch; lazily computed on first consult), undeployed vertices pass through, and the test is safe by Lemma 1; the resync step restores any candidate whose spectrum change reverses a past rejection. □
+
+Theorem 4 (Update cost). Let 𝐴 be the set of deployed vertices whose induced ball subgraph is changed by the update (both endpoints inside the new ball). Per edge update, maintenance costs 𝑂  |𝐴 | · ( 𝑆 3max +
+
+𝑆 max ¯𝑑 )—one dense eigensolve plus a capped-ball BFS re-extraction with average degree ¯𝑑 per affected vertex—independent of |𝑉 |.
+
+Lemma 2 (Reverse-index maintenance). The reverse ball-membership index stores, for each deployed vertex, its ≤ 𝑆 max ball members ( 𝑂 (𝐷 ·
+
+𝑆 max ) memory for 𝐷 deployed vertices); locating 𝐴 costs 𝑂 (| 𝑅 𝑎 | + | 𝑅 𝑏 |) 
+
+list reads for the endpoint lists 𝑅 𝑎 , 𝑅 𝑏 , which self-compact to live en-tries at each access; and a recompute re-registers at most 𝑆 max entries, so amortized maintenance is 𝑂 (| 𝐴 | · 𝑆 max ) per update. 
+
+Empirically, |𝐴 | ≈ 4.5 on a real collaboration graph with the end-to-end kernel near 313 𝜇𝑠 per update; the same machinery costs 
+
+∼0.5ms per update on com-Amazon where nearly all vertices are de-ployable, and the index (spectra plus reverse lists) reaches ∼10 × the NLF index footprint there (§6.4)—the memory price of deployability. On the real graph, 𝑆 max =32 deploys 63 .6% of vertices and retains 
+
+96 .1% of all pruning; 𝑆 max =64 retains 100% (Figure 3d). SelSpec is, to our knowledge, the first dynamic-graph index maintaining exact local Laplacian spectra, and is application-agnostic: any consumer of neighborhood spectra over a dynamic graph (anomaly scoring, graph kernels, spectral features) inherits the primitive.              
+
+> 4𝑄
+> 𝑢 𝑢 ′
+> 𝑄 𝜌 (𝑢, 𝑢 ′)
+> 𝐺
+> 𝑎 𝑏
+> 𝐵 𝜌 ( { 𝑎, 𝑏 } )
+> 𝜙 (𝑄 𝜌 ) ≤ 𝜙 (𝐵 𝜌 )?
+> update edge (𝑎, 𝑏 )
+
+Figure 2: AnchorGate : every incremental match maps 
+
+𝑄 𝜌 (𝑢, 𝑢 ′) into 𝐵 𝜌 ({ 𝑎, 𝑏 }) ; a subgraph-monotone invariant 𝜙 
+
+failing for every label-compatible query edge licenses skip-ping the whole delta enumeration (Theorem 5). 
+
+## 5 FILTERING: WHERE AGGREGATES END 5.1 Vertex-Level Filtering and the Weak-Candidate Effect 
+
+Plugged into a decoupled CSM framework as an index layer over NLF, SelSpec removes 9−51% of candidate vertices, growing with query size, at unchanged match outputs (§6). Yet enumeration time does not improve, and the count of enumeration intermediates is 
+
+identical to the spectral-free control at every query size. The diag-nosis is structural. The interlacing test fires on candidates whose neighborhoods are spectrally poorer than the query’s; but the delta enumeration is adjacency-guided—a candidate contributes cost only if a partial embedding reaches it through candidate edges, which requires local structural support. Spectrally poor candidates lack precisely that support and die at the first adjacency check. We call this the weak-candidate effect :
+
+Observation 2. In adjacency-guided delta enumeration, the prun-able set of the interlacing test and the cost-bearing set of the enumer-ation are nearly disjoint. Where the test does pay is in cost terms that scale with candidate-set size: static pipelines pay a large per-query candidate-space construction term, and engines in the GraphQL/worst-case-optimal-join style [ 10 , 18 ] additionally scan or intersect materi-alized candidate lists per level; CS-edge-guided engines (CECI/DAF style [ 4, 9]) chase adjacency even in the static setting and their explo-ration is as immune as delta enumeration’s (§6.5). 
+
+## 5.2 Anchored Gates: a CSM-Native Mechanism 
+
+CSM offers a handle static matching lacks: every incremental match contains the updated edge. If (𝑎, 𝑏 ) is matched to query edge (𝑢, 𝑢 ′),then for any 𝜌 , the sub-query 𝑄 𝜌 (𝑢, 𝑢 ′) = 𝑄 [{ 𝑤 : min (𝑑 𝑄 (𝑤, 𝑢 ), 𝑑 𝑄 (𝑤, 𝑢 ′)) ≤ 
+
+𝜌 }] must embed into 𝐺 [𝐵 𝜌 ({ 𝑎, 𝑏 })] . Any subgraph-monotone in-variant 𝜙 therefore yields a safe update-level gate: 
+
+Theorem 5 (Gate safety). If for every label-compatible query edge (𝑢, 𝑢 ′) there exist 𝜌 and a subgraph-monotone 𝜙 with 𝜙 (𝑄 𝜌 (𝑢, 𝑢 ′)) >
+
+𝜙 (𝐺 [𝐵 𝜌 ({ 𝑎, 𝑏 })]) , then the update (𝑎, 𝑏 ) creates no incremental match, and its delta enumeration can be skipped entirely. 
+
+The symmetric statement holds for deletions: every disappearing 
+
+match contains the deleted edge, and the same ball argument applies on the pre-deletion graph, so a failing test there licenses skipping the negative delta enumeration as well. We instantiate 𝜙 with vertex count, edge count, top-𝑟 Laplacian eigenvalues, and triangle count ( tr (𝐴 3)/ 6), evaluated at 𝜌 ∈ { 1, 2}
+
+with a ball-size cap (capped balls are rich and pass for free, by the anti-correlation law). Sub-query invariants are precomputed at registration; the data ball is assembled per update in microseconds. Crucially, 𝑄 𝜌 of a dense query is far richer than any single-vertex neighborhood, so the gate’s discriminating power exceeds vertex-level tests by construction, and triangle counts add a cycle-mass 
+
+dimension invisible to degree information. 
+
+## 5.3 The Boundary Regularity 
+
+The gates fire on 5−47% of updates with zero wrong skips—and the enumeration intermediates remain exactly unchanged, a fourth time for the Laplacian gate and a fifth for the triangle gate (§6). The updates that pass the gate are exactly the expensive ones. Together with §5.1, five configurations spanning two granularities (vertex, update) and two invariant families (degree mass, cycle mass) replicate one phenomenon, which we state as an empirical regularity backed by a mechanism explanation—not as a theorem: 
+
+In label/NLF-saturated, update-driven CSM, subgraph-monotone aggregate tests pruned only work that adjacency-guided enumeration discarded within its first expan-sion levels—in every configuration we measured. 
+
+Two arguments explain the observations, with different reach. 
+
+(i) Degree mass is largely spoken for. By Grone–Merris (proved by Bai) [ 3 , 8], the Laplacian spectrum is majorized by the conjugate degree sequence, which bounds the headroom of top-eigenvalue interlacing over degree-based filters such as NLF. The bound is not exhaustive: spectra do carry information beyond degrees— 𝐶 6
+
+and 2×𝐶 3 share a degree sequence yet differ in 𝜆 1 (4 vs. 3)—and that cycle-structure residue is precisely why spectral signals are attractive at all. GMB explains attenuation, not absence—and the attenuation is quantifiable: over the 3,506 deployed balls of ca-GrQc, the top-4 Laplacian partial sum reaches a median 73% of its conjugate-degree-sequence ceiling (IQR 59 –91% ), so most of what the interlacing statistic measures on this workload is degree-determined, with a real but minority cycle-structure residue. (ii) Aggregate deficiency tends to be self-punishing. A region poor in the tested aggregate lacks raw structural material, and adjacency-guided search starved of material tends to halt within its first expan-sion levels; expensive failures, in everything we measured, arose where material abounds but no injective, label-consistent assignment 
+
+exists—a property no multiset aggregate of the region can witness. This is a mechanism, not a guarantee. Configurations escaping it are conceivable: a region abundant within radius 1 yet deficient at ra-dius 2 can host combinatorially many injective partial assignments before exhausting, which a 𝜌 =2 gate would skip at real savings; engines that select matching orders from candidate-set sizes couple candidate reductions to exploration (§6.10); and engines scanning materialized candidate lists pay per-candidate costs that pruning does reduce (§6.5). We did not encounter the first configuration in any natural workload; we delimit rather than universalize. The regularity delimits, rather than condemns, the machinery: consumers that are not adjacency-guided—periodic full re-enumeration, batch candidate-space construction (the static setting, where PI-LOS [ 20 ] demonstrably gains), admission control for approximate matching—retain the full benefit of SelSpec -maintained spectra and AnchorGate s, with Theorems 3 and 5 intact. 
+
+> 5
+
+Table 1: Graphs used in framework experiments.                           
+
+> Graph |𝑉 ||𝐸 |avg deg type ca-GrQc 4.2K 13.4K 6.5 collaboration email-Enron 33.7K 180.8K 10.7 communication com-Amazon 334.9K 925.9K 5.5 co-purchase com-Youtube 1.13M 2.99M 5.3 social ER / WS (probes) 3K 4.5–6K 3–4 synthetic
+
+## 6 EXPERIMENTS 
+
+Our evaluation has two layers. Probes (Python/LAPACK) isolate each mechanism’s intrinsic behavior; framework experiments (C++17, single-threaded) integrate SelSpec and the gates into the decoupled CSM benchmark of Gou et al. [ 7 ] as a drop-in index ( index_type 6 ), against the strictest control: the identical pipeline with the iden-tical NLF index minus the spectral layer (NLFI), with the enumer-ation engine fixed (NewSP-style). This isolates the tested signal and respects the implementation-sensitivity lesson of [ 15 ]. Data: synthetic Erdős–Rényi (avg. degree 3) and Watts–Strogatz families; real graphs ca-GrQc (4.2K vertices, collaboration) and email-Enron (33.7K vertices, communication) and com-Amazon (334.9K) [ 16 ], with uniform labels 𝐿 ∈ { 4, 8} and a 90 :10 initial/insert-stream split; update streams are uniformly shuffled (these graphs carry no times-tamps), the standard protocol for untimestamped data [ 23 ]. Queries are dense BFS-ball samples following standard CSM practice [ 23 ]: a 
+
+main workload of sizes 16 –32 (five per size) and a thickening work-load of sizes 8/12 (ten per size) whose easier instances mostly solve within budget. Eigensolves use LAPACK dsyev ; ℎ=2, 𝑟 ∈ { 4, 8},
+
+𝑆 max =64 unless noted. All experiments run single-threaded on an AMD Ryzen Threadripper PRO 3945WX (12 cores, 64 GB RAM) under Ubuntu 24.04, GCC 13.3 at -O3 . The per-query time budget is 
+
+60 s throughout, covering stream processing only and checked be-tween updates—a query is stopped after the update that crosses the line, so index maintenance within that update (and per-query graph loading, excluded from the budget) can push wall times past 60 s; key results are re-verified at 5× and 10 × budgets. Table 1 lists the graphs; probe experiments (§6.1) use 𝑛 =3,000 –8,000 synthetics and ca-GrQc. All counters are deterministic. Wall times are single-run; a three-repeat check on the thickening workload bounds run-to-run spread at 1.1% (control) and 1.4% (spectral) of the median, an order of magnitude below every time difference we interpret. We define the central metric here: an enumeration intermediate is one binding of a data vertex to a non-anchor query vertex followed by a descent of the backtracking search (the counter incremented at each recursive extension; engines count at different sites, which is immaterial since all comparisons are within-engine); raw totals are reported on solved queries. 
+
+## 6.1 Probe Results 
+
+Figure 3 summarizes. (a) Pruning power exists and grows with query size. On sparse graphs with dense queries, exact interlacing removes 7–27% of candidates beyond NLF and size screening (q32, ER: 26 .7% ), replicating the magnitude PILOS reports statically; on tree-like random-walk queries it removes ≈0% —the applicability do-main is sharp. (b) Lazy bounds collapse (§3.2): retention 54 /56 /58% 
+
+Table 2: Replication matrix for intermediate invariance. Ev-ery cell is a configuration in which all co-solved queries had exactly equal match totals and intermediates; “solved” counts queries solved by both sides.                                               
+
+> Test Engine Graph Stream solved vertex (q16–32) NewSP GrQc ins 3vertex+gates (q8/12) NewSP GrQc ins 18 vertex+gates (q8/12) SymBi GrQc ins 20 vertex+gates NewSP GrQc 70:30 2vertex+gates (Zipf) NewSP GrQc ins 5vertex+gates (sparse) NewSP GrQc ins 9vertex+gates NewSP Enron ins 13 vertex+gates NewSP Amazon ins 8gate-only (lazy) NewSP Amazon ins 10
+> Gate-bearing rows are equal up to skipped doomed bindings: 0–1per query where raw counters were captured on Enron, 1–8on the com-Amazon gate runs ( ≤2.2% of that query’s bindings, §6.4); vertex-only rows are exact.
+
+at 𝜏 =1, ≤19% at 𝜏 =2, 0% at 𝜏 =4 for flat Weyl, the composed ceil-ings 𝑐 𝑖 , and the optimal trace ∨ceiling rule; with naive per-update (rather than per-edge) accounting we additionally observed gen-uine safety violations, confirming the accounting requirement of §3.1. (c) Maintenance. Lazy scheduling saves only (𝜏 +1)× , moot given (b); selective exact recomputation costs 52 –225 𝜇𝑠 per solve in the deployment range, and with the exact trigger rule (both endpoints inside the ball; 4.55 true triggers per update vs. 20 .3 un-der the naive superset rule) the end-to-end kernel cost is 313 𝜇𝑠 
+
+per update on ca-GrQc. (d) Anti-correlation law on three graph families; on ca-GrQc, 𝑆 max =32 covers 63 .6% of vertices and retains 
+
+96 .1% of pruning, 𝑆 max =64 retains 100% ; the top two eigenvalues fire 88 –100% of prunes. 
+
+## 6.2 The Boundary Regularity In-Framework 
+
+For context beyond the NLFI control, we also ran the framework’s full index family (NI, DCG, DCS, CaLiG) on the same workload with the expected relative behavior. 1 We do not compare against DIVINE [ 27 ] experimentally: its dominance-embedding synopses are coupled to its own engine rather than exposed behind the de-coupled framework’s index interface, so any end-to-end gap would conflate signal with implementation—the confound the framework exists to remove [ 15 ]. Our lens applies to its signal nonetheless (§7). Table 3 is the paper’s central table. Five configurations—vertex-level interlacing at three query sizes, the Laplacian anchored gate, and the triangle-extended gate—all prune substantially by their own meter, never violate completeness (match totals identical to NLFI on all 20 solved queries, ranging from 1 to 2.8 × 10 8 matches), and leave the per-update intermediate-result count exactly equal .The gates’ fired updates are exactly those whose enumerations were already free: on the hardest solved query ( ∼23 s), zero of eight processed updates fired any gate. Maintenance overhead, not              
+
+> 1CaLiG’s kernel-and-shell search is sensitive to this dense low-selectivity workload (one query spent 1,497 s inside a single uninterruptible update enumeration); we report its seven queries completing within a 90-minute envelope. None of this affects the controlled comparison, which varies only the spectral layer.
+> 610 15 20 25 30
+> query size | VQ|
+> 5
+> 10
+> 15
+> 20
+> 25
+> extra spectral pruning (%)
+> (a) pruning power beyond NLF+size
+> ER(deg 3), 4 labels
+> ER(deg 3), 8 labels
+> WS(deg 4), 4 labels
+> WS(deg 4), 8 labels
+> 02468
+> touching updates since refresh
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> pruning retention (%)
+> (b) lazy-rule collapse
+> flat Weyl
+> composed ceilings ci
+> trace ceiling (optimal in )
+> recompute
+> per touch
+> lazy
+> = 2
+> lazy
+> = 5
+> lazy
+> = 10
+> lazy 5
+> +warm
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> total solve time (s)
+> 1×
+> 3.2×
+> 6.9×
+> 14.2×
+> 3.0×
+> (c) maintenance schedules
+> 10 110 2
+> ball size | B2(v)|
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> pruning frequency
+> (d) benefit/cost anti-correlation
+> ca-GrQc (real)
+> ER (synthetic)
+> WS (synthetic)
+
+Figure 3: Feasibility probes. (a) Spectral pruning power beyond NLF+size grows with query size on sparse graphs. (b) Lazy-rule pruning retention collapses within 𝜏 ≤ 4 touching updates for flat Weyl, the composed ceilings 𝑐 𝑖 , and the trace ∨ceiling rule, which is optimal in the perturbation relaxation (Theorem 1). (c) Maintenance cost scales as (𝜏 +1)× ; warm-started iterative solvers lose to direct solves at deployment-scale neighborhoods. (d) The benefit/cost anti-correlation on two synthetic families and a real collaboration network. Table 3: Intermediate invariance by test configuration (ca-GrQc, 𝐿 =8 unless noted; cross-engine/graph/stream replica-tions in Table 2). “Prune” is the configuration’s own meter: candidate-vertex reduction (vertex level) or gate fire rate among processed updates (update level). Intermediates equal the NLFI control in every configuration; match counts always agree. 
+
+Test Granul. Prune Interm. Compl. Interlacing, q16 vertex −9.. −36% equal ✓
+
+Interlacing, q24 vertex −23 .. −51% equal ✓
+
+Interlacing, q32 vertex −10 .. −42% equal ✓
+
+Laplacian AnchorGate update 5.. 45% equal ✓
+
++ triangles update 7.. 47% equal ✓
+
+“Equal” is exact for vertex-level rows; for gate rows, raw totals can differ by the gate’s skipped doomed bindings— 0–8 per query on natural workloads ( ≤ 2.2% , typically 
+
+≪ 0.1% ), first-level bindings of matchless updates and thus precisely the “work discarded within first expansion levels” of the regularity. Prune rates are measured on the main workload (dense queries, |𝑉 𝑄 | ∈ { 16 , 24 , 32 }, five per size). Invariance is asserted on solved queries only (truncated runs progress differently): the main workload solves two ( |𝑉 𝑄 |=24 ) at the default budget and a third ( |𝑉 𝑄 |=16 ) at 
+
+10 ×—the latter with raw intermediates exactly equal at 1.56 × 10 9 bindings and 
+
+2.13 × 10 9 matches, the strongest single datum in the paper—and a thickening 
+
+workload of twenty easier dense queries ( |𝑉 𝑄 | ∈ { 8, 12 }, ten per size) solves eighteen more. Invariance is further stable under 5×/10 × budgets, across an insert/delete-mixed stream (§6.8), under a second enumeration engine on all twenty thickening queries (§6.9), and on two further graphs (§6.3–6.4). 
+
+enumeration, accounts for the entire residual time difference ( +7–
+
+31% on solved queries), and an overhead-reduction pass (reverse-index compaction, change-gated resync; memory −40% ) left time unchanged—consistent with the law: even at zero overhead there is no enumeration time to win. 
+
+## 6.3 Cross-Graph Replication 
+
+On email-Enron ( 33 .7K vertices, avg. degree 10 .7; 18 ,081 -insert stream) the regularity replicates under its strongest single test: the main-workload query solved within budget processes the entire up-date stream, the triangle-extended gate fires on 15 .7% of its updates (2,848 skipped enumerations, 1,247 triangle disproofs, zero wrong skips— 121 ,157 matches, identical to control), with intermediates-per-update exactly equal ( 611 .857 ). The thickening workload adds twelve more solved queries on this graph: all twelve match totals agree (up to 2.86 × 10 9 matches on one query); under raw counters, intermediates are exactly equal on ten (e.g. 6,801 ,976 on both sides of the heaviest) and differ by a single gate-skipped doomed binding on two ( 95 ,915 vs. 95 ,916 , equal denominators)—the continuum of §6.4 at its natural floor. The +3.5s residual on this query equals the measured per-update maintenance-plus-gate cost times the stream length, confirming once more that the entire time difference is over-head, none of it enumeration. Candidate reductions are smaller here (1–7% ) than on the sparse collaboration graph: with average degree 
+
+10 .7, balls are larger, fewer vertices are deployable, and fewer are spectrally weak—the anti-correlation law (§4) predicting its own diminishing domain. 
+
+## 6.4 At Scale: the Overhead Verdict 
+
+com-Amazon ( 334 .9K vertices, avg. degree 5.5; 92 ,587 -insert stream) completes the picture, a further invariance replication with a twist. Sparsity makes this the spectral test’s best regime: vertex-level prun-ing fires up to 415 K times per query and removes up to 51% of candi-dates. It is also the regime where nearly every vertex is deployable, so every update refreshes ∼5 cached spectra: the control completes all ten queries in 46 s total while the spectral configuration needs over ten minutes—match counts identical on every query both sides finish ( 10 ,080 = 10 ,080 on the largest), and intermediates equal up to the gate’s skipped doomed bindings, 1–8 per query under raw counters (both gate-bearing configurations skip the same updates; e.g. 359 vs 351 on one light query, 19 ,670 ,525 vs 19 ,670 ,524 on the heaviest). Pruning at its most active, enumeration gains at a few first-level bindings: this is the boundary regularity priced out. Two design points separate the mechanism from the engineering. The 
+
+eager configuration (materialized spectral candidate maps require touch-time recompute and bidirectional resync for completeness) pays ∼0.5ms per update and accounts for the ten minutes. A lazy gate-only configuration—drop the vertex layer entirely (for edge-view-driven engines its read-path tests never reach exploration any-way, §5.1) and keep the self-contained AnchorGate —completes all ten queries in 1m55 s with identical matches; raw intermediates differ only by the gate’s skipped doomed bindings, 1–8 per query (19 ,670 ,524 vs. 19 ,670 ,525 on the largest)—the continuum’s natural end, against the constructed workload’s −99 .9% (§6.6). So “not yet engineered well” is partly true of the eager design: a 5× overhead 
+
+> 7
+
+reduction exists inside the design space. What no engineering can change is the numerator: with intermediates provably untouched, the best achievable online outcome is the control’s runtime plus a nonzero gate cost—still a strict loss on every natural workload we measured (§6.6 shows the constructed exception). At com-Youtube scale ( 1.13 M vertices, 2.99 M edges, 298 ,762 -insert stream) the design split repeats. The eager configuration is feasible (init +2–14 s, index 25 –39 MB) but solves neither of the control’s two in-budget queries ( 32 .4s, 11 .9s)—its maintenance over-head alone converts both into timeouts. The lazy gate-only con-figuration recovers both, with identical match totals ( 2.08 × 10 8
+
+and 1.59 × 10 8) at 50 .9s and 38 .6s—the residual being pure gate cost over a 299 K-update stream—and its total wall time over the twenty-query thickening workload sits within 4% of the control’s, the other eighteen queries timing out on both sides. Million-scale, then, confirms both halves: overhead engineering matters (eager loses solved queries; lazy keeps them), and no engineering recovers a win (the lazy variant still pays the gate for intermediates that never change). 
+
+## 6.5 The Positive Boundary: Where Aggregates Do Pay 
+
+We rebuilt the static pipeline—candidate generation, CECI-style candidate-space (CS) construction, full backtracking enumeration— and compared NLF against NLF+spectral candidates on ER and ca-GrQc with dense q16 queries. CS construction cost, metered implementation-independently as adjacency-scan operations, drops in near proportion to candidates ( −2 to −43% , tracking the −4 to 
+
+−38% candidate reductions); match outputs agree exactly on every uncapped query. Enumeration nodes , however, remain identical even here: our enumerator draws its pools from CS edges and is thus adjacency-guided too. This sharpens the boundary regularity into an architectural statement: 
+
+Aggregate pruning accelerates exactly the cost terms that scale with candidate-set size (candidate-space construction, candidate-list intersection), and never adjacency-guided exploration, in static and dynamic settings alike. 
+
+Static matchers pay a large construction term per query, which is where PILOS’s measured gains live; delta enumeration pays no construction term at all (its index is maintained incrementally), leaving aggregates nothing to accelerate. The practical guidance follows: spend aggregate tests where candidate sets are materialized or scanned (batch/static evaluation, index (re)builds, admission con-trol), not where exploration is pointer-chasing through adjacency. 
+
+## 6.6 A Constructed Exception: the Instrument Can Detect Non-Invariance 
+
+The regularity’s mechanism (§5.3) names its own escape hatch—a region abundant at radius 1 yet deficient at radius 2—and a fair objection is that an instrument that has only ever reported equality might be unable to report anything else. We therefore constructed the escape hatch. Query: a near-clique core ( 𝐾 8 minus one edge) with a two-hop tail, 10 vertices, maximum degree 7. Data: 50 decoy regions (isolated 𝐾 8, each missing one edge whose arrival is the update) matching the query’s degree profile exactly—NLF admits every decoy vertex for every query vertex, and the control must discover failure by exhausting injectivity ( 10 query vertices, 8 decoy vertices) through deep partial assignments; plus one true region with the tail, completed by the final update. Result: the control per-forms 7,543 ,814 intermediate extensions in 8.98 s; AnchorGate ’s vertex-count screen ( |𝐵 2 ({ 𝑎, 𝑏 })| = 8 < |𝑄 2 | = 9) disproves every mapping on all 50 decoy updates and passes the true one, yield-ing 7,942 intermediates ( −99 .9% ) in 0.012 s ( 748 ×), with identical match totals ( 720 ). The instrument detects non-invariance deci-sively when exploration crosses an aggregate-visible boundary; on natural workloads it never does— that contrast is the finding. 
+
+## 6.7 Robustness: Label Skew, Sparse Queries, Borderline Budgets 
+
+Under Zipf-distributed labels ( 𝑠 =1.5), five of ten queries solve and all five agree exactly in totals and intermediates. (All label assign-ments in this paper are synthetic, per standard practice for unla-beled SNAP graphs; replaying natively labeled benchmark streams such as LSBench/Netflow [ 7 , 23 ] is the immediate external-validity extension.) Under sparse random-walk queries—the regime where the probe predicts near-zero spectral pruning—candidate reduc-tions indeed shrink to 0.5–4% , nine of ten queries agree exactly, and the domain boundary closes from the inside: where the tests cannot fire, nothing changes by construction. One borderline case is instructive: a query the control finishes at 59 .5s (of a 60 s budget) is pushed past the line by the spectral configuration’s maintenance overhead—it finds the identical 8.45 ×10 8 matches but lands at 60 .8s. Overhead does not merely fail to help; near budget boundaries it can flip outcomes. 
+
+## 6.8 Deletion-Mixed Streams 
+
+Deletions are the easy direction for safety—they only lower true spectra, so stale entries over-admit and never over-prune (§4.2)— but they exercise the bidirectional resync and eviction machinery. We extended the framework’s driver to 70 :30 insert/delete streams (a patch we release with our artifacts) and re-ran the ca-GrQc work-load: all configurations complete, solved queries produce identical outputs and identical intermediates across control and spectral runs, and no safety anomaly appears in 5,750 exercised deletions, consistent with the over-admit argument. In these runs Anchor-Gate is applied to insertions only; the pre-deletion form licensed by Theorem 5’s symmetric statement is left unexercised. 
+
+## 6.9 A Second Engine, and the Pruned-Visited Intersection 
+
+Two checks address the most natural objections. First, the frame-work’s decoupling lets us swap the enumeration engine: under the SymBi-style engine (a different search process with its own interme-diate counter), all 20 thickening queries solve on both sides, all 20 
+
+match totals agree—up to 1.5 × 10 9 matches on a single query—and all 20 per-engine intermediate counts are again pairwise identi-cal. The regularity is not an artifact of one search process. Second, we measured the claim behind the regularity directly rather than through counter equality: instrumenting the engine to record every (query-vertex, data-vertex) binding it performs and the index to 
+
+> 8
+
+record every binding the spectral test rejects, accumulated over the whole stream. The overlap is 0–7 bindings per query ( ≈0.5% 
+
+of visited bindings; exactly 0 on 11 of 20 queries). The residue is not pruned-yet-visited leakage: at any moment enumeration draws only from the candidate map, which excludes currently-rejected bindings by construction; the overlapping bindings are those whose status legitimately flipped during the stream—rejected at one point, re-admitted by the bidirectional resync when an insertion raised the candidate’s spectrum (§4.2), and visited only while admitted. The accumulated overlap thus measures the resync mechanism at work, and its sparseness shows how rarely the spectral frontier moves across enumeration-relevant bindings. 
+
+## 6.10 Methodology: the Intermediate-Invariance Test 
+
+Candidate counts misled in both directions in our study: they over-state usefulness at the vertex level (Table 3) and can understate it for edge-view-rich indexes [ 7 ]. We propose reporting, for any new CSM filter, the intermediate count with the filter on and off under a fixed engine and fixed matching order : a filter that does not move this number cannot move enumeration time, no matter what it does to candidates. Two qualifications. (i) The test is engine- and order-relative : our primary engines derive matching orders from the query graph alone (verified in the order-generation code), so candi-date reductions cannot feed back into exploration. We probed the feedback channel directly by switching to a candidate-cardinality-driven order (greedy smallest-candidate-first from the anchor) and re-running the thickening workload: match totals stay identical, but intermediates now move in both directions — one query inflates from 
+
+5.4 × 10 7 to 1.2 × 10 8 bindings ( 17 .8s→41 .8s) while another drops 
+
+32% —because the spectral layer’s candidate reductions reorder ex-ploration unpredictably. Under order feedback the invariance test certifies the filter’s direct effect only; whole-system claims addition-ally need the order held fixed, and practitioners adding any filter to a candidate-driven-order system should expect bidirectional, workload- dependent swings unrelated to the filter’s pruning qual-ity. (ii) For a deterministic engine the equality itself is expected whenever pruned candidates are never visited; the informative mea-surements are the fire rates alongside the invariance, and the direct intersection of §6.9. 
+
+## 7 RELATED WORK 
+
+CSM systems. From early active-graph systems [ 12 ], four genera-tions of index design—TurboFlux’s data-centric spanning tree [ 13 ], SymBi’s bidirectional dynamic candidate space [ 19 ], RapidFlow [ 22 ], CaLiG’s candidate-lighting graph with kernel-and-shell search [ 26 ], and NewSP’s compatible-set reuse [ 17 ]— each improved over its predecessor by one to three orders of magnitude, all filtering with la-bels, degrees, and neighbor-label multisets, refined by consistency propagation over candidate adjacency [ 25 ]. DIVINE [ 27 ] is the first to add a non-structural signal (vertex-dominance embeddings over degree-grouped star synopses, maintained incrementally). Its synopses are built from degree-grouped star substructures—degree-sequence-adjacent information in the sense of our GMB analysis— and our methodology supplies the test any such signal should face: report intermediates with the filter on and off under a fixed engine and order; unless the prunable set intersects the cost-bearing set of adjacency-guided enumeration, candidate reductions will not become time. 
+
+Experimental studies. Sun et al. [ 23 ] unified six CSM algorithms under incremental view maintenance and identified scenario-dependent index choice; the delta-compilation study of Lee et al. [ 15 ] showed an optimized implementation of an old method beats CaLiG by up to 
+
+48 .6×, making implementation-controlled comparison mandatory, echoing the common-codebase discipline of earlier static-matching studies [ 14 ]—our evaluation therefore swaps only the index layer inside the decoupled framework of Gou et al. [ 7], whose caveat that candidate counts can understate filtering power we extend to the converse direction with the intermediate-invariance test. The SIGMOD’24 survey of static matching [ 28 ] evaluates 534 combina-tions and finds enumeration dominant; our law refines where that dominance does and does not leave room for filtering. 
+
+Spectral and static matching. PILOS [ 20 ] introduced interlac-ing on neighborhood Laplacians for static matching, building on candidate-space frameworks [ 2 , 4, 21 ] and a static-matching lin-eage scaling exploration to billion-node graphs [ 24 ]; its index is offline and static. We show its natural dynamic extensions are ei-ther infeasible (lazy bounds) or ineffective for delta enumeration (the boundary regularity), while its static gains are consistent with our positive-boundary analysis. The Grone–Merris conjecture [ 8 ], proved by Bai [3], underpins our explanation that Laplacian inter-lacing is largely a degree-sequence statistic on matching workloads. Dynamic spectral sparsifiers [ 1] maintain global spectral approxi-mations under updates, and incremental eigenpair tracking follows leading eigenpairs of a single evolving matrix [ 6]; maintaining exact local neighborhood spectra for all (deployable) vertices of a dynamic graph, as SelSpec does, appears new to our knowledge. 
+
+## 8 CONCLUSION 
+
+We set out to bring spectral filtering to continuous subgraph match-ing and instead mapped its boundary. Lazy maintenance is provably hopeless in the useful regime; exact maintenance is cheap if de-ployed where an anti-correlation law directs it; and the resulting pruning—however safe, however large in candidate counts—cannot touch adjacency-guided enumeration, a fact replicated across the eight configurations of Table 3 and confirmed in our own static re-build, where the same tests cut candidate-space construction work by up to 43% while leaving exploration untouched. The regularity’s final form is architectural: aggregate invariants accelerate what scales with candidate sets, never what chases adjacency. The posi-tive residue is a reusable primitive (exact dynamic local spectra), a safe update-level gating framework whose yield lands wherever candidate sets are materialized, and a methodological test (interme-diate invariance) that we believe should accompany every future claim that a new filter accelerates CSM. 
+
+## REFERENCES    
+
+> [1] Ittai Abraham, David Durfee, Ioannis Koutis, Sebastian Krinninger, and Richard Peng. 2016. On Fully Dynamic Graph Sparsifiers. In 57th IEEE Annual Symposium on Foundations of Computer Science, FOCS . 335–344. https://doi.org/10.1109/ FOCS.2016.44
+> 9
+
+[2] Junya Arai, Yasuhiro Fujiwara, and Makoto Onizuka. 2023. GuP: Fast Subgraph Matching by Guard-based Pruning. Proc. ACM Manag. Data 1, 2 (2023). https: //doi.org/10.1145/3589312 [3] Hua Bai. 2011. The Grone-Merris Conjecture. Trans. Amer. Math. Soc. 363, 8 (2011), 4463–4474. https://doi.org/10.1090/S0002-9947-2011-05393-6 [4] Bibek Bhattarai, Hang Liu, and H. Howie Huang. 2019. CECI: Compact Em-bedding Cluster Index for Scalable Subgraph Matching. In Proceedings of the 2019 International Conference on Management of Data, SIGMOD . 1447–1462. https://doi.org/10.1145/3299869.3300086 [5] Andries E. Brouwer and Willem H. Haemers. 2008. A lower bound for the Laplacian eigenvalues of a graph—proof of a conjecture by Guo. Linear Algebra Appl. 429, 8-9 (2008), 2131–2135. https://doi.org/10.1016/j.laa.2008.06.008 [6] Pin-Yu Chen, Baichuan Zhang, and Mohammad Al Hasan. 2018. Incremental eigenpair computation for graph Laplacian matrices: theory and applications. 
+
+Soc. Netw. Anal. Min. 8, 1 (2018), 4. https://doi.org/10.1007/s13278-017-0481-y [7] Xiangyang Gou, Lei Zou, Jeffrey Xu Yu, and Wenjie Zhang. 2026. An Extensive Experimental Study of Indexes in Continuous Subgraph Matching. Proc. ACM Manag. Data 4, 1 (2026). https://doi.org/10.1145/3786623 [8] Robert Grone and Russell Merris. 1994. The Laplacian Spectrum of a Graph II. SIAM J. Discrete Math. 7, 2 (1994), 221–229. https://doi.org/10.1137/ S0895480191222653 [9] Myoungji Han, Hyunjoon Kim, Geonmo Gu, Kunsoo Park, and Wook-Shin Han. 2019. Efficient Subgraph Matching: Harmonizing Dynamic Programming, Adaptive Matching Order, and Failing Set Together. In Proceedings of the 2019 International Conference on Management of Data, SIGMOD . 1429–1446. https: //doi.org/10.1145/3299869.3319880 [10] Huahai He and Ambuj K. Singh. 2008. Graphs-at-a-time: Query Language and Access Methods for Graph Databases. In Proceedings of the 2008 ACM SIGMOD International Conference on Management of Data . 405–418. https://doi.org/10. 1145/1376616.1376660 [11] Roger A. Horn and Charles R. Johnson. 2013. Matrix Analysis (2nd ed.). Cam-bridge University Press. [12] Chathura Kankanamge, Siddhartha Sahu, Amine Mhedhbi, Jeremy Chen, and Semih Salihoglu. 2017. Graphflow: An Active Graph Database. In Proceedings of the 2017 ACM International Conference on Management of Data, SIGMOD .1695–1698. https://doi.org/10.1145/3035918.3056445 [13] Kyoungmin Kim, In Seo, Wook-Shin Han, Jeong-Hoon Lee, Sungpack Hong, Hassan Chafi, Hyungyu Shin, and Geonhwa Jeong. 2018. TurboFlux: A Fast Continuous Subgraph Matching System for Streaming Graph Data. In Proceedings of the 2018 International Conference on Management of Data, SIGMOD . 411–426. https://doi.org/10.1145/3183713.3196917 [14] Jinsoo Lee, Wook-Shin Han, Romans Kasperovics, and Jeong-Hoon Lee. 2012. An In-depth Comparison of Subgraph Isomorphism Algorithms in Graph Databases. 
+
+Proc. VLDB Endow. 6, 2 (2012), 133–144. https://doi.org/10.14778/2535568.2448946 [15] Yukyoung Lee, Kyoungmin Kim, Wonseok Lee, and Wook-Shin Han. 2024. In-depth Analysis of Continuous Subgraph Matching in a Common Delta Query Compilation Framework. Proc. ACM Manag. Data 2, 3 (2024). https://doi.org/10. 1145/3654950 [16] Jure Leskovec and Andrej Krevl. 2014. SNAP Datasets: Stanford Large Network Dataset Collection. http://snap.stanford.edu/data. [17] Ziming Li, Youhuan Li, Xinhuan Chen, Lei Zou, Yang Li, Xiaofeng Yang, and Hongbo Jiang. 2024. NewSP: A New Search Process for Continuous Subgraph Matching over Dynamic Graphs. In 40th IEEE International Conference on Data Engineering, ICDE . 3324–3337. https://doi.org/10.1109/ICDE60146.2024.00257 [18] Amine Mhedhbi and Semih Salihoglu. 2019. Optimizing Subgraph Queries by Combining Binary and Worst-Case Optimal Joins. Proc. VLDB Endow. 12, 11 (2019), 1692–1704. https://doi.org/10.14778/3342263.3342643 [19] Seunghwan Min, Sung Gwan Park, Kunsoo Park, Dora Giammarresi, Giuseppe F. Italiano, and Wook-Shin Han. 2021. Symmetric Continuous Subgraph Matching with Bidirectional Dynamic Programming. Proc. VLDB Endow. 14, 8 (2021), 1298–1310. https://doi.org/10.14778/3457390.3457395 [20] Konstantinos Skitsas, Davide Mottin, and Panagiotis Karras. 2025. Pilos: Scalable Large-Subgraph Matching by Online Spectral Filtering. In 41st IEEE International Conference on Data Engineering, ICDE . https://doi.org/10.1109/ICDE65448.2025. 00093 [21] Shixuan Sun and Qiong Luo. 2020. In-Memory Subgraph Matching: An In-depth Study. In Proceedings of the 2020 International Conference on Management of Data, SIGMOD . 1083–1098. https://doi.org/10.1145/3318464.3380581 [22] Shixuan Sun, Xibo Sun, Bingsheng He, and Qiong Luo. 2022. RapidFlow: An Efficient Approach to Continuous Subgraph Matching. Proc. VLDB Endow. 15, 11 (2022), 2415–2427. https://doi.org/10.14778/3551793.3551803 [23] Xibo Sun, Shixuan Sun, Qiong Luo, and Bingsheng He. 2022. An In-Depth Study of Continuous Subgraph Matching. Proc. VLDB Endow. 15, 7 (2022), 1403–1416. https://doi.org/10.14778/3523210.3523218 [24] Zhao Sun, Hongzhi Wang, Haixun Wang, Bin Shao, and Jianzhong Li. 2012. Efficient Subgraph Matching on Billion Node Graphs. Proc. VLDB Endow. 5, 9 (2012), 788–799. https://doi.org/10.14778/2311906.2311907 [25] Xi Wang, Qianzhen Zhang, Deke Guo, and Xiang Zhao. 2023. A survey of continuous subgraph matching for dynamic graphs. Knowl. Inf. Syst. 65, 3 (2023), 945–989. https://doi.org/10.1007/s10115-022-01753-x [26] Rongjian Yang, Zhijie Zhang, Weiguo Zheng, and Jeffrey Xu Yu. 2023. Fast Con-tinuous Subgraph Matching over Streaming Graphs via Backtracking Reduction. 
+
+Proc. ACM Manag. Data 1, 1 (2023), 15:1–15:26. https://doi.org/10.1145/3588695 [27] Yutong Ye, Xiang Lian, Nan Zhang, and Mingsong Chen. 2025. Continuous Sub-graph Matching via Cost-Model-based Dynamic Vertex Dominance Embeddings. 
+
+Proc. ACM Manag. Data 3, 6 (2025). https://doi.org/10.1145/3769774 [28] Zhijie Zhang, Yujie Lu, Weiguo Zheng, and Xuemin Lin. 2024. A Comprehensive Survey and Experimental Study of Subgraph Matching: Trends, Unbiasedness, and Interaction. Proc. ACM Manag. Data 2, 1 (2024). https://doi.org/10.1145/ 3639315
