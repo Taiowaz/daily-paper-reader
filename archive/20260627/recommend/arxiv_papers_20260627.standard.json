@@ -1,0 +1,352 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-27T20:16:52.972267+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 4,
+    "deep_divecandidates": 3,
+    "deep_cap": 9,
+    "deep_selected": 3,
+    "quick_candidates": 5,
+    "quick_skim_target": 14,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2606.22146v1",
+      "source": "arxiv",
+      "title": "Meta-Reinforcement Learning via Evolution for Multi-Objective Combinatorial Supply Chain Optimisation",
+      "abstract": "Meta-reinforcement learning is a promising approach to multi-objective optimisation because it enables rapid policy adaptation across changing environments and preference settings. However, conventional few-shot methods usually fine-tune from a single shared meta-policy, which can reduce solution diversity and limit exploration of the Pareto front, especially in high-dimensional combinatorial problems such as supply chain optimisation. We propose a population-based Meta-reinforcement learning framework that combines decomposition with evolutionary search in scalarisation weight space. The framework maintains a population of weight vectors, each associated with a distinct meta-policy trained through gradient-based meta-learning, and iteratively refines this population through elitist selection, crossover, and mutation guided by hypervolume and entropy contributions. We evaluate the method in a multi-objective supply chain setting with conflicting economic, environmental, and social goals, and further test its generality on standard reinforcement learning problems. The results show that the proposed approach yields more diverse, better distributed Pareto front approximations, improves cross-task adaptation, increases hypervolume by up to 32\\% over Meta-multi-objective reinforcement learning in the complex case, and attains the lowest average Hausdorff distance among all compared methods.",
+      "authors": [
+        "Rifny Rachman",
+        "Bahrul Ilmi Nasution",
+        "Josh Tingey",
+        "Richard Allmendinger",
+        "Pradyumn Shukla",
+        "Wei Pan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-20T16:55:48+00:00",
+      "link": "https://arxiv.org/pdf/2606.22146v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes a population-based meta-reinforcement learning framework, a clear meta-learning algorithm",
+      "llm_evidence_cn": "提出基于种群的元强化学习框架，是一种明确的元学习算法",
+      "llm_evidence": "提出基于种群的元强化学习框架，是一种明确的元学习算法",
+      "canonical_evidence": "提出基于种群的元强化学习框架，是一种明确的元学习算法",
+      "llm_tldr_en": "Introduces a population-based meta-reinforcement learning method that combines decomposition and evolutionary search for multi-objective combinatorial optimization, enabling rapid policy adaptation.",
+      "llm_tldr_cn": "针对传统元强化学习在解决高维多目标组合优化（如供应链优化）时从单一元策略微调导致解多样性不足的问题，提出结合分解与进化搜索的种群式元强化学习框架。该框架维护一组权重向量，每个对应一个独立元策略，通过梯度元学习训练，并利用进化算法在权重空间搜索，从而更好地探索帕累托前沿。实验表明，在多目标供应链优化任务中，该方法显著提升了适应速度和解的质量。为元学习与进化算法的结合提供了新方向。",
+      "llm_tldr": "针对传统元强化学习在解决高维多目标组合优化（如供应链优化）时从单一元策略微调导致解多样性不足的问题，提出结合分解与进化搜索的种群式元强化学习框架。该框架维护一组权重向量，每个对应一个独立元策略，通过梯度元学习训练，并利用进化算法在权重空间搜索，从而更好地探索帕累托前沿。实验表明，在多目标供应链优化任务中，该方法显著提升了适应速度和解的质量。为元学习与进化算法的结合提供了新方向。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "meta learning algorithms and learning to learn approaches",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.23208v1",
+      "source": "arxiv",
+      "title": "Leveraging AutoML for Sustainable Deep Learning: A Multi-Objective HPO Approach on Deep Shift Neural Networks",
+      "abstract": "Deep Learning (DL) has advanced various fields by extracting complex patterns from large datasets. However, the computational demands of DL models pose environmental and resource challenges. Deep Shift Neural Networks (DSNNs) present a solution by leveraging shift operations to reduce computational complexity at inference. Compared to common DNNs, DSNNs are still less well understood and less well optimized. By leveraging AutoML techniques, we provide valuable insights into the potential of DSNNs and how to design them in a better way. We focus on image classification, a core task in computer vision, especially in low-resource environments. Since we consider complementary objectives such as accuracy and energy consumption, we combine state-of-the-art multi-fidelity (MF) hyperparameter optimization (HPO) with multi-objective optimization to find a set of Pareto optimal trade-offs on how to design DSNNs. Our approach led to significantly better configurations of DSNNs regarding loss and emissions compared to default DSNNs. This includes simultaneously increasing performance by about 20% and reducing emissions, in some cases by more than 60%. Investigating the behavior of quantized networks in terms of both emissions and accuracy, our experiments reveal surprising model-specific trade-offs, yielding the greatest energy savings. For example, in contrast to common expectations, quantizing smaller portions of the network with low precision can be optimal with respect to energy consumption while retaining or improving performance. We corroborated these findings across multiple backbone architectures, highlighting important nuances in quantization strategies and offering an automated approach to balancing energy efficiency and model performance.",
+      "authors": [
+        "Leona Hennig",
+        "Marius Lindauer"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-22T11:53:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.23208v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Multi-objective HPO on Deep Shift Networks for accuracy-energy trade-off, exemplifying AutoML hyperparameter optimization.",
+      "llm_evidence_cn": "在深度移位网络上应用多目标超参数优化实现精度-能耗权衡，体现AutoML超参数优化技术。",
+      "llm_evidence": "在深度移位网络上应用多目标超参数优化实现精度-能耗权衡，体现AutoML超参数优化技术。",
+      "canonical_evidence": "在深度移位网络上应用多目标超参数优化实现精度-能耗权衡，体现AutoML超参数优化技术。",
+      "llm_tldr_en": "This paper applies multi-objective hyperparameter optimization to Deep Shift Neural Networks, automatically finding configurations that balance accuracy and energy efficiency for sustainable deep learning.",
+      "llm_tldr_cn": "为解决深度学习高计算能耗问题，本文探索利用AutoML中的多目标超参数优化技术，针对深度移位神经网络（DSNN）自动搜索精度高且能耗低的模型配置。在图像分类任务上的实验表明，该方法能取得优于手动设计的准确率-能耗权衡，证实了AutoML在可持续深度学习中的应用价值。",
+      "llm_tldr": "为解决深度学习高计算能耗问题，本文探索利用AutoML中的多目标超参数优化技术，针对深度移位神经网络（DSNN）自动搜索精度高且能耗低的模型配置。在图像分类任务上的实验表明，该方法能取得优于手动设计的准确率-能耗权衡，证实了AutoML在可持续深度学习中的应用价值。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "techniques for neural architecture search and hyperparameter optimization",
+      "matched_requirement_id": "req-36",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22610v1",
+      "source": "arxiv",
+      "title": "PaperClaw: Harnessing Agents for Autonomous Research and Human-in-the-Loop Refinement",
+      "abstract": "Large language models have become capable reasoners and tool users that write and run code and search the literature, which makes automating the research process itself a realistic goal. We present PAPERCLAW, a harnessed multi-agent system that carries a project autonomously, from a field of study to a finished paper. PAPERCLAW curates a domain from a field's live literature, datasets, and code; brainstorms it into an idea with a pre-registered main-result contract; and drives a stoppable hypothesis map through an iterative propose, test, reflect loop that grows only from measured verdicts and halts once the evidence supports the idea, at which point it writes a venue-compliant paper. A full-lifecycle memory keeps each stage in a single living record, so a long run can be paused, inspected, and resumed without losing context. At the centre is an in-cycle research assistant with research tools and skills: it can drive the whole pipeline on its own, while the same interface lets a person step in at any stage, turning a first autonomous draft into a stronger paper through human-in-the-loop refinement. Throughout, PAPERCLAW keeps its output grounded and checkable, citing only references validated against open scholarly indexes and reporting results that genuinely ran. An evaluation with an LLM judge finds that PAPERCLAW produces strong papers both fully autonomously and with human-in-the-loop refinement.",
+      "authors": [
+        "Weiwei Ye",
+        "Hangchen Liu",
+        "Dongyuan Li",
+        "Renhe Jiang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-21T17:37:01+00:00",
+      "link": "https://arxiv.org/pdf/2606.22610v1",
+      "tags": [
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "autonomous multi-agent system that curates literature, brainstorms ideas, conducts experiments, and writes papers, automating the research process",
+      "llm_evidence_cn": "自主多智能体系统，自动整理文献、头脑风暴、执行实验并撰写论文，实现研究流程自动化",
+      "llm_evidence": "自主多智能体系统，自动整理文献、头脑风暴、执行实验并撰写论文，实现研究流程自动化",
+      "canonical_evidence": "自主多智能体系统，自动整理文献、头脑风暴、执行实验并撰写论文，实现研究流程自动化",
+      "llm_tldr_en": "PAPERCLAW is a multi-agent system that autonomously conducts a research project from literature survey to paper writing, using LLMs for reasoning and tool use, demonstrating end-to-end automation of scientific discovery.",
+      "llm_tldr_cn": "针对科学研究自动化这一现实目标，PAPERCLAW设计了一种多智能体系统，它能够从领域文献、数据集和代码库出发，自主进行头脑风暴形成带预注册主要结果契约的假设，通过可停止的假设地图驱动迭代式提议-测试-反思循环，直至证据支持假设后写出符合投稿要求的论文。该系统展示了大型语言模型作为推理和工具使用者，在完整科研流程中实现端到端自动化的潜力，为自动化科学发现提供了新范式。",
+      "llm_tldr": "针对科学研究自动化这一现实目标，PAPERCLAW设计了一种多智能体系统，它能够从领域文献、数据集和代码库出发，自主进行头脑风暴形成带预注册主要结果契约的假设，通过可停止的假设地图驱动迭代式提议-测试-反思循环，直至证据支持假设后写出符合投稿要求的论文。该系统展示了大型语言模型作为推理和工具使用者，在完整科研流程中实现端到端自动化的潜力，为自动化科学发现提供了新范式。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automated scientific research and discovery systems",
+      "matched_requirement_id": "req-30",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.23875v1",
+      "source": "arxiv",
+      "title": "On the Semantics of Generative SPARQL",
+      "abstract": "We extend SPARQL with a generative query construct, called \\tx{GenOp}, whose evaluation calls a language model and produces typed solution mappings. We define the semantics of the GenOp in the query in a way that maintains the fixed-dataset assumption, on which formal semantics of SPARQL build, and extend solution mappings with values generated by the language model. We formalize the semantics of the extended language over these mappings using a compatibility relation that generalizes equality and supports similarity-based matching between RDF terms and generated values. We analyze the semantic consequences of generative query patterns, focusing on mapping-level recursion induced by the reuse of generated bindings. Under deterministic bounded generation and finite candidate coverage assumptions, we characterize acyclic and stratified fragments with fixpoint semantics, establish algebraic equivalence and semantics-preserving rewrite rules, and provide an executable evaluation method; and we show that data and combined complexity coincide with those of standard SPARQL.",
+      "authors": [
+        "Ratan Bahadur Thapa",
+        "Steffen Staab"
+      ],
+      "primary_category": "cs.DB",
+      "categories": [
+        "cs.DB"
+      ],
+      "published": "2026-06-22T19:21:41+00:00",
+      "link": "https://arxiv.org/pdf/2606.23875v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "extends SPARQL with generative query construct calling a language model for graph querying",
+      "llm_evidence_cn": "扩展SPARQL生成式查询，调用语言模型进行图查询",
+      "llm_evidence": "扩展SPARQL生成式查询，调用语言模型进行图查询",
+      "canonical_evidence": "扩展SPARQL生成式查询，调用语言模型进行图查询",
+      "llm_tldr_en": "This paper extends SPARQL with a generative operator calling an LLM to produce solution mappings, enabling similarity-based matching for RDF graph queries. It formalizes the semantics, exploring recursion and bounded generation, bridging LLMs and graph query languages.",
+      "llm_tldr_cn": "该论文扩展了SPARQL语言，引入生成式操作符调用大语言模型来产生类型化的解映射，支持基于相似性的匹配，从而增强了对RDF图的查询能力。形式化地定义了扩展语义并分析了生成式查询模式下的映射级递归。此项工作在保障固定数据集假设的前提下，将LLM引入图查询语言，为知识图谱上的灵活查询提供了理论基础。",
+      "llm_tldr": "该论文扩展了SPARQL语言，引入生成式操作符调用大语言模型来产生类型化的解映射，支持基于相似性的匹配，从而增强了对RDF图的查询能力。形式化地定义了扩展语义并分析了生成式查询模式下的映射级递归。此项工作在保障固定数据集假设的前提下，将LLM引入图查询语言，为知识图谱上的灵活查询提供了理论基础。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.21929v1",
+      "source": "arxiv",
+      "title": "Selective Ensemble Based on Preference-Directed Multi-Objective Bandits",
+      "abstract": "Selective ensemble for modern machine learning systems requires choosing promising model candidates under limited evaluation budgets, while downstream tasks often specify only partial preferences over capabilities such as accuracy, robustness, and reasoning. This setting naturally gives rise to a sequential decision problem under partially specified linear preferences. We formalize it as preference-directed multi-objective bandits (PDMOB), where admissible trade-offs are represented by a polyhedral preference cone. Based on this formulation, we introduce Pareto $C$-optimality, which recovers standard Pareto optimality and single-weight scalarization as special cases. We then propose the preference-directed upper confidence bound (PrefUCB) algorithm, which maintains directional confidence intervals to guide exploration. We analyze both indicator-based and gap-weighted regret, and establish instance-dependent logarithmic bounds for both criteria, recovering the optimal logarithmic dependence on the horizon $T$ in classical special cases. Experiments on large pre-trained model selective ensemble tasks and online asset allocation under institutional mandates validate the efficacy of our method.",
+      "authors": [
+        "Lanjihong Ma",
+        "Zhen-Yu Zhang",
+        "Masashi Sugiyama",
+        "Zhi-Hua Zhou"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-20T07:52:46+00:00",
+      "link": "https://arxiv.org/pdf/2606.21929v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:ml",
+        "query:EFMR",
+        "query:ml"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "selecting promising model candidates under limited evaluation budgets aligns with automated model selection",
+      "llm_evidence_cn": "在有限评估预算下选择有前景的模型候选，符合自动化模型选择",
+      "llm_evidence": "在有限评估预算下选择有前景的模型候选，符合自动化模型选择",
+      "canonical_evidence": "在有限评估预算下选择有前景的模型候选，符合自动化模型选择",
+      "llm_tldr_en": "Proposes a preference-directed multi-objective bandit approach for selective ensemble that chooses model candidates with limited evaluation, addressing partial user preferences on capabilities.",
+      "llm_tldr_cn": "针对有限评估预算下模型选择需兼顾部分偏好（如准确率、鲁棒性、推理能力）的问题，提出偏好导向多目标老虎机（PDMOB）框架与PrefUCB算法。该框架将模型选择形式化为序贯决策，利用多面体偏好锥表示可接受折衷，引入Pareto C-最优概念。实验表明方法能在有限预算下有效选择模型，平衡多目标，为自动化模型选择提供了一种灵活且理论支撑的策略。",
+      "llm_tldr": "针对有限评估预算下模型选择需兼顾部分偏好（如准确率、鲁棒性、推理能力）的问题，提出偏好导向多目标老虎机（PDMOB）框架与PrefUCB算法。该框架将模型选择形式化为序贯决策，利用多面体偏好锥表示可接受折衷，引入Pareto C-最优概念。实验表明方法能在有限预算下有效选择模型，平衡多目标，为自动化模型选择提供了一种灵活且理论支撑的策略。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automated model selection strategies and algorithms",
+      "matched_requirement_id": "req-29",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.24679v1",
+      "source": "arxiv",
+      "title": "FlowPipe: LLM-Enhanced Conditional Generative Flow Networks for Data Preparation Pipeline Construction",
+      "abstract": "Data preparation pipelines improve data quality in machine learning by transforming raw tables into learning-ready data through sequential cleaning and feature transformation operators. However, automatically constructing such pipelines is computationally difficult because operator sequences are combinatorial and end-to-end evaluation is expensive. Existing state-of-the-art (SOTA) Multi-DQN methods still face three key limitations: decoupled value estimators weaken long-horizon credit assignment, dataset context is only weakly injected into the policy, and exploration is inefficient in a sparse search space with many invalid states. To address these issues, we propose FlowPipe, a unified framework that formulates pipeline synthesis as conditional probabilistic flow generation over a directed acyclic graph. FlowPipe uses Conditional Generative Flow Networks (C-GFlowNets) with a Trajectory Balance objective to connect terminal validation rewards with early pipeline decisions. It further introduces Deep Semantic Modulation through Feature-wise Linear Modulation (FiLM), allowing LLM-derived logical priors to condition the policy's internal activations according to dataset semantics. In addition, FlowPipe incorporates failure awareness into the flow objective to avoid invalid states and concentrate search on high-potential regions. Experiments on two benchmark suites with 74 real-world datasets show that FlowPipe outperforms SOTA baselines, improving accuracy by 11.96% on average and achieving 12.5x faster training convergence. Source code is available at https://github.com/KunyuNi/FlowPipe.",
+      "authors": [
+        "Kunyu Ni",
+        "Lei Cao",
+        "Jie He",
+        "Xiaotong Zhang",
+        "Jianfeng Jin",
+        "Junyu Dong",
+        "Yanwei Yu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-23T15:10:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.24679v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Automated data pipeline construction with LLM-enhanced generative flow networks advances AutoML methods.",
+      "llm_evidence_cn": "通过LLM增强的生成流网络实现数据管道自动构建，推动AutoML方法发展。",
+      "llm_evidence": "通过LLM增强的生成流网络实现数据管道自动构建，推动AutoML方法发展。",
+      "canonical_evidence": "通过LLM增强的生成流网络实现数据管道自动构建，推动AutoML方法发展。",
+      "llm_tldr_en": "FlowPipe proposes a conditional generative flow network enhanced with LLMs to automate data preparation pipeline construction, outperforming Multi-DQN baselines in handling complex combinatorial search and weak supervision.",
+      "llm_tldr_cn": "现有自动化数据准备管道构建方法面临信用分配弱、上下文利用不足与探索效率低等问题。本文提出FlowPipe，将管道构建形式化为条件生成流网络，并融合大语言模型增强状态表示，从而在稀疏组合搜索空间中有效指导探索。实验表明，该方法在管道构建效果和效率上均优于现有方法，推进了AutoML中数据预处理自动化的发展。",
+      "llm_tldr": "现有自动化数据准备管道构建方法面临信用分配弱、上下文利用不足与探索效率低等问题。本文提出FlowPipe，将管道构建形式化为条件生成流网络，并融合大语言模型增强状态表示，从而在稀疏组合搜索空间中有效指导探索。实验表明，该方法在管道构建效果和效率上均优于现有方法，推进了AutoML中数据预处理自动化的发展。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "latest advances in automated machine learning and AutoML frameworks",
+      "matched_requirement_id": "req-33",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.22180v1",
+      "source": "arxiv",
+      "title": "FeLoG: Scalable and Efficient Distributed Graph Embedding with Feedback Loop Mechanism",
+      "abstract": "Graph embedding maps graph nodes into low-dimensional vectors to support applications such as recommendation, fraud detection, and graph-based retrieval-augmented generation (GraphRAG). As graphs scale to billions of edges, scalable and efficient graph embedding has become increasingly important. Existing frameworks commonly adopt a sampling-training paradigm, in which mini-batches are constructed by sampling nodes and their neighbors. However, sampling is typically decoupled from evolving embedding quality, causing redundant exploration of well-trained regions while under-sampling undertrained nodes. At the system level, such decoupling further leads to excessive communication, serialized execution, and low resource utilization in distributed environments. We present FeLoG, a feedback loop-driven system for scalable distributed graph embedding. (1) FeLoG introduces feedback-coupled sampling and training, dynamically prioritizing undertrained nodes according to real-time embedding-quality feedback, thereby reducing redundant computation and accelerating convergence. (2) It employs activity-aware communication that compresses frequently occurring node sequences to reduce intra-machine PCIe traffic and selectively synchronizes frequently updated embeddings to reduce inter-machine communication. (3) It adopts a round-interleaved pipeline that overlaps next-round sampling with current-round training to improve CPU-GPU utilization. Experiments against six state-of-the-art baselines on large-scale graphs show that FeLoG achieves an average speedup of 27.9x, reduces communication cost by more than 53.1%, and sustains over 80% CPU-GPU utilization.",
+      "authors": [
+        "Peng Fang",
+        "Arijit Khan",
+        "Ziqiang Wu",
+        "Zhenli Li",
+        "Yibo Zhou",
+        "Fang Wang",
+        "Dan Feng"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-06-20T18:21:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.22180v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Graph embedding for GraphRAG, indirectly combined with LLMs",
+      "llm_evidence_cn": "图嵌入用于图增强检索生成，间接结合大语言模型",
+      "llm_evidence": "图嵌入用于图增强检索生成，间接结合大语言模型",
+      "canonical_evidence": "图嵌入用于图增强检索生成，间接结合大语言模型",
+      "llm_tldr_en": "Proposes FeLoG, a scalable distributed graph embedding with feedback loop that adapts sampling to embedding quality, improving efficiency for large graphs in GraphRAG.",
+      "llm_tldr_cn": "针对大规模图嵌入中采样与嵌入质量脱节导致的低效问题，提出反馈循环机制FeLoG，动态调整采样以聚焦欠训练节点。在分布式环境下显著提升嵌入效率，为基于图的检索增强生成等应用提供了可扩展方案。",
+      "llm_tldr": "针对大规模图嵌入中采样与嵌入质量脱节导致的低效问题，提出反馈循环机制FeLoG，动态调整采样以聚焦欠训练节点。在分布式环境下显著提升嵌入效率，为基于图的检索增强生成等应用提供了可扩展方案。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph representation learning combined with large language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.25293v1",
+      "source": "arxiv",
+      "title": "Communicability-Inspired Positional Encoding (CIPE)",
+      "abstract": "Positional encodings (PEs) are essential for Transformers. Yet designing effective PEs for non-Euclidean graphs remains challenging. Such encodings should ideally induce an Attention-Compatible Geometry for self-attention: not merely describing graph structure, but defining a geometry whose inner products reflect meaningful structural relatedness. To realize this geometry, we propose Communicability-Inspired Positional Encoding (CIPE), built from communicability, a measure between pairs of nodes that aggregates contributions from paths of all lengths. By construction, CIPE inner products recover communicability, converting global multi-path connectivity into an attention-ready similarity geometry. For practical Transformer training, we introduce dimensionality alignment, mapping graph-size-dependent CIPE representations to prescribed dimensions while faithfully preserving the induced geometry. Empirically, CIPE improves structure-agnostic Transformers by 35.5% on average across seven benchmarks, outperforming representative PEs; it also consistently improves structure-biased graph Transformers, where competing PEs often yield only marginal benefits. These results position CIPE as a principled framework for attention-compatible graph positional encodings.",
+      "authors": [
+        "Yipeng Zhang",
+        "Zhongtian Sun",
+        "Pietro Liò",
+        "Kelin Xia"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-24T01:56:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.25293v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Communicability-inspired positional encoding for graph Transformers, bridging graph structure and attention for potential LLM integration.",
+      "llm_evidence_cn": "基于可传播性的图Transformer位置编码，为图结构与注意力机制的融合提供新方案，可集成到LLM中。",
+      "llm_evidence": "基于可传播性的图Transformer位置编码，为图结构与注意力机制的融合提供新方案，可集成到LLM中。",
+      "canonical_evidence": "基于可传播性的图Transformer位置编码，为图结构与注意力机制的融合提供新方案，可集成到LLM中。",
+      "llm_tldr_en": "CIPE proposes a graph positional encoding using communicability to induce an attention-compatible geometry, enabling Transformer-based learning on non-Euclidean graphs.",
+      "llm_tldr_cn": "设计有效的图位置编码是图Transformer的关键挑战。本文提出CIPE，利用节点间可传播性度量构建位置编码，其内积能恢复图的多路径连接性，为自注意力机制提供结构相关的几何空间。通过维度对齐和实用训练策略，CIPE在多个图任务上优于现有编码方法。该方法为图结构与LLM的注意力机制融合提供了新的可能。",
+      "llm_tldr": "设计有效的图位置编码是图Transformer的关键挑战。本文提出CIPE，利用节点间可传播性度量构建位置编码，其内积能恢复图的多路径连接性，为自注意力机制提供结构相关的几何空间。通过维度对齐和实用训练策略，CIPE在多个图任务上优于现有编码方法。该方法为图结构与LLM的注意力机制融合提供了新的可能。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph machine learning techniques for large language models",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
