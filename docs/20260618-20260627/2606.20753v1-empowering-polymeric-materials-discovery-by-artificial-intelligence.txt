@@ -1,0 +1,1619 @@
+Title: Microsoft Word - Perspective
+
+URL Source: https://arxiv.org/pdf/2606.20753v1
+
+Published Time: Tue, 23 Jun 2026 00:06:34 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# Empowering Polymeric Materials Discovery by Artificial 
+
+# Intelligence 
+
+Chenyao Ma #a , Linda Zhang #c d , Yuheng Chen #f , Wei Du #a b , Shangwen Fang #g , Zihao 
+
+Jiang #h , Chuanyu Liu #i , Xinyu Ma #a , Rui Su #a , Gang Wang #j , Muyao Yu #k , Dong 
+
+Zhong #a , Jie Zhu #l , Weibo Gong b, Huan Gu a, Limin Li a b , Chen Shen b, Rui Wu b,
+
+Zhenghao Wu m, Kan Xu a, Min Zhou n, Donglin He * h, Xiayun Huang * l, Shan Jiang 
+
+*k, Pengfei Ou * g, Jiayu Peng * i, Yuwei Zhang * f, Jie Zhao * j, Di Zhang * c d , Piao Ma 
+
+*a b , Zhenghao Li * e, and Hao Li * c
+
+a. Suzhou MatSource Technology Co., Ltd., Suzhou 215000, Jiangsu, China. 
+
+b. Gusu Laboratory of Materials, Suzhou 215000, Jiangsu, China. 
+
+c. Advanced Institute for Materials Research (WPI-AIMR), Tohoku University, Sendai 
+
+980-8577, Japan. 
+
+d. Frontier Research Institute for Interdisciplinary Sciences (FRIS), Tohoku University, 
+
+Sendai, 980-8577, Japan. 
+
+e. State Key Laboratory of Advanced Environmental Technology, Department of 
+
+Environmental Science and Engineering, University of Science and Technology of 
+
+China, 230026, China. 
+
+f. Jiangsu Key Laboratory of New Power Batteries, Jiangsu Collaborative Innovation 
+
+Centre of Biomedical Functional Materials, School of Chemistry and Materials Science, 
+
+Nanjing Normal University, Nanjing 210023, P.R. China. 
+
+g. Department of Chemistry, National University of Singapore, Singapore, Singapore. 
+
+h. Thrust of Sustainable Energy and Environment, The Hong Kong University of 
+
+Science and Technology (Guangzhou), Guangdong, Guangzhou, 511453, China. 
+
+i. Department of Materials Design and Innovation, University at Buffalo, Buffalo, NY 
+
+14260, USA. 
+
+j. College of Smart Materials and Future Energy, State Key Laboratory of Molecular 
+
+Engineering of Polymers, Fudan University, Shanghai 200433, China. 
+
+k. School of Physical Science and Technology, Shanghai tech University, Shanghai 
+
+201210, P.R. China. 
+
+l. The State Key Laboratory of Molecular Engineering of Polymers and Department of 
+
+Macromolecular Science, Fudan University, Shanghai 200438, People’s Republic of 
+
+China. 
+
+m. Department of Chemistry and Materials Science, Xi'an J Liverpool University, 
+
+Suzhou 215123, Jiangsu, P. R. China. 
+
+n. Key Laboratory of Electroanalytical Chemistry, Changchun Institute of Applied 
+
+Chemistry, Chinese Academy of Sciences, Changchun, 130022, China. 
+
+# These authors contributed equally. 
+
+* Corresponding Authors: 
+
+Donglin He * h, donglinhe@hkust-gz.edu.cn 
+
+Xiayun Huang * l, huangxiayun@fudan.edu.cn Shan Jiang * k, jiangshan@shanghaitech.edu.cn 
+
+Pengfei Ou * g, pengf.ou@nus.edu.sg 
+
+Jiayu Peng * i, jypeng@buffalo.edu 
+
+Yuwei Zhang * f, ywzhang@nnu.edu.cn 
+
+Jie Zhao * j, jiezhao@fudan.edu.cn 
+
+Di Zhang * c d , di.zhang.a8@tohoku.ac.jp 
+
+Piao Ma * a b , mapiao@matsourceai.com 
+
+Zhenghao Li * e, lizhhao@ustc.edu.cn 
+
+Hao Li * c, li.hao.b8@tohoku.ac.jp Abstract 
+
+Polymeric materials underpin modern technologies spanning energy storage, 
+
+microelectronics, healthcare and sustainable manufacturing. Yet their rational design 
+
+remains exceptionally challenging because material performance emerges from 
+
+complex interactions among molecular composition, chain architecture, processing 
+
+history and hierarchical structural evolution across multiple length and time scales. 
+
+Consequently, polymer research has long relied on labor-intensive experimentation and 
+
+fragmented modeling approaches, limiting both mechanistic understanding and 
+
+innovation efficiency. Recent advances in data infrastructure, machine learning, large 
+
+artificial intelligence (AI) models and laboratory automation are beginning to reshape 
+
+this landscape. Rather than functioning as isolated tools, polymer databases, predictive 
+
+models, AI agents and automated laboratories are increasingly converging into 
+
+interconnected discovery ecosystems. As a result, the central challenge is shifting from 
+
+improving predictive accuracy alone to enabling reliable decision-making, adaptive 
+
+learning and seamless integration across computation, experimentation and scientific 
+
+reasoning. We argue that polymer science is entering an era of autonomous discovery, 
+
+in which data, simulation, reasoning and experimentation operate within self-improving 
+
+feedback loops that continuously generate hypotheses, design materials, execute 
+
+experiments and refine predictive models. By unifying molecular design, process 
+
+optimization, experimental validation and industrial translation, such autonomous 
+
+ecosystems establish a more predictive, reproducible and scalable paradigm for 
+
+polymer innovation, fundamentally transforming how polymer research is conducted. 1. Introduction 
+
+Polymeric materials, macromolecules assembled from repeated monomer units, 
+
+are indispensable to industrial manufacturing and high-tech applications such as 
+
+automotive 1, electronics 2 and healthcare 3. Representing the mainstream of polymeric 
+
+materials, global plastic production totals approximately 431 million metric tons in 
+
+2025, and is expected to grow to roughly 500 million metric tons by 2030 amid steady 
+
+expansion of plastics and thermoplastics 4. Nevertheless, the rapid development of the 
+
+industry is constrained by inherent material properties 5. Characterized by complex 
+
+structures and dynamic behaviors from molecular to macroscopic levels, they are 
+
+difficult to design rationally, so traditional research still relies on inefficient trial-and-
+
+error testing 6.
+
+Figure 1. AI-Enabled Innovation in Polymeric Materials: From Discovery to Closed-Loop 
+
+Applications. This framework depicts a hierarchically integrated workflow that underpins data-
+
+driven polymer innovation. Starting from the Polymeric Materials Databases, which provide 
+
+standardized structural, processing, and performance data, regression models serve as decision 
+
+engines to enable rapid structure–property prediction. MLIPs act as the physical foundation, 
+
+bridging quantum and mesoscale material behaviors to expand cross-scale predictive capability. 
+
+Large AI models and intelligent agents further orchestrate scientific reasoning, inverse design, and 
+
+full experimental workflows. The cycle is completed by AI-driven automated synthesis, where 
+
+polymer candidates are synthesized and characterized, and real-time experimental data is fed back 
+
+to update the databases and computational models. This iterative loop forms a self-consistent pipeline, enabling continuous self-optimization and accelerating polymer discovery across diverse 
+
+> applications including batteries, photoresists, membrane separation, and biomedical polymers.
+
+Emerging tools, including artificial intelligence (AI), multiscale simulations, and 
+
+automated laboratories, promise to navigate this complexity 7. While powerful, these 
+
+approaches remain constrained by fragmented datasets, inconsistent characterization 
+
+standards, sparse polymer-specific benchmarks, and weak integration between 
+
+computation and experiment 8. Most current strategies focus on individual workflow 
+
+segments, failing to transform the overall research paradigm 9. Moving beyond isolated 
+
+predictive tools, the next leap requires integrated, self-evolving digital polymer 
+
+ecosystems that translate computational predictions into reliable experimental and 
+
+engineering decisions. 
+
+Herein, we define six core modules that constitute the full-chain intelligent 
+
+polymer discovery ecosystem: Polymer databases are standardized repositories that 
+
+curate experimental, simulated and industrial polymer data for long-term data storage 
+
+and circulation 10 . Regression models refer to data-driven computational tools to 
+
+establish quantitative structure-performance correlations between microscopic chain 
+
+structures and macroscopic functional properties of polymers 11 . MLIPs are physics-
+
+based simulation potentials fitted from quantum datasets, which enable accurate 
+
+prediction of atomistic conformational evolution and interfacial interactions of polymer 
+
+chains 12 . Domain-adapted large AI models are fine-tuned large language models 
+
+specialized in polymer structure interpretation, literature mining and macromolecular 
+
+generation 13 . AI agents are task-oriented intelligent executors capable of autonomous 
+
+decision-making, workflow rearrangement and cross-module interactive iteration 14 .
+
+Autonomous laboratories denote robotic closed-loop experimental platforms that 
+
+accomplish unmanned polymer synthesis, in-situ characterization and real-time 
+
+experimental data backfeeding 15 .
+
+On the basis of the definition and functional division of the above six modules, 
+
+this Perspective discusses how to synergize polymer databases (Figure 1, upper left) ,
+
+regression models, machine learning interatomic potentials (Figure 1, upper right) ,
+
+large AI models, AI agents (Figure 1, lower right) , and autonomous laboratories (Figure 1, lower left) can be synergistically combined to form such ecosystems. 
+
+Closed-loop feedback across data, simulation, reasoning, and experimentation enables 
+
+adaptive, scalable, and fully predictive polymer discovery, accelerating the 
+
+development and real-world deployment of next-generation functional polymers 
+
+(Figure 1) .
+
+## 2. Polymeric Materials Databases 
+
+Reliable and standardized data underpin all AI-powered polymer research. 
+
+Polymers are governed by complex multiscale interactions among chemical 
+
+composition, chain architecture, molecular-weight distributions, processing conditions, 
+
+and hierarchical morphology, making the construction of dedicated data infrastructures 
+
+substantially more challenging than for many small molecules or inorganic materials 11 .
+
+Fragmented datasets, inconsistent reporting practices, and limited interoperability 
+
+remain major barriers to developing robust and transferable AI models 16 .
+
+Modern polymer databases have evolved into essential infrastructures for 
+
+predictive modeling, simulation, and autonomous experimentation, and can be broadly 
+
+categorized into experimental, computational, and integrated platforms 17 . Flagship 
+
+resources such as PoLyInfo 18 and the NIST Polymer Database (experimental), the 
+
+Materials Project 19 , Organic Materials Database (OMDB) 20 , and Novel Materials 
+
+Discovery (NOMAD) 21 (computational), and the Polymer Genome Initiative 22 
+
+(integrated) collectively provide curated experimental measurements, computational 
+
+descriptors, and integrated analytical frameworks that support structure–property 
+
+prediction, inverse design, and large-scale exploration of polymer chemical space. 
+
+Different databases focus on distinct material features: experimental ones on basic 
+
+performance, computational ones on microscopic properties, and integrated ones on 
+
+prediction and inverse design. Beyond serving as repositories, polymer databases are 
+
+increasingly becoming engines for scientific discovery. For example, large-scale 
+
+mining of degradation datasets has revealed that polymer solubility can govern 
+
+degradation pathways, challenging conventional assumptions and demonstrating how 
+
+data-driven analysis can uncover previously overlooked scientific principles 23,24 (Figure 2) . 
+
+> Figure 2 Classes of polymeric materials databases and their roles in AI-driven discovery. This
+> schematic illustrates how three categories of polymer databases support machine learning (ML)-
+> driven materials discovery. (i) Experimental databases provide measured data for thermal properties,
+> mechanical properties, and degradation behavior. (ii) Computational databases offer calculated data
+> on electronic structure, dielectric behavior, and optical properties. (iii) Integrated platforms enable
+> end-to-end property prediction and inverse design strategies.
+
+However, the primary bottleneck sometimes is not data volume itself, but the lack 
+
+of interoperable representations, uncertainty quantification, and cross-scale integration, 
+
+which limits model transferability across polymer classes, laboratories, and 
+
+applications. To move forward, researchers need to build cross-scale processing– 
+
+structure–property–performance infrastructures, standardized metadata schemas and 
+
+uncertainty-aware data frameworks to characterize experimental variations and 
+
+material heterogeneity. Ultimately, polymer databases will transit from static 
+
+repositories to interconnected dynamic knowledge ecosystems integrating simulation, 
+
+experimentation, predictive modelling and autonomous labs. These advanced platforms 
+
+serve not only as data suppliers, but also as enablers for iterative learning and rational 
+
+decision-making, underpinning self-improving discovery ecosystems capable of 
+
+continuously generating, validating, and refining scientific knowledge. With 
+
+standardized and reliable data available, regression models can fully exert their strengths in property prediction and experimental guidance. 
+
+## 3. Regression Models as Decision Engines for Polymer Discovery 
+
+Among AI methods applied to polymer science, regression models remain one of 
+
+the most practical and widely adopted approaches owing to their balance of predictive 
+
+performance, interpretability, and data efficiency 17,25 . Particularly well suited to sparse 
+
+and heterogeneous polymer datasets, they increasingly support not only property 
+
+prediction but also materials screening, inverse design, uncertainty quantification, and 
+
+closed-loop optimization 26 . As their role expands from forecasting properties to guiding 
+
+decisions, regression frameworks are becoming essential components of autonomous 
+
+polymer discovery workflows, linking molecular design, processing conditions, and 
+
+functional performance 27 .                
+
+> Figure 3. Machine learning-assisted design and regression modeling for polymer electrolytes
+> (batteries) and photoresists. (a) Machine learning workflow for polymer electrolyte design:
+> experimental database construction, graph neural network and Gaussian process modeling, transfer
+> learning, and prediction of ionic conductivity, transference number, and electrochemical stability. (b) Correlation analysis of molecular descriptors and ionic properties for polymer electrolytes. (c)
+> Regression modeling workflow for predicting the total heat release (THR) of polymeric materials,
+> including data mining, model calibration, K-fold cross-validation, and performance testing. (d)
+> Regression analysis of ionic conductivity versus temperature and the correlation between
+> HOMO/LUMO energy levels and ionic conductivity. (e) Machine learning-driven discovery of
+> novel photoresist materials using DFT data and SHAP feature analysis. (f) Convolutional neural
+> network (CNN)-based classification and optimization of photoresist formulations. (a) ref. 29 © 2020
+> American Chemical Society (b) ref. 30 © 2024 Wiley-VCH GmbH (c) ref. 31 © 2025 Elsevier Ltd.
+> (d) ref. 33 © This work is licensed under the Creative Commons Attribution 4.0 International
+> License (CC BY 4.0). (e) ref. 40 © 2024 American Chemical Society (f) ref. 41 ©2024 American
+> Chemical Society
+
+3.1 Batteries 
+
+Simultaneously maximizing ionic conductivity, electrochemical stability and 
+
+mechanical durability is a persistent bottleneck for solid polymer electrolytes in 
+
+advanced batteries 28 . Linked by intricate interactions between polymer structure, salt 
+
+coordination, chain dynamics, morphology and interfacial characteristics, these 
+
+performance metrics feature unavoidable trade-offs, making traditional trial-and-error 
+
+development expensive and inefficient. 
+
+At present, material design methodologies based on regression algorithms have 
+
+demonstrated prominent advantages. On the one hand, they can accurately predict key 
+
+properties including ionic conductivity 29 , donor number 30 and heat release rate using 
+
+massive experimental datasets 31 (Figure 3a-b) . On the other hand, the combination of 
+
+regression surrogate models and Bayesian optimization enables rapid exploration of the 
+
+high-dimensional formulation space and efficient screening of optimal electrolyte 
+
+systems with high ionic conductivity and a wide electrochemical stability window 32-34 
+
+(Figure 3c-d) . Beyond property forecasting, these models provide actionable decision 
+
+guidance to streamline experimental workflows and speed up electrolyte optimization 35 .
+
+Nevertheless, existing regression frameworks suffer from inherent drawbacks. 
+
+Current datasets are dominated by conductivity data, with insufficient records on 
+
+mechanical performance, interfacial stability, processability and long-term cycling 
+
+durability. This leads to predicted high-conductivity materials that fail to meet real-
+
+world requirements. In addition, the three key performances are usually optimized 
+
+individually, ignoring their underlying physical correlations. Next-generation regression tools must incorporate physical constraints and uncertainty analysis to 
+
+combine compositional, processing, interfacial and operational parameters into holistic 
+
+predictive models. Integrated with active learning, autonomous synthesis and closed-
+
+loop pipelines, they will grow into adaptive decision engines to reconcile competing 
+
+performance demands. Such systems will greatly accelerate industrially viable solid 
+
+electrolyte development, drastically cut R&D cycles, and lay a solid foundation for 
+
+fully autonomous battery materials discovery. 
+
+3.2 Photoresists 
+
+As semiconductor manufacturing advances toward the sub-10-nm regime, 
+
+overcoming the trade-off among photosensitivity, resolution, and line-edge roughness 
+
+(LER) has become a defining challenge 36,37 . These metrics result from complex 
+
+couplings among polymer composition, additives, stochastic photon effects, and 
+
+process variables such as exposure dose, post-exposure bake, developer chemistry, and 
+
+tool-specific conditions. Consequently, conventional trial-and-error methods struggle 
+
+to navigate the high-dimensional design space of next-generation lithography, and 
+
+bridging lab-scale predictions with wafer-scale manufacturing remains a pressing 
+
+industrial requirement 38,39 .
+
+With high interpretability and practical value, regression models map quantitative 
+
+composition–process–performance relationships to speed up formulation screening and 
+
+photoresist design. Data-driven models including convolutional neural networks, 
+
+LightGBM and CatBoost are capable of predicting the exposure and dissolution 
+
+behaviors of chemically amplified resists and uncovering the nonlinear correlations 
+
+between monomer composition and material performance 40 (Figure 3e) . For instance, 
+
+convolutional neural network models have accurately analyzed the intrinsic links 
+
+between polymer monomer components and dissolution behaviors 41 (Figure 3f) .
+
+Gradient boosting algorithms and multi-objective regression methods further expand 
+
+the exploration scope of chemical systems, realize the simultaneous optimization of 
+
+sensitivity, critical dimensions and pattern uniformity, and greatly reduce experimental 
+
+costs and shorten the development cycle 42 .While remarkable progress has been made, substantial challenges still exist. 
+
+Current models rely heavily on composition-focused lab datasets and inadequately 
+
+capture process drift, equipment variability, stochastic patterning, and wafer-scale 
+
+complexities. Moreover, sensitivity, resolution, and LER are often optimized 
+
+independently, ignoring inherent trade-offs. Future frameworks must integrate physical 
+
+constraints and uncertainty quantification, unifying molecular descriptors, process 
+
+parameters, stochastic behaviors, and industrial limits. Combined with Bayesian 
+
+optimization, active learning, digital twins, and autonomous experimentation, such 
+
+models can function as adaptive decision engines, co-optimizing materials and 
+
+manufacturing processes and accelerating the industrial deployment of next-generation 
+
+photoresists. 
+
+Figure 4. Machine learning regression models for polymer materials in membrane separation 
+
+and biomedical applications. (a) Quantitative structure-property relationship (QSPR) modeling 
+
+framework for polymers, illustrating the mapping from structural descriptors to functional 
+
+properties via machine learning pipelines, enabling prediction, optimization, and high-throughput 
+
+screening. (b) Permeability-selectivity trade-off plots for gas separation membranes, showing the 
+
+performance distribution relative to the Robeson upper bound. (c) Polymer prediction and design 
+
+workflow for membrane materials: SMILES-based model development, prediction model validation, 
+
+and high-throughput screening for promising candidates. (d) Linear regression analysis of TNF-α 
+
+and NO secretion with Pearson correlation matrix for immunomodulatory polymer studies. (e) Drug 
+
+scaffold regression and characterization: multi-drug library, electrospinning fabrication setup, and standardized parameter profiling of Ace-DEX scaffolds. (f) Overview of machine learning        
+
+> algorithms (logistic regression, k-nearest neighbor, gradient boosting decision tree, random forest,
+> and neural network) applied to polymer property prediction, with best classification performance of
+> 93.83%. (a) ref. 45 © 2025 The Author(s). SmartMat published by Tianjin University and John
+> Wiley & Sons Australia, Ltd. (b) ref. 46 ©2020 The Authors, some rights reserved; exclusive
+> licensee American Association for the Advancement of Science. No claim to original U.S.
+> Government Works. Distributed under a Creative Commons Attribution NonCommercial License
+> 4.0 (CC BY-NC). (c) ref. 47 © 2024 American Chemical Society (d) ref. 51© 2023 The Authors.
+> Advanced NanoBiomed Research published by Wiley‐VCH GmbH (e) ref. 52 © The Royal Society
+> of Chemistry 2025 (f) ref. 53 © 2025 The Author(s). Advanced Science published by Wiley‐VCH
+> GmbH
+
+3.3 Membrane Separation 
+
+Polymeric membranes have emerged as leading technologies for gas separation, 
+
+water purification, and resource recovery owing to their structural tunability, scalability, 
+
+and low energy requirements 43 . However, their performance is bounded by the Robeson 
+
+upper bound that creates an unavoidable permeability-selectivity trade-off 44 . Coupled 
+
+with highly complex CPSPPr relationships, this barrier greatly limits the output of 
+
+conventional experimental research. Regression models provide an efficient approach 
+
+to navigate complex design spaces and quantify structure–performance relationships 45 
+
+(Figure 4a) .
+
+Regression-based structure–property analysis enables high-throughput virtual 
+
+screening. It has identified promising candidates breaking the CO 2/CH 4 Robeson limit, 
+
+and multitask or graph-assisted regression can accurately predict multi-gas transport 
+
+properties for diverse separation scenarios 46 (Figure 4b) . Such tools streamline 
+
+membrane development by converting molecular information into actionable design 
+
+principles. Beyond gas separation, regression models also deliver excellent 
+
+performance in pervaporation-based separation processes. LightGBM models trained 
+
+on well-curated large datasets achieve a low RMSE of 0.36–0.45 log units 47 (Figure 
+
+4c) . Such models can screen around 10 6 hypothetical polymers and efficiently identify 
+
+candidates with outstanding separation capabilities for organic mixture treatment. Even 
+
+so, existing datasets are largely confined to ideal laboratory conditions, and their 
+
+predictive power cannot be reliably extended to full-scale industrial production. Yet predictive accuracy alone is a poor indicator of industrial utility. Built upon 
+
+ideal lab data, they fail to capture feed variation, fouling, aging and dynamic operational 
+
+changes. The community also tends to prioritize permeability and selectivity alone, 
+
+while neglecting long-term stability and cost competitiveness – key indicators for 
+
+industrialization. Breaking these bottlenecks demands regression frameworks 
+
+embedded with multiscale structural information and process characteristics, which 
+
+combine molecular, morphological and operational descriptors. Together with 
+
+uncertainty analysis and closed-loop autonomous workflows, these models will grow 
+
+into intelligent decision systems for joint material and process optimization, 
+
+accelerating the autonomous discovery of industrially applicable high-performance 
+
+separation membranes. 
+
+3.4 Biomedical Polymers 
+
+Biomedical polymers underpin drug delivery, implants, tissue engineering and 
+
+wound healing 48 . Their functionality relies on complex molecular, cellular and 
+
+physiological interactions in dynamic biological systems. Conventional empirical 
+
+approaches cannot capture such multiscale dynamics, impeding structure –function 
+
+analysis and clinical translation 49,50 .
+
+Regression models effectively reveal structure-bioactivity links between 
+
+molecular descriptors and biological behaviors including protein adsorption, drug 
+
+release and cellular responses 51 (Figure 4d) . Gaussian process and ensemble models 
+
+accurately predict nanoparticle properties and sustained release profiles, enabling 
+
+mechanism-guided polymer design 52,53 (Figure 4e-f) . Though performing well for in 
+
+vitro tests, these tools need integration with patient data, real-time feedback and 
+
+autonomous optimization to achieve clinically meaningful results. 
+
+Predictive accuracy is sometimes not the main limitation; clinical translation poses 
+
+the core challenge. Current models built on in vitro data fail to account for in vivo 
+
+complexities: immune responses, patient heterogeneity, tissue remodeling and 
+
+degradation effects. Strong laboratory performance therefore rarely translates to 
+
+reliable clinical outcomes. In addition, existing models focus merely on bioactivity, disregarding manufacturability, reproducibility, regulation compliance and long-term 
+
+safety. Future cross-scale regression frameworks must unify molecular, cellular, 
+
+physiological and patient-level parameters. Integrated with uncertainty analysis, digital 
+
+health data and autonomous workflows, they will become intelligent decision engines 
+
+for the full pipeline from laboratory discovery to clinical deployment, fostering self-
+
+improving systems to advance translational polymer medicine. 
+
+## 4. MLIPs as the Physical Foundation of Polymer Discovery 
+
+MLIPs are emerging as a key technology for bridging a persistent challenge in 
+
+polymer science: connecting quantum-level chemistry with the length and time scales 
+
+needed to predict realistic material behavior 54 (Figure 5a-b) . Classical force fields can 
+
+handle large amorphous systems and long trajectories but often fail to capture chemical 
+
+transferability, polarization, or bond-breaking. Density functional theory (DFT) 
+
+provides higher accuracy but is computationally prohibitive for realistic polymers. 
+
+Recent advances in polymer databases and automated simulation infrastructures, such 
+
+as PoLyInfo 18 and RadonPy 55 , have laid the groundwork for integrating atomistic 
+
+simulations into AI-driven workflows. Figure 5 Hierarchical framework and benchmarking of MLIPs for polymer property 
+
+prediction. (a) Overview of core polymer simulation procedures covering model construction, 
+
+simulation running and result analysis, underpinning the best practices for polymeric modeling. (b) 
+
+Workflow for developing coarse-grained (CG) models of comb polycations and their DNA 
+
+complexes, including atom bead grouping, repeat unit definition and polymer assembly. (c) 
+
+Workflow of the Vivace MLIP. It is trained on self-built polymeric quantum dataset PolyData and 
+
+public datasets to capture polymer inter/intramolecular interactions. The SE(3)-equivariant Vivace 
+
+enables large-scale MD simulations to predict polymer density and glass transition temperature (T g);
+
+its performance is benchmarked via PolyArena containing 130 polymers. (d) Benchmark of multiple 
+
+force fields on polymer density prediction. The density values predicted by Vivace, MACE-OFF, 
+
+UMA, PCFF and OPLS3e are compared with experimental data. For Vivace, circles and triangles 
+
+denote polymers seen and unseen in training set, while other MLIPs are marked as squares. UMA 
+
+only tests 10 polymers due to high computation cost. MAEs of all models are provided; dashed lines 
+
+refer to ideal predictions, and shaded regions represent a deviation of ±0.05 g/cm 3. (a-b) ref. 54 © 
+
+2019 American Chemical Society. This publication is licensed under these Terms of Use (c-d) ref. 
+
+59 © Distributed under a Creative Commons Attribution NonCommercial License 4.0 (CC BY-NC). 
+
+MLIPs are evolving from system-specific potentials to transferable atomistic 
+
+models. Early neural-network potentials showed that quantum information from small 
+
+oligomers can generalize to larger polymers when local environments are sampled 
+
+adequately. Active-learning strategies enabled robust potentials supporting 
+
+nanosecond-scale simulations 56,57 . More recent developments, including equivariant 
+
+graph neural networks (MACE 58 ), transferable organic force-field frameworks, and 
+
+foundation-style atomistic models, broaden applicability across diverse polymer 
+
+chemistries. These advances point toward simulation models that generalize across 
+
+polymer classes rather than single systems. 
+
+Algorithmic development has advanced swiftly, leaving data infrastructure as the 
+
+prevailing bottleneck. Most existing MLIPs remain trained on narrow chemical spaces 
+
+and idealized configurations, limiting transferability across polymer classes, processing 
+
+histories, and degradation states. Consequently, improvements in benchmark accuracy 
+
+do not necessarily translate into predictive fidelity for realistic polymer behavior. 
+
+Workflows such as the PolyData database, Vivace MLFF training, and PolyArena MD 
+
+simulations exemplify how computational data can be systematically used to develop 
+
+MLIPs and predict experimental bulk properties like glass transition temperature 59 
+
+(Figure 5c) . Datasets such as OMol25 60 , OPoly 61 , and PolyData 59 incorporate diverse 
+
+polymer chemistries, environments, and reactive configurations, while benchmarks like SimPoly 59 shift evaluation toward experimentally relevant observables. Benchmark 
+
+evaluations, such as those comparing Vivace, MACE-OFF 62 , UMA 63 , and classical 
+
+force fields (PCFF 64 , OPLS3e 65 ) on polymer density prediction, highlight the progress 
+
+and remaining gaps in transferability 59 (Figure 5d) .
+
+Yet, current MLIP methods, which were mainly developed for mechanism 
+
+simulations, are usually not targeted for polymer-oriented R&D. They usually struggle 
+
+with the poor extrapolation capacity due to insuffient data for under-explored structure 
+
+space. Large-scale database, physics-informed MLIP methods for polymers and 
+
+polymer-specific bechmarking study for MLIPs are urgently needed to make MLIP 
+
+adapted to polymeric science. 
+
+## 5. LLMs and AI Agents for Polymer Discovery 
+
+The inherent multiscale hierarchical structures and pronounced processing-
+
+dependent properties of polymers pose fundamental challenges to conventional ML 
+
+methods. Unlike small molecules and inorganic materials, polymers lack a universal 
+
+molecular representation system, and traditional molecular descriptors fail to fully 
+
+characterize their stochastic sequences, repeating units, and processing-induced 
+
+structural variations 17 . This severely limits the capability of data-driven strategies for 
+
+polymer property prediction and rational design, necessitating the adoption of polymer-
+
+specialized foundation models and AI agents to address these core bottlenecks 66,67 . 
+
+> Figure 6. Schematic of polymer-oriented foundation models and AI agents for material
+> research. (a) Three typical representation learning approaches for polymers, including PolyBERT,
+> generative BigSMILES with molecular string examples and hierarchical molecular encoding. (b) Two
+> mainstream routes for polymer property evaluation: AI/ML prediction and DFT calculation, which are widely applied to assess mechanical, optical and electronic properties of polymers. (c) The full-cycle
+> workflow of AI agents, covering interactive design generation, automated experimental operation and
+> final result validation, realizing autonomous material research with minimal manual intervention.
+
+Foundation models 68 learn transferable representations from large polymer 
+
+datasets to resolve this issue 69 . Techniques such as PolyBERT 70 , BigSMILES-based 71 
+
+language models and chemistry-aware hierarchical encodings generate chemically 
+
+consistent representations across multiple scales, supporting property prediction, 
+
+inverse design and cross-domain reasoning (Figure 6a) . Nevertheless, today’s 
+
+foundation models are constrained by limited polymer training corpora, weak 
+
+multimodal integration and static datasets. Since real polymers evolve dynamically 
+
+throughout synthesis, processing, aging and application, next-generation models need 
+
+to unify structural, processing, simulation and experimental information via multimodal 
+
+learning. 
+
+Unlike foundation models that focus on knowledge and reasoning, AI agents 
+
+enable autonomous decision-making and end-to-end workflow management (Figure 
+
+6b) . They coordinate literature mining, molecular design, simulation and iterative 
+
+optimization, with platforms including ToPolyAgent 72 and PolyJarvis 73 adapting 
+
+research strategies in real time. A recent example is the ArF photoresist AI agent 
+
+recently launched by MatSource Tech, which supports full-cycle R&D from resin 
+
+design and formulation screening to industrial performance assessment under practical 
+
+manufacturing constraints. While such systems prove promising for industrial 
+
+formulation optimization, current agents are held back by incomplete domain 
+
+knowledge, poor experimental connectivity and insufficient assessment of 
+
+manufacturability, cost, regulations and supply chains, restricting their use to simplified 
+
+laboratory settings (Figure 6c) .
+
+Current foundation models and AI agents remain far from mature for polymer-
+
+oriented R&D. Foundation models struggle with dynamic material behaviors and cross-
+
+scale feature learning, whereas AI agents still exhibit limited adaptability to industrial 
+
+constraints and uncertain experimental environments. Overcoming these barriers will 
+
+require polymer-specific foundation datasets, stronger multimodal learning frameworks, 
+
+improved physical interpretability, and deeper integration between digital intelligence and laboratory infrastructure. More importantly, future progress should focus not only 
+
+on improving model performance but also on enabling seamless interactions among 
+
+knowledge extraction 72 , simulation 73 , experimentation 74 , and manufacturing. In such a 
+
+framework, foundation models may serve as cognitive engines for scientific reasoning, 
+
+while AI agents coordinate decision-making and execution across the entire discovery 
+
+pipeline. Together, they could form the core of autonomous polymer discovery 
+
+ecosystems capable of continuously generating hypotheses, designing materials, 
+
+performing experiments, and refining knowledge with minimal human intervention. 
+
+## 6. AI-Driven Polymeric Automated Synthesis 
+
+Predictive models alone cannot achieve fully autonomous polymer discovery. 
+
+Progress is hindered by the difficulty of generating high-quality, reproducible 
+
+experimental data to validate models, explore untapped polymer design spaces, and 
+
+optimize performance. Laboratory automation provides the essential experimental 
+
+counterpart, bridging digital predictions and physical validation, and enabling iterative 
+
+feedback that transforms fragmented experiments into closed-loop discovery 
+
+workflows 75,76 .Figure 7. Overview of automation technologies for polymer discovery, spanning parallel 
+
+synthesis, continuous-flow reactors, and closed-loop robotic workstations. (a-b) Parallel 
+
+synthesis: (a) Typical parallel synthesis setup with reactors, tubing, and integrated GPC/GC 
+
+autosamplers for high-throughput polymerization and characterization; (b) Prototypes of early 
+
+parallel synthesizers and high-throughput parallel platforms. (c-e) Continuous-flow reactors: (c) 
+
+Autonomous self-optimizing polymer flow reactor; ( d) Python-controlled flow system with pumps, 
+
+mixers, and inline IR analysis; (e) Multicomponent flow polymerization with modular reaction steps 
+
+and product purification. (f-h) Robotic stations: (f) ML-guided iterative workflow combining 
+
+property modeling, copolymer design, and automated synthesis/characterization; (g) Automated 
+
+enzymatic flow workstation; (h) Closed -loop robotic lab platform with integrated synthesis, 
+
+handling, and analysis for self-driving experimentation. (a-b) ref. 78 © Rights managed by AIP 
+
+Publishing. (c) ref. 85 © 2019 Wiley‐VCH Verlag GmbH & Co. KGaA, Weinheim (d) ref. 86 © All 
+
+publication charges for this article have been paid for by the Royal Society of Chemistry (e) ref. 80 
+
+© 2025 Elsevier Ltd. All rights are reserved, including those for text and data mining, AI training, 
+
+and similar technologies. (f) ref. 84 © 2022 The Authors. Advanced Materials published by Wiley‐ 
+
+VCH GmbH (g) ref. 82 Copyright © 2025, The Author(s) (h) ref. 83 © 2025, UChicago Argonne, 
+
+LLC, and Naisong Shan, Nan Li and Subramanian K.R.S. Sankaranarayanan 
+
+First-generation automation focused on parallel synthesis to increase throughput 77 .
+
+Conventional polymer synthesis suffers from low efficiency, constraining large-scale screening of compositional and processing parameters. Parallel platforms, such as 
+
+Chemspeed ASW2000 and SLT1000, integrate environmental control and automated 
+
+handling to accelerate polymerization, characterize molecular weight distributions, and 
+
+construct standardized datasets that feed into ML models 78 (Figure 7a-b) . Using 
+
+automation and intelligent optimization technologies, researchers optimized the spray-
+
+coating process for iridescent hydroxypropyl cellulose thin films, clarified the optical 
+
+mechanism and verified its application prospects, providing a reference for the 
+
+automated preparation of thin films 79 .
+
+Modern systems advance beyond high-throughput screening toward real-time 
+
+optimization and autonomous decision-making. Continuous-flow polymerization 80 
+
+achieves precise reaction control and inline analysis, while robotic stations and self-
+
+driving laboratories, including platforms like Chemputer 81,82 and Polybot 83 , integrate 
+
+synthesis, characterization, data management, and computational optimization into 
+
+unified pipelines. A copolymer design strategy based on active machine learning, 
+
+coupled with automated synthesis and characterization platforms, has identified 
+
+polymers that preserve or even enhance enzyme activity under thermal denaturation 
+
+conditions. Machine learning guides iterative experimentation to build adaptive 
+
+workflows for co-optimizing materials and processes, offering a new path to custom 
+
+polymer–protein hybrids and broader materials design applications 84 . ML guides 
+
+iterative experimentation, enabling adaptive workflows that optimize both materials 
+
+and processes 85-87 (Figure 7c-h) .
+
+However, key challenges continue to hinder further development. Current 
+
+platforms often lack tight integration with diverse AI models, struggle to handle 
+
+multiscale reactions or complex chemistries, and have limited industrial scalability. 
+
+Future progress requires tighter coupling of automation with multimodal data, 
+
+uncertainty-aware modeling, and adaptive AI agents capable of navigating real-world 
+
+manufacturing constraints. Fully integrated closed-loop systems, combining predictive 
+
+models, MLIPs, regression frameworks, and autonomous laboratories, promise self-
+
+improving polymer discovery pipelines that accelerate innovation, reduce development 
+
+cycles, and bridge the gap between laboratory research and industrial application. 7. AI-Enabled Polymeric Closed-Loop 
+
+Autonomous polymer discovery is underpinned by a hierarchically integrated 
+
+closed-loop ecosystem coupling computational modules and automated experiments 14 .
+
+Standardized multiscale polymer databases provide fundamental structural, processing 
+
+and performance data. Regression models enable rapid structure–property prediction, 
+
+while MLIPs bridge quantum and mesoscale material behaviours to expand cross-scale 
+
+predictive capability. LLMs and AI agents further orchestrate scientific reasoning, 
+
+inverse design and full experimental workflows. Automated laboratories synthesize and 
+
+characterize polymer candidates, feeding real-time experimental data back to update 
+
+computational models. This iterative loop forms a self-consistent pipeline for 
+
+autonomous polymer discovery 77,88 .         
+
+> Figure 8. Schematic of the autonomous polymer discovery ecosystem. This three-module
+> framework illustrates the closed-loop pipeline for polymer innovation. The Polymeric Materials
+> Databases module (left) integrates experimental, computational, and multi-source framework data,
+> represented by PolyInfo, The Materials Project, and Polymer Genome. The AI Theories module
+> (middle) leverages regression models for structure–property prediction, MLIPs to bridge quantum
+> and mesoscale behaviors, and LLMs/AI agents for scientific reasoning and workflow orchestration.
+> The Polymeric Closed-Loop module (right) forms a self-consistent process optimization pipeline:
+> AI-derived predictions guide automated laboratory synthesis and characterization, whose
+> experimental data is fed back to update the databases and models, enabling iterative self-
+> optimization.
+
+Closed-loop systems drive a pivotal shift of polymer research from empirical trial-
+
+and-error to data-driven innovation. Conventional studies are limited by fragmented 
+
+experiments and isolated computations, featuring low data efficiency, long cycles and 
+
+restricted parameter exploration. In contrast, closed-loop workflows transform static predictions into dynamic active learning. Continuous experimental feedback iteratively 
+
+optimizes models, material designs and processing conditions, endowing the system 
+
+with self-evolving capacity 83,89 . This integrated paradigm greatly broadens polymer 
+
+design spaces and accelerates efficient material innovation 83 (Figure 8) .
+
+Although the vision of autonomous polymer discovery is increasingly tangible, 
+
+significant challenges remain before closed-loop systems can operate reliably at scale. 
+
+Poor data standardization, limited multimodal integration, unquantified prediction 
+
+uncertainty, and weak interoperability between computational modules and laboratory 
+
+platforms continue to restrict overall performance. Moreover, most existing workflows 
+
+are optimized for academic demonstration rather than industrial deployment, often 
+
+neglecting manufacturability, cost, sustainability, and regulatory constraints. As a result, 
+
+most current closed-loop platforms remain proof-of-concept demonstrations rather than 
+
+deployable industrial discovery systems. Addressing these bottlenecks will require 
+
+harmonized data infrastructures, robust multimodal learning, uncertainty-aware 
+
+decision frameworks, and tighter integration of automation with real-world operational 
+
+constraints—steps that are essential to fully realize the potential of self-optimizing, 
+
+autonomous polymer discovery ecosystems. 
+
+## 8. Summary and Outlook 
+
+Modern polymer research is evolving rapidly from empirical trial-and-error 
+
+toward a digital, intelligent, and autonomous innovation paradigm. Driven by 
+
+multiscale material data accumulation, machine learning algorithms, and LLM-based 
+
+intelligent agents, polymer R&D is shifting from passive verification of known rules to 
+
+active exploration of unknown material spaces. The integration of computational 
+
+prediction, automated experimentation, and intelligent decision-making has become the 
+
+dominant trend, fundamentally upgrading traditional discrete research modes and 
+
+laying a solid foundation for accelerated iteration of high-performance and functional 
+
+polymers. 
+
+Nevertheless, a number of prominent challenges have emerged in the process of 
+
+technology implementation and system improvement, which can be mainly categorized into six major aspects: 
+
+(i) Fragmented and non-cyclic polymer database construction. Current 
+
+polymer databases adopt inconsistent data annotation and collection criteria, 
+
+with scattered experimental, simulation and industrial datasets. Most databases 
+
+only support one-way data storage, lacking automated data update channels fed 
+
+by simulation outputs and experimental results, which destroys the basic data 
+
+circulation loop of the whole ecosystem. 
+
+(ii) Absent physical mechanism models for fundamental polymer structure-
+
+performance correlation deciphering. Current data-centric polymer AI 
+
+systems lack universal physical models to elaborate intrinsic structure-property 
+
+relationships. This deficiency not only limits the predictive accuracy and 
+
+generalization capability of machine learning models, but also imposes 
+
+insufficient physical constraints on generative model outputs, ultimately 
+
+resulting in poor model interpretability and unreliable material design results. 
+
+(iii) Decoupled iteration between regression models and MLIPs. Empirical 
+
+regression models fail to build scalable structure-property correlations for 
+
+amorphous and crosslinked polymers, while MLIPs usually suffer from poor 
+
+generalization for complex polymer conformational evolution. The two 
+
+simulation tools lack bidirectional parameter tuning and result mutual 
+
+correction, failing to form an internal simulation-data closed loop for multi-
+
+scale polymer prediction. 
+
+(iv) Imperfect autonomous reasoning loop of large AI models and AI agents. 
+
+Generic large AI models lack polymer-specific domain adaptation, and existing 
+
+AI agents cannot realize autonomous workflow iteration. Specifically, many 
+
+current agents are unable to connect data interpretation, model revision, 
+
+experimental scheme redesign and result evaluation, breaking the intelligent 
+
+reasoning closed loop within digital decision-making units. 
+
+(v) One-way experimental operation of autonomous high-throughput 
+
+laboratories. Current autonomous laboratory platforms can only finish forward 
+
+synthesis and characterization tasks for lab-scale polymer samples. They have no built-in data backfeeding interfaces, so measured performance data cannot 
+
+be automatically uploaded to databases or fed back to modeling tools, resulting 
+
+in open-loop experimental workflows without iterative optimization. 
+
+(vi) Disrupted global data-simulation-reasoning-experiment closed-loop 
+
+ecosystem. There is no unified middleware to realize information 
+
+intercommunication among databases, regression models, MLIPs, AI models, 
+
+agents and experimental platforms. The isolated standalone modules cannot 
+
+form collaborative cyclic operation. Furthermore, industrial manufacturability, 
+
+cost and sustainability indicators are excluded from the whole closed-loop 
+
+workflow, eventually leading to academic prototypes difficult to be deployed in 
+
+polymer industrial scenarios including batteries, photoresists, membranes, and 
+
+biomedical polymers. 
+
+Future polymer innovation requires hierarchical, self-evolving digital materials 
+
+ecosystems to address the aforementioned six critical challenges and build a full-cycle 
+
+polymer research paradigm. First , standardized, updatable multimodal databases 
+
+integrating molecular structures, processing parameters, performance metrics, 
+
+degradation pathways and industrial constraints will unify data criteria and realize 
+
+automatic data circulation, solving database fragmentation and one-way data storage 
+
+issues. Second , Advancing multi-scale physical exploration combining mesoscopic and 
+
+coarse-grained simulations to derive physically interpretable constitutive formulas. 
+
+Beyond mechanism-driven physical modelling, symbolic regression embedded within 
+
+standardized polymer databases is encouraged to screen latent microstructure 
+
+descriptors and establish physics-consistent governing equations. Notably, such data-
+
+driven equation mining paradigm remains vastly underexplored in polymer science, 
+
+while it has achieved proven feasible and instructive success in allied material fields 
+
+typified by hydrogen storage materials 90,91 . Third , coupled regression models and 
+
+MLIPs will achieve bidirectional parameter correction and cross-scale iteration, 
+
+eliminating model decoupling and poor generalization limitations. Fourth , domain-
+
+customized large AI models and interactive AI agents will complete end-to-end 
+
+autonomous reasoning, scheme redesign and result evaluation, optimizing the internal intelligent decision loop. Fifth , closed-loop upgraded autonomous laboratories will 
+
+feed experimental data back to modeling modules and databases, transforming open-
+
+loop experimental testing into iterative experimental optimization. Sixth , cross-module 
+
+information interconnection will construct intact data-simulation-reasoning-experiment 
+
+global closed-loop ecosystems, bridging the gap between academic design and 
+
+industrial manufacturability, cost and sustainability demands. Such optimized 
+
+ecosystems will expand polymer design spaces, mitigate inherent performance trade-
+
+offs, and accelerate the development of industrialized high-performance, cost-effective, 
+
+and sustainable polymers. 
+
+Overall, this Perspective clarifies module-level defects and closed-loop barriers of 
+
+current polymer intelligent R&D, and provides targeted construction routes for next-
+
+generation autonomous polymer discovery ecosystems, guiding the future industrial-
+
+oriented digital innovation of functional polymers. 
+
+## Acknowledgments 
+
+This work was supported by JSPS KAKENHI (Nos. JP25H01508 and JP25K01737), 
+
+Suzhou MatSource Technology Co., Ltd. (Suzhou, China), and the Gusu Laboratory of 
+
+Materials (grant number Y2501). 
+
+## Reference 
+
+1 Zhang, Q., Xie, Q., Wang, T., Huang, S. & Zhang, Q. Scalable all polymer dielectrics with self-
+
+assembled nanoscale multiboundary exhibiting superior high temperature capacitive 
+
+performance. Nature Communications 15 , 9351, doi:10.1038/s41467-024-53674-8 (2024). 
+
+2 Chen, J. et al. Ladderphane copolymers for high-temperature capacitive energy storage. Nature 
+
+615 , 62–66, doi:10.1038/s41586-022-05671-4 (2023). 
+
+3 Langer, R. & Tirrell, D. A. Designing materials for biology and medicine. Nature 428 , 487–492, 
+
+doi:10.1038/nature02388 (2004). 
+
+4 Kumar, A., Thakur, V. K., Nezhad, H. Y. & Lee, K.-S. Prospects of sustainable polymers. 
+
+Scientific Reports 14 , 9430, doi:10.1038/s41598-024-59439-z (2024). 
+
+5 Hatakeyama-Sato, K. Recent advances and challenges in experiment-oriented polymer 
+
+informatics. Polymer Journal 55 , 117–131, doi:10.1038/s41428-022-00734-9 (2023). 
+
+6 Wang, L., Zhang, K., Hou, K., Xia, Y. & Wang, X. Bridging small molecule calculations and 
+
+predictable polymer mechanical properties. Nature Communications 16 , 6957, 
+
+doi:10.1038/s41467-025-62449-8 (2025). 
+
+7 Li, L. et al. AI as a catalyst for transforming scientific research: a perspective. AI Agent 1, 8, 
+
+doi:10.20517/aiagent.2025.08 (2025). 8 Cheng, M. et al. Artificial intelligence-driven approaches for materials design and discovery. 
+
+Nature Materials 25 , 174–190, doi:10.1038/s41563-025-02403-7 (2026). 
+
+9 Huang, Q., Li, Y., Zhu, L., Zhao, Q. & Yu, W. Unified multimodal multidomain polymer 
+
+representation for property prediction. npj Computational Materials 11 , 153, 
+
+doi:10.1038/s41524-025-01652-z (2025). 
+
+10 Zhuang, Y. et al. Materials Databases: Foundations of Modern Digital Materials. Precision 
+
+Chemistry (2026). 
+
+11 Batra, R., Song, L. & Ramprasad, R. Emerging materials intelligence ecosystems propelled by 
+
+machine learning. Nature Reviews Materials 6, 655–678, doi:10.1038/s41578-020-00255-y 
+
+(2021). 
+
+12 Yuan, E. C. Y. et al. Foundation models for atomistic simulation of chemistry and materials. 
+
+Nature Reviews Chemistry 10 , 212–230, doi:10.1038/s41570-025-00793-5 (2026). 
+
+13 Zheng, Y. et al. Large language models for scientific discovery in molecular property prediction. 
+
+Nature Machine Intelligence 7, 437–447, doi:10.1038/s42256-025-00994-z (2025). 
+
+14 Zhang, D. et al. Digital materials ecosystem: from databases to AI agents for autonomous 
+
+discovery. Chemical Science 17 , 5782–5804, doi:10.1039/D5SC09229A (2026). 
+
+15 Abolhasani, M. & Kumacheva, E. The rise of self-driving labs in chemical and materials 
+
+sciences. Nature Synthesis 2, 483–492, doi:10.1038/s44160-022-00231-0 (2023). 
+
+16 Han, N. et al. Artificial intelligence as a driver of sustainable materials and circularity. Nature 
+
+Reviews Materials , doi:10.1038/s41578-026-00912-8 (2026). 
+
+17 Tran, H. et al. Design of functional and sustainable polymers assisted by artificial intelligence. 
+
+Nature Reviews Materials 9, 866–886, doi:10.1038/s41578-024-00708-8 (2024). 
+
+18 Otsuka, S., Kuwajima, I., Hosoya, J., Xu, Y. & Yamazaki, M. in 2011 International Conference 
+
+on Emerging Intelligent Data and Web Technologies. 22–29. 
+
+19 Horton, M. K. et al. Accelerated data-driven materials science with the Materials Project. Nature 
+
+Materials 24 , 1522–1532, doi:10.1038/s41563-025-02272-0 (2025). 
+
+20 Borysov, S. S., Geilhufe, R. M. & Balatsky, A. V. Organic materials database: An open-access 
+
+online database for data mining. PLOS ONE 12 , e0171501, doi:10.1371/journal.pone.0171501 
+
+(2017). 
+
+21 Sbailò, L., Fekete, Á., Ghiringhelli, L. M. & Scheffler, M. The NOMAD Artificial-Intelligence 
+
+Toolkit: turning materials-science data into knowledge and understanding. npj Computational 
+
+Materials 8, 250, doi:10.1038/s41524-022-00935-z (2022). 
+
+22 Kim, C., Chandrasekaran, A., Huan, T. D., Das, D. & Ramprasad, R. Polymer Genome: A Data-
+
+Powered Polymer Informatics Platform for Property Predictions. The Journal of Physical 
+
+Chemistry C 122 , 17575–17585, doi:10.1021/acs.jpcc.8b02913 (2018). 
+
+23 Li, H. Polymer solubility dictates the fate of polymer chains. Newton 1,
+
+doi:10.1016/j.newton.2025.100191 (2025). 
+
+24 Cheng, Y. et al. Revealing chain scission modes in variable polymer degradation kinetics. 
+
+Newton 1, doi:10.1016/j.newton.2025.100168 (2025). 
+
+25 Kunchapu, S. & Jablonka, K. M. PolyMetriX: an ecosystem for digital polymer chemistry. npj 
+
+Computational Materials 11 , 312, doi:10.1038/s41524-025-01823-y (2025). 
+
+26 Nguyen, H.-P., Nguyen, D.-T. & Kim, J.-M. Gaussian process regression with physics-guided 
+
+pseudo-sample augmentation for wear prediction under sparse measurements in milling. 
+
+Scientific Reports 16 , 7231, doi:10.1038/s41598-026-38067-9 (2026). 27 Moosavi, S. M., Jablonka, K. M. & Smit, B. The Role of Machine Learning in the 
+
+Understanding and Design of Materials. Journal of the American Chemical Society 142 , 20273– 
+
+20287, doi:10.1021/jacs.0c09105 (2020). 
+
+28 Zhao, Q., Stalin, S., Zhao, C.-Z. & Archer, L. A. Designing solid-state electrolytes for safe, 
+
+energy-dense batteries. Nature Reviews Materials 5, 229–252, doi:10.1038/s41578-019-0165-5 
+
+(2020). 
+
+29 Hatakeyama-Sato, K., Tezuka, T., Umeki, M. & Oyaizu, K. AI-Assisted Exploration of 
+
+Superionic Glass-Type Li+ Conductors with Aromatic Structures. Journal of the American 
+
+Chemical Society 142 , 3301–3305, doi:10.1021/jacs.9b11442 (2020). 
+
+30 Gao, Y. et al. Machine Learning Assisted Prediction of Donor Numbers: Guiding Rational 
+
+Fabrication of Polymer Electrolytes for Lithium-Ion Batteries. Angewandte Chemie 
+
+International Edition 64 , e202411437, doi: https://doi.org/10.1002/anie.202411437 (2025). 
+
+31 Wudil, Y. S., Gondal, M. A. & Al-Osta, M. A. Designing fire-retardant polymer-based 
+
+electrolytes and separators for high-energy-density lithium-ion batteries via combustion 
+
+calorimetry and machine learning. Energy 335 , 138218, 
+
+doi: https://doi.org/10.1016/j.energy.2025.138218 (2025). 
+
+32 Wang, K. et al. Computational and data-driven modelling of solid polymer electrolytes. Digital 
+
+Discovery 2, 1660–1682, doi: https://doi.org/10.1039/d3dd00078h (2023). 
+
+33 Ruza, J. et al. Autonomous Discovery of Polymer Electrolyte Formulations with Warm-start 
+
+Batch Bayesian Optimization. ChemRxiv 2025 , doi:10.26434/chemrxiv-2025-2cjbg. 
+
+34 Bradford, G. et al. Chemistry-Informed Machine Learning for Polymer Electrolyte Discovery. 
+
+ACS Central Science 9, 206–216, doi:10.1021/acscentsci.2c01123 (2023). 
+
+35 Song, Y. et al. Multi-Objective Optimization of Ionic Polymer Electrolytes for High-Voltage 
+
+Fast-Charging and Versatile Lithium Batteries. Advanced Materials 37 , 2500941, 
+
+doi: https://doi.org/10.1002/adma.202500941 (2025). 
+
+36 Mojarad, N., Gobrecht, J. & Ekinci, Y. Beyond EUV lithography: a comparative study of 
+
+efficient photoresists' performance. Scientific Reports 5, 9235, doi:10.1038/srep09235 (2015). 
+
+37 Park, J. Y. et al. Unraveling the relative impact of material and optical stochastic effects on EUV 
+
+LWR. Scientific Reports 15 , 43476, doi:10.1038/s41598-025-29021-2 (2025). 
+
+38 Kazazis, D., Santaclara, J. G., van Schoot, J., Mochi, I. & Ekinci, Y. Extreme ultraviolet 
+
+lithography. Nature Reviews Methods Primers 4, 84, doi:10.1038/s43586-024-00361-z (2024). 
+
+39 Zheng, L. et al. Cryo-electron tomography reconstructs polymer in liquid film for fab-
+
+compatible lithography. Nature Communications 16 , 8671, doi:10.1038/s41467-025-63689-4 
+
+(2025). 
+
+40 Yang, F.-L., Ye, Z.-B., Chen, Y.-Q., Zhou, P.-P. & Gou, F.-J. Metal-Core-Specific Screening with 
+
+Machine Learning: Accelerating the Discovery of Metal Oxide Clusters for Enhanced EUV 
+
+Lithography Resolution. The Journal of Physical Chemistry Letters 16 , 274–280, 
+
+doi:10.1021/acs.jpclett.4c03250 (2025). 
+
+41 Zhao, R., Wei, Y., Wang, X., He, X. & Xu, H. Convolutional Neural Network-Assisted 
+
+Photoresist Formulation Discriminator Design of a Contact Layer for Electron Beam 
+
+Lithography. The Journal of Physical Chemistry Letters 15 , 8715–8720, 
+
+doi:10.1021/acs.jpclett.4c01911 (2024). 
+
+42 Zhao, R., Wang, X., Xu, H., Wei, Y. & He, X. Machine learning in electron beam lithography 
+
+to boost photoresist formulation design for high-resolution patterning. Nanoscale 16 , 4212– 4218, doi:10.1039/D3NR04819E (2024). 
+
+43 Robeson, L. M. The upper bound revisited. Journal of Membrane Science 320 , 390–400, 
+
+doi: https://doi.org/10.1016/j.memsci.2008.04.030 (2008). 
+
+44 Koros, W. J. & Zhang, C. Materials for next-generation molecularly selective synthetic 
+
+membranes. Nature Materials 16 , 289–297, doi:10.1038/nmat4805 (2017). 
+
+45 Xie, C. et al. Machine Learning Approaches in Polymer Science: Progress and Fundamental for 
+
+a New Paradigm. SmartMat 6, e1320, doi: https://doi.org/10.1002/smm2.1320 (2025). 
+
+46 Barnett, J. W. et al. Designing exceptional gas-separation polymer membranes using machine 
+
+learning. Science Advances 6, eaaz4301, doi:10.1126/sciadv.aaz4301 (2020). 
+
+47 Yang, M. et al. Machine Learning for Polymer Design to Enhance Pervaporation-Based Organic 
+
+Recovery. Environmental Science & Technology 58 , 10128–10139, 
+
+doi:10.1021/acs.est.4c00060 (2024). 
+
+48 Green, J. J. & Elisseeff, J. H. Mimicking biological functionality with polymers for biomedical 
+
+applications. Nature 540 , 386–394, doi:10.1038/nature21005 (2016). 
+
+49 Gregorio, N. E., Haas, C. M., King, N. P. & DeForest, C. A. Engineering complexity into 
+
+protein-based biomaterials for biomedical applications. Nature Reviews Materials 11 , 328–342, 
+
+doi:10.1038/s41578-025-00861-8 (2026). 
+
+50 McDonald, S. M. et al. Applied machine learning as a driver for polymeric biomaterials design. 
+
+Nature Communications 14 , 4838, doi:10.1038/s41467-023-40459-8 (2023). 
+
+51 Akkache, A. et al. Machine Learning-Based Prediction of Immunomodulatory Properties of 
+
+Polymers: Toward a Faster and Easier Development of Anti-Inflammatory Biomaterials. 
+
+Advanced NanoBiomed Research 4, 2300085, doi: https://doi.org/10.1002/anbr.202300085 
+
+(2024). 
+
+52 Woodring, R. N. et al. Supervised machine learning for predicting drug release from acetalated 
+
+dextran nanofibers. Biomaterials Science 13 , 2806–2823, doi:10.1039/D5BM00259A (2025). 
+
+53 Wang, Q. et al. Machine Learning-Enhanced Nanoparticle Design for Precision Cancer Drug 
+
+Delivery. Advanced Science 12 , e03138, doi: https://doi.org/10.1002/advs.202503138 (2025). 
+
+54 Gartner, T. E., III & Jayaraman, A. Modeling and Simulations of Polymers: A Roadmap. 
+
+Macromolecules 52 , 755–786, doi:10.1021/acs.macromol.8b01836 (2019). 
+
+55 Hayashi, Y., Shiomi, J., Morikawa, J. & Yoshida, R. RadonPy: automated physical property 
+
+calculation using all-atom classical molecular dynamics simulations for polymer informatics. 
+
+npj Computational Materials 8, 222, doi:10.1038/s41524-022-00906-4 (2022). 
+
+56 Kalita, B., Gokcan, H. & Isayev, O. Machine learning interatomic potentials at the centennial 
+
+crossroads of quantum mechanics. Nature Computational Science 5, 1120–1132, 
+
+doi:10.1038/s43588-025-00930-6 (2025). 
+
+57 Kulichenko, M. et al. Uncertainty-driven dynamics for active learning of interatomic potentials. 
+
+Nature Computational Science 3, 230–239, doi:10.1038/s43588-023-00406-5 (2023). 
+
+58 Batatia, I., Kovacs, D. P., Simm, G., Ortner, C. & Csányi, G. MACE: Higher order equivariant 
+
+message passing neural networks for fast and accurate force fields. Advances in neural 
+
+information processing systems 35 , 11423–11436 (2022). 
+
+59 Simm, G. N. et al. SimPoly: Simulation of Polymers with Machine Learning Force Fields 
+
+Derived from First Principles. arXiv preprint arXiv:2510.13696 (2025). 
+
+60 Levine, D. S. et al. The open molecules 2025 (omol25) dataset, evaluations, and models. arXiv 
+
+preprint arXiv:2505.08762 (2025). 61 Levine, D. S. et al. The Open Polymers 2026 (OPoly26) Dataset and Evaluations. arXiv preprint 
+
+arXiv:2512.23117 (2025). 
+
+62 Kovács, D. P. et al. MACE-OFF: Short-Range Transferable Machine Learning Force Fields for 
+
+Organic Molecules. Journal of the American Chemical Society 147 , 17598–17611, 
+
+doi:10.1021/jacs.4c07099 (2025). 
+
+63 Mannan, S. et al. Evaluating Universal Machine Learning Force Fields Against Experimental 
+
+Measurements. arXiv preprint arXiv:2508.05762 (2025). 
+
+64 Cornell, W. D. et al. A Second Generation Force Field for the Simulation of Proteins, Nucleic 
+
+Acids, and Organic Molecules J. Am. Chem. Soc. 1995, 117, 5179−5197. Journal of the 
+
+American Chemical Society 118 , 2309–2309, doi:10.1021/ja955032e (1996). 
+
+65 Roos, K. et al. OPLS3e: Extending Force Field Coverage for Drug-Like Small Molecules. 
+
+Journal of Chemical Theory and Computation 15 , 1863–1874, doi:10.1021/acs.jctc.8b01026 
+
+(2019). 
+
+66 Tang, Y. et al. A multimodal large language model for materials science. Nature Machine 
+
+Intelligence 8, 588–601, doi:10.1038/s42256-026-01214-y (2026). 
+
+67 Shan, X. et al. Unveiling the correlation between high-entropy alloy element systems and 
+
+electrocatalytic activity. National Science Review , nwag161, doi:10.1093/nsr/nwag161 (2026). 
+
+68 Liu, N. et al. Harnessing large language models for data-scarce learning of polymer properties. 
+
+Nature Computational Science 5, 245–254, doi:10.1038/s43588-025-00768-y (2025). 
+
+69 Yao, T. et al. From large language models to AI agents in energy materials research: enabling 
+
+discovery, design, and automation. AI Agent 1, 9, doi:10.20517/aiagent.2025.03 (2025). 
+
+70 Kuenneth, C. & Ramprasad, R. polyBERT: a chemical language model to enable fully machine-
+
+driven ultrafast polymer informatics. Nature Communications 14 , 4099, doi:10.1038/s41467-
+
+023-39868-6 (2023). 
+
+71 Choi, S. et al. Automated BigSMILES conversion workflow and dataset for homopolymeric 
+
+macromolecules. Scientific Data 11 , 371, doi:10.1038/s41597-024-03212-4 (2024). 
+
+72 From unstructured to structured: opportunities, risks and engineering practices for LLM-based 
+
+data extraction in chemistry and materials. AI Agent 2, 12, doi:10.20517/aiagent.2026.06 (2026). 
+
+73 Wang, X. et al. Catalysis AI Agent Guides Discovering the Universal Design Principle of Cu-
+
+Based Single-Atom Alloy Catalysts for CO2 Electroreduction. Angewandte Chemie 
+
+International Edition 65 , e24612, doi: https://doi.org/10.1002/anie.202524612 (2026). 
+
+74 Peng, J., Liu, C., Luo, Y. & Dandapat, K. Accelerating multimetallic catalyst discovery with 
+
+robotics and agentic AI. AI Agent 1, 5, doi:10.20517/aiagent.2025.07 (2025). 
+
+75 Basak, S. & Bandyopadhyay, A. Toward Making Polymer Chemistry Autonomous. ACS Applied 
+
+Engineering Materials 2, 1190–1208, doi:10.1021/acsaenm.4c00214 (2024). 
+
+76 He, D. et al. Algorithm-Driven Robotic Discovery of Polyoxometalate-Scaffolding Metal– 
+
+Organic Frameworks. Journal of the American Chemical Society 146 , 28952–28960, 
+
+doi:10.1021/jacs.4c09553 (2024). 
+
+77 Szymanski, N. J. et al. An autonomous laboratory for the accelerated synthesis of inorganic 
+
+materials. Nature 624 , 86–91, doi:10.1038/s41586-023-06734-w (2023). 
+
+78 Hoogenboom, R. & Schubert, U. S. High-throughput synthesis equipment applied to polymer 
+
+research. Review of Scientific Instruments 76 , 062202, doi:10.1063/1.1906090 (2005). 
+
+79 Adesiji, A. D. et al. A modular approach to studying polymer processing using a self-driving 
+
+lab. Digital Discovery , doi:10.1039/D6DD00146G (2026). 80 Xie, D. et al. Synthesis of ArF photoresist polymers via continuous-flow RAFT polymerization 
+
+with an efficient strategy for their thiocarbonylthio end group removal. European Polymer 
+
+Journal 242 , 114449, doi: https://doi.org/10.1016/j.eurpolymj.2025.114449 (2026). 
+
+81 Steiner, S. et al. Organic synthesis in a modular robotic system driven by a chemical 
+
+programming language. Science 363 , doi:10.1126/science.aav2211 (2019). 
+
+82 Zero, J., Tyler, T. J. & Cronin, L. Universal peptide synthesis via solid-phase methods fused 
+
+with chemputation. Nature Communications 16 , 7322, doi:10.1038/s41467-025-62344-2 
+
+(2025). 
+
+83 Wang, C. et al. Autonomous platform for solution processing of electronic polymers. Nature 
+
+Communications 16 , 1498, doi:10.1038/s41467-024-55655-3 (2025). 
+
+84 Tamasi, M. J. et al. Machine Learning on a Robotic Platform for the Design of Polymer–Protein 
+
+Hybrids. Advanced Materials 34 , 2201809, doi: https://doi.org/10.1002/adma.202201809 
+
+(2022). 
+
+85 Rubens, M., Vrijsen, J. H., Laun, J. & Junkers, T. Precise Polymer Synthesis by Autonomous 
+
+Self-Optimizing Flow Reactors. Angewandte Chemie International Edition 58 , 3183–3187, 
+
+doi: https://doi.org/10.1002/anie.201810384 (2019). 
+
+86 Wong, W. N., Phillips, D. J., Rahman, M. T. & Junkers, T. Automated closed-loop continuous 
+
+flow block copolymer synthesizer. Chemical Science 17 , 4222–4234, 
+
+doi: https://doi.org/10.1039/d5sc07307c (2026). 
+
+87 Wang, X. et al. Organic phosphors with bright triplet excitons for efficient X-ray-excited 
+
+luminescence. Nature Photonics 15 , 187–192, doi:10.1038/s41566-020-00744-0 (2021). 
+
+88 Wu, Y. et al. Iterative discovery of potent polymeric antibiotics via multi-stage and multi-task 
+
+learning against antimicrobial resistance. Nature Communications 17 , 1878, 
+
+doi:10.1038/s41467-026-68682-z (2026). 
+
+89 Wu, Y. et al. Periodicity-aware deep learning for polymers. Nature Computational Science 5,
+
+1214–1226, doi:10.1038/s43588-025-00903-9 (2025). 
+
+90 Jang, S.-H. et al. A unified descriptor framework for hydrogen storage capacity and equilibrium 
+
+pressure in interstitial hydrides. Chemical Science , doi:10.1039/D6SC03089K (2026). 
+
+91 Jang, S.-H. et al. Physically interpretable descriptors drive the materials design of metal 
+
+hydrides for hydrogen storage. Chemical Science 16 , 23111–23120, doi:10.1039/D5SC07296D 
+
+(2025).

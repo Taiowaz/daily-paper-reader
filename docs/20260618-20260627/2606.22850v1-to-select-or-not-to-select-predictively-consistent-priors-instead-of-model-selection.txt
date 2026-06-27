@@ -1,0 +1,4154 @@
+Title: To select or not to select: predictively consistent priors instead of model selection
+
+URL Source: https://arxiv.org/pdf/2606.22850v1
+
+Published Time: Tue, 23 Jun 2026 03:10:30 GMT
+
+Number of Pages: 76
+
+Markdown Content:
+# To select or not to select: predictively consistent priors instead of model selection 
+
+Anna Elisabeth Riha 1,* , Leevi Lindgren 2, David Kohns 1, Paul-Christian B¨ urkner 3, and Aki Vehtari 4,1 
+
+> 1
+
+Department of Computer Science, Aalto University, Finland 
+
+> 2
+
+work done while at Department of Computer Science, Aalto University, Finland 
+
+> 3
+
+Department of Statistics, TU Dortmund University, Germany 
+
+> 4
+
+ELLIS Institute Finland, Finland 
+
+> *
+
+Corresponding author: anna.riha@aalto.fi 
+
+Abstract. Bayesian modelling workflows often consider multiple candidate models of varying complexity. Model selection is commonly used to navigate potential trade-offs between model complexity and generalisability to new data. We study when model selection is unnecessary or can even be harmful for predictive performance in finite data regimes and find that the need for selecting simpler models can depend on prior choice. We formalise predictively consistent priors, which keep prior predictive implications stable as model complexity increases. Across examples and numerical experiments, including adding covariates in linear and logistic regression, forward variable selection, and nonlinear modelling, flexible models with predictively consistent priors typically match or outperform selected simpler models in out-of-sample predictive performance. When selection helps, it can indicate poor joint prior implications, such as excessive prior mass on implausible predictive values. Based on our findings, we propose replacing the notion of sparsity or parsimony at the level of model components with specifying priors that remain sensible in predictive space as models become more complex. 
+
+Keywords: model selection, model comparison, prior specification, predictively consistent priors, Bayesian workflows 
+
+# 1 Introduction 
+
+Modellers often start with a simple model that is easy to fit, but, ultimately, want to safely iterate towards more complex models that predict well and are expressive yet computationally feasible (Gelman et al., 2020b). Alternative modelling choices, model checks, or iterative refinements can generate multiple candidate models, motivating transparent strategies for model expansion and comparison (see, e.g., Gelman and Loken, 2013; Riha et al., 2024). Dubova et al. (2025) emphasise the need for both parsimonious and complex models for scientific progress. Complex models are often more realistic (Rasmussen and Ghahramani, 2000), but preferences or resource limits can motivate choosing a simpler candidate via model selection (for reviews of Bayesian model selection and criteria of model quality, see Vehtari and Ojanen, 2012; B¨ urkner et al., 2023, respectively). 
+
+> arXiv:2606.22850v1 [stat.ME] 22 Jun 2026 To select or not to select
+
+Statistical folklore says that selecting models with fewer components can avoid overfitting, that is, it helps to balance accuracy on observed (training) data with generalis-ability on unseen (test) data (Hastie et al., 2009). A typical textbook example of this is a polynomial regression where higher-degree polynomials eventually achieve an arbitrarily good fit to the given data, but predict poorly on out-of-sample data (McElreath, 2020, Ch. 7; Johnson et al., 2022). Model selection is a commonly suggested remedy, but has itself also been criticised to favour models that are prone to overfitting, for example, when considering stepwise selection from many candidate models (Smith, 2018; Ellis, 2024). To give practical guidance for Bayesian modelling workflows, we examine when model selection is needed and when it may even harm out-of-sample predictive performance. Further, we investigate how prior choices affect selection outcomes and the level of model complexity we can reach safely without deteriorating test performance. To this end, we focus on additive models in finite data regimes, which covers a wide range of use cases across the quantitative sciences. In particular, we 
+
+• Provide general desiderata for good priors and specifically define predictively consistent priors (second-order consistency and predictive parsimony; Sections 3-4). 
+
+• Demonstrate predictively consistent priors in three case studies: adding covariates in linear and logistic models, forward stepwise selection, and increasing nonlinear complexity (Sections 4.2, 5.1-5.3). 
+
+• Give an example of adjusting a joint prior towards predictive consistency for a randomised-controlled-trial setup with available prior knowledge for the treatment coefficient (Section 5.4). 
+
+• Summarize our main takeaways and practical recommendations (Section 1.1). Our main recommendation is to replace the notion of sparsity or parsimony at the level of model components with predictively consistent priors , that is, proper priors that retain consistent prior predictive distributions on the target space when model complexity increases (Gelman et al., 2017; Gelman et al., 2020a). We operationalise this notion via the implied variance of the predictor distribution (intuition: Section 3.1; formal definition: Section 3.2). When correctly integrating over uncertainties and using predictively consistent priors, we find that selecting a simpler model is often unnecessary. Throughout our experiments in Section 5, complex models with predictively consistent priors typically match or exceed the out-of-sample performance of selected simpler models; and when worse, the loss is usually negligible. In some cases, selection within a set of nested models can even harm performance relative to using the biggest model. If overfitting is a concern, this should be addressed in the initial (joint) priors rather than by selecting among models with predictively inconsistent priors that may favour overfitting. Importantly, we are not saying model selection cannot be useful. Resource constraints can force reductions in model size and selecting a simpler model can also mitigate the shortcomings of a prior. In fact, when selection “helps”, it can indicate a poor prior with too much mass on nonsensical predictive values, motivating better joint prior specification upfront. 
+
+> 2Riha et al.
+
+1.1 Takeaways for modellers  
+
+> (1) Joint prior specification should consider independence assumptions and dependence structures between model components.
+
+Seemingly weakly informative marginal priors like independent normal priors can imply surprisingly informative joint priors (Figure 4; see also Efron, 1973). Independence is not a safe default as exemplified throughout Section 5.1 to 5.2. At the same time, when a component is truly independent as in Section 5.4, assuming dependence can also lead to problematic prior predictives and worse predictive performance compared to a prior that reflects the dependence structure.  
+
+> (2) Prior predictive checks and sensitivity analysis can reveal deficiencies.
+
+Prior pre-dictive checks often detect too diffuse priors producing nonsensical prior predictive distributions (Gabry et al., 2019; Gelman et al., 2020b) and prior sensitivity analysis highlights influential choices and prior-data conflicts (Kallioinen et al., 2023). Checking joint quantities and model summaries can reveal unintended joint effects of individually specified priors and predictive inconsistencies (Figures 4, 5 and 16; see also Aguilar and B¨ urkner, 2023; Aguilar and B¨ urkner, 2025).  
+
+> (3) With predictively consistent priors, model selection is not always needed.
+
+Predic-tively consistent priors keep relevant features of the prior predictive distribution stable as model components are added (intuition: Section 3.1; formal definition: Section 3.2). Across our experiments (Section 5), posterior integration combined with such priors allows increasing model complexity without loss of out-of-sample performance and simpler models rarely outperform more complex ones (see also Neal, 1996; Rasmussen and Ghahramani, 2000).  
+
+> (4) Priors are important, even if the main goal is to reduce the model size.
+
+When cost or explainability motivate reducing model size, projection predictive inference is recommended (Hahn and Carvalho, 2015; Piironen and Vehtari, 2017a; Piironen et al., 2020; Pavone et al., 2023; McLatchie et al., 2025). Our experiments in Section 5.2 show that a predictively consistent prior can improve the forward search process of projpred 
+
+(Piironen et al., 2026), compared to the case when independent diffuse priors are used.  
+
+> (5) Model selection being helpful might be an indication of a poor prior.
+
+If model selection favours a simpler model over a more complex one, this can be caused by a prior placing too much probability mass on nonsensical predictive values favouring overfitting (see Figures 4 and 7). If selecting a simpler model seems to improve results, there is reason to revisit the chosen priors, especially, if wide default priors have been used or marginal priors have been chosen without considering potential dependence structures between model components. 
+
+> 3To select or not to select
+
+1.2 Related work  
+
+> 1.2.1 In favour of big models
+
+Building the largest, encompassing model when possible and computationally feasible is a repeatedly advocated idea (Lindley, 1968; Neal, 1996; Rasmussen and Ghahramani, 2000; Vehtari and Ojanen, 2012; Pavone et al., 2023). There are many reasons to build complex models, for example, to include all available information and allow flexibility for future applications of the model. Established concepts like the bias-variance trade-off underline tensions between model complexity and predictive performance on test data (Hastie et al., 2009). At the same time, complex yet well-generalising models, for example, Gaussian processes or (Bayesian) neural networks, suggest less straightforward relationships between complexity, bias, and variance (Neal, 1996; Rasmussen and Williams, 2006; Wilson, 2025). Rasmussen and Ghahramani, 2000 argue that parsimony need not imply that a simpler model would perform better, when Ockham’s razor is applied at the level of functional complexity. In the context of generalisation phenomena of deep neural networks like double descent, Wilson (2025) reasons that “restriction biases” (Wilson, 2025, p.3) are not necessary to avoid overfitting and shows that similarly unintuitive generalisation also occurs in simpler models like linear regression models. Even if we do not work with the largest model directly, for example, because it is computationally expensive, it can still be appealing to build a model that is as complex as is feasible. Expanding a candidate model is often recommended, especially when the initial model does not satisfy criteria of model quality (see, e.g., Gelman and Meng, 1995b; O’Hagan and Forster, 2004). In real-world applications of Bayesian data analysis, a typical workflow is to start with a simple, tractable model and iteratively expand toward more realistic models that capture the investigated phenomenon well, provide reliable posterior results and accurate predictions, while also performing model checking and monitoring computation and convergence and revising models if needed (Gelman et al., 2020b). As such, Bayesian workflows require strategies for safe model expansion, that is, increasing model complexity without losses in out-of-sample performance. Moreover, Lindley (1968) suggests performing model selection by identifying models that perform similarly to the largest model encompassing all uncertainty about the modelling problem. In continuation and based on ideas by Goutis and Robert (1998) and Dupuis and Robert (2003), projection predictive inference finds simpler models with comparable predictive performance to a reference model (Hahn and Carvalho, 2015; Piironen et al., 2020). Importantly, the quality of the results depends on the chosen reference model and we need well-performing complex models for successful projection predictive selection (see, e.g., Piironen and Vehtari, 2017a; Pavone et al., 2023; McLatchie et al., 2025).  
+
+> 4Riha et al.
+> 1.2.2 Prior specification and model complexity
+
+Prior specification and model selection are separate tasks in Bayesian workflows (see, e.g, Bernardo and Smith, 1994; Key et al., 1999; Vehtari and Ojanen, 2012; McLatchie and Vehtari, 2024), but the motivation for employing model selection can help to set better priors from the start. Particularly, if we care about posterior predictive performance on yet unobserved data, we need to consider the implications of our prior assumptions in predictive space (Gelman et al., 2017; Simpson et al., 2017). In practice, limited data availability restricts what we can learn and not all effects in our models can be large (Tosh et al., 2025), but that does not imply that some or most of the true effects are zero. Instead of “sparsifying” the model after building it, priors can reflect a notion of sparsity that allows small or close-to-zero effects despite increasing model complexity. Wilson (2025) recommends that modellers should “embrace a flexible hypothesis space, with a soft preference for simpler solutions [...] consistent with the data” (Wilson, 2025, p.1) as a result of investigating generalisation properties of complex models like deep neural networks. While targeting different models, this suggestion is conceptually close to our further discussion of desired properties of priors in Section 3.1 and 3.2. The more parameters a model has, the more challenging it can be to define meaningful individual priors that also imply sensible joint priors. It is not enough to elicit priors on a parameter-to-parameter basis, as their joint behaviour affects inferences (Gelman et al., 2017; Mikkola et al., 2024). Sometimes, a simpler model is used only because it is hard to come up with a sensible prior for a more complex version of the model (Neal, 1996). A range of existing approaches tackle aspects of this challenge, for example, by embedding sparsity assumptions with global-local shrinkage priors (Polson and Scott, 2011), restricting predictive complexity with reference model priors (Nalisnick et al., 2021), considering a prior tree structure and a hierarchical decomposition of prior contributions for Bayesian hierarchical models (Fuglstad et al., 2020; Hem et al., 2024), or setting a prior on a joint quantity like the proportion of variance in the outcome explained by the model (Bayesian 𝑅 2, Gelman et al., 2019), that is propagated back to implied priors for the individual model components (Zhang et al., 2022; Aguilar and B¨ urkner, 2023; Yanchenko et al., 2025). Another strategy to ensure sensible joint priors is setting priors on function space. This is an integral part of approaches using Gaussian processes (Rasmussen and Williams, 2006) and nonparametric Bayes (Hjort et al., 2010; Ghosal and Vaart, 2017), including tree-based function priors such as Bayesian additive regression trees (Chipman et al., 2010). It has also been studied in the context of prior specification for Bayesian neural networks (see, e.g., Flam-Shepherd et al., 2017; Fortuin, 2022; Tran et al., 2022). To enable a more thorough mathematical investigation, we focus primarily on additive models in this paper. 
+
+> 5
+
+To select or not to select 
+
+Term Definition and/or example True data-generating process 𝑝 𝑡 (𝑦 ) := 𝑝 (𝑦 | 𝜃 = 𝜃 0) with known true 𝜃 0
+
+True-structure model 𝑝 (𝜃, 𝑦 ) with parameter space Θ such that 𝜃 0 ∈ Θ (2) KL-minimising parameters 𝜃 KL = arg min 𝜃 ∈Θ KL ( 𝑝 𝑡 (𝑦 ) || 𝑝 (𝑦 | 𝜃 )) (3) Generative model 𝑝 (𝑦, 𝑋, 𝜃 ) = 𝑝 (𝜃 ) 𝑝 (𝑋 ) 𝑝 (𝑦 | 𝑋, 𝜃 )
+
+Partially generative model 𝑝 (𝜃, 𝑦 | 𝑋 ) = 𝑝 (𝜃 ) 𝑝 (𝑦 | 𝑋, 𝜃 ), X treated as fixed Finite collection of models M = {M𝑘 }𝐾 𝑘 =1 where each M 𝑘 := 𝑝 M𝑘 (𝜃 M𝑘 , 𝑦 | 𝑋 ) with parameter space ΘM𝑘 
+
+Nested models 𝑝 M2 (𝑦 | { 𝜃 M1 , 𝜃 M2\M1 = 0}) = 𝑝 M1 (𝑦 | 𝜃 M1 ) where ΘM2 =ΘM1 × ΘM2\M1 and ΘM1 × { 0} ⊂ ΘM2 (1) Observation model/data model 𝑝 (𝑦 | 𝜃 ) as a function of 𝑦 
+
+Likelihood 𝑝 (𝑦 | 𝜃 ) as a function of 𝜃 
+
+Generative prior proper, allows to generate coefficient values Predictively consistent prior generative in predictive space, fulfils second-order predictive consistency (3.2.1) , often also predictive parsimony (3.2.2) Oracle model “best-in-collection” arg max M∈ M E ˜𝑦 
+
+u M(𝑦 ), ˜𝑦  (6) 
+
+Table 1. Terms and definitions used in the article. 
+
+1.3 Structure of this paper 
+
+Sections 2 and 3 define key concepts, including our notion of predictively consistent priors. Section 4 introduces two such priors with illustrative examples, and Section 5 evaluates them on simulated data across three settings that are typically framed as prone to overfitting: adding covariates in logistic regression (Section 5.1), forward variable selection (Section 5.2), and increasing complexity in nonlinear models (Section 5.3). We also customise a hierarchical shrinkage prior for randomised controlled trials with treatment-specific prior information (Section 5.4). We conclude with a discussion of the main findings and directions for future work in Section 6. 1
+
+# 2 Methods 
+
+2.1 Key concepts 
+
+We introduce terminology used throughout this paper, including a collection of nested candidate models with an associated notion of complexity, a utility for ranking them, and a selection rule given by an oracle model (see Table 1 for a summary). 
+
+Candidate models and model complexity We work with a finite collection of candidate models M = {M𝑘 }𝐾 𝑘 =1. Each candidate is the joint model M 𝑘 := 𝑝 M𝑘 (𝜃 M𝑘 , 𝑦 | 𝑋 ),with parameter space ΘM𝑘 and covariates 𝑋 . After observing training data 𝑦 , we              
+
+> 1Code to replicate the illustrative examples and experiments in this paper is available at https://github.com/annariha/to-select-or-not.
+
+6Riha et al. 
+
+· · · 
+
+Θ𝑘 +1
+
+Θ𝑘 
+
+Θ𝑘 −1
+
+Θ𝑚  
+
+> 𝜃 0𝜃 KL
+
+Figure 1. Parameter spaces of true-structure models Θ𝑘 and Θ𝑘 +1 containing 𝜃 0, with Θ𝑘 being the parameter space of the minimal true-structure model since 𝜃 0 ∉ Θ 𝑘 −1. The KL-minimising parameter is 𝜃 KL = arg min 𝜃 ∈Θ KL ( 𝑝 𝑡 (𝑦 || 𝑝 (𝑦 | 𝜃 )) and 𝜃 KL = 𝜃 0 if the model is a true-structure model. 
+
+write M 𝑘 (𝑦 ) := 𝑝 M𝑘 ( · | 𝑦, 𝑋 ) as the posterior predictive, which is evaluated at new ˜𝑦 when assessing test performance. Two models are nested , written M 1 ⊂ M2, when their parameter spaces decompose as ΘM2 = Θ M1 × ΘM2\M1 , where ΘM2\M1 collects parameters present in M 2 but not in M 1, and ΘM1 is identified with ΘM1 × { 0} ⊂ ΘM2
+
+via 𝜃 M1 ↦ → ( 𝜃 M1 , 0), such that 
+
+𝑝 M2
+
+ 𝑦 | 𝜃 M1 , 𝜃 M2\M1 = 0, 𝑋  = 𝑝 M1
+
+ 𝑦 | 𝜃 M1 , 𝑋  . (1) We omit the explicit conditioning on 𝑋 in the equations below. For nested models M1 ⊂ · · · ⊂ M𝐾 , we identify model complexity with a model’s position, that is, M 𝐾 is the most complex model and M 𝑘 +1 is more complex than M 𝑘 (see Figure 1 for a simplified illustration of Θ𝑘 −1 ⊂ Θ𝑘 ⊂ Θ𝑘 +1 ⊂ · · · ). 
+
+True data-generating process and true-structure models We denote by 𝑝 𝑡 (𝑦 ) the true model or true data-generating process (DGP) of 𝑦 . The DGP does not need to be within the set of candidate models M, but when it is, there exists a model 𝑀 𝑘 ∈ M and a parameter value 𝜃 0 ∈ ΘM𝑘 such that 
+
+𝑝 𝑡 (𝑦 ) = 𝑝 M𝑘 (𝑦 | 𝜃 0), (2) we call M 𝑘 a true-structure model and any such 𝜃 0 true-structure parameters (Bernardo and Smith, 1994; Vehtari and Ojanen, 2012). Further, 𝑝 M𝑘 (𝑦 | 𝜃 0) is then (a parameterisation of) the DGP. The smallest M 𝑘 in a set of nested models is the minimal true-structure model within this set. Figure 1 illustrates 𝜃 0 ∈ Θ𝑘 but 𝜃 0 ∉ Θ 𝑘 −1. This means M 𝑘 is the minimal true-structure model, and every M 𝑘 ′ with 𝑘 ′ ≥ 𝑘 is also a true-structure model. Independently of whether (2) can be satisfied, we define the Kullback–Leibler (KL) projection of 𝑝 𝑡 onto model M 𝑚 as 
+
+𝜃 KL = arg min  
+
+> 𝜃 ∈ΘM𝑚
+
+KL  𝑝 𝑡 (𝑦 ) ∥ 𝑝 M𝑚 (𝑦 | 𝜃 ) , (3) 
+
+7To select or not to select 
+
+that is, the parameter in Θ𝑚 whose implied distribution is closest to 𝑝 𝑡 in KL divergence. If M 𝑚 is a true-structure model, we have 𝜃 KL = 𝜃 0. Figure 1 shows the parameter space 
+
+Θ𝑚 of a misspecified candidate M 𝑚 with the dashed line pointing to its KL projection 
+
+𝜃 KL ∈ Θ𝑚 .
+
+Evaluating predictive performance We use the log score u (M(𝑦 ), ˜𝑦 ) = log 𝑝 M ( ˜𝑦 | 𝑦 )
+
+as a default utility to evaluate a model’s predictive performance for new observations (Geisser and Eddy, 1979; Bernardo and Smith, 1994; Gneiting and Raftery, 2007). The expected log predictive density (elpd) is elpd (M | 𝑦 ) = E ˜𝑦 
+
+ log 𝑝 M ( ˜𝑦 | 𝑦 ) (4) where the expectation is with respect to the DGP of ˜𝑦 and 𝑝 M ( ˜𝑦 | 𝑦 ) = ∫ 𝑝 M ( ˜𝑦 |
+
+𝜃 ) 𝑝 M (𝜃 | 𝑦 )d𝜃 is the posterior predictive density of M. Given independent test data 
+
+{ ˜𝑦 𝑖 }𝑛 test  
+
+> 𝑖 =1
+
+, we can estimate elpd test (M | 𝑦 ) = Í𝑛 test  
+
+> 𝑖 =1
+
+log 𝑝 ( ˜𝑦 𝑖 | 𝑦 ). The in-sample analogue is the log pointwise predictive density lppd (M | 𝑦 ) = Í𝑛 𝑖 =1 log 𝑝 (𝑦 𝑖 | 𝑦 ). When no test data are available, leave-one-out cross-validation (LOO-CV, Geisser and Eddy, 1979) can approximate out-of-sample performance via elpd loo = Í𝑛 𝑖 =1 log 𝑝 (𝑦 𝑖 | 𝑦 −𝑖 ),where 𝑝 (𝑦 𝑖 | 𝑦 −𝑖 ) = ∫ 𝑝 (𝑦 𝑖 | 𝜃 ) 𝑝 (𝜃 | 𝑦 −𝑖 )d𝜃 is the LOO posterior predictive density obtained by fitting the model to the data without the 𝑖 -th observation. LOO-CV with Pareto-smoothed importance sampling (PSIS, Vehtari et al., 2017; Vehtari et al., 2024) avoids 𝑛 refits and provides Pareto- ˆ𝑘 values to diagnose the reliability of the estimates. To support comparability, we report elpd test on the elpd loo scale, that is, scaled with 
+
+(𝑛 /𝑛 test ). On elpd loo scale, a difference ≤ 4 can indicate indistinguishable predictive performance (McLatchie and Vehtari, 2024; Sivula et al., 2025). 
+
+Overfitting Overfitting is a commonly used concept to caution against “fitting to the data” without ensuring good test performance (Hastie et al., 2009). It is difficult to assess for a single dataset and model, but, for two models M 1 ⊂ M2, we say M 2 is overfitting relative to M1 on the training data 𝑦 if lppd (M2 | 𝑦 ) ≥ lppd (M1 | 𝑦 ) and elpd test (M2 | 𝑦 ) < elpd test (M1 | 𝑦 ), (5) that is, if in-sample predictions improve (or remain the same) but out-of-sample perfor-mance reduces. When a test set is unavailable, the second inequality can be replaced by elpd loo (M2 | 𝑦 ) < elpd loo (M1 | 𝑦 ), or by corresponding elpd s obtained from any other CV scheme. If we can define a unique ordering based on model complexity, we can use the same reasoning for non-nested models. There is no requirement that the models are true-structure models. However, misspecified models can sometimes simultaneously overfit and underfit for different areas of observed data, for example, when fitting a linear model to data with nonlinear patterns or vice versa. 
+
+8Riha et al. 
+
+Best-predicting models Following Arlot and Celisse (2010, Section 2.2), an oracle model is a model in M that, after being fitted on training data 𝑦 = {𝑦 𝑖 }𝑛 𝑖 =1, has the lowest expected loss on unseen data ˜𝑦 from the DGP. With the log-score, this is equivalent to maximising elpd, MOR (𝑦 ) ∈ arg max 
+
+> M∈ M
+
+E ˜𝑦 [u(M(𝑦 ), ˜𝑦 )] = arg max 
+
+> M∈ M
+
+elpd (M | 𝑦 ). (6) For simplicity, we will just speak of the oracle model in the following, assuming its uniqueness. The oracle depends on 𝑦 and averaging additionally over 𝑦 gives the oracle in expectation : arg max M∈ M E𝑦, ˜𝑦 [u(M(𝑦 ), ˜𝑦 )] , which is what we report when summarising over repeated simulations in Section 5. The oracle maximises expected utility within M.So, for any other model M ∈ M \ { MOR (𝑦 )} , we have elpd (M | 𝑦 ) ≤ elpd (MOR (𝑦 ) | 𝑦 ),with strict inequality whenever the maximiser is unique. The oracle is defined only with respect to the collection M, which does not need to contain any true-structure models. Even when a true-structure model is included, the oracle does not need to be a true-structure model itself (Arlot and Celisse, 2010, p. 46). Following (5) , models more complex than M OR (𝑦 ) with lower expected predictive performance are overfitting, and models simpler than M OR (𝑦 ) with lower expected predictive performance are underfitting. 
+
+2.2 Illustrative example: Part I 
+
+We consider a simple setup with two normal models: an intercept-only model (M 0) with 
+
+𝜇 M0 = 𝛼 and a single-covariate model (M 1) with 𝜇 M1 = 𝛼 + 𝛽𝑥 𝑖 . Importantly, we observe similar phenomena with more complex models, often becoming more pronounced in higher-dimensional settings (see Section 4.2, 5.1-5.4). We consider 0 .01 ≤ 𝛽 ∗ ≤ 1, set 
+
+𝛼 ∗ = 0 and 𝜎 2∗ = 1 and generate data as 
+
+𝑦 𝑖 ∼ normal (𝛼 ∗ + 𝛽 ∗𝑥 𝑖 , 𝜎 2∗), with 𝑥 𝑖 ∼ normal (0, 1). (7) Following (2) , M1 is a true-structure model, while M 0 is not, since we assume 𝛽 ∗ ≠ 0. Figure 2 compares elpd test of M0 and M1 averaged over 500 repetitions, relative to the oracle model (6) where M = {M0, M1}. We assume 𝑛 = 100, 𝑛 test = 2000, and priors 
+
+𝛼 ∼ normal (0, 2.5), 𝜎 2 ∼ exponential (1) and 𝛽 ∼ normal (0, 1). For 𝛽 ≳ 0.3, M 1 is the oracle and dominates M 0 by a margin exceeding 4 on elpd loo scale. However, for sufficiently small 𝛽 , M 0 is the oracle, even though it omits a nonzero true 𝛽 , as the variance from estimating a weak 𝛽 with 𝑛 = 100 may outweigh the bias from setting it to zero. These observations are related to phenomena investigated by Hjort (1994) when comparing “narrow” incorrect models with higher bias to “wide” true-structure models with higher variability. We can extend the example by also investigating different strategies for aggregating or selecting M 0 or M 1, as summarised in Table 2. In particular, we consider (1) Bayes 
+
+9To select or not to select 0.0 0.25 0.5 0.75 1.0 
+
+> -4
+> -3
+> -2
+> -1
+> 0
+> 𝛽
+> elpd test  (relative to oracle model)
+> Full model (M 1)
+> Intercept-only (M 0)
+
+Figure 2. Illustrative example: Part 1. Test performance for a model with one covariate (M 1) with prior 𝛽 ∼ normal (0, 1) and the intercept-only model (M 0), relative to the oracle model (Equation (6) ), averaged across 500 repetitions and rescaled to elpd loo scale. We indicate a difference of 4 to oracle performance with a dotted line. 
+
+factors (Kass and Raftery, 1995) 2, and (2) elpd loo estimated with PSIS-LOO-CV. We also consider aggregating the models using either (3) Bayesian model averaging (BMA; Raftery et al., 1997; Hoeting et al., 1999) weights defined as 
+
+𝑤 𝑘 := 𝑝 (M𝑘 | 𝑦 ) = 𝑝 (𝑦 | M𝑘 ) 𝑝 (M𝑘 )
+
+Í𝐾 𝑘 =1 𝑝 (𝑦 | M𝑘 ) 𝑝 (M𝑘 ) (8) for a model M 𝑘 ∈ M , or (4) stacking weights (Yao et al., 2018), defined via the optimisation problem 3
+
+𝑤 ∗ = arg max 
+
+> 𝑤 𝑘
+
+1
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+log 
+
+> 𝐾
+
+∑︁ 
+
+> 𝑘 =1
+
+𝑤 𝑘 𝑝 (𝑦 𝑖 | 𝑦 −𝑖 , M𝑘 ) such that 𝑤 𝑘 ≥ 0,
+
+> 𝐾
+
+∑︁ 
+
+> 𝑘 =1
+
+𝑤 𝑘 = 1. (9) For 𝑛 = {20 , 100 } and normal DGP, Figure 10 in Appendix D shows that differences in test performance to the oracle are < 4 for most strategies in this illustrative example. We can still make some interesting observations, summarised in Figure 3. In particular, we find a small range of true 𝛽 values where M 0 and the true-structure model M 1
+
+perform so similar that BMA can slightly outperform either of them. Importantly, M 1
+
+converges to oracle performance most consistently, in comparison to the strategies for selecting or aggregating models which all exhibit a dip in predictive performance after the performance of M 0 drops. For example, model selection using Bayes factor > 6 is     
+
+> 2A threshold of six for the Bayes factor corresponds to an implicit prior point probability mass of ≈0.86 on the zero effect of 𝑥 (Campbell and Gustafson, 2022). In practice, this threshold should be chosen such that it matches the prior knowledge at hand.
+> 3Bayesian model stacking optimises the averaged predictive distribution to provide the best predictive performance, which can produce quite different weights compared to BMA (see more detailed discussion by Yao et al., 2018; Yao et al., 2021).
+
+10 Riha et al. 
+
+Strategy Details (1) Bayes factor Select M 1 if BF 1,0 = 𝑝 (M1 | 𝑦 )    
+
+> 𝑝 (M0|𝑦 )
+
+> 6(2) Predictive selection Select model with the highest elpd loo 
+
+(3) Bayesian model averaging Aggregate models with BMA weights (8) (4) Bayesian model stacking Aggregate models with stacking weights (9) 
+
+Table 2. Illustrative example: Part 1. Different strategies for selecting or combining models. Additional results based on model probability, stacking weights, pseudo-BMA weights and LOO-BB weights can be found in Appendix D. f                                
+
+> ul
+> l
+> m
+> o
+> d
+> e
+> l
+> m
+> o
+> d
+> e
+> l
+> s
+> e
+> l
+> e
+> c
+> t
+> i
+> o
+> n
+> w
+> i
+> th
+> B
+> a
+> ye
+> s f
+> a
+> ct o
+> r
+> B
+> a
+> y
+> es
+> ia
+> n
+> m
+> odelaver
+> ag
+> ing
+> B
+> ayesianmodelstacking
+> m
+> odels
+> e
+> le
+> c
+> ti
+> o
+> n
+> w
+> it
+> h
+> PS
+> IS
+> -L
+> O
+> O
+> -C
+> Velp
+> d
+> intercept-only
+> Model with true structure
+> has higher variance.
+> Other approaches
+> clearly worse than full model.
+> True effect size
+> Model performance
+> oracle
+> model
+
+Figure 3. Illustrative example: Part 1. Schematic illustration of model performance relative to the oracle model for increasing true effect size in the finite-data regime, comparing the full (true-structure) model (M 1), the intercept-only model (M 0), Bayesian model averaging and stacking, as well as selecting a model with Bayes factor or PSIS elpd loo . This is a simplified summary based on the results of simulated experiments in Appendix D. For small true effect sizes, the true-structure model can overfit, but, over the considered range, the full model has the best expected performance. 
+
+11 To select or not to select 
+
+particularly prone to larger losses due to the implicit prior mass this strategy places on the zero effect (see related demonstration on how Bayes factor requires bigger data size before switching to more complex model by Erven et al., 2012). Additional results for a Student-𝑡 DGP (Figure 11) as well as selection based on model probabilities or stacking, pseudo-BMA, and LOO-BB weights (Figures 12-15) are in Appendix D. 
+
+# 3 Properties of good priors 
+
+Given a true-structure model, a “good” prior puts prior mass close to the true 𝜃 0 and enables fast convergence of the posterior mass towards 𝜃 0. There are no universally good priors, as choosing priors is always context-dependent (O’Hagan and Forster, 2004; Gelman et al., 2017), but we can identify four desired properties based on existing recommendations and discussions (Gelman et al., 2017; Simpson et al., 2017; Mikkola et al., 2024). 
+
+3.1 Intuition 
+
+> Desideratum 1: Proper priors
+
+We want proper priors to make models (partially) generative before seeing data and enable well-defined prior predictive checks. 
+
+Good priors should provide a prior predictive distribution that generates data, which we would expect to observe (Gelman et al., 2017; Gelman et al., 2020a). We can investigate this using prior predictive checking and prior sensitivity analysis (Gelman et al., 2017; Gabry et al., 2019; Gelman et al., 2020a; Kallioinen et al., 2023) and by visualising joint quantities like a-priori Bayesian 𝑅 2 to reveal unintended joint implications (Aguilar and B¨ urkner, 2025). 
+
+> Desideratum 2: Sensible prior predictives
+
+We want to choose priors such that the model-generated data is sensible, that is, the prior predictive distributions reflect key characteristics of our modelling problem such as scale, variability or tail behaviour. Joint prior behaviour affects inferences (Gelman et al., 2017; Mikkola et al., 2024). When considering a collection of models, prior predictives should follow prior beliefs even as model complexity increases. Predictively consistent priors, formally defined in Section 3.2, satisfy this logical consistency requirement, for example, by keeping the 
+
+> 12
+
+Riha et al. 
+
+prior predictive variance constant or restricting it such that it will not explode as the model complexity grows. 4
+
+Desideratum 3: Consistency when increasing model complexity 
+
+When adding model components or otherwise increasing model complexity, the prior predictives should stay sensible and aligned with prior beliefs. 
+
+Most often, we can only keep some properties like the first two moments of the predictive distribution similar. For nested models, Gelman and Meng (1995a) recommend using larger models with priors favouring “the region of the parameter space near the smaller model” (Gelman and Meng, 1995a, p.131). This is also the main principle for penalised complexity priors (Simpson et al., 2017) and motivates a fourth desideratum. 
+
+Desideratum 4: Fall back to parsimony 
+
+For a more complex version of a simpler model, a good prior should be centred and place most mass on the simpler (base) model, especially when the predictive distribution changes with added model complexity. Parsimony is complementary to, and weaker than, second-order predictive consistency (see Section 3.2), but still a useful principle for setting priors on less intuitive parameters such as the degrees of freedom of the Student-𝑡 -distribution. While predictive consistency often implies parsimony, exceptions are discussed in Lemma 3.2.3. 
+
+3.2 Formalisation 
+
+We now formalise Desiderata 3 and 4. Consider a sequence of nested models {M𝑑 }𝑑 ∈N
+
+with increasing complexity. The complexity index 𝑑 may refer to number of predictors, varying-effect terms, or group levels. Each model M 𝑑 has the following hierarchical structure: 1. Hyperparameters: (𝜁 𝑑 , 𝜓 ) ∼ 𝑝 (𝜁 𝑑 , 𝜓 ), where 𝜁 𝑑 are prior hyperparameters for 
+
+𝜃 𝑑 (e.g., coefficient scales, group-level variances), and 𝜓 collects likelihood parameters outside any latent hierarchy on 𝜃 𝑑 (e.g., residual variance, dispersion, degrees of freedom). 2. Model parameters: 𝜃 𝑑 | 𝜁 𝑑 ∼ 𝑝 (𝜃 𝑑 | 𝜁 𝑑 ), using the first 𝑑 model components, including latent group-level effects. 3. Systematic component: 𝜂 𝑑 := 𝑓 𝑑 (𝑥 𝑑 ; 𝜃 𝑑 ), a deterministic function of 𝜃 𝑑 and inputs 
+
+𝑥 𝑑 , including group-level design matrices. 
+
+> 4In case of modelling processes with infinite variance some other variability measure would be used.
+
+13 To select or not to select 
+
+4. Observation model: 𝑦 | 𝜂 𝑑 , 𝜓 ∼ 𝑝 (𝑦 | 𝜂 𝑑 , 𝜓 ), where only 𝜂 𝑑 depends on 𝜃 𝑑 and 𝜓 
+
+are shared across all models. The joint prior is 𝑝 𝑑 (𝜃 𝑑 , 𝜁 𝑑 , 𝜓 ) = 𝑝 (𝜃 𝑑 | 𝜁 𝑑 ) 𝑝 (𝜁 𝑑 , 𝜓 ). Thus, the 𝑑 -indexed hyperpa-rameters 𝜁 𝑑 affect 𝑦 only through the path 𝜁 𝑑 → 𝜃 𝑑 → 𝜂 𝑑 → 𝑦 . Let 𝑥 𝑑 ∼ 𝑝 𝑑 (𝑥 𝑑 )
+
+be a single predictor observation from a reference distribution such that 𝑥 𝑑 is indepen-dent of parameters ( 𝑥 𝑑 ⊥ ( 𝜃 𝑑 , 𝜁 𝑑 , 𝜓 ) ∀ 𝑑 ) with E[𝑥 𝑑 ] = 0 and unit marginal variance. The induced signal distribution 𝑞 𝑑 (𝜂 𝑑 ) is the law of the scalar systematic component 
+
+𝜂 𝑑 = 𝑓 𝑑 (𝑥 𝑑 ; 𝜃 𝑑 ), obtained as the pushforward of the joint prior 𝑝 (𝑥 𝑑 , 𝜃 𝑑 , 𝜁 𝑑 ) under 𝑓 𝑑 ,
+
+𝑞 𝑑 (𝜂 𝑑 ) =
+
+∫
+
+I(𝜂 𝑑 = 𝑓 𝑑 (𝑥 𝑑 ; 𝜃 𝑑 )) 𝑝 (𝑥 𝑑 ) 𝑝 (𝜃 𝑑 , 𝜁 𝑑 ) 𝑑𝑥 𝑑 𝑑𝜃 𝑑 𝑑𝜁 𝑑 , (10) where 𝑝 𝑑 (𝜃 𝑑 , 𝜁 𝑑 ) is the marginal prior of (𝜃 𝑑 , 𝜁 𝑑 ) obtained from 𝑝 𝑑 (𝜃 𝑑 , 𝜁 𝑑 , 𝜓 ) by integrating out 𝜓 .
+
+Definition 3.2.1 (Second-order predictive consistency) . A prior sequence {𝑝 𝑑 }𝑑 ∈N is 
+
+second-order predictively consistent if (i) the prior predictive variance of the systematic component is globally bounded: 
+
+sup  
+
+> 𝑑 ∈N
+
+Var 𝑞 𝑑 (𝜂 𝑑 ) ≤ 𝐶 (11) 
+
+for some constant 𝐶 ∈ [ 0, ∞) , and (ii) the variance converges to a finite asymptotic limit, 𝐿 ∈ [ 0, ∞) :
+
+lim  
+
+> 𝑑 →∞
+
+Var 𝑞 𝑑 (𝜂 𝑑 ) = 𝐿. (12) Definition 3.2.1 uses the distribution over 𝜂 𝑑 rather than the prior predictive over 𝑦 ,since observation models with infinite or undefined marginal variance (e.g., Student-𝑡 𝜈 
+
+with 𝜈 ≤ 2) violate the bound on global boundedness regardless of the prior, while for bounded responses (e.g., binary data) the prior predictive variance is trivially bounded and finite. The supremum condition (11) allows for non-monotone variance sequences and ensures global boundedness. Non-monotonicity can arise when the signal aggregates many components, for example, in Bayesian neural networks (Lampinen and Vehtari, 2001), or when parameters are negatively correlated. Note that 𝐶 may be potentially zero for point priors. The limit condition (12) ensures that the variance stabilises to some 𝐿 ,which, due to potential non-monotony, may differ from 𝐶 .5 Together, this formalises Desideratum 3: the prior predictive distribution stays sensible as model complexity grows precisely when the signal variance remains bounded and converges.   
+
+> 5We acknowledge that the limit condition (12) implies a finite global variance. However, we would like to highlight explicitly that the variance sequence should be well-behaved and that the global and limiting variance may be two different values.
+
+14 Riha et al. 
+
+In Desideratum 4, parsimony is complementary to, and usually weaker than, second-order predictive consistency: it does not require bounded variance, but controls how much the induced signal distribution changes across model sizes. A natural formalisation is to require that the induced signal distributions do not diverge from one another as 
+
+𝑑 → ∞ and that their pairwise divergences accumulate to a finite sum. 
+
+Definition 3.2.2 (Predictive parsimony) . Assume 𝑞 𝑑 +1 ≪ 𝑞 𝑑 for all 𝑑 ∈ N. A prior sequence {𝑝 𝑑 }𝑑 ∈N satisfies predictive parsimony if the KL divergence between successive induced signal distributions is summable: 
+
+> ∞
+
+∑︁ 
+
+> 𝑑 =1
+
+𝐷 KL (𝑞 𝑑 +1 ∥ 𝑞 𝑑 ) < ∞. (13) The asymmetric direction 𝐷 KL (𝑞 𝑑 +1 ∥𝑞 𝑑 ) encodes a preference for the simpler model by penalising mass placed by 𝑞 𝑑 +1 where 𝑞 𝑑 has zero support. The absolute-continuity assumption 𝑞 𝑑 +1 ≪ 𝑞 𝑑 ensures each summand is finite. For Gaussian signal families 
+
+𝑞 𝑑 = normal (0, 𝑉 𝑑 ), the KL divergence between successive models conditional on 𝑉 is 
+
+𝐷 KL (𝑞 𝑑 +1 ∥𝑞 𝑑 ) = 12
+
+𝑉 𝑑 +1
+
+𝑉 𝑑 
+
+− 1 − log 𝑉 𝑑 +1
+
+𝑉 𝑑 
+
+
+
+, (14) which depends only on the variance ratio 𝑉 𝑑 +1/𝑉 𝑑 .
+
+Lemma 3.2.3 (Relationship between predictive consistency and parsimony) . Let 𝑞 𝑑 =
+
+normal (0, 𝑉 𝑑 ) with 𝑉 𝑑 > 0 for all 𝑑 . Write S for sequences satisfying second-order predictive consistency (Definition 3.2.1) and F for those satisfying predictive parsimony (Definition 3.2.2). Then: (i) S ⊈ F: bounded and convergent variance need not imply parsimony. For example, the oscillating but convergent series |𝑉 𝑑 +1 − 𝑉 𝑑 | = Ω (𝑑 −1/2) does not fulfil parsimony. (ii) F ⊈ S: parsimony does not necessarily imply bounded variance. For example, the independent normal prior ( 𝑉 𝑑 = 𝑑𝜏 2) is in F but not S.(iii) S ∩ F: a prior sequence is in both S and F if and only if 𝑉 𝑑 is bounded, convergent, 
+
+inf 𝑑 𝑉 𝑑 > 0, and Í∞ 
+
+> 𝑑 =1
+
+(𝑉 𝑑 +1 − 𝑉 𝑑 )2 < ∞. Monotone convergence to a strictly positive limit is a sufficient condition. 
+
+The proof is given in Appendix B. A key consequence is that predictive parsimony alone is too weak to exclude independent normal priors: each added predictor changes the signal distribution only marginally ( 𝜏 2 out of 𝑑𝜏 2, giving 𝐷 KL (𝑞 𝑑 +1 ∥𝑞 𝑑 ) ≈ 1/( 4𝑑 2),summable), yet the variance increments are multiples of 𝑑 , so 𝑉 𝑑 = 𝑑𝜏 2 diverges for any 
+
+𝜏 > 0. 
+
+15 To select or not to select 
+
+3.2.1 Predictive consistency and parsimony for global-local priors 
+
+For the linear model (19) , the widely used class of global-local scale-mixture priors (Polson and Scott, 2011) takes the conditional form 𝜃 𝑗 | 𝜁 𝑑 ∼ normal (0, 𝜏 2𝜙 𝑗 ), where 
+
+𝜁 𝑑 = (𝜏 2, 𝜙 1, . . . , 𝜙 𝑑 ) contains the global scale 𝜏 2 and local weights 𝜙 𝑗 ≥ 0. Typically, heavy-tailed priors are chosen for the local weights and global scale to simultaneously shrink noise heavily to zero and only weakly regularise signals. For centred priors and a standardised predictor reference distribution, the decomposition under global local priors becomes: Var 𝑞 𝑑 (𝜂 𝑑 ) = E𝑝 𝑑 
+
+
+
+𝜏 2
+
+> 𝑑
+
+∑︁ 
+
+> 𝑗 =1
+
+𝜙 𝑗 
+
+
+
+. (15) This yields a necessary and sufficient condition for predictive consistency: 
+
+Corollary 3.2.4 (Characterisation of predictive consistency for global-local priors) . Con-sider the linear model (19) with standardised predictor reference distribution and a centred global-local prior with 𝜃 𝑗 | 𝜁 𝑑 ∼ normal (0, 𝜏 2𝜙 𝑗 ). The prior sequence is second-order predictively consistent (Definition 3.2.1) if and only if 
+
+sup  
+
+> 𝑑 ∈N
+
+E𝑝 𝑑 
+
+
+
+𝜏 2
+
+> 𝑑
+
+∑︁ 
+
+> 𝑗 =1
+
+𝜙 𝑗 
+
+
+
+< ∞ and lim  
+
+> 𝑑 →∞
+
+E𝑝 𝑑 
+
+
+
+𝜏 2
+
+> 𝑑
+
+∑︁ 
+
+> 𝑗 =1
+
+𝜙 𝑗 
+
+
+
+exists . (16) 
+
+Proof. Both conditions are direct translations of (11) and (12) via the identity (15). □
+
+For any global-local prior with local weights satisfying Í 𝑗 𝜙 𝑗 = 1, Corollary 3.2.4 reduces second order predictive consistency to requiring E𝑝 𝑑 [𝜏 2] < ∞, independently of model size. Some global-local priors respect this condition, others can be set up to be predictively consistent, see Appendix E.1 for more details. 
+
+Parsimony for global-local priors. When the local weights are constrained to the simplex, that is Í 𝑗 𝜙 𝑗 = 1, and the prior on 𝜏 2 does not depend on 𝑑 , the conditional variance Var (𝜂 𝑑 | 𝜏 2, 𝜙 ) = 𝜏 2 is independent of 𝑑 . With a Gaussian conditional prior on 𝜃 𝑑 , the variance sequence 𝑉 𝑑 entering Lemma 3.2.3 is constant in 𝑑 , so 𝐷 KL (𝑞 𝑑 +1 ∥𝑞 𝑑 ) = 0 in the variance-only view. The full mixture distributions 𝑞 𝑑 still depend weakly on 𝑑 through the law of 𝜏 2 Í 𝑗 𝜙 𝑗 𝑥 2 
+
+> 𝑑, 𝑗
+
+, but this dependence vanishes as 𝑑 → ∞ (e.g., by concentration of Í 𝑗 𝜙 𝑗 𝑥 2 
+
+> 𝑑, 𝑗
+
+around its mean when 𝜙 𝑗 = 1/𝑑 ). For unconstrained global-local priors like the horseshoe prior (Carvalho et al., 2010), parsimony additionally requires square-summable relative increments of 𝑆 𝑑 := E𝑝 𝑑 [𝜏 2 Í 𝑗 𝜙 𝑗 ], which must be verified case by case. 
+
+Implications of Desiderata 3-4 on shrinkage In the context of global-local priors, shrinkage factors 𝜅 𝑗 = (1 + 𝜎 −2𝜏 2𝜙 𝑗 )−1 are routinely analysed in order to characterise 
+
+16 Riha et al. 
+
+the properties of the chosen hyper-priors on the implied distribution of effective non-zero coefficients defined as 𝑚 eff ,𝑑 = Í𝑑 𝑗 =1 (1 − 𝜅 𝑗 ) (Piironen and Vehtari, 2017b) 6. Because  
+
+> 𝑥 𝜎 2+𝑥
+
+≤ 𝑥 𝜎 2 for any 𝑥 ≥ 0, we can establish a strict upper bound on the expected effective number of parameters, conditional on 𝜎 2:
+
+E𝑝 𝑑 [𝑚 eff ,𝑑 ] = E𝑝 𝑑 
+
+
+
+> 𝑑
+
+∑︁ 
+
+> 𝑗 =1
+
+𝜏 2𝜙 𝑗 
+
+𝜎 2 + 𝜏 2𝜙 𝑗 
+
+
+
+≤ E𝑝 𝑑 
+
+
+
+> 𝑑
+
+∑︁ 
+
+> 𝑗 =1
+
+𝜏 2𝜙 𝑗 
+
+𝜎 2
+
+
+
+= 1
+
+𝜎 2 E𝑝 𝑑 
+
+
+
+𝜏 2
+
+> 𝑑
+
+∑︁ 
+
+> 𝑗 =1
+
+𝜙 𝑗 
+
+
+
+≤ 𝐶 /𝜎 2.
+
+(17) However, predictive parsimony, alone does not guarantee a bound on the effective number of non-zero coefficients, since under the isotropic normal prior with fixed variance 𝜏 2:
+
+𝑚 eff ,𝑑 =
+
+> 𝑑
+
+∑︁ 
+
+> 𝑗 =1
+
+ ¯𝜏 2
+
+𝜎 2 + ¯𝜏 2
+
+
+
+= 𝑑 
+
+ ¯𝜏 2
+
+𝜎 2 + ¯𝜏 2
+
+
+
+. (18) As 𝑑 → ∞ , the effective model size 𝑚 eff ,𝑑 → ∞ .
+
+Generality beyond additive normal models. Since Definitions 3.2.1 and 3.2.2 are stated in terms of the induced signal distribution 𝑞 𝑑 and its variance Var 𝑞 𝑑 (𝜂 𝑑 ), they apply not only to additive normal regression but to any model for which this quantity is well-defined, including models where the role of 𝜃 𝑑 may be taken by an infinite-dimensional latent stochastic process, such as in a Gaussian process. In such cases, the definitions still provide a verifiable criterion and can be evaluated via prior predictive simulations. 
+
+3.3 Illustrative example: Part 2 
+
+We extend the normal model from Section 2.2 and write it more generally as 
+
+𝑦 ∼ normal 
+
+
+
+𝑓 (𝑥 𝑑 ; 𝜃 𝑑 ), 𝜎 2
+
+with 𝜃 𝑑 , 𝜎 2 ∼ 𝑝 𝑑 (𝜃 𝑑 , 𝜎 2), (19) where 𝑓 (𝑥 𝑑 ; 𝜃 𝑑 ) = 𝑥 𝑑 𝜃 𝑑 is the linear predictor over the first 𝑑 covariates. In the regression examples below, 𝜃 𝑑 collects the regression coefficients written 𝛽 , with 𝑗 -th entry 𝛽 𝑗 , so that 𝜃 𝑑 ≡ 𝛽 1: 𝑑 . We assume the moments 𝜇 𝜃 ,𝑑 = E𝑝 𝑑 [𝜃 𝑑 ] and Σ𝜃 ,𝑑 = Cov 𝑝 𝑑 (𝜃 𝑑 ) exist and are finite. Denoting Σ𝑥,𝑑 = Cov 𝑝 𝑑 (𝑥 𝑑 ), the signal variance is then given by Var 𝑞 𝑑 (𝜂 𝑑 ) = tr  Σ𝑥,𝑑 Σ𝜃 ,𝑑 
+
+ + 𝜇 𝑇 𝜃 ,𝑑 Σ𝑥,𝑑 𝜇 𝜃 ,𝑑 . (20) If, in addition, the prior is centred so that 𝜇 𝜃 ,𝑑 = 0 and either Σ𝑥,𝑑 or Σ𝜃 ,𝑑 are diagonal, then (20) reduces to Var 𝑞 𝑑 (𝜂 𝑑 ) = tr  Σ𝜃 ,𝑑 
+
+ =
+
+> 𝑑
+
+∑︁ 
+
+> 𝑗 =1
+
+Var 𝑝 𝑑 (𝜃 𝑗 ). (21)   
+
+> 6Whenever the observation model is not normal, one may use the approximating variance ˜𝜎 2as defined in Piironen and Vehtari (2017b)
+
+17 To select or not to select 
+
+For independent normal priors 𝜃 𝑑 ∼ normal (0, 𝜏 2), with fixed value 𝜏 2 > 0 (i.e., 𝜁 𝑑 
+
+degenerate at 𝜏 2), we have Var 𝑞 𝑑 (𝜂 𝑑 ) = 𝑑𝜏 2, which diverges as 𝑑 → ∞ , thus violating the predictive consistency requirement (11). 
+
+# 4 Examples of predictively consistent priors 
+
+We focus on two examples for predictively consistent priors, introduced below. Other ways to specify predictively consistent priors were not investigated here but could provide interesting insights (see, e.g., examples listed in Section 1.2 and Corollary 3.2.4 in Section 3.2). 
+
+4.1 𝑅 2-induced Dirichlet decomposition (R2D2) priors 
+
+The experiments in Section 4.2 and 5.1 to 5.2 use R2D2 priors (Zhang et al., 2022) that set a prior on 𝑅 2, the proportion of variance in the outcome explained by the model. For a linear regression model 𝑦 𝑖 = 𝛼 + 𝑥 𝑇 𝑖 𝛽 + 𝜖 𝑖 with 𝑖 = 1, · · · 𝑛 observations, 
+
+𝜖 𝑖 ∼ normal (0, 𝜎 2), and coefficient vector 𝛽 = (𝛽 1, · · · , 𝛽 𝑝 )𝑇 , following Gelman et al. (2019), realised Bayesian 𝑅 2 is given by 
+
+𝑅 2 := Var  𝑥 𝑇 𝛽 
+
+Var  𝑥 𝑇 𝛽  + 𝜎 2 . (22) When marginalising out 𝑋 , this reduces to 𝜏 2/( 𝜏 2 + 𝜎 2) and the R2D2 prior is then defined as: 
+
+𝑅 2 ∼ beta (𝜇 𝑅 2 , 𝜑 𝑅 2 ) and 𝜏 2 = 𝜎 2 𝑅 2
+
+1 − 𝑅 2
+
+𝜙 𝑗 ∼ Dirichlet (𝑎 1, . . . , 𝑎 𝑝 ) → 
+
+> 𝑝
+
+∑︁ 
+
+> 𝑗 =1
+
+𝜙 𝑗 = 1
+
+𝛽 𝑗 ∼ normal (0, 𝜆 2 
+
+> 𝑗
+
+) with 𝜆 2 
+
+> 𝑗
+
+= 𝜏 2𝜙 𝑗 ,
+
+(23) following the investigation of normal kernels by Aguilar and B¨ urkner (2023). A Beta prior on the model’s 𝑅 2 implies a Beta prime prior on the global scale 𝜏 2. Dirichlet weights for the local-scale components 𝜙 𝑗 allocate a share of global variance to each coefficient via 𝜆 2 
+
+> 𝑗
+
+= 𝜏 2𝜙 𝑗 .7
+
+The finite-moment condition E𝑝 𝑑 [𝜏 2] = E𝑝 𝑑 [𝜎 2 𝑅 2/( 1 − 𝑅 2)] < ∞ from Lemma 3.2.4 therefore becomes the key requirement for predictive consistency. This holds whenever (1 − 𝜇 𝑅 2 )𝜑 𝑅 2 > 1, that is, when the R2D2 prior does not place too much mass           
+
+> 7The local variances 𝜆 2
+> 𝑗 should be rescaled to ˜𝜆 2
+> 𝑗 =𝜆 2
+> 𝑗 𝜎 2
+> 𝑦 /𝜎 2
+> 𝑥 𝑗 or all variables standardised to ensure that the scale of 𝑅 2is independent of the outcome and the covariates (Aguilar and B¨ urkner, 2023).
+
+18 Riha et al. 0.00 0.25 0.50 0.75 1.00              
+
+> Realised Bayesian-𝑅 2
+> p = 5 p = 15 p = 30
+> N
+> orm
+> alpr
+> ior
+> R
+> 2
+> D
+> 2
+> p
+> ri
+> o
+> r
+> True 𝑅 2=0.5
+> 010 20 30
+> -160
+> -155
+> -150
+> Number of predictors
+> elpd test  (on elpd loo  scale)
+
+Figure 4. Illustrative example: Part 3. Left: realised prior Bayesian-𝑅 2 for 𝑝 ∈ { 5, 15 , 30 }
+
+covariates with 𝜎 2 = 1, 1 
+
+> 𝑛
+
+𝑋 𝑇 𝑋 = 𝐼 𝑝 and using Var  𝑋 𝑇 𝛽 | 𝛽  = || 𝛽 || 2 with || 𝛽 || 2 ∼ 𝜒 2 ( 𝑝 ) for normal priors. As 𝑝 increases, the R2D2 prior keeps 𝑅 2 stable, while it concentrates near 1 with independent normal priors. Right: elpd test (with 𝑛 = 100, 𝜌 = 0.5, 𝑅 2 = 0.5, 𝑛 test = 2000, averaged over 500 repetitions), on elpd loo scale. A difference of 4 (dotted line) to the best-performing model (dashed line) indicates substantially different predictive performance. Models with R2D2 prior perform best across 𝑝 and, unlike independent normal priors, allow to increase model size up to the true 𝑝 = 30 without a drop in test performance. 
+
+near one 8, and E𝑝 𝑑 [𝜎 2] < ∞. Hence, setting a prior directly on 𝑅 2 is not merely a convenient elicitation device; it is the natural parameterisation for achieving second-order predictive consistency. 
+
+4.2 Illustrative example: Part 3 
+
+To illustrate the different implications of prior choices, we extend the previous example in Section 2.2 and 3.3 to a collection of models with up to 𝑝 = 30 predictors, added in fixed order. Section 5.2 considers the (more realistic) case of order based on model selection. We compare independent normal priors 𝛽 𝑗 ∼ normal (0, 1), ∀ 𝑗 = 1, · · · , 𝑝 and an R2D2 prior putting most mass on 𝑅 2 values close to zero with 𝜇 𝑅 2 = 1/3, 𝜑 𝑅 2 = 3 and Dirichlet concentration parameters 𝑎 1: 𝑝 = (1, . . . , 1). The shape across 𝑅 2 values can be adjusted through the configuration of the R2D2 prior. 9 Figure 4 (left) visualises implied prior 𝑅 2
+
+for both prior choices and increasing 𝑝 ∈ { 5, 15 , 30 }, illustrating that with higher number of predictors, independent normal priors imply a prior 𝑅 2 increasingly concentrated at 1. Explaining close to 100% of the variation in the outcome is in many cases a largely unrealistic assumption. Relatedly, Efron (1973) points out that seemingly weakly          
+
+> 8Note that this condition on 𝜏 2excludes the bounded influence property which is achieved for the R2D2 prior when (1−𝜇 𝑅 2)𝜑 𝑅 2≤0.5.
+> 9To support prior elicitation for 𝑅 2, one can, for example, visualise the R2D2 prior and its components with this useful web-app https://solviro.shinyapps.io/R2D2 shiny/ by S¨ olvi R¨ ognvaldsson.
+
+19 To select or not to select 
+
+informative independent normal priors can lead to unexpectedly informative joint priors. In contrast, the implied prior 𝑅 2 distribution remains stable with R2D2 prior. To add to this, Figure 17 in Appendix E.4 illustrates that putting most prior mass close to 𝑅 2 = 1can also pull the posterior implied 𝑅 2 away from the truth for independent normal priors. Figure 4 (right) also shows test performance under the two different prior choices averaged over 500 repetitions for model sizes up to 𝑝 = 30. We generate training data {𝑥 𝑖 , 𝑦 𝑖 }𝑛 𝑖 =1 with 𝑛 = 100 and independent test data with 𝑛 test = 2000. We assume 
+
+𝑥 𝑖 ∼ normal (0, Σ), 𝑥 𝑖 ∈ R𝑝 and Σ ∈ R𝑝 × 𝑝 with unit variance and correlation 𝜌 = 0.5, that is, the true model is the encompassing model. Following the approach detailed in Appendix E.3, we set the true values for the coefficients 𝛽 𝑗 such that the true 𝑅 2 = 0.5. Both priors are different from the DGP. The chosen R2D2 prior allows to increase model complexity up to the true model ( 𝑝 = 30) without declining test performance while test performance drops when using independent normal priors. Figure 18 to 20 in Appendix E show largely similar patterns for 𝜌 ∈ { 0, 0.5, 0.9}, true 𝑅 2 ∈ { 0, 0.5, 0.8}
+
+and 𝑝 ∈ { 30 , 100 }. Only for uncorrelated predictors, true 𝑅 2 ∈ { 0.5, 0.8} and 𝑝 = 30, the two priors perform similarly. 
+
+4.3 Priors on function space 
+
+Function-space priors provide yet another framework for constructing predictively consistent priors. They allow eliciting prior knowledge directly on properties of functions, like smoothness, periodicity, or stationarity, rather than individual coefficients. When these are chosen explicitly to bound the function’s marginal variance, they ensure the total signal variance remains controlled as more complexity is added. In Section 5.3, we use Gaussian process priors which are among the most commonly used function-space priors (e.g., Rasmussen and Williams, 2006). The Hilbert space approximate Gaussian process (HSGP, Solin and S ¨arkk ¨a, 2020; Riutort-Mayol et al., 2022) used in Section 5.3 approximates a Gaussian process by a truncated basis expansion 
+
+𝜂 𝑘 = 𝑓 𝑘 (𝑥 ) ≈ 
+
+> 𝑘
+
+∑︁ 
+
+> 𝑗 =1
+
+
+
+𝑆 𝜃 
+
+√︁ 
+
+𝜆 𝑗 
+
+ 1/2
+
+𝜙 𝑗 (𝑥 ) 𝛽 𝑗 , (24) with 𝛽 𝑗 ∼ normal (0, 1), eigenvectors 𝜙 𝑗 and eigenvalues 𝜆 𝑗 of the covariance operator of the kernel, spectral density 𝑆 𝜃 , and length-scale ℓ and marginal scale of the GP 𝜎 2GP 
+
+as hyperparameters 𝜃 = (ℓ, 𝜎 2GP ). For fixed 𝜃 , Var   𝑓 𝑘 (𝑥 ) | 𝜃  = Í𝑘 𝑗 =1 𝑆 𝜃 
+
+ √︁ 𝜆 𝑗 
+
+ 𝜙 2 
+
+> 𝑗
+
+(𝑥 )
+
+converges to 𝜅 𝜃 (𝑥, 𝑥 ) = 𝜎 2GP as 𝑘 → ∞ . Integrating over any proper prior on 𝜃 and averaging over any reference predictor distribution 𝑝 (𝑥 ) gives Var 𝑞 𝑘 (𝜂 𝑘 ) ≤ E[𝜎 2GP ]
+
+for all 𝑘 , so HSGPs satisfy Definition 3.2.1 with 𝐶 = E[𝜎 2GP ]. In contrast, for raw 
+
+20 Riha et al. 
+
+polynomials 𝑓 𝑘 (𝑥 ) = Í𝑘 𝑗 =0 𝛽 𝑗 𝑥 𝑗 with independent 𝛽 𝑗 ∼ normal (0, 𝜏 2) and fixed 𝜏 2,Var 𝑞 𝑘 
+
+ 𝜂 𝑘 
+
+ = 𝜏 2
+
+> 𝑘
+
+∑︁ 
+
+> 𝑗 =0
+
+E[𝑥 2 𝑗 ]. (25) If 𝑝 (𝑥 ) places non–negligible mass near or beyond |𝑥 | = 1, the partial sums Í𝑘 𝑗 =0 E[𝑥 2 𝑗 ]
+
+grow with 𝑘 . For instance, they diverge when Pr (| 𝑥 | ≥ 1 + 𝛿 ) > 0, and even for 
+
+𝑥 ∼ Uniform [− 1, 1]. 10 This violates Definition 3.2.1 and helps to explain the decline in test performance observed in our experiments in Section 5.3. More generally, for any model 𝑓 𝑑 (𝑥 ) = Í𝑑 𝑗 =1 𝑤 𝑗 (𝑥 ) 𝛽 𝑗 with 𝛽 ∼ normal (0, Σ𝑑 ),second-order predictive consistency holds if sup 𝑑 E𝑥 
+
+𝑤 𝑑 (𝑥 )𝑇 Σ𝑑 𝑤 𝑑 (𝑥 ) < ∞. When 
+
+Σ𝑑 = diag (𝜎 2 
+
+> 𝑗
+
+), this reduces to sup 𝑑 
+
+Í𝑑 𝑗 =1 𝜎 2 
+
+> 𝑗
+
+E𝑤 𝑗 (𝑥 )2 < ∞. This includes the linear model with 𝑤 𝑗 (𝑥 ) = 𝑥 𝑗 and the bound from 𝑅 2, the HSGP with 𝑤 𝑗 (𝑥 ) = 𝑆 𝜃 (√︁ 𝜆 𝑗 )1/2𝜙 𝑗 (𝑥 )
+
+and the bound from 𝜅 𝜃 (𝑥, 𝑥 ), and basis-function expansions generally. 
+
+# 5 Experiments 
+
+We investigate predictive performance when model complexity increases, comparing independent priors to predictively consistent priors under different true DGPs. We focus on modelling scenarios that are typically considered prone to overfitting: 
+
+• Adding covariates in logistic regression (Section 5.1) in a dense regime, that is, the true DGP includes all covariates, 
+
+• Performing forward stepwise selection in a sparse regime, that is, only some covariates have non-zero weights in the true DGP (Section 5.2), or 
+
+• Increasing degree or number of basis functions in nonlinear models where the true DGP is not directly represented by any of the considered models (Section 5.3). Additionally, we explore (joint) prior choices for regression models with treatment effect (Section 5.4). 
+
+5.1 Experiment 1: Adding covariates in logistic regression 
+
+The setup is similar to the linear regression experiment in Section 4.2: we fix the DGP to yield a certain true 𝑅 2 and investigate how test performance changes with the number of predictors and the prior choice. Many notions of 𝑅 2 exist for non-normal models (Piepho, 2019). We use the Binomial adaptation of the Bayesian-𝑅 2 as defined by Gelman et al. (2019):    
+
+> 10 Note that if |𝑥 | ≤ 𝑐 < 1 almost surely, the series converges.
+
+21 To select or not to select 
+
+𝜋 𝑖 = 11 + exp (− 𝜂 𝑑,𝑖 ) , 𝜋 = (𝜋 1, . . . , 𝜋 𝑛 )𝑇 ,𝑅 2 = Var (𝜋 )
+
+Var (𝜋 ) + 1
+
+> 𝑛
+
+Í𝑛 𝑖 =1 𝜋 𝑖 (1 − 𝜋 𝑖 ) ,
+
+(26) where 𝜂 𝑑,𝑖 = Í𝑑 𝑗 =1 𝑥 𝑖 𝑗 𝛽 𝑗 uses the first 𝑑 covariates and 𝑥 𝑖 𝑗 is the 𝑗 -th covariate of observation 𝑖 . The predictor term is replaced by the predicted probabilities 𝜋 𝑖 , and 𝜎 2 by the average variance of event occurrence under the Binomial model, conditional on 𝛽 . In the following, we refer to (26) as the Bayesian-𝑅 2 for the Binomial model. Since the logistic link prevents an analytical mapping between a prior on Bayesian-𝑅 2
+
+to the variance of the regression coefficients, we place a beta prior on the pseudo-𝑅 2
+
+space instead. This is based on the observation that many GLMs allow convenient local normal approximations with pseudo-means and pseudo-variances, building on previous work on pseudo-variance adjustments (Neal, 2012; Piironen and Vehtari, 2017b). To derive the pseudo-variance for the Binomial model, assume that the log likelihood function, 𝐿 𝑖 for observation 𝑖 can be written as a member of the exponential family of distributions 
+
+𝐿 𝑖 (𝑦 𝑖 |𝜃, 𝜙 ) = 𝑦 𝑖 𝜃 − 𝐵 (𝜃 )
+
+𝐴 (𝜙 ) − 𝐶 (𝑦 𝑖 , 𝜙 ), (27) where 𝜃, 𝜙 refer to the natural and dispersion parameter, respectively, for some functions 
+
+𝐴 (·) , 𝐵 (·) , 𝐶 (·) , specific to the GLM. Denote by 𝐵 ′ (𝜃 ) the derivative of 𝐵 with respect to 𝜃 . Approximating the Binomial model locally by a normal 𝑧 𝑖 ∼ normal ( ˜𝑓 𝑖 , ˜𝜎 2),Piironen and Vehtari (2017b) show that data-based moments can be used to express the second-order Taylor approximation around the posterior mode by ˜𝜎 2 = [𝜇 (1 − 𝜇 )] −1, ˜𝑓 𝑖 = 𝜂 𝑑 − 𝑦 𝑖 − 𝜇 𝜇 (1 − 𝜇 ) , (28) where E[𝑦 ] = 𝜇 = 𝐵 ′ (𝜃 ) . In a prior specification context, 𝜇 can be set to a prior guess for the mean response (e.g., 𝜇 = 0.5 for balanced classes, giving ˜𝜎 2 = 4) or estimated as the mean of the response as suggested by Piironen and Vehtari (2017b). Conditional on 𝑦 𝑖 −𝜇 𝜇 (1−𝜇 ) , the variance of the pseudo-response ˜𝑓 𝑖 reduces to Var (𝜂 𝑑 ), rendering a pseudo-𝑅 2, which we denote as ˜ 𝑅 2:˜𝑅 2 = Var (𝜂 𝑑,𝑖 )
+
+Var (𝜂 𝑑,𝑖 ) + ˜𝜎 2 . (29) Similar to the normal model above, one can set a beta prior on ˜𝑅 2 defined as the proportion of variance of 𝑧 𝑖 explained by 𝜂 𝑑 . Although the pseudo-𝑅 2 remains only an approximation to the Bayesian-𝑅 2, one may also view this definition as an 𝑅 2 measure on the latent space of the GLM with a variance adjustment given by the pseudo-variance 
+
+22 Riha et al. 
+
+of the GLM. 11 Under the standardised design, the expected variance of the latent signal is Var 𝑞 𝑑 (𝜂 𝑑 ) = E𝑝 𝑑 
+
+hÍ𝑑 𝑗 =1 𝜏 2𝜙 𝑗 ˜𝜎 2
+
+i
+
+= ˜𝜎 2E𝑝 𝑑 [𝜏 2], and is predictively consistent (Definition 3.2.1) under the same conditions as for the normal observation model. Note that while the observation space of the Binomial model is bounded, the latent signal 
+
+𝜂 𝑑 ∈ R is not. Therefore, second-order predictive consistency (Definition 3.2.1) does not hold trivially. 
+
+Setup We simulate 𝑛 = 100 observations with 𝑝 = 30 candidate predictors drawn from a multivariate normal distribution with constant correlation structure ( 𝜌 = 0.5). We set the true coefficients 𝛽 ∗ to generate an underlying data-generating process with a target Bayesian-𝑅 2 ∈ { 0, 0.5, 0.8}. We then fit a sequence of nested logistic regression models, increasing the number of included covariates from 1 to 30. Models are evaluated on 2000 hold-out samples, averaged over 300 independent replications. 
+
+Prior choices The pseudo-𝑅 2 prior for coefficients 𝛽 can be set similarly as above with ˜𝑅 2 ∼ beta (𝜇 𝑅 2 , 𝜑 𝑅 2 ), and 𝛽 𝑗 ∼ normal (0, 𝜏 2𝜙 𝑗 ˜𝜎 2/𝜎 2  
+
+> 𝑥 𝑗
+
+), for 𝑗 = 1, . . . , 𝑝 , where 
+
+𝜏 2 ∼ BetaPrime (𝜇 R2 , 𝜑 R2 ). The observation model for inference remains the Binomial, the pseudo-𝑅 2 definition is merely used to set the prior. We compare two alternatives: 1. Independent normal priors 𝛽 𝑗 ∼ normal (0, 1), ∀ 𝑗 = 1, · · · , 𝑝 ;2. Pseudo-𝑅 2 prior with 𝜇 𝑅 2 = 1/3, 𝜑 𝑅 2 = 3 and Dirichlet concentration parameter set to one. 
+
+Takeaways To illustrate that the Pseudo-𝑅 2 is a predictively consistent prior for the Binomial’s latent and outcome space, we plot in Figure 5 the prior predictive probabilities 
+
+(1/( 1 + exp (− 𝜂 𝑑,𝑖 ))) along with the prior predictive Bayesian-𝑅 2 when generating ˜𝑅 2 ∼ beta (𝜇 𝑅 2 , 𝜑 𝑅 2 ) and 𝛽 𝑗 ∼ normal (0, 𝜏 2𝜙 𝑗 ˜𝜎 2/𝜎 2  
+
+> 𝑥 𝑗
+
+) for increasing 𝑝 . The shape of the prior predictive Bayesian-𝑅 2 is close to the desired beta (1/3, 3) distribution, independent of 𝑝 , and remarkably similar to the 𝑅 2 prior distribution when generated from the normal observation model. The effect of strictly bounding the variance of the linear predictor results in the distribution of the prior predictive probabilities to remain stable and invariant to 𝑝 as well. Under independent standard normal priors, the variance of the linear predictor 𝑥 𝑇 𝑖 𝛽 diverges as 𝑝 increases. Passed through the inverse-logit link function, the prior predictive probabilities 𝜋 𝑖 are pushed toward the boundaries of 0 and 1. Consequently, by the continuous mapping theorem (Vaart, 1998, Theorem 2.3), the expected binomial residual variance vanishes in probability: 1
+
+> 𝑛
+
+Í𝑛 𝑖 =1 𝜋 𝑖 (1 − 𝜋 𝑖 ) 𝑝 
+
+−→ 0as 𝑝 → ∞ . Simultaneously, the variance of the fitted probabilities, Var (𝜋 ), converges      
+
+> 11 Relatedly, Yanchenko et al. (2025) propose an 𝑅 2-based prior by finding an exact push-forward of Bayesian-𝑅 2→Var (𝛽 𝑗 ), conditional on hyper-parameters. A drawback of this approach is that it cannot be analytically found for many GLMs, including the Binomial model.
+
+23 To select or not to select Prior Probabilities Prior Bayesian-𝑅 2
+
+0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00 
+
+Normal Pseudo-𝑅 2 p = 10 p = 30 p = 100 
+
+Figure 5. Experiment 1: Prior predictive distributions probabilities as well as prior predictive Bayesian-𝑅 2 for the logistic regression under the standard normal prior and the pseudo-𝑅 2 prior, generating ˜ 𝑅 2 ∼ beta (𝜇 𝑅 2 , 𝜑 𝑅 2 ) and 𝛽 𝑗 ∼ normal (0, 𝜏 2 𝜙 𝑗 ˜𝜎 2/𝜎 2  
+
+> 𝑥 𝑗
+
+), where 𝜎 𝑥 𝑗 = 1. Nor m al p rior  
+
+> R2D2prior
+
+𝑅 2 = 0
+
+0 10 20 30 
+
+-90 
+
+-85 
+
+-80 
+
+-75 
+
+-70     
+
+> elpd test  (on elpd loo  scale)
+> Normalprior
+> R2D2 p rior
+
+𝑅 2 = 0.5
+
+0 10 20 30 
+
+-68 
+
+-64 
+
+-60 
+
+-56 
+
+Number of predictors Nor m al p rior  
+
+> R2D2prior
+
+𝑅 2 = 0.8
+
+0 10 20 30 
+
+-60 
+
+-55 
+
+-50 
+
+-45 
+
+Figure 6. Experiment 1: Adding covariates in logistic regression. We compare out-of-sample predictive performance ( elpd test ) (averaged over 500 repetitions) with normal priors or the pseudo-𝑅 2 prior with true Bayesian-𝑅 2 ∈ { 0, 0.5, 0.8} (columns) and 𝜌 = 0.5. A difference of 4 on elpd loo scale (dotted line) to the best-performing model (dashed line) indicates substantially different predictive performance. The pseudo-𝑅 2 prior allows to increase model complexity up to the largest model without declining test performance. 
+
+24 Riha et al. 
+
+in distribution to the strictly positive variance of 𝑛 independent Bernoulli (0.5) draws. Therefore, the Bayesian-𝑅 2 for the Binomial model inevitably collapses to 1. Results in Figure 6 are very similar to Figure 4: a predictively consistent prior allows safe use of all predictors without a loss in test performance. The best performing models are the ones with all covariates included if the DGP’s 𝑅 2 is larger than 0. As expected, the difference in performance between priors decreases with an increase in the DGP’s 
+
+𝑅 2, since the normal’s implied Bayesian-𝑅 2 becomes closer to the truth. 
+
+5.2 Experiment 2: Performing forward selection 
+
+We extend the experiment in Section 4.2 and use forward search to identify candidate models of increasing complexity, since it is more realistic that the ordering in which covariates are added matters. Moreover, we now assume a sparse true DGP where only 15 out of 50 covariates have non-zero weights. Forward selection is a famous example and widely used cautionary tale for the dangers of overfitting (Hastie et al., 2009; Smith, 2018; Ellis, 2024). In the context of Bayesian modelling, Piironen and Vehtari (2017a) and McLatchie and Vehtari (2024) illustrate how optimising a utility estimate such as the log score obtained with PSIS-LOO-CV can be liable to finding overfitted models, especially when the data is scarce and the variance of the utility estimate is high, which causes selection-induced bias even if the selection criteria are unbiased estimators of the generalisation utility. In their experiments, Piironen et al. (2020) consider normal models with an increasing number of predictors and a reference model with a sparsity-assuming normal-Inverse-Gamma prior. We illustrate that a predictively consistent prior reduces the gap in expected predictive performance between the reference model and the log scores obtained with PSIS-LOO-CV throughout the forward search, and report the projection predictive method’s performance to compare with Piironen and Vehtari (2017a).  
+
+> Setup
+
+We assume a normal DGP as in Section 4.2, but, similar to Piironen and Vehtari (2017a, Section 4.2), only the first three groups of all 𝑝 = 50 covariates have non-zero weights (𝛽 1:5 , 𝛽 6:10 , 𝛽 11:15 ) = (𝜉, 0.5𝜉, 0.25 𝜉 ) while the remaining ( 𝑝 − 15 ) covariates have zero weight. Each covariate has zero mean, unit variance and within-group correlation 𝜌 ∈ { 0, 0.5, 0.9} and is uncorrelated with covariates in different groups. In contrast to Section 4.2, this implies a block-diagonal structure for the correlation matrix 
+
+Σ. Since we want to keep the block structure as implemented by Piironen and Vehtari (2017a), we cannot directly use the approach in Section 4.2 to fix a true 𝑅 2 but instead set 𝜎 2 = 1/𝑅 2Var (𝑥 𝑇 𝛽 )( 1 − 𝑅 2) with 𝑅 2 = 0.5 to control the true 𝑅 2 of the DGP. For each sample size 𝑛 , block correlation 𝜌 and 100 repetitions of the experiment, we generate training data {𝑥 𝑖 , 𝑦 𝑖 }𝑛 𝑖 =1 and independent test data of size 𝑛 test = 2000. We perform forward search variable selection with the linear model 𝑦 𝑖 ∼ normal (𝛼 +𝑥 𝑇 𝑖 𝛽, 𝜎 2)
+
+with (1) independent normal priors or (2) R2D2 prior with selection criterion elpd loo 
+
+> 25
+
+To select or not to select N                                                
+
+> o
+> r
+> m
+> a
+> l
+> p
+> r
+> i
+> o
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> o
+> r
+> p
+> ro
+> j
+> pred
+> N
+> o
+> r
+> m
+> a
+> l
+> p
+> r
+> i
+> o
+> rR 2
+> D2
+> p
+> r
+> i
+> o
+> r
+> projpred
+> N
+> or
+> m
+> al
+> p
+> r
+> i
+> o
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> o
+> r
+> pr
+> o
+> jpr
+> ed
+> N
+> o
+> r
+> m
+> al
+> p
+> r
+> i
+> o
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> o
+> r
+> p
+> r
+> o
+> j
+> p
+> r
+> e
+> d
+> N
+> o
+> r
+> m
+> a
+> l
+> p
+> r
+> io
+> r
+> R
+> 2D
+> 2
+> p
+> r
+> i
+> o
+> r
+> projpred
+> N
+> o rm
+> al
+> p
+> r
+> i
+> o
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> or
+> pr
+> o
+> jpre
+> d
+> 𝜌 =0𝜌 =0.5𝜌 =0.9
+> n = 100  n = 200
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> -15
+> -10
+> -5
+> 0
+> -15
+> -10
+> -5
+> 0
+> Model size
+> elpd test  (relative to reference, on elpd loo  scale)
+
+Figure 7. Experiment 2: Forward selection. Predictive performance on independent test data ( elpd test ), relative to the reference model rescaled to elpd loo scale (with 𝑛 test = 2000, averaged over 100 repetitions). Data is generated with true 𝑅 2 = 0.5 and block correlation 𝜌 ∈ { 0, 0.5, 0.9}
+
+(columns) and 𝑛 ∈ { 100 , 200 } (rows). A dotted line marks a difference of 4 relative to the best-performing model and three vertical gray lines at model sizes 5, 10 and 15 indicate the block structure. 
+
+estimated with PSIS-LOO-CV, as well as (3) projection predictive selection using the 
+
+projpred package (Piironen et al., 2026). We use the model with all covariates with R2D2 prior as the reference model. 
+
+Prior choices Both priors are different from the DGP. As before, 𝛼 ∼ normal (0, 2.5),
+
+𝜎 2 ∼ exponential (1) and we compare: 1. Independent normal priors 𝛽 𝑗 ∼ normal (0, 1), ∀ 𝑗 = 1, · · · , 𝑝 ;2. R2D2 prior with 𝜇 𝑅 2 = 1/3, 𝜑 𝑅 2 = 3 and Dirichlet concentrations 𝑎 1: 𝑝 = (1, . . . , 1).
+
+Takeaways To compare the expected behaviour for the three different approaches, we plot elpd test on elpd loo scale, averaged over 100 repetitions for each unique condition of the experiment in Figure 7. When using normal priors, model selection can sometimes help to avoid even worse out-of-sample performance, but, after including ≳ 5 predictors, we always reach better elpd test with R2D2 prior. With R2D2 prior, we can safely use all covariates, without fear of deteriorating test performance. With independent normal priors, elpd test drops and remains clearly below the results achieved with R2D2 prior across 𝑛 ∈ { 100 , 200 } and 𝜌 = {0, 0.5, 0.9}. If we use a selection method with much 
+
+26 Riha et al. 
+
+smaller model selection variance (like projpred ), we can achieve excellent out-of-sample performance also with smaller models. Figure 22 in Appendix F.1 also shows that forward search with normal priors exhibits larger variation across repetitions than forward search with R2D2 prior. Variation for both forward search approaches decreases with higher training sample size 𝑛 . We repeat the experiment for a somewhat more artificial DGP with equally weakly relevant covariates (see Figure 23 and 24 in Appendix F.1). We find the same patterns of considerably larger variance and lower performance for large models with normal priors compared to R2D2 prior, but also that test performance can be similar for uncorrelated predictors ( 𝜌 = 0) and larger training sample size ( 𝑛 = 200). Note that one could improve forward search by using the approaches for early-stopping and correction of selection-induced bias by McLatchie and Vehtari (2024), but we focus on comparing “default” forward search with PSIS-LOO-CV elpd for the two priors here. 
+
+5.3 Experiment 3: Increasing the complexity of nonlinear models 
+
+Instead of considering multiple predictors and the behaviour of models from a pre-defined family of models, this section considers a single–predictor nonlinear setting with an increasing polynomial degree or number of basis functions where the exact functional relationship is uncertain, similar to Rasmussen and Ghahramani (2000) and McElreath (2020, Chapter 7). Building on Section 4.3, we illustrate how nonlinear modelling choices differ in their implied priors and how this relates to out -of -sample performance as model complexity grows.  
+
+> Setup
+
+Data are generated to resemble the “drowning” example (number of drownings from 1980-2013) by Gelman et al. (2015) available in their accompanying GitHub repository 12 , transforming the predictor to 𝑥 ∈ [− 3, 3]. As such, we cannot assume that any of our candidate models includes the true model. Note that the DGP is an arbitrary choice. Our main goal is to replicate a situation where there is a clear, nonlinear pattern in the data.  
+
+> Model choices
+
+We assume 𝑦 𝑖 ∼ normal   𝑓 (𝑥 𝑖 ), 𝜎 2 with 𝑖 = 1, · · · , 𝑛 . We fit models with increasing degree or number of basis functions 𝑘 ∈ { 0, · · · , 19 }, starting with the intercept-only model (i.e, 𝑘 = 0) with 𝑓 (𝑥 𝑖 ) = 𝛼 . We investigate (1) raw, and (2) orthogonal polynomial regression with degree 𝑘 , (3) thin plate spline (TPS) regression (Wood, 2003; Hastie et al., 2009; Wood, 2017; Wood, 2025) with rank 𝑘 and fixed degrees of freedom, (4) TPS with rank 𝑘 and non-fixed penalisation, (5) HSGPs (Solin and S ¨arkk ¨a, 2020; Riutort-Mayol et al., 2022) with 𝑘 basis functions as introduced in Section 4.3,see a detailed description of model choices and priors in Appendix F.2.1. 
+
+> 12 See https://github.com/avehtari/BDA R demos/blob/master/data/drowning.txt
+> 27
+
+To select or not to select Polynomial (raw)                      
+
+> Polynomial (orthogonal)
+> Thin plate splines (fixed df)
+> Thin plate splines
+> HSGP
+> 510 15 20 510 15 20 510 15 20 510 15 20 510 15 20
+> 1e+04
+> 1e+09
+> 1e+14
+> 1e+19
+> Degree/number of basis functions
+> Prior predictive variance
+> 510 15
+> -60
+> -57
+> -54
+> -51
+> Degree/number of basis functions
+> elpd test  (on elpd loo  scale)
+
+Figure 8. Experiment 3: Increasing the complexity of nonlinear models. Top: Prior predictive variance (log10-transformed) for one repetition. Bottom: elpd test (with 𝑛 = 50, 𝑛 test = 2000, averaged over 500 repetitions), rescaled to elpd loo scale. For raw polynomials, prior predictive variances explode and elpd test drops at higher degrees. Only thin plate splines and HSGP remain stable as the degree/number of basis functions increases. 
+
+Takeaways Figure 8 summarises (top) prior -predictive variance for one repetition and (bottom) elpd test averaged over 500 repetitions with 𝑛 = 50, 𝑛 test = 2000, rescaled to elpd loo scale to assess differences. As opposed to the other approaches, prior predictive variances for raw polynomials explode, consistent with Í 𝑗 E[𝑥 2 𝑗 ] increasing for 𝑥 ∈ [− 3, 3] (Section 4.3). As 𝑘 grows, elpd test remains stable only for HSGP and penalised TPS, while raw polynomials, and, at higher degrees, orthogonal polynomials, deteriorate. For all approaches but HSGPs and penalised TPS, we cannot simply increase model complexity without a drop in test performance. As illustrated also for 𝑛 ∈ { 20 , 100 } in Figure 27 in Appendix F.2, orthogonal polynomials can sometimes delay the drop in test performance and restrict the range of basis values (see Figure 26 in Appendix F.2). In contrast to TPS and HSGPs, they still require specifying individual priors for model components and can suffer rank deficiencies when 𝑘 approaches the number of unique 𝑥 values. We did not attempt to further fix higher-degree polynomials, since we aim to investigate “out - of - the - box” behaviour under independent coefficient priors versus function - space priors, not to optimise each modelling approach. 
+
+28 Riha et al. 
+
+5.4 Experiment 4: Randomised control treatment effect studies 
+
+Previous sections focused on predictive performance, demonstrating that the best predic-tive performance is obtained using all relevant data combined with predictively consistent priors. We now turn to causal inference: estimating the average treatment effect in a randomised controlled trial (RCT), a standard methodology for studying causal effects of interventions from economics to medicine (Deaton and Cartwright, 2018). We demonstrate that conditioning on high-dimensional covariate sets, which are predictive of the target and not the treatment probability, can improve inference for the treatment effect. However, predictive consistency alone in the sense of Definition 3.2.1 is not sufficient to realise these efficiency gains and may even increase bias compared to not using the covariates in the model at all. We develop theory to support the simulation findings. We are interested in estimation of the following model: 
+
+𝑦 𝑖 ∼ normal (𝛼𝑧 𝑖 + 𝑥 𝑇 𝑖 𝛽, 𝜎 2), (30) where the treatment assignment 𝑧 𝑖 ∼ Bernoulli (0.5) for 𝑖 = 1, . . . , 𝑛 and covariates 
+
+𝑋 ∈ R𝑛 × 𝑝 with columns drawn independently from a standard normal distribution. Here, since 𝑧 ⊥ 𝑋 , the inclusion of 𝑋 into the model are assumed not to have a bias effect and ideally have a variance reduction effect onto the posterior of 𝛼 .13 We consider two structural models: M base containing only the treatment variable 𝑧 , and M full containing both the treatment 𝑧 and the covariates 𝑋 , where, for simplicity, the correlation among columns of 𝑋 is assumed to be zero. 
+
+Prior choices For M full , we compare three prior specifications where a normal prior for coefficient vector, 𝛽 ∼ normal (0, Σ𝛽 ) and a normal prior for the treatment effect coefficient, 𝛼 ∼ normal (0, 𝜏 2
+
+> 𝛼
+
+) is applied: 1. Normal: Σ𝛽 = 𝐼 𝑝 and 𝜏 𝛼 = 2.5. 2. R2 (joint R2D2): A joint R2D2 prior over the 𝑝 + 1 coefficients (𝛽 1, . . . , 𝛽 𝑝 , 𝛼 ),so Σ𝛽 = 𝜏 2diag (𝜙 1, . . . , 𝜙 𝑝 ) and 𝜏 2 
+
+> 𝛼
+
+= 𝜏 2𝜙 𝑝 +1, with 𝜇 𝑅 2 = 1/3, 𝜑 𝑅 2 = 3 and symmetric concentration 𝑎 = 1. 3. R2 + Normal (split): An R2D2 prior for 𝛽 with 𝜇 𝑅 2 = 1/3, 𝜑 𝑅 2 = 3 and symmetric concentration 𝑎 = 1 and 𝜏 2 
+
+> 𝛼
+
+= 2.5 independently. For M base , we use 𝛼 ∼ normal (0, 2.5).
+
+Analytical predictions In line with the simulation in the previous section, we focus on the finite-sample regime where 𝑛 is held fixed and 𝑝 increases but extend the analysis to 𝑝 increasing towards 𝑛 . Asymptotic results are deferred to the proportional regime 
+
+𝑝 = ⌊𝛾𝑛 ⌋, 𝑛 → ∞ , analysed in Appendix F.3.1.   
+
+> 13 In the parlance of Cinelli et al. (2024), 𝑋 in this DGP design constitute neutral controls in that they neither increase nor decrease asymptotic bias.
+
+29 To select or not to select 
+
+Conditional on hyperparameters and 𝜎 2, the posterior of 𝛼 marginal of 𝛽 is normal and can be found by the application of the Bayesian Frisch-Waugh-Lovell decomposition (Bloniarz et al., 2016; Hahn et al., 2020). Via the Schur complement of the joint posterior precision (Proposition F.3.1, Appendix F.3.1) 
+
+E[𝛼 | ·] = 𝑠 · ˆ𝛼 OLS 𝛽 , Var (𝛼 | ·) =
+
+
+
+𝑑 𝑧 + 𝜏 −2
+
+> 𝛼
+
+ −1
+
+, (31) with ˆ𝛼 OLS 𝛽 = [𝑧 𝑇 (𝐼 𝑛 −𝐻 𝛽 )𝑧 ]−1𝑧 𝑇 (𝐼 𝑛 −𝐻 𝛽 )𝑦 being the residualised least-squares estimate, 
+
+𝐻 𝛽 = 𝑋 (𝑋 𝑇 𝑋 + 𝜎 2Σ−1 
+
+> 𝛽
+
+)−1 𝑋 𝑇 the 𝛽 -prior-regularised projection matrix onto col (𝑋 ), and 
+
+𝑑 𝑧 = 𝜎 −2𝑧 𝑇 (𝐼 𝑛 − 𝐻 𝛽 )𝑧 the residualised data precision contributed by the component of 
+
+𝑧 orthogonal to the prior-regularised covariate space. Since 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+) ∈ ( 0, 1)
+
+controls how much the prior shrinks ˆ𝛼 OLS 𝛽 towards zero, it can be interpreted as the shrinkage factor (Polson and Scott, 2011; Piironen and Vehtari, 2017b). Inference quality under each prior is governed by how 𝜏 −2 
+
+> 𝛼
+
+and 𝑑 𝑧 behave as 𝑝 grows. We simplify the analysis by further marginalising 𝑑 𝑧 (Lemma F.3.2, Appendix F.3.1): 
+
+E[𝑑 𝑧 | ·] = 14𝜎 2
+
+(𝑛 − tr (𝐻 𝛽 )) + 1𝑇 𝑛 (𝐼 𝑛 − 𝐻 𝛽 )1𝑛 
+
+ .
+
+Table 3 summarises the behaviour of the posterior of 𝛼 as 𝑝 increases towards 𝑛 , for each prior and whether heavy shrinkage is applied, which we define via the condition, 
+
+( 𝑝 + 1)/ 𝑛 ≫ 𝑅 2/( 1 − 𝑅 2), 𝑅 2 := 𝜏 2/( 𝜏 2 + 𝜎 2). (32) Under this condition, the R2D2 penalty on 𝛽 dominates the spectrum of 𝑋 𝑇 𝑋 , so 𝐻 𝛽 → 0(uniformly over the Dirichlet weights, provided (32) holds up to a log 𝑝 factor, see Proposition F.3.5) and E[𝑑 𝑧 | ·] tightens to the parametric scale 𝑛 /( 2𝜎 2). Each row is proven with a corresponding supporting proposition in Appendix F.3.1. The main issue revealed in Table 3 is that the joint R2D2 prior increasingly shrinks 𝛼 
+
+as 𝑝 grows and can bias its posterior mean. This comes from the behaviour of 𝜏 −2 
+
+> 𝛼
+
+. Since, marginally, 𝜙 𝛼 ∼ Beta (𝜇 = 1/( 𝑝 + 1), 𝜑 = 𝑎 ( 𝑝 + 1)) under symmetric 𝑎 , the conditional prior precision 𝜏 −2 
+
+> 𝛼
+
+increases with 𝑝 at stochastic scale Θ𝑝 ( 𝑝 /𝜏 2).14 The Normal and split priors avoid this by fixing 𝜏 −2 
+
+> 𝛼
+
+= O( 1), which leaves 𝑠 ∈ ( 0, 1) bounded and can be shown to yield bounded posterior variance of 𝛼 .Under the heavy shrinkage condition, the split prior dominates the Normal prior on the variance of the posterior of 𝛼 : the R2D2 component on 𝛽 induces an effective per-coordinate penalty 𝜎 2 ( 𝑝 + 1)/ 𝜏 2 that grows with 𝑝 , dominating the eigenvalues of 
+
+𝑋 𝑇 𝑋 uniformly and tightening E[𝑑 𝑧 | ·] to the parametric scale 𝑛 /( 2𝜎 2). The Normal prior’s fixed penalty 𝜎 2 never drives 𝐻 𝛽 to zero, so it leaves 𝐻 𝛽 close to the projection 
+
+𝑃 𝑋 and its E[𝑑 𝑧 | ·] stays strictly below the ceiling 𝑛 /( 2𝜎 2) without tightening to it.   
+
+> 14 This in-probability scale holds for all 𝑎 > 0.
+
+30 Riha et al.  
+
+> Table 3.
+
+Behaviour of the marginal posterior of 𝛼 in the finite-sample regime (i), with 𝑛 fixed and 𝑝 → 𝑛 . “Heavy shrinkage” refers to condition (32) . The symbol “ ↓” marks stochastic (in-probability) decrease in 𝑝 , and Θ𝑝 (·) denotes a stochastic scale at fixed 𝑛 rather than a limit in 𝑝 . Quantities written in 𝑛 are finite-𝑛 constants rather than rates. The full table including the proportional regime (ii), 𝑝 = ⌊𝛾𝑛 ⌋ with 𝑛 → ∞ , is Table 6 in Appendix F.3.1. Prior 𝜏 −2 
+
+> 𝛼
+
+E[𝑑 𝑧 | ·] 𝑠 Var (𝛼 | ·) 
+
+General regime (i): 𝑛 fixed, 𝑝 → 𝑛 
+
+Normal O( 1) > 0, < 𝑛 /( 2𝜎 2) bounded in (0, 1) O( 1), ≤ 𝜏 2
+
+> 𝛼
+
+Split O( 1) > 0, < 𝑛 /( 2𝜎 2) bounded in (0, 1) O( 1), ≤ 𝜏 2
+
+> 𝛼
+
+Joint R2D2 Θ𝑝 ( 𝑝 /𝜏 2) > 0, < 𝑛 /( 2𝜎 2) ↓, min > 0 ↓, min > 0
+
+Under heavy shrinkage (32) (regime (i)) 
+
+Split O( 1) → 𝑛 /( 2𝜎 2) 1 − O( 𝜎 2/𝑛 ) Θ(𝜎 2/𝑛 )
+
+Joint R2D2 Θ𝑝 ( 𝑝 /𝜏 2) → 𝑛 /( 2𝜎 2) Θ𝑝 
+
+ 𝑛𝑅 2  
+
+> (1−𝑅 2)𝑝
+
+
+
+, ↓ Θ𝑝 (𝜏 2/𝑝 ), ↓
+
+Proofs for each row are in Appendix F.3.1. The Normal prior is covered by Proposition F.3.3, the Split prior by Proposition F.3.6, and the Joint R2D2 prior by Proposition F.3.4 (general regime) and Proposition F.3.5 (heavy shrinkage). Frequentist coverages are derived in Proposition F.3.10. 
+
+Under the same condition, the joint R2D2 prior’s E[𝑑 𝑧 | ·] also reaches 𝑛 /( 2𝜎 2), but is overwhelmed by the simultaneously growing 𝜏 −2 
+
+> 𝛼
+
+= Θ ( 𝑝 /𝜏 2).To see for which dimensionality-signal ratio the joint R2D2 prior strongly shrinks 
+
+𝛼 , consider the plug-in approximation to 𝑠 at the prior mean, 𝑠 (E[𝜙 𝛼 ]) . Under the heavy-shrinkage condition (Proposition F.3.5) this becomes 
+
+𝑠 ≈ 𝑛𝜏 2
+
+𝑛𝜏 2 + 2𝜎 2 ( 𝑝 + 1) = 𝑛𝑅 2
+
+𝑛𝑅 2 + 2(1 − 𝑅 2)( 𝑝 + 1) , (33) for example, when ( 𝑝 + 1)/ 𝑛 = 𝑅 2/[ 2(1 − 𝑅 2)] then the prior and data contributions to the posterior precision of 𝛼 are equal, giving 𝑠 ≈ 1/2. Jensen’s inequality guarantees that E[𝑠 (𝜙 𝛼 )] < 𝑠 (E[𝜙 𝛼 ]) since 𝑠 is concave in 𝜙 𝛼 . Consequently, the closed-form approximation in Equation 33 represents an upper bound on the expected shrinkage. 
+
+Setup We set the true data-generating process such that the treatment explains a fraction 𝛿 𝑇 of the total explained variance, that is, 𝛿 𝑇 = 𝛼 ∗2𝑧 𝑇 𝑧 /( 𝛼 ∗2𝑧 𝑇 𝑧 + 𝛽 𝑇 𝑋 𝑇 𝑋 𝛽 ),with covariate coefficients drawn from 𝛽 𝑗 ∼ normal (0, 0.05 ). This yields the true treatment coefficient 
+
+𝛼 ∗ =√︄ 𝛿 𝑇 𝛽 𝑇 𝑋 𝑇 𝑋 𝛽 𝑧 𝑇 𝑧 (1 − 𝛿 𝑇 ) . (34) The residual variance 𝜎 2 is set to control the overall 𝑅 2.15 We simulate with 𝑅 2 ∈{0.2, 0.8}, 𝛿 𝑇 ∈ { 0.2, 0.8}, 𝑛 = 150, and 𝑝 = 100, placing us in the regime 𝑛 > 𝑝 but                  
+
+> 15 Solve 𝑅 2=(𝛼 2𝑧 𝑇 𝑧 +𝛽 𝑇 𝑋 𝑇 𝑋 𝛽 )/( 𝛼 2𝑧 𝑇 𝑧 +𝛽 𝑇 𝑋 𝑇 𝑋 𝛽 +𝑛𝜎 2)for 𝜎 .
+
+31 To select or not to select  
+
+> Table 4.
+
+Experiment 4: Posterior recovery metrics for the treatment effect ( 𝛼 ). Average 90% credible interval length (Len.), coverage probability (Cov.), and root mean square error (RMSE) over 500 repetitions. The base model contains only the treatment variable and all other models include 𝑝 = 100 covariates. Bold marks lowest RMSE, all coverage values within ±0.03 of the nominal 0.9, and smallest interval length conditional on correct calibration. 
+
+Model 𝜹 𝑻 = 0.2 𝜹 𝑻 = 0.8Len. Cov. RMSE Len. Cov. RMSE Low Signal ( 𝑅 2 = 0.2)
+
+Base (Only Treatment) 0.92 0.92 0.27 0.92 0.91 0.27 
+
+Normal 0.97 0.87 0.30 0.97 0.87 0.31 Joint R2D2 0.49 0.12 0.61 0.95 0.41 0.59 Split (R2 + Normal) 0.87 0.90 0.27 0.87 0.89 0.27 High Signal ( 𝑅 2 = 0.8)
+
+Base (Only Treatment) 0.57 0.94 0.15 0.57 0.95 0.15 Normal 0.51 0.88 0.16 0.51 0.88 0.16 Joint R2D2 0.51 0.39 0.34 0.48 0.67 0.23 Split (R2 + Normal) 0.48 0.90 0.14 0.48 0.89 0.14 
+
+with a high ratio 𝑝 /𝑛 ≈ 0.67. We mostly focus on 𝑅 2 = 0.2, 𝛿 𝑇 = 0.2 here, results for the other configurations are in Appendix F.3. 
+
+Takeaways Table 4 confirms the analytical predictions. The joint R2D2 prior shows severe downward bias, consistent with the small shrinkage factor from Equation (33) at the data-generating 𝑅 2 = 0.2 ( 𝑠 ≈ 0.16). 16 This leads to narrow but poorly calibrated intervals. By contrast, the split prior yields the sharpest recovery of 𝛼 ∗, near-nominal frequentist coverage (which we derived analytically, see Proposition F.3.10, Appendix F.3.1), and lowest RMSE, competitive with the base model. The base model’s intervals remain close to calibrated but are wider since it does not benefit from covariate adjustment. The Normal model avoids the joint R2D2 prior’s bias, since 𝜏 −2 
+
+> 𝛼
+
+= O( 1) keeps 𝑠 bounded away from zero, but its weak fixed penalty leaves 𝐻 𝛽 close to the full projection onto col (𝑋 ), leading to larger posterior variance of 𝛼 . Figure 9 isolates the effect of increasing 
+
+𝑝 , where the DGP stays constant, but the treatment posterior is estimated with expanding subsets of the covariates. With strong shrinkage ( 𝑅 2 = 0.2, 𝛿 𝑇 = 0.2), the joint R2D2 prior becomes increasingly biased, whereas the split prior gives sharper posteriors without further bias. However, when the shrinkage is moderate due to high 𝑅 2 (right panel), and therefore the expected bias smaller, the joint R2D2 prior also concentrates around 𝛼 ∗.      
+
+> 16 At this design the heavy-shrinkage condition (32) holds only with a modest margin, so 𝑠 ≈0.16 is an approximate upper bound on the expected shrinkage rather than an exact value.
+
+32 Riha et al. R2 R2 + Normal                          
+
+> 0.0 0.5 1.0 0.0 0.5 1.0
+> 0
+> 2
+> 4
+> 6
+> Treatment Effect
+> Posterior densities of Treatment Effect ( 𝑅 2= 0.2, 𝛿 𝑇 = 0.2)
+> R2 R2 + Normal
+> 0.25 0.50 0.75 1.00 0.25 0.50 0.75 1.00
+> 0
+> 1
+> 2
+> 3
+> 4
+> Treatment Effect
+> Posterior densities of Treatment Effect ( 𝑅 2= 0.8, 𝛿 𝑇 = 0.2)
+> 𝛼 ∗Mbase posterior Fitted p: 10 50 100
+
+Figure 9. Experiment 4: Posterior of the treatment effect for increasing 𝑝 . Grey lines show the treatment-only model M base ; coloured lines show M full for different 𝑝 . When the signal is relatively small ( 𝑅 2 = 0.2, left panel of figures), the joint R2D2 model produces increasing bias with 𝑝 . When the signal is large enough ( 𝑅 2 = 0.8, right panel of figures), the R2D2 joint model concentrates on 𝛼 ∗ with 𝑝 . In either setting, the split R2 model becomes sharper around 𝛼 ∗ with 
+
+𝑝 , which is more pronounced for 𝑅 2 = 0.8. 
+
+# 6 Discussion 
+
+This work revisits the role of model selection in Bayesian workflows and argues that it is not a substitute for building good models in the first place. We investigate when selecting a simpler model is necessary, when it can harm out-of-sample predictive performance, and how prior choices affect safe model expansion. Our main proposal is to use predictively consistent priors instead of enforcing parsimony at the level of individual model components through model selection. We define predictively consistent and parsimonious priors in Section 3.2 and illustrate how such priors can make model selection unnecessary in settings where it is often recommended to avoid overfitting. Our results lead to concrete recommendations for checking joint prior implications and building complex yet well-generalising models (Section 1.1). Across our examples and experiments in Section 4.2 and 5, large models with predictively consistent priors usually reach equal or better out-of-sample predictive performance than selected simpler models. When simpler models perform better, gains are usually small. In some cases, selection from a nested set of models even harms test performance relative to using the largest model with a suitable joint prior. This also matters for iterative modelling workflows. A common concern is that expanding models step by step can lead to overfitting. Our results suggest that predictively consistent priors can safeguard against deteriorating test performance and thereby support safe model expansion. The relevant question is not whether a prior is specified jointly or component-wise, but whether its joint implications reflect the structure of the modelling problem. This is especially important for models with many covariates, where reasonable marginal priors can still imply an unreasonable prior predictive distribution. Independence is not a safe default, but imposing dependence can also be harmful. Section 5.4 further illustrates 
+
+33 To select or not to select 
+
+that prior structure can matter for inference, not only for prediction. In the considered setting, splitting the prior on the treatment effect and the other covariate effects can yield sharper posterior intervals without adding bias, whereas a joint prior over treatment and covariate effects can introduce bias. Priors based on interpretable joint quantities are one practical way to make prior specification more manageable (see, e.g., Aguilar and B¨ urkner, 2023; Aguilar and B¨ urkner, 2025). We discuss R2D2 priors and function-space priors as two examples for constructing predictively consistent priors. Other priors may also satisfy predictive consistency, provided that they control the induced signal distribution as complexity increases. Thus, the main message is not tied to a particular prior family, but the question is whether the chosen prior keeps the prior predictive distribution sensible and stable with increasing model complexity. Our work has several limitations. First, we focus on additive models. This allows a clean formalisation, but also limits the scope of our results. Future work should extend the concept of predictively consistent priors to non-additive modelling scenarios. Second, our experiments focus on scenarios with 𝑛 ≥ 𝑝 . We expect the problematic patterns observed for independent normal priors to get much worse when 𝑛 < 𝑝 . However, a systematic investigation of other 𝑛 -𝑝 regimes remains open. Third, we compare only selected prior configurations. Results for other priors might fall between the considered comparison points, for example, when scaling normal priors depending on the number of covariates. Such 𝑝 -scaled normal priors would also restrict prior predictive variance but at the cost of shrinking all coefficients strongly towards zero. More work is needed to compare a wider range of models and prior choices. Finally, most of our experiments focus on predictive performance, assuming that the considered models are causally sensible. In more realistic cases of causal analysis, we should not blindly include all possible potential predictors, but need to consider the causal structure (e.g., possible confounders, colliders, and backdoor effects, see McElreath, 2020) to include only predictors that would minimise the bias in the estimation of the effect of interest. Predictive consistency alone does not guarantee unbiased estimation of a causal effect. Our example in Section 5.4 probes aspects of this in one controlled setting. More work is needed to define desirable prior properties for causal analyses, where the focus is not only on predictive performance. 
+
+Acknowledgements 
+
+We thank Javier Enrique Aguilar and Yann McLatchie for helpful comments and discussions, and S ¨olvi R ¨ognvaldsson for his web application supporting R2D2 prior elicitation. We acknowledge the computational resources provided by the Aalto Science-IT project. This work was supported by the Research Council of Finland grant (313122) and the Research Council of Finland Flagship programme: Finnish Center for Artificial Intelligence (FCAI). 
+
+> 34 Riha et al.
+
+# References 
+
+Aguilar, J. E. and P. -C. B¨ urkner (2023). Intuitive joint priors for Bayesian linear multilevel models: The R2D2M2 prior. Electronic Journal of Statistics , 17(1):1711–1767. Aguilar, J. E. and P. - C. B¨ urkner (2025). Generalized Decomposition Priors on R2. 
+
+Bayesian Analysis :1–34. Arlot, S. and A. Celisse (2010). A survey of cross-validation procedures for model selection. Statistics Surveys , 4(none):40–79. Bai, Z. and J. W. Silverstein (2010). Spectral Analysis of Large Dimensional Random Matrices . 2nd ed. Springer Series in Statistics. New York: Springer. Bernardo, J. M. and A. F. M. Smith (1994). Bayesian Theory . en. Wiley Series in Probability and Statistics. John Wiley & Sons, Ltd. Bhattacharya, A., D. Pati, N. S. Pillai, and D. B. Dunson (2015). Dirichlet-Laplace priors for optimal shrinkage. Journal of the American Statistical Association ,110(512):1479–1490. Bloniarz, A., H. Liu, C. - H. Zhang, J. S. Sekhon, and B. Yu (2016). Lasso adjustments of treatment effect estimates in randomized experiments. Proceedings of the National Academy of Sciences , 113(27):7383–7390. B¨ urkner, P. - C. (2017). brms: An R Package for Bayesian Multilevel Models Using Stan. 
+
+Journal of Statistical Software , 80:1–28. B¨ urkner, P. - C., M. Scholz, and S. T. Radev (2023). Some models are useful, but how do we know which ones? Towards a unified Bayesian model taxonomy. Statistics Surveys , 17(none):216–310. Campbell, H. and P. Gustafson (2022). Bayes Factors and Posterior Estimation: Two Sides of the Very Same Coin. The American Statistician , 0(0):1–11. Carvalho, C. M., N. G. Polson, and J. G. Scott (2010). The horseshoe estimator for sparse signals. Biometrika , 97(2):465–480. Chipman, H. A., E. I. George, and R. E. McCulloch (2010). Bart: Bayesian Additive Regression Trees. The Annals of Applied Statistics , 4(1):266–298. Cinelli, C., A. Forney, and J. Pearl (2024). A Crash Course in Good and Bad Controls. 
+
+Sociological Methods & Research , 53(3):1071–1104. Deaton, A. and N. Cartwright (2018). Understanding and misunderstanding randomized controlled trials. Social Science & Medicine , 210:2–21. Dubova, M., S. Chandramouli, G. Gigerenzer, P. Gr¨ unwald, W. Holmes, T. Lombrozo, M. Marelli, S. Musslick, B. Nicenboim, L. N. Ross, R. Shiffrin, M. White, E. -J. Wagenmakers, P. - C. B¨ urkner, and S. J. Sloman (2025). Is Ockham’s razor losing its edge? New perspectives on the principle of model parsimony. Proceedings of the National Academy of Sciences , 122(5):e2401230121. Dupuis, J. A. and C. P. Robert (2003). Variable selection in qualitative models via an entropic explanatory power. Journal of Statistical Planning and Inference , 111(1):77– 94. 
+
+> 35 To select or not to select
+
+Efron, B. (1973). Discussion on the Paper by Dr Dawid, Professor Stone and Dr Zidek. 
+
+Journal of the Royal Statistical Society: Series B (Methodological) , 35(2):214–233. Ellis, P. (Sept. 2024). Stepwise selection of variables in regression is Evil. url : https: //freerangestats.info/blog/2024/09/14/stepwise (visited on 05/02/2025). Erven, T. v., P. Gr¨ unwald, and S. de Rooij (2012). Catching up faster by switching sooner: a predictive approach to adaptive estimation with an application to the AIC–BIC dilemma. Journal of the Royal Statistical Society: Series B (Statistical Methodology) ,74(3):361–417. Flam-Shepherd, D., J. Requeima, and D. Duvenaud (Jan. 2017). Mapping Gaussian Pro-cess Priors to Bayesian Neural Networks. en. 31st Conference on Neural Information Processing Systems , 8. Fortuin, V. (2022). Priors in Bayesian Deep Learning: A Review. International Statistical Review , 90(3):563–591. Fuglstad, G. -A., I. G. Hem, A. Knight, H. Rue, and A. Riebler (2020). Intuitive Joint Priors for Variance Parameters. Bayesian Analysis , 15(4):1109–1137. Gabry, J., D. Simpson, A. Vehtari, M. Betancourt, and A. Gelman (2019). Visualization in Bayesian workflow. Journal of the Royal Statistical Society: Series A (Statistics in Society) , 182(2):389–402. Geisser, S. and W. F. Eddy (1979). A Predictive Approach to Model Selection. Journal of the American Statistical Association , 74(365):153–160. Gelman, A., J. B. Carlin, H. S. Stern, D. B. Dunson, A. Vehtari, and D. B. Rubin (July 2015). Bayesian Data Analysis . 3rd ed. New York: Chapman and Hall/CRC. Gelman, A., B. Goodrich, J. Gabry, and A. Vehtari (2019). R-squared for Bayesian Regression Models. The American Statistician , 73(3):307–309. Gelman, A., J. Hill, and A. Vehtari (July 2020a). Regression and Other Stories . en. Analytical Methods for Social Research. Publisher: Cambridge University Press. Cambridge University Press. Gelman, A. and E. Loken (2013). The garden of forking paths: Why multiple comparisons can be a problem, even when there is no “fishing expedition” or “p-hacking” and the research hypothesis was posited ahead of time:17. Gelman, A. and X. -L. Meng (1995). Discussion of O’Hagan (1995). Journal of the Royal Statistical Society. Series B (Methodological) , 57(1):99–138. Gelman, A. and X. - L. Meng (1995b). Model checking and model improvement. Markov Chain Monte Carlo in Practice . Ed. by W. R. Gilks, S. Richardson, and D. Spiegel-halter. Num Pages: 14. Chapman and Hall/CRC. Gelman, A., D. Simpson, and M. Betancourt (2017). The Prior Can Often Only Be Under-stood in the Context of the Likelihood. Entropy. An International and Interdisciplinary Journal of Entropy and Information Studies , 19(10):555. Gelman, A., A. Vehtari, D. Simpson, C. C. Margossian, B. Carpenter, Y. Yao, L. Kennedy, J. Gabry, P. - C. B¨ urkner, and M. Modr ´ak (Nov. 2020b). Bayesian Workflow .arXiv:2011.01808 [stat]. 
+
+> 36 Riha et al.
+
+Ghosal, S. and A. van der Vaart (2017). Fundamentals of Nonparametric Bayesian Inference . Cambridge Series in Statistical and Probabilistic Mathematics. Cambridge: Cambridge University Press. Gneiting, T. and A. E. Raftery (2007). Strictly Proper Scoring Rules, Prediction, and Estimation. Journal of the American Statistical Association , 102(477):359–378. Goutis, C. and C. P. Robert (1998). Model choice in generalised linear models: A Bayesian approach via Kullback-Leibler projections. Biometrika , 85(1):29–37. Hahn, P. R. and C. M. Carvalho (2015). Decoupling Shrinkage and Selection in Bayesian Linear Models: A Posterior Summary Perspective. Journal of the American Statistical Association , 110(509):435–448. Hahn, P. R., J. S. Murray, and C. M. Carvalho (2020). Bayesian Regression Tree Models for Causal Inference: Regularization, Confounding, and Heterogeneous Effects (with Discussion). Bayesian Analysis , 15(3):965–1056. Hastie, T., R. Tibshirani, and J. H. Friedman (2009). The elements of statistical learning: data mining, inference, and prediction . 2nd. Vol. 2. Springer. Hem, I., G. -A. Fuglstad, and A. Riebler (2024). makemyprior: Intuitive Construction of Joint Priors for Variance Parameters in R. Journal of Statistical Software , 110:1–39. Hjort, N. L. (1994). The Exact Amount of t-ness That the Normal Model Can Tolerate. 
+
+Journal of the American Statistical Association , 89(426):665–675. Hjort, N. L., C. Holmes, P. M¨ uller, and S. G. Walker, eds. (2010). Bayesian Nonpara-metrics . Cambridge Series in Statistical and Probabilistic Mathematics. Cambridge: Cambridge University Press. Hoeting, J. A., D. Madigan, A. E. Raftery, and C. T. Volinsky (1999). Bayesian Model Averaging: A Tutorial. Statistical Science , 14(4):382–401. Johnson, A. A., M. Q. Ott, and M. Dogucu (2022). Bayes Rules!: An Introduction to Applied Bayesian Modeling . CRC Press. Kallioinen, N., T. Paananen, P. - C. B¨ urkner, and A. Vehtari (2023). Detecting and diag-nosing prior and likelihood sensitivity with power-scaling. Statistics and Computing ,34(1):57. Kass, R. E. and A. E. Raftery (1995). Bayes Factors. Journal of the American Statistical Association , 90(430):773–795. Kennedy, W. J. and J. E. Gentle (1980). Statistical Computing . New York: Routledge. Key, J. T., L. R. Pericchi, and A. F. M. Smith (Aug. 1999). Bayesian Model Choice: What and Why? Bayesian Statistics 6: Proceedings of the Sixth Valencia International Meeting June 6-10, 1998 . Ed. by J. M. Bernardo, J. O. Berger, A. P. Dawid, and A. F. M. Smith. Oxford University Press. Lampinen, J. and A. Vehtari (2001). Bayesian approach for neural networks—review and case studies. Neural Networks , 14(3):257–274. Lindley, D. V. (1968). The Choice of Variables in Multiple Regression. Journal of the Royal Statistical Society: Series B (Methodological) , 30(1):31–53. 
+
+> 37 To select or not to select
+
+Mar ˇcenko, V. A. and L. A. Pastur (1967). Distribution of eigenvalues for some sets of random matrices. Mathematics of the USSR-Sbornik , 1(4):457–483. McElreath, R. (2020). Statistical rethinking: A Bayesian course with examples in R and Stan . Chapman and Hall/CRC. McLatchie, Y., S. R ¨ognvaldsson, F. Weber, and A. Vehtari (2025). Advances in Projection Predictive Inference. Statistical Science , 40(1):128–147. McLatchie, Y. and A. Vehtari (2024). Efficient estimation and correction of selection-induced bias with order statistics. Statistics and Computing , 34(4):132. Mikkola, P., O. A. Martin, S. Chandramouli, M. Hartmann, O. A. Pla, O. Thomas, H. Pesonen, J. Corander, A. Vehtari, S. Kaski, P. - C. B¨ urkner, and A. Klami (2024). Prior Knowledge Elicitation: The Past, Present, and Future. Bayesian Analysis ,19(4):1129–1161. Nalisnick, E., J. Gordon, and J. M. Hernandez-Lobato (Mar. 2021). Predictive Complexity Priors. en. Proceedings of The 24th International Conference on Artificial Intelligence and Statistics . PMLR, 694–702. Neal, R. M. (1996). Bayesian Learning for Neural Networks . Ed. by P. Bickel, P. Diggle, S. Fienberg, K. Krickeberg, I. Olkin, N. Wermuth, and S. Zeger. Vol. 118. Lecture Notes in Statistics. New York, NY: Springer. — (Dec. 2012). Bayesian Learning for Neural Networks . en. Google-Books-ID: LHHrB-wAAQBAJ. Springer Science & Business Media. O’Hagan, A. and J. J. Forster (2004). Kendall’s Advanced Theory of Statistics, Volume 2B: Bayesian Inference . 2nd ed. Vol. 2. Arnold. Pavone, F., J. Piironen, P. - C. B¨ urkner, and A. Vehtari (2023). Using reference models in variable selection. Computational Statistics , 38(1):349–371. Piepho, H. - P. (2019). A coefficient of determination ( R2 ) for generalized linear mixed models. Biometrical Journal , 61(4):860–872. Piironen, J., M. Paasiniemi, A. Catalina, F. Weber, and A. Vehtari (2026). projpred: Projection Predictive Feature Selection . R package version 2.10.0. Piironen, J., M. Paasiniemi, and A. Vehtari (2020). Projective inference in high-dimensional problems: Prediction and feature selection. Electronic Journal of Statistics , 14(1):2155–2197. Piironen, J. and A. Vehtari (2017). Comparison of Bayesian predictive methods for model selection. Statistics and Computing , 27(3):711–735. Piironen, J. and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. Electronic Journal of Statistics , 11(2):5018–5051. Polson, N. G. and J. G. Scott (Oct. 2011). Shrink Globally, Act Locally: Sparse Bayesian Regularization and Prediction. Bayesian Statistics 9 . Ed. by J. M. Bernardo, M. J. Bayarri, J. O. Berger, A. P. Dawid, D. Heckerman, A. F. M. Smith, and M. West. Oxford University Press. 
+
+> 38 Riha et al.
+
+Raftery, A. E., D. Madigan, and J. A. Hoeting (1997). Bayesian Model Averaging for Linear Regression Models. Journal of the American Statistical Association ,92(437):179–191. Rasmussen, C. and Z. Ghahramani (2000). Occam’ s Razor. Advances in Neural Information Processing Systems . Vol. 13. MIT Press. Rasmussen, C. E. and C. K. I. Williams (2006). Gaussian processes for machine learning .en. Adaptive computation and machine learning. Cambridge, Mass: MIT Press. Riha, A. E., N. Siccha, A. Oulasvirta, and A. Vehtari (Apr. 2024). Supporting Bayesian modelling workflows with iterative filtering for multiverse analysis . arXiv:2404.01688 [stat]. Riutort-Mayol, G., P. -C. B¨ urkner, M. R. Andersen, A. Solin, and A. Vehtari (2022). Practical Hilbert space approximate Bayesian Gaussian processes for probabilistic programming. Statistics and Computing , 33(1):17. Simpson, D., H. Rue, A. Riebler, T. G. Martins, and S. H. Sørbye (2017). Penalising Model Component Complexity: A Principled, Practical Approach to Constructing Priors. Statistical Science , 32(1):1–28. Sivula, T., M. Magnusson, A. A. Matamoros, and A. Vehtari (2025). Uncertainty in Bayesian Leave-One-Out Cross-Validation Based Model Comparison. Bayesian Analysis :1–31. Smith, G. (2018). Step away from stepwise. Journal of Big Data , 5(1):32. Solin, A. and S. S ¨arkk ¨a (2020). Hilbert Space Methods for Reduced-Rank Gaussian Process Regression. Statistics and Computing , 30(2):419–446. Tosh, C., P. Greengard, B. Goodrich, A. Gelman, A. Vehtari, and D. Hsu (2025). The piranha problem: Large effects swimming in a small pond. Notices of the American Mathematical Society , 72(1). Tran, B. - H., S. Rossi, D. Milios, and M. Filippone (2022). All You Need is a Good Functional Prior for Bayesian Deep Learning. Journal of Machine Learning Research ,23(74):1–56. Vaart, A. W. van der (1998). Asymptotic Statistics . Cambridge Series in Statistical and Probabilistic Mathematics. Cambridge: Cambridge University Press. Vehtari, A., A. Gelman, and J. Gabry (2017). Practical Bayesian model evaluation using leave-one-out cross-validation and WAIC. Statistics and Computing , 27(5):1413– 1432. Vehtari, A. and J. Lampinen (2002). Bayesian Model Assessment and Comparison Using Cross-Validation Predictive Densities. Neural computation , 14:2439–68. Vehtari, A. and J. Ojanen (2012). A survey of Bayesian predictive methods for model assessment, selection and comparison. Statistics Surveys , 6(none):142–228. Vehtari, A., D. Simpson, A. Gelman, Y. Yao, and J. Gabry (2024). Pareto Smoothed Importance Sampling. Journal of Machine Learning Research , 25(72):1–58. 
+
+> 39 To select or not to select
+
+Vershynin, R. (2018). High-Dimensional Probability: An Introduction with Applications in Data Science . Cambridge Series in Statistical and Probabilistic Mathematics. Cambridge: Cambridge University Press. Wilson, A. G. (Oct. 2025). Position: Deep Learning is Not So Mysterious or Different. en. Proceedings of the 42nd International Conference on Machine Learning . PMLR, 82326–82346. Wood, S. N. (2003). Thin plate regression splines. Journal of the Royal Statistical Society: Series B (Statistical Methodology) , 65(1):95–114. Wood, S. N. (May 2017). Generalized Additive Models: An Introduction with R, Second Edition . 2nd ed. New York: Chapman and Hall/CRC. Wood, S. N. (2025). Generalized Additive Models. Annual Review of Statistics and Its Application , 12(Volume 12, 2025):497–526. Yanchenko, E., H. D. Bondell, and B. J. Reich (2025). The R2D2 Prior for Generalized Linear Mixed Models. The American Statistician , 79(1):40–49. Yao, Y., G. Pir ˇs, A. Vehtari, and A. Gelman (2021). Bayesian Hierarchical Stacking: Some Models Are (Somewhere) Useful. Bayesian Analysis :1–29. Yao, Y., A. Vehtari, D. Simpson, and A. Gelman (2018). Using Stacking to Average Bayesian Predictive Distributions (with Discussion). Bayesian Analysis , 13(3):917– 1007. Zhang, Y. and H. D. Bondell (2018). Variable Selection via Penalized Credible Regions with Dirichlet–Laplace Global-Local Shrinkage Priors. Bayesian Analysis , 13(3):823– 844. Zhang, Y. D., and B. J. Reich (2022). Bayesian Regression Using a Prior on the Model Fit: The R2-D2 Shrinkage Prior. Journal of the American Statistical Association ,117(538):862–874. 
+
+# A Notation 
+
+Table 5 summarises the notation used throughout the paper. We work directly with realised quantities and do not introduce separate symbols for random variables. Capital Latin letters denote matrices, and lower-case letters denote vectors and scalars, with dimensions clear from context. 
+
+> 40
+
+Riha et al. 
+
+Symbol Meaning 
+
+𝑛 , 𝑖 = 1, . . . , 𝑛 Number of observations and observation index 
+
+𝑝 , 𝑗 = 1, . . . , 𝑝 Number of covariates and covariate (coefficient) index 
+
+𝑦 𝑖 Scalar outcome of observation 𝑖 𝑦 = (𝑦 1, . . . , 𝑦 𝑛 )𝑇 Outcome vector ˜𝑦 Test (out-of-sample) outcome 
+
+𝑋 ∈ R𝑛 × 𝑝 Design matrix 
+
+𝑥 𝑖 ∈ R𝑝 Covariate vector of observation 𝑖 (the 𝑖 -th row of 𝑋 )
+
+𝑥 𝑖 𝑗 Scalar covariate entry, the 𝑗 -th covariate of observation 𝑖 𝜃 Model parameters (general) 
+
+𝛽 = (𝛽 1, . . . , 𝛽 𝑝 )𝑇 , 𝛽 𝑗 Regression coefficient vector and its 𝑗 -th entry, with 𝜃 𝑑 ≡ 𝛽 1: 𝑑 in the linear examples 
+
+𝜂 = 𝑓 (𝑥 ; 𝜃 ) Systematic component (linear predictor), written 𝜂 𝑑 at complexity 
+
+𝑑 
+
+M = {M𝑘 }𝐾 𝑘 =1, 𝑘 Finite collection of candidate models and model index 
+
+𝑑 Model-complexity index, counting covariates, basis functions, or group levels, equal to 𝑝 in the regression examples 
+
+𝑑 𝑧 Residualised data precision for the treatment coefficient (Sec-tion 5.4) 
+
+𝑝 (·) Generic density, used for the prior, likelihood, posterior, posterior predictive, and marginal distributions, distinguished by their argu-ments and by model subscripts such as 𝑝 M𝑘 and 𝑝 𝑡 
+
+{𝑝 𝑑 }𝑑 ∈N Prior sequence, with 𝑝 𝑑 the joint prior of the model at complexity 
+
+𝑑 𝑞 𝑑 Induced (pushforward) distribution of the systematic component 
+
+𝜂 𝑑 
+
+E[·] , Var (·) , Cov (·) Expectation, variance, and covariance. A subscript names the distribution, as in E𝑝 𝑑 under the prior 𝑝 𝑑 and Var 𝑞 𝑑 under 𝑞 𝑑 
+
+Table 5. Summary of notation. 
+
+41 To select or not to select 
+
+# B Relationship between second order predictive consistency and predictive parsimony 
+
+This appendix proves Lemma 3.2.3 and provides the supporting technical result (Propo-sition B.0.1). For the derivations below, we assume that the prior predictive signal distributions are conditional on 𝑉 𝑑 for any 𝑑 .
+
+Proof of Lemma 3.2.3. Throughout, 𝑞 𝑑 = normal (0, 𝑉 𝑑 ) with 𝑉 𝑑 > 0. 
+
+Part (i): S ⊈ F. Choose 𝑉 𝑑 = 𝐿 + (− 1)𝑑 𝑑 −1/3 for any 𝐿 > 1 (so that 𝑉 1 =
+
+𝐿 − 1 > 0 and hence 𝑉 𝑑 > 0 for all 𝑑 ). Then sup 𝑑 𝑉 𝑑 < ∞ and 𝑉 𝑑 → 𝐿 , so this sequence is in S. Since (− 1)𝑑 +1 = −(− 1)𝑑 , consecutive terms have opposite signs, so 
+
+|𝑉 𝑑 +1 − 𝑉 𝑑 | = (𝑑 + 1)−1/3 + 𝑑 −1/3 ≈ 2𝑑 −1/3 for large 𝑑 . Hence (𝑉 𝑑 +1 − 𝑉 𝑑 )2 ≈ 4𝑑 −2/3
+
+and Í∞ 
+
+> 𝑑 =1
+
+𝑑 −2/3 = ∞ (𝑝 -series with 𝑝 ≤ 1). By Proposition B.0.1(i), Í∞ 
+
+> 𝑑 =1
+
+𝐷 KL = ∞, so this sequence is not in F. 
+
+Part (ii): F ⊈ S. For the independent normal prior, 𝑉 𝑑 = 𝑑𝜏 2 → ∞ , hence, this prior produces a sequence which is not in S. Furthermore, 𝑉 𝑑 +1/𝑉 𝑑 = (𝑑 + 1)/ 𝑑 = 1 + 1/𝑑 , so 
+
+𝐷 KL (𝑞 𝑑 +1 ∥𝑞 𝑑 ) = 12 [1/𝑑 − log (1 + 1/𝑑 )] . Since log (1 + 𝑥 ) = 𝑥 − 𝑥 2/2 + 𝑂 (𝑥 3), we get 
+
+𝐷 KL = 14𝑑 2 + 𝑂 (𝑑 −3), and Í∞ 
+
+> 𝑑 =1
+
+𝑑 −2 < ∞. Hence, this sequence is in F. 
+
+Part (iii): Characterisation of S ∩ F. By definition, S requires 𝑉 𝑑 bounded and convergent. Given boundedness (0 < 𝑉 min ≤ 𝑉 𝑑 ≤ 𝐶 ), Proposition B.0.1(i) shows 
+
+Í∞ 
+
+> 𝑑 =1
+
+𝐷 KL < ∞ ⇐⇒ Í∞ 
+
+> 𝑑 =1
+
+(𝑉 𝑑 +1 −𝑉 𝑑 )2 < ∞. Proposition B.0.1(ii) states the condition on 𝑉 𝑑 sufficiently small to yield a sequence in the intersection of F and S. Note that any prior which produces a monotone sequence (and is in S) fulfils this condition: if 𝑉 𝑑 is monotone and converges to 𝐿 > 0, then Í∞ 
+
+> 𝑑 =1
+
+|𝑉 𝑑 +1 −𝑉 𝑑 | = |𝐿 −𝑉 1 | < ∞17 by telescoping (all terms have the same sign), so Í∞ 
+
+> 𝑑 =1
+
+(𝑉 𝑑 +1 −𝑉 𝑑 )2 ≤ sup 𝑑 |𝑉 𝑑 +1 −𝑉 𝑑 | · Í∞ 
+
+> 𝑑 =1
+
+|𝑉 𝑑 +1 −𝑉 𝑑 | < ∞. □
+
+The following proposition, used above, characterises KL summability in terms of squared increments. 
+
+Proposition B.0.1. Let 𝑞 𝑑 = normal (0, 𝑉 𝑑 ) with 0 < 𝑉 min ≤ 𝑉 𝑑 ≤ 𝐶 < ∞ for all 𝑑 , and let 𝛿 𝑑 +1 := 𝑉 𝑑 +1 − 𝑉 𝑑 .(i) Í∞ 
+
+> 𝑑 =1
+
+𝐷 KL (𝑞 𝑑 +1 ∥𝑞 𝑑 ) < ∞ if and only if Í∞ 
+
+> 𝑑 =1
+
+𝛿 2 
+
+> 𝑑 +1
+
+< ∞.(ii) A sufficient condition for 𝐷 KL summability is |𝛿 𝑑 +1 | = O( 𝑑 −𝑔 ) for some 𝑔 > 1/2.This exponent is sharp: for every 0 < 𝑔 ≤ 1/2, there exist variance paths satisfying Definition 3.2.1 with |𝛿 𝑑 +1 | = Θ (𝑑 −𝑔 ) for which Í∞ 
+
+> 𝑑 =1
+
+𝐷 KL = ∞.Proof. Part (i). Define 𝑟 𝑑 := 𝛿 𝑑 +1/𝑉 𝑑 , so that 𝑉 𝑑 +1/𝑉 𝑑 = 1 + 𝑟 𝑑 and 
+
+𝐷 KL (𝑞 𝑑 +1 ∥𝑞 𝑑 ) = 12
+
+𝑟 𝑑 − log (1 + 𝑟 𝑑 ) . (35)        
+
+> 17 Note that this covers both 𝑉 𝑑 ↑𝐿 and 𝑉 𝑑 ↓𝐿 .
+
+42 Riha et al. 
+
+Consider the function ℎ(𝑟 ) := [𝑟 − log (1 + 𝑟 )]/ 𝑟 2 for 𝑟 ∈ (− 1, ∞) \ { 0}, extended by continuity to ℎ(0) = 1/2. This function is continuous and strictly positive on (− 1, ∞) .Since 𝑉 𝑑 +1/𝑉 𝑑 ∈ [ 𝑉 min /𝐶, 𝐶 /𝑉 min ], the values 𝑟 𝑑 lie in a compact subset of (− 1, ∞) .By the extreme value theorem, the continuous function ℎ attains a minimum 𝑐 1 > 0 and a maximum 𝑐 2 < ∞ on this set. Therefore 𝑐 1 𝑟 2 
+
+> 𝑑
+
+≤ 𝐷 KL (𝑞 𝑑 +1 ∥𝑞 𝑑 ) ≤ 𝑐 2 𝑟 2 
+
+> 𝑑
+
+for all 𝑑 , and substituting 𝑟 𝑑 = 𝛿 𝑑 +1/𝑉 𝑑 with 𝑉 min ≤ 𝑉 𝑑 ≤ 𝐶 gives 
+
+𝑐 1
+
+𝐶 2 𝛿 2 
+
+> 𝑑 +1
+
+≤ 𝐷 KL (𝑞 𝑑 +1 ∥𝑞 𝑑 ) ≤ 𝑐 2
+
+𝑉 2min 
+
+𝛿 2
+
+> 𝑑 +1
+
+, (36) establishing the equivalence Í∞ 
+
+> 𝑑 =1
+
+𝐷 KL < ∞ ⇐⇒ Í∞ 
+
+> 𝑑 =1
+
+𝛿 2 
+
+> 𝑑 +1
+
+< ∞.
+
+Part (ii): Sufficiency. If |𝛿 𝑑 +1 | ≤ 𝐴 𝑑 −𝑔 for some 𝐴 > 0 and 𝑔 > 1/2, then 
+
+𝛿 2 
+
+> 𝑑 +1
+
+≤ 𝐴 2𝑑 −2𝑔 and Í∞ 
+
+> 𝑑 =1
+
+𝑑 −2𝑔 < ∞ since 2 𝑔 > 1. 
+
+Part (ii): Sharpness. Fix 0 < 𝑔 ≤ 1/2 and choose 𝑉 1 large enough that 𝑉 𝑑 :=
+
+𝑉 1 +Í𝑑 −1 
+
+> 𝑘 =1
+
+(− 1)𝑘 𝑘 −𝑔 ≥ 𝑉 min > 0 for all 𝑑 (possible since the alternating series converges by Leibniz’s test, so the partial sums are bounded). Then 𝑉 𝑑 → 𝐿 := 𝑉 1 + Í∞ 
+
+> 𝑘 =1
+
+(− 1)𝑘 𝑘 −𝑔 <
+
+∞ and sup 𝑑 𝑉 𝑑 < ∞, so Definition 3.2.1 is satisfied. However, 𝛿 𝑑 +1 = (− 1)𝑑 𝑑 −𝑔 , giving 
+
+Í∞ 
+
+> 𝑑 =1
+
+𝛿 2 
+
+> 𝑑 +1
+
+= Í∞ 
+
+> 𝑑 =1
+
+𝑑 −2𝑔 = ∞ since 2 𝑔 ≤ 1. By part (i), Í∞ 
+
+> 𝑑 =1
+
+𝐷 KL = ∞. □
+
+# C Connections between Var (𝜂 ), Bayesian 𝑅 2, and elpd 
+
+We assume a data-generating process 𝑦 ∼ normal (𝑥 𝑇 𝛽 ∗, 𝜎 2∗) and the model 
+
+𝑦 | 𝛽, 𝜎 2 ∼ normal (𝑥 𝑇 𝛽, 𝜎 2). (37) Our prior assumptions for 𝛽 influence Σ𝛽 = Var (𝛽 ). This affects the scale of the linear predictor 𝜂 (𝑥 ) = 𝑥 𝑇 𝛽 , since the marginal variance of the linear predictor is Var (𝜂 (𝑥 )) = 𝑥 𝑇 Var (𝛽 )𝑥 = 𝑥 𝑇 Σ𝛽 𝑥 . For data 𝐷 = {𝑥 𝑖 , 𝑦 𝑖 }𝑛 𝑖 =1, and new observation 
+
+{ ˜𝑥, ˜𝑦 }, we can approximate the posterior predictive distribution 𝑝 ( ˜𝑦 | ˜𝑥, 𝐷 ) with normal (𝜇 ( ˜𝑥 ), 𝑣 ( ˜𝑥 )) , where 
+
+𝜇 ( ˜𝑥 ) = E [𝜂 ( ˜𝑥 ) | 𝐷 ] = ˜𝑥 𝑇 E [𝛽 | 𝐷 ] (38) 
+
+𝑣 ( ˜𝑥 ) = E 𝜎 2 | 𝐷  + Var (𝜂 ( ˜𝑥 ) | 𝐷 ) = E 𝜎 2 | 𝐷  + ˜𝑥 𝑇 Var (𝛽 | 𝐷 ) ˜𝑥. (39) This means that the predictive variance 𝑣 ( ˜𝑥 ) at ˜𝑥 is a sum of the posterior mean of the observation noise variance and the posterior variance of the linear predictor. For a normal model with normal prior 𝛽 ∼ normal (0, Σ𝛽 ), the posterior mean is 
+
+E[𝛽 | 𝐷 ] = (𝑋 𝑇 𝑋 + 𝜎 2Σ−1 
+
+> 𝛽
+
+)−1 𝑋 𝑇 𝑦 (with design matrix 𝑋 and outcome vector 𝑦 ) and it becomes apparent that Σ𝛽 influences both predictive mean and variance. Using 𝜇 ( ˜𝑥 ) and 𝑣 ( ˜𝑥 ), the pointwise log predictive density for new observation { ˜𝑥, ˜𝑦 }
+
+can be written as lpd ( ˜𝑥, ˜𝑦 ) = log 𝑝 ( ˜𝑦 | ˜𝑥, 𝐷 ) ≈ − 12
+
+
+
+log (2𝜋𝑣 ( ˜𝑥 )) + ( ˜𝑦 − 𝜇 ( ˜𝑥 )) 2
+
+𝑣 ( ˜𝑥 )
+
+
+
+. (40) 
+
+43 To select or not to select 
+
+Taking the expectation with respect to the true DGP 
+
+E[lpd ( ˜𝑥, ˜𝑦 )] = E
+
+
+
+− 12
+
+
+
+log (2𝜋𝑣 ( ˜𝑥 )) + ( ˜𝑦 − 𝜇 ( ˜𝑥 )) 2
+
+𝑣 ( ˜𝑥 )
+
+  
+
+(41) 
+
+= − 12 log (2𝜋𝑣 ( ˜𝑥 )) − 12
+
+E ( ˜𝑦 − 𝜇 ( ˜𝑥 )) 2
+
+𝑣 ( ˜𝑥 ) (42) 
+
+= − 12 log (2𝜋 ) − 12 log (𝑣 ( ˜𝑥 )) − 12
+
+𝜎 2 
+
+> ∗
+
++ ( ˜𝑥 𝑇 𝛽 ∗ − 𝜇 ( ˜𝑥 )) 2
+
+𝑣 ( ˜𝑥 ) , (43) where we explicitly separate the true noise variance 𝜎 2 
+
+> ∗
+
+from the model parameter 
+
+𝜎 2, whose posterior mean affects the predictive variance 𝑣 ( ˜𝑥 ) (see (39) above). We see that E[lpd ( ˜𝑥, ˜𝑦 )] is affected by ( ˜𝑥 𝑇 𝛽 ∗ − 𝜇 ( ˜𝑥 )) 2 and 𝑣 ( ˜𝑥 ) through − 12 log (𝑣 ( ˜𝑥 )) and 
+
+− 12        
+
+> 𝜎 2
+> ∗+( ˜𝑥 𝑇 𝛽 ∗−𝜇 (˜𝑥 ) ) 2
+> 𝑣 (˜𝑥 )
+
+. When Var (𝜂 (𝑥 )) increases, 𝑣 ( ˜𝑥 ) increases. Then, E[lpd ( ˜𝑥, ˜𝑦 )] is penalised more with − 12 log (𝑣 ( ˜𝑥 )) .The approximation with a normal distribution, and, therefore, also (40) , are only exact for a conjugate model with normal priors and known 𝜎 2. Otherwise, we can use posterior draws 𝛽 (𝑠 ) and 𝜎 2(𝑠 ) to get 
+
+𝜇 (𝑥 ) ≈ b𝜇 (𝑥 ) = 1
+
+𝑆 
+
+> 𝑆
+
+∑︁ 
+
+> 𝑠 =1
+
+𝜂 (𝑠 ) (𝑥 ) (44) 
+
+𝑣 (𝑥 ) ≈ b𝑣 (𝑥 ) = 1
+
+𝑆 
+
+> 𝑆
+
+∑︁ 
+
+> 𝑠 =1
+
+𝜎 2(𝑠 ) + 1
+
+𝑆 
+
+> 𝑆
+
+∑︁ 
+
+> 𝑠 =1
+
+
+
+𝜂 (𝑠 ) (𝑥 ) − b𝜇 (𝑥 )
+
+2
+
+, (45) where 𝜂 (𝑠 ) (𝑥 ) = 𝑥 𝑇 𝛽 (𝑠 ) . Given posterior draws, we could again approximate lpd as in (40) by replacing 𝜇 (𝑥 ) with the predictive mean estimate b𝜇 (𝑥 ) and 𝑣 (𝑥 ) with the predictive variance estimate b𝑣 (𝑥 ), but it is more accurate to use exact Monte Carlo lpd (𝑥, 𝑦 ) ≈ log 1
+
+𝑆 
+
+> 𝑆
+
+∑︁ 
+
+> 𝑠 =1
+
+"
+
+12𝜋𝜎 2(𝑠 ) exp −
+
+ 𝑦 − 𝜂 (𝑠 ) (𝑥 )2
+
+2𝜎 2(𝑠 )
+
+!# 
+
+. (46) Again, the prior choices for 𝑝 (𝛽 ) influence Var  𝜂 (𝑠 ) , that is, the dispersion of 
+
+𝜂 (𝑠 ) 𝑆 𝑠 =1, through Var (𝛽 | 𝐷 ) = Σ𝛽 . This affects the predictive variance via 
+
+> 1
+> 𝑆
+
+Í𝑆 𝑠 =1
+
+ 𝜂 (𝑠 ) (𝑥 ) − b𝜇 (𝑥 )2 and, therefore, Bayesian 𝑅 2 as defined by Gelman et al. (2019). Moreover, it also influences the spread in the term  𝑦 − 𝜂 (𝑠 ) (𝑥 )2 in lpd which, in turn, could affect computation or approximation of elpd loo and elpd test .
+
+𝑝 (𝛽 ) → Var 
+
+
+
+𝜂 (𝑠 )  ↔ 𝑅 2 → lpd → elpd (47) 
+
+44 Riha et al. 
+
+To tie this back to results presented before, see Section 3.2, 4.1 and 4.3 where we provide details on how different explicit or implied prior choices can affect Var (𝜂 ) under increasing model complexity. Gelman et al. (2019) also define a residual-based Bayesian 𝑅 2 as 
+
+𝑅 2 = Var 𝜇 
+
+Var 𝜇 + Var res 
+
+. (48) In particular, following their notation, when using draws from the residual distribution, we get Var res = 𝑉 𝑛 𝑖 =1 ˆ𝑒 (𝑠 ) 
+
+> 𝑖
+
+= 1
+
+𝑛 − 1
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+
+
+ˆ𝑒 (𝑠 )
+
+> 𝑖
+
+2
+
+= 1
+
+𝑛 − 1
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+
+
+𝑦 𝑖 − ˆ𝑦 (𝑠 )
+
+> 𝑖
+
+2
+
+(49) for the residual-based 𝑅 2. At the same time, posterior mean squared error (MSE) values can be computed by evaluating, MSE = 1
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+
+
+𝑦 𝑖 − ˆ𝑦 (𝑠 )
+
+> 𝑖
+
+2
+
+(50) for each posterior prediction ˆ𝑦 (𝑠 ) 
+
+> 𝑖
+
+and each 𝑦 𝑖 with 𝑖 = 1, · · · 𝑛 . This directly corresponds to Var res for the residual based 𝑅 2 by Gelman et al. (2019) that is discussed also in the corresponding online appendix https://avehtari.github.io/bayes R2/bayes R2.html. 
+
+# D Illustrative example: Part 1 
+
+D.1 Illustrative example: Part 1. Results with normal priors versus R2D2 prior 
+
+Figure 10 shows results for 𝛼 ∼ normal (0, 2.5), 𝜎 2 
+
+> 𝜖
+
+∼ exponential (1) with different prior choices for 𝛽 in the full model (M 1): 1. 𝛽 ∼ normal (0, 1), and 2. an R2D2 prior with mean 𝜇 𝑅 2 = 1/3 and precision 𝜑 𝑅 2 = 3. For a single covariate, the Dirichlet prior for the variance decomposition parameter collapses to a constant, but the Beta prior on 𝑅 2 still induces a prior for 𝛽 via 𝑅 2 =
+
+𝛽 2/( 1 + 𝛽 2). We choose the R2D2 prior here despite the low dimensionality of the problem because it retains boundedness while putting most prior mass at small 𝑅 2
+
+values near zero in our chosen configuration. The specific shape across the range of 𝑅 2
+
+values can be adjusted through the configuration of the R2D2 prior. We observe that the R2D2 prior can slightly improve the full model’s worst-case predictive performance on independent test data in the (small) section of 𝛽 values where the intercept-only model M0 and other strategies have higher predictive performance. This improvement for M 1 is bigger when 𝑛 is smaller. 
+
+45 To select or not to select Normal prior R2D2 prior            
+
+> n = 20  n = 100
+> 0.0 0.25 0.5 0.75 1.0 0.0 0.25 0.5 0.75 1.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> 𝛽
+> elpd test  (relative to oracle model)
+> Full model (M 1)
+> Intercept-only (M 0)
+> Bayesian model stacking
+> Bayesian model averaging
+> Highest PSIS elpd loo
+> Bayes factor >6
+
+Figure 10. Illustrative example: Part 1. We compare predictive performance with elpd on independent test data ( elpd test ) for the full model with one covariate (M 1), the intercept-only model (M 0), and four model selection and averaging strategies relative to the oracle model (6) across different training data sizes (rows) and prior choices (columns). The x-axis shows true effect sizes for 𝛽 . Results are averages across 500 repetitions and rescaled to the same scale as elpd loo . Compared to results with normal prior, elpd test for M 1 is closer to the oracle model when using the R2D2 prior. For effect sizes > 0.25, M 1 is the oracle model for both prior choices. 
+
+46 Riha et al. 
+
+D.2 Illustrative example: Part 1. Comparison to Student-t DGP 
+
+To compare the previously presented results in Section 2.2, where M 1 contains the true model, to a scenario where the DGP is similar but not as M 1, we assume 
+
+𝑦 𝑖 ∼ Student-t (𝜈, 𝛼 + 𝛽𝑥 𝑖 , 𝜎 ), with 𝑥 𝑖 ∼ normal (0, 1), 𝜈 = 20 , 𝜎 = 1. (51) Figure 11 shows similar patterns as discussed for the normal DGP in Figure 2 and 10. Normal prior R2D2 prior            
+
+> n = 20  n = 100
+> 0.0 0.25 0.5 0.75 1.0 0.0 0.25 0.5 0.75 1.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> 𝛽
+> elpd test  (relative to oracle model)
+> Full model (M 1)
+> Intercept-only (M 0)
+> Bayesian model stacking
+> Bayesian model averaging
+> Highest PSIS-LOO-CV elpd
+> Bayes factor >6
+
+Figure 11. Illustrative example: Part 1. We compare predictive performance on independent test data ( elpd test ) for the full model with one covariate (M 1), the intercept-only model (M 0), and four model selection and averaging strategies relative to the oracle model (6) across different training data sizes (rows) and prior choices (columns). We employ a Student-t DGP with degrees of freedom 𝜈 = 20. The x-axis shows the chosen effect sizes for 𝛽 . Results are averages across 500 repetitions and rescaled to the same scale as elpd loo .
+
+D.3 Illustrative example: Part 1. Using model probabilities, pseudo-BMA, LOO-BB and stacking weights for model selection 
+
+The difference in predictive performance between two models M 0 and M 1 can be estimated from the pointwise differences in predictive log densities. Given reliably estimated differences Δ delpd loo (M0, M1 | 𝑦 ) between models M 0 and M 1 and well-calibrated standard error for the estimator of the differences bse loo (M0, M1 | 𝑦 ), we can use a normal approximation to compute the probability that one model is better than another (Vehtari and Lampinen, 2002; Sivula et al., 2025) and use this for model selection as illustrated in 
+
+47 To select or not to select Normal prior R2D2 prior              
+
+> n = 20  n = 50  n = 100
+> 0.0 0.25 0.5 0.75 1.0 0.0 0.25 0.5 0.75 1.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> 𝛽
+> elpd test  (relative to oracle model)
+> M0M1Model probability >90%
+
+Figure 12. Illustrative example: Part 1. Out-of-sample performance for the intercept-only model M0, the full model M 1 and selection with model probability > 90%. The other methods considered in Section 3 are plotted as gray lines in the background. The dotted lines indicate M 1’s worst-case performance with R2D2 prior. 
+
+Figure 12. Sivula et al. (2025) provide theoretical and experimental results for conditions when the standard error estimate (and corresponding normal approximation) is reasonably well-calibrated. This paper is not focusing on properties of Bayesian model stacking or other model weights, but, based on our experiments, weights for stacking, pseudo-BMA and LOO-BB are often non-zero for both models when 𝑛 is small (see Figure 13, 14, 15). Further research is needed on using stacking, pseudo-BMA, or LOO-BB weights for selection. For example, stacking was not designed for selection but for aggregating the results of several models (Yao et al., 2018). Non-zero weights might not harm the performance of the aggregated result, but, of course, they can harm selection when the selection threshold is strict and high (see, for example, results for selecting with stacking weights > 0.9 in Figure 13). 
+
+48 Riha et al. Normal prior R2D2 prior                 
+
+> n = 20  n = 50  n = 100
+> 0.0 0.25 0.5 0.75 1.0 0.0 0.25 0.5 0.75 1.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> 𝛽
+> elpd test  (relative to oracle model)
+> M0M1Stacking weight >0.5Stacking weight >0.9
+
+Figure 13. Illustrative example: Part 1. Out-of-sample performance for the intercept-only model M0, the full model M 1 and selection using stacking weights > 0.5 or 0 .9. The other methods in Section 3 are plotted as gray lines in the background. The dotted lines indicate M 1’s worst-case performance with R2D2 prior. Normal prior R2D2 prior                 
+
+> n = 20  n = 50  n = 100
+> 0.0 0.25 0.5 0.75 1.0 0.0 0.25 0.5 0.75 1.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> 𝛽
+> elpd test  (relative to oracle model)
+> M0M1pseudo-BMA weight >0.5pseudo-BMA weight >0.9
+
+Figure 14. Illustrative example: Part 1. Out-of-sample performance for the intercept-only model M0, the full model M 1 and selection using pseudo-BMA weights > 0.5 or 0 .9. The other methods considered in Section 3 are plotted as gray lines in the background. The dotted lines indicate M1’s worst-case performance with R2D2 prior. 
+
+49 To select or not to select Normal prior R2D2 prior                 
+
+> n = 20  n = 50  n = 100
+> 0.0 0.25 0.5 0.75 1.0 0.0 0.25 0.5 0.75 1.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> -2.0
+> -1.5
+> -1.0
+> -0.5
+> 0.0
+> 𝛽
+> elpd test  (relative to oracle model)
+> M0M1LOO-BB weight >0.5LOO-BB weight >0.9
+
+Figure 15. Illustrative example: Part 1. Out-of-sample performance for the intercept-only models M0, the full model M 1 and selection using LOO-BB weights > 0.5 or 0 .9. The other methods considered in Section 3 are plotted as gray lines in the background. The dotted lines indicate M1’s worst-case performance with R2D2 prior. 
+
+50 Riha et al. 
+
+# E Examples of predictively consistent priors 
+
+E.1 Other global-local priors 
+
+For any global-local prior with local weights satisfying Í 𝑗 𝜙 𝑗 = 1, Lemma 3.2.4 reduces second order predictive consistency to requiring E𝑝 𝑑 [𝜏 2] < ∞, independently of model size. The Dirichlet–Laplace (DL) prior (Bhattacharya et al., 2015) places a Dirichlet (𝑎, . . . , 𝑎 ) distribution on the local scales (𝜙 1, . . . , 𝜙 𝑑 ), so Í 𝑗 𝜙 𝑗 = 1 by construction, and assigns a Gamma 
+
+
+
+𝑛𝑎, 12
+
+
+
+prior to the global scale 𝜏 , ensuring E[𝜏 2] <
+
+∞ for fixed 𝑛 . 18 19 Penalised complexity (PC) priors (Simpson et al., 2017) define a base model and penalise departures from it. The PC prior places an exponential distribution on the Kullback–Leibler distance from the base, which, for the base being the null model, results in 𝜏 ∼ Exponential (𝜆 ) (i.e. a type-2 exponential prior on the standard deviation), so E𝑝 𝑑 [𝜏 2] = 2/𝜆 2 < ∞, and predictive consistency follows. When local weights are 
+
+not constrained to sum to one (e.g., independent half-Cauchy scales as in the horseshoe prior), predictive consistency depends on the joint behaviour of 𝜏 2 and Í 𝑗 𝜙 𝑗 and must be verified case by case.                
+
+> 18 Bhattacharya et al. (2015) recommend 𝑎 =𝑛 − ( 1+𝜄 )for any 𝜄 > 0, which yields minimax-optimal posterior contraction rates and ensures second order predictive consistency when 𝑛 → ∞ . For any 𝑎 > 0,𝜏 2
+> has finite second moments for fixed 𝑛 .
+> 19 Zhang and Bondell (2018) further derived calibration of 𝑎 to a target 𝑅 2, while retaining the Laplace marginal prior structure.
+
+51 To select or not to select 
+
+E.2 Illustrative example: Part 3. Bayesian 𝑅 2 based on prior and realised Bayesian 𝑅 20             
+
+> 1
+> 2
+> 3
+> 4
+> 5
+> 0.00 0.25 0.50 0.75 1.00
+> Bayesian-𝑅 2based on chosen prior
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 0.00 0.25 0.50 0.75 1.00
+> Realised Bayesian-𝑅 2
+> Normal prior R2D2 prior p = 5 p = 15 p = 30
+
+Figure 16. Illustrative example: Part 3. Implied prior Bayesian-𝑅 2 for increasing number of covariates 𝑝 ∈ { 5, 15 , 30 }. We assume 𝜎 2 = 1 and standardised and orthogonal predictors, that is, 1 
+
+> 𝑛
+
+𝑋 𝑇 𝑋 = 𝐼 . The first row shows Bayesian-𝑅 2 based on (1) the Beta prior with mean 𝜇 𝑅 2 = 1/3
+
+and scale 𝜑 𝑅 2 = 3 in the R2D2 specification and (2) constants based on 𝑅 2 = 𝑝 𝜎 𝛽 /( 𝑝 𝜎 𝛽 + 𝜎 2 ) for the independent normal priors 𝛽 ∼ normal (0, 𝜎 𝛽 ) with 𝜎 𝛽 = 1. The second row presents realised prior Bayesian-𝑅 2, making use of the fact that Var  𝑋 𝑇 𝛽 | 𝛽  = || 𝛽 || 2 and || 𝛽 || 2 ∼ 𝜒 2 ( 𝑝 ) for the normal priors, since 1 
+
+> 𝑛
+
+𝑋 𝑇 𝑋 = 𝐼 𝑝 .
+
+E.3 Illustrative example: Part 3. Generating data with fixed signal-to-noise ratio 
+
+Section 4.2 uses simulated data from a linear model where Bayesian-𝑅 2 (Equation (22) )and the residual variance 𝜎 2 are fixed. Predictors are 𝑥 𝑖 ∈ R𝑝 with 𝑥 𝑖 ∼ normal (0, Σ),where each diagonal element of Σ equals 1 and off-diagonal elements equal 𝜌 . We seek either a fixed coefficient value 𝑏 (equal across coefficients) or a coefficient variance 𝜏 2
+
+such that the realised 𝑅 2 (22) matches the target, given 𝜎 2. We consider two cases: 1. Fixed coefficients with 𝛽 𝑗 = 𝑏 for 𝑗 = 1, . . . , 𝑝 that is, 𝛽 is fixed and treated as a constant; 
+
+52 Riha et al. 
+
+2. Random coefficients with 𝛽 𝑗 ∼ normal (0, 𝜏 2), independent across 𝑗 .
+
+Fixed 𝛽 𝑗 = 𝑏 . We assume known 𝑅 2, 𝜎 2, and 𝜌 and use Var (𝛽 𝑇 𝑥 ) = 𝛽 𝑇 Var (𝑥 ) 𝛽 =
+
+𝛽 𝑇 Σ𝛽 to write Var (𝛽 𝑇 𝑥 ) =
+
+> 𝑝
+
+∑︁ 
+
+> 𝑗 =1
+> 𝑝
+
+∑︁ 
+
+> 𝑘 =1
+
+Σ 𝑗 𝑘 𝛽 𝑗 𝛽 𝑘 =
+
+> 𝑝
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑏 2 + 2
+
+> 𝑝
+
+∑︁ 
+
+> 𝑗 =1
+
+∑︁ 𝑘< 𝑗 
+
+𝜌 𝑏 2 = 𝑝 𝑏 2 (1 + 𝜌 ( 𝑝 − 1)) ,
+
+so 
+
+𝑅 2 = Var (𝛽 𝑇 𝑥 )
+
+Var (𝛽 𝑇 𝑥 ) + 𝜎 2 = 𝑝 𝑏 2 (1 + 𝜌 ( 𝑝 − 1)) 
+
+𝑝 𝑏 2 (1 + 𝜌 ( 𝑝 − 1)) + 𝜎 2 .
+
+Solving for 𝑏 gives 
+
+𝑏 = ±√︄ 𝑅 2 𝜎 2
+
+(1 − 𝑅 2) 𝑝 (1 + 𝑝𝜌 − 𝜌 ) . (52) 
+
+Random 𝛽 𝑗 ∼ normal (0, 𝜏 2). For the second case, we assume that the value of 𝛽 ∈ R𝑝 
+
+is random, with E[𝛽 𝑗 ] = 0, Var (𝛽 𝑗 ) = 𝜏 2 and Cov (𝛽 𝑗 , 𝛽 𝑘 ) = 0 for 𝑗 ≠ 𝑘 . We assume 𝛽 𝑗 
+
+and 𝑥 𝑘 are independent for any 𝑗, 𝑘 . Then, we want to find the value of 𝜏 2 that fixes the 
+
+𝑅 2 of the data generating process given 𝜎 2. By the law of total variance, Var (𝛽 𝑇 𝑥 ) = E𝛽 
+
+Var (𝛽 𝑇 𝑥 | 𝛽 ) + Var 𝛽 
+
+
+
+E[𝛽 𝑇 𝑥 | 𝛽 ]
+
+
+
+.
+
+The second term is zero since E[𝑥 ] = 0 and E[𝛽 𝑇 𝑥 | 𝛽 ] = 0. For the first term, Var (𝛽 𝑇 𝑥 | 𝛽 ) = 𝛽 𝑇 Σ𝛽 and 
+
+E𝛽 [𝛽 𝑇 Σ𝛽 ] = tr 
+
+
+
+Σ E 𝛽𝛽 𝑇  
+
+= tr 
+
+
+
+Σ𝜏 2 𝐼 𝑝 
+
+
+
+= 𝜏 2tr (Σ) = 𝜏 2 𝑝, 
+
+because tr (Σ) = Í𝑝 𝑗 =1 Σ 𝑗 𝑗 = 𝑝 regardless of 𝜌 . Hence, 
+
+𝑅 2 = 𝑝 𝜏 2
+
+𝜎 2 + 𝑝 𝜏 2 → 𝜏 2 = 𝜎 2 𝑅 2
+
+𝑝 (1 − 𝑅 2) . (53) Equivalently, component-wise, Var  𝛽 𝑗 𝑥 𝑗 
+
+ = E
+
+h
+
+𝛽 2
+
+> 𝑗
+
+i
+
+E
+
+h
+
+𝑥 2
+
+> 𝑗
+
+i
+
+= 𝜏 2 and, for 𝑗 ≠ 𝑘 ,Cov  𝛽 𝑗 𝑥 𝑗 , 𝛽 𝑘 𝑥 𝑘 
+
+ = E 𝛽 𝑗 𝛽 𝑘 
+
+ E 𝑥 𝑗 𝑥 𝑘 
+
+ = 0, so Var 
+
+
+
+𝛽 𝑇 𝑥 
+
+
+
+= Var ©«
+
+> 𝑝
+
+∑︁ 
+
+> 𝑗 =1
+
+𝛽 𝑗 𝑥 𝑗 ª®¬
+
+=
+
+> 𝑝
+
+∑︁ 
+
+> 𝑗 =1
+
+Var  𝛽 𝑗 𝑥 𝑗 
+
+ + 2
+
+> 𝑝
+
+∑︁ 
+
+> 𝑗 =1
+> 𝑝
+
+∑︁ 
+
+> 𝑘< 𝑗
+
+Cov  𝛽 𝑗 𝑥 𝑗 , 𝛽 𝑘 𝑥 𝑘 
+
+ = 𝑝𝜏 2.
+
+53 To select or not to select 
+
+E.4 Illustrative example: Part 3. Prior and posterior implied 𝑅 2P                 
+
+> o s
+> t
+> e
+> r
+> i
+> o
+> r
+> Pr
+> i
+> o
+> r
+> P
+> o
+> s
+> t
+> e
+> r
+> i
+> o
+> r
+> P
+> rior
+> P
+> o s
+> t
+> e r i o r
+> Prior
+> P
+> o
+> st
+> e
+> r
+> i
+> o
+> r
+> Pri
+> o
+> r
+> P
+> o
+> s
+> t
+> e
+> r
+> i
+> o
+> r
+> Prior
+> P
+> o
+> s
+> t
+> eri o
+> r
+> Pri
+> o
+> r
+> Normal prior R2D2 prior
+> 5 predictors  15 predictors  30 predictors
+> 0.0 0.25 0.5 0.75 1.0 0.0 0.25 0.5 0.75 1.0
+
+Implied 𝑅 2
+
+Figure 17. Illustrative example: Part 3. Implied prior and posterior 𝑅 2 for models with independent normal prior or R2D2 prior (columns) and 𝑝 ∈ { 5, 15 , 30 } predictors (rows). The true 𝑅 2 = 0.2, indicated by a vertical dashed line. With increasing number of predictors, independent normal priors concentrate a-priori at 𝑅 2 values close to one which also pulls the posterior 𝑅 2 values away from the true value. Results are more stable and overall closer to the true 𝑅 2 for the R2D2 prior. 
+
+54 Riha et al. 
+
+E.5 Illustrative example: Part 3. Out-of-sample predictive performance for different true 𝑅 2 and uncorrelated predictors N o r   
+
+> m
+> a
+> l
+> p
+> ri
+> or
+> R2D2p
+> rior
+
+True 𝑅 2 = 0 
+
+0 10 20 30 
+
+-160 
+
+-155 
+
+-150 
+
+-145 
+
+> elpd test  (on elpd loo  scale)
+> N
+> o r
+> m
+> a
+> l
+> pr
+> i
+> o
+> r
+> R2D2
+> p
+> rior
+
+True 𝑅 2 = 0.5 
+
+0 10 20 30 
+
+-175 
+
+-170 
+
+-165 
+
+-160 
+
+Number of predictors 
+
+> N
+> o
+> r
+> m
+> al
+> pr
+> ior
+> R
+> 2
+> D
+> 2
+> pr
+> i
+> or
+
+True 𝑅 2 = 0.8 
+
+0 10 20 30 
+
+-220 
+
+-200 
+
+-180 
+
+-160 
+
+(a) 𝑝 = 30 N   
+
+> o r
+> m
+> a
+> l
+> p
+> r
+> i
+> o
+> r
+> R2D2prior
+
+True 𝑅 2 = 0 
+
+0 25 50 75 100 
+
+-250 
+
+-225 
+
+-200 
+
+-175 
+
+-150    
+
+> elpd test  (on elpd loo  scale)
+> N
+> o r m
+> a l
+> p
+> r
+> i
+> o
+> r
+> R
+> 2
+> D2prior
+
+True 𝑅 2 = 0.5 
+
+0 25 50 75 100 
+
+-240 
+
+-220 
+
+-200 
+
+-180 
+
+Number of predictors 
+
+> N o
+> r
+> m
+> a
+> l
+> p
+> r
+> i o
+> r
+> R
+> 2
+> D2
+> pr
+> i
+> o
+> r
+
+True 𝑅 2 = 0.8 
+
+0 25 50 75 100 
+
+-240 
+
+-220 
+
+-200 
+
+(b) 𝑝 = 100 
+
+Figure 18. Illustrative example: Part 3. We compare out-of-sample predictive performance (elpd test ) with normal priors or R2D2 prior with true 𝑅 2 ∈ { 0, 0.5, 0.8} (columns). The subfigures show results for a DGP with 𝑝 ∈ { 30 , 100 }. Results are averaged over 500 repetitions and each based on 100 observations with uncorrelated predictors ( 𝜌 = 0) and independent test data with 
+
+𝑛 test = 2000. Results are on elpd loo scale and a dotted line indicates a difference of 4 to the highest performing model across number of predictors. The R2D2 prior allows to increase model complexity up to the largest model without declining test performance. Meanwhile, predictive performance on independent test data mostly drops when using independent normal priors, except when 𝑝 = 30 and 𝑅 2 ∈ { 0.5, 0.8}.
+
+55 To select or not to select 
+
+E.6 Illustrative example: Part 3. Out-of-sample predictive performance for different true 𝑅 2 and correlation 𝜌 = 0.5N  
+
+> o r
+> m
+> a
+> l
+> pri
+> o
+> r
+> R2
+> D2
+> pr
+> i
+> o
+> r
+
+True 𝑅 2 = 0 
+
+0 10 20 30 
+
+-160 
+
+-155 
+
+-150 
+
+-145 
+
+> elpd test  (on elpd loo  scale)
+> N
+> o
+> rma
+> l
+> p
+> rio
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> o
+> r
+
+True 𝑅 2 = 0.5 
+
+0 10 20 30 
+
+-160 
+
+-155 
+
+-150 
+
+Number of predictors N 
+
+> o
+> r
+> m
+> a
+> l
+> p
+> r
+> i
+> o
+> r
+> R
+> 2
+> D
+> 2
+> pr
+> i
+> o
+> r
+
+True 𝑅 2 = 0.8 
+
+0 10 20 30 
+
+-190 
+
+-180 
+
+-170 
+
+-160 
+
+-150 
+
+(a) 𝑝 = 30 N    
+
+> o
+> r
+> m a
+> l
+> p
+> r i
+> o r
+> R2D2prior
+
+True 𝑅 2 = 0 
+
+0 25 50 75 100 
+
+-220 
+
+-200 
+
+-180 
+
+-160 
+
+-140    
+
+> elpd test  (on elpd loo  scale)
+> No
+> r
+> m a
+> l
+> p r
+> i
+> o
+> r
+> R2D2pr
+> ior
+
+True 𝑅 2 = 0.5 
+
+0 25 50 75 100 
+
+-220 
+
+-200 
+
+-180 
+
+-160 
+
+Number of predictors   
+
+> N
+> o
+> rm a
+> l
+> p
+> r
+> i or
+> R
+> 2
+> D2
+> pr
+> i
+> or
+
+True 𝑅 2 = 0.8 
+
+0 25 50 75 100 
+
+-220 
+
+-200 
+
+-180 
+
+-160 
+
+(b) 𝑝 = 100 
+
+Figure 19. Illustrative example: Part 3. We compare out-of-sample predictive performance (elpd test ) with normal priors or R2D2 prior with true 𝑅 2 ∈ { 0, 0.5, 0.8} (columns). The subfigures show results for a DGP with 𝑝 ∈ { 30 , 100 }. Results are averaged over 500 repetitions and each based on 100 observations with correlated predictors with 𝜌 = 0.5 and independent test data with 𝑛 test = 2000. Results are on elpd loo scale and a dotted line indicates a difference of 4 to the highest performing model across number of predictors. The R2D2 prior allows to increase model complexity up to the largest model without declining test performance while it drops with increasing number of predictors when using independent normal priors. 
+
+56 Riha et al. 
+
+E.7 Illustrative example: Part 3. Out-of-sample predictive performance for different true 𝑅 2 and correlation 𝜌 = 0.9N   
+
+> or
+> ma
+> l
+> p r i
+> o
+> r
+> R2D2p
+> rior
+
+True 𝑅 2 = 0 
+
+0 10 20 30 
+
+-154 
+
+-150 
+
+-146    
+
+> elpd test  (on elpd loo  scale)
+> N
+> o
+> rm a
+> l
+> p r i
+> o
+> r
+> R
+> 2
+> D2p
+> ri
+> or
+
+True 𝑅 2 = 0.5 
+
+0 10 20 30 
+
+-156 
+
+-152 
+
+-148 
+
+-144 
+
+Number of predictors  
+
+> N
+> o
+> r ma
+> l p
+> r i o r
+> R
+> 2
+> D
+> 2
+> p
+> ri
+> o
+> r
+
+True 𝑅 2 = 0.8 
+
+0 10 20 30 
+
+-160 
+
+-155 
+
+-150 
+
+-145 
+
+(a) 𝑝 = 30 N    
+
+> o
+> r
+> ma
+> l
+> p
+> r
+> io
+> r
+> R2D2prior
+
+True 𝑅 2 = 0
+
+0 25 50 75 100 
+
+-190 
+
+-180 
+
+-170 
+
+-160 
+
+-150   
+
+> elpd test (on elpd loo  scale)
+> N
+> o
+> r
+> ma
+> l
+> pr
+> io r
+> R2D2prior
+
+True 𝑅 2 = 0.5
+
+0 25 50 75 100 
+
+-190 
+
+-180 
+
+-170 
+
+-160 
+
+-150 
+
+Number of predictors     
+
+> Nor m a
+> l
+> pr
+> ior
+> R2
+> D2
+> pri
+> or
+
+True 𝑅 2 = 0.8
+
+0 25 50 75 100 
+
+-190 
+
+-180 
+
+-170 
+
+-160 
+
+-150 
+
+(b) 𝑝 = 100 
+
+Figure 20. Illustrative example: Part 3. We compare out-of-sample predictive performance ( elpd test ) with normal priors or an R2D2 prior with true 𝑅 2 ∈ { 0, 0.5, 0.8} (columns). The subfigures show results for a DGP with 𝑝 ∈ { 30 , 100 }. Results are averaged over 500 repetitions and each based on 100 observations with correlated predictors with 𝜌 = 0.9 and independent test data with 𝑛 test = 2000. Results are on elpd loo scale and a dotted line indicates a difference of 4 to the highest performing model across number of predictors. The R2D2 prior allows to increase model complexity up to the largest model without declining test performance while it declines with increasing number of predictors when using independent normal priors. 
+
+57 To select or not to select 
+
+E.8 Illustrative example: Part 3. Selected model sizes with different prior specification 𝜌 = 0 𝜌 = 0.5 𝜌 = 0.9           
+
+> True  𝑅 2 = 0 True  𝑅 2 = 0.2 True  𝑅 2 = 0.5 True  𝑅 2 = 0.8
+> 010 20 30 010 20 30 010 20 30
+> Normal prior
+> R2D2 prior
+> Normal prior
+> R2D2 prior
+> Normal prior
+> R2D2 prior
+> Normal prior
+> R2D2 prior
+> Selected number of predictors
+
+Figure 21. Illustrative example: Part 3. Adding covariates in linear regression. We compare selected model sizes across 100 repetitions when using max  elpd loo 
+
+ as a selection rule. With independent normal priors, model sizes tend to be smaller than with R2D2 prior and more concentrated across repetitions. With R2D2 prior, the results are more varied across the range of model sizes. We can also select smaller models, especially if true 𝑅 2 is small and correlation 𝜌 is high, but we tend to select larger models, especially when 𝑅 2 ≠ 0 and 𝜌 ∈ { 0, 0.5}.
+
+# F Experiments 
+
+F.1 Experiment 2: Forward variable selection 
+
+58 Riha et al. Normal prior R2D2 prior projpred                  
+
+> n = 100  n = 200
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> -30
+> -20
+> -10
+> 0
+> -30
+> -20
+> -10
+> 0
+> Model size
+> elpd test  (relative to reference, on elpd loo  scale)
+
+(a) Block correlation 𝜌 = 0Normal prior R2D2 prior projpred                  
+
+> n = 100  n = 200
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> -30
+> -20
+> -10
+> 0
+> -30
+> -20
+> -10
+> 0
+> Model size
+> elpd test (relative to reference, on elpd loo scale)
+
+(b) Block correlation 𝜌 = 0.9
+
+Figure 22. Experiment 2: Forward selection. elpd test (average: thicker line, repetitions: thinner lines) with 𝑛 test = 2000 for forward search with (1) independent normal priors, (2) R2D2 prior and (3) projection predictive selection via projpred (columns), excluding the intercept-only model. Training data is generated using 𝑝 = 50, true 𝑅 2 = 0.5, 𝑛 ∈ { 100 , 200 } (rows) and correlation 
+
+𝜌 ∈ { 0, 0.9} (subfigures (a) and (b)). We observe larger variation across repetitions when using independent normal priors. Models with R2D2 prior reach reference model performance for 
+
+𝑝 = 50, while elpd test remains clearly below with normal priors. 
+
+59 To select or not to select 
+
+F.1.1 Out-of-sample performance with data generated with equally weakly relevant predictors N                         
+
+> o
+> r
+> m
+> a
+> l
+> p
+> r
+> i
+> o
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> o
+> r
+> projpred
+> N
+> o
+> r
+> m
+> a
+> l
+> p r
+> io
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> o
+> r
+> p
+> r
+> oj
+> p
+> red
+> N
+> o
+> r
+> m
+> a
+> l
+> p
+> r
+> i
+> o
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> o
+> r
+> projpred
+> N
+> o
+> rm
+> a
+> l
+> pri
+> o
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> or
+> proj
+> pred
+> N
+> o
+> r
+> mal
+> pr
+> i
+> o
+> r
+> R
+> 2
+> D
+> 2
+> p
+> r
+> ior
+> pro
+> jpred
+> No
+> r
+> m
+> a
+> l
+> p
+> rior
+> R
+> 2
+> D
+> 2
+> p
+> r
+> i
+> or
+> pro
+> jpred
+
+𝜌 = 0 𝜌 = 0.5 𝜌 = 0.9
+
+> n = 100  n = 200
+
+0 10 20 30 40 50 0 10 20 30 40 50 0 10 20 30 40 50 
+
+-50 
+
+-40 
+
+-30 
+
+-20 
+
+-10 
+
+0
+
+-50 
+
+-40 
+
+-30 
+
+-20 
+
+-10 
+
+0
+
+Model size 
+
+> elpd test  (relative to reference, on elpd loo  scale)
+
+Figure 23. Experiment 2: Forward selection. Predictive performance on independent test data (elpd test ) with 𝑛 test = 2000 on elpd loo scale, relative to the reference model and averaged over 100 repetitions. We compare forward search with (1) independent normal priors, (2) R2D2 prior and (3) projection predictive inference via projpred . We show results for 𝑛 ∈ { 100 , 200 } (rows) and 
+
+𝑝 = 50 equally weakly relevant covariates with correlation 𝜌 ∈ { 0, 0.5, 0.9} (columns), excluding the intercept-only model. True 𝑅 2 = 0.5 and a dotted line points out a difference of 4 relative to the best-performing model. Forward search with R2D2 prior consistently reaches projpred -level performance, while models with independent normal priors do not in most cases, unless 𝜌 = 0and 𝑛 = 200 and model size is large or 𝜌 = 0.9 and 𝑛 = 100 and model size is small. 
+
+60 Riha et al. Normal prior R2D2 prior projpred                  
+
+> n = 100  n = 200
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> -50
+> -40
+> -30
+> -20
+> -10
+> 0
+> -50
+> -40
+> -30
+> -20
+> -10
+> 0
+> Model size
+> elpd test (relative to reference, on elpd loo  scale)
+
+(a) Correlation 𝜌 = 0Normal prior R2D2 prior projpred                  
+
+> n = 100  n = 200
+> 010 20 30 40 50 010 20 30 40 50 010 20 30 40 50
+> -20
+> -15
+> -10
+> -5
+> 0
+> -20
+> -15
+> -10
+> -5
+> 0
+> Model size
+> elpd test  (relative to reference, on elpd loo  scale)
+
+(b) Correlation 𝜌 = 0.9
+
+Figure 24. Experiment 2: Forward selection. elpd test (average: thicker line, repetitions: thinner lines) with 𝑛 test = 2000 on elpd loo scale, relative to the reference model. We compare forward search with (1) independent normal priors, (2) R2D2 prior and (3) projection predictive inference via projpred (columns). We show results with 𝑛 ∈ { 100 , 200 } (rows) and 𝑝 = 50 equally weakly relevant covariates with correlation 𝜌 ∈ { 0, 0.9} and true 𝑅 2 = 0.5, excluding the intercept-only model. Note the different range of values on the 𝑦 -axis for different correlation. Variation across repetitions is larger for 𝜌 = 0 and overall largest for forward search with independent normal priors. 
+
+61 To select or not to select 
+
+F.2 Experiment 3: Increasing the complexity of nonlinear models 
+
+F.2.1 Considered nonlinear modelling approaches 
+
+We assume 𝑦 𝑖 ∼ normal   𝑓 (𝑥 𝑖 ), 𝜎 2 with 𝑖 = 1, · · · , 𝑛 and a-priori 𝛽 𝑗 ∼ normal (0, 1)
+
+with 𝑗 = 0, · · · 19. We compare five modelling approaches: 
+
+• Polynomial regression with degree 𝑘 , that is, 𝑓 (𝑥 𝑖 ) = Í𝑘 𝑗 =0 𝛽 𝑗 𝑥 𝑗 𝑖 . We consider (1) raw polynomial regression, (2) orthogonal polynomials, where we first obtain orthonormalised columns 
+
+𝑏 𝑗 (𝑥 ) from the raw components {1, 𝑥, 𝑥 2, · · · , 𝑥 𝑘 } such that Í𝑛 𝑖 =1 𝑏 𝑗 (𝑥 𝑖 )𝑏 𝑗 ′ (𝑥 𝑖 ) =
+
+0 for 𝑗 ≠ 𝑗 ′ and then 𝑓 (𝑥 𝑖 ) = Í𝑘 𝑗 =0 𝛽 𝑗 𝑏 𝑗 (𝑥 𝑖 ) (Kennedy and Gentle, 1980). 
+
+• Thin plate spline (TPS) regression (Wood, 2003; Hastie et al., 2009; Wood, 2017; Wood, 2025) with rank 𝑘 , that is, 𝑓 (𝑥 𝑖 ) = Í𝑞 𝑗 =1 𝛽 𝑗 𝜈 𝑗 (𝑥 𝑖 ) + Í𝑟 𝑗 =1 𝑢 𝑗 𝜔 𝑗 (𝑥 𝑖 ) where 𝜈 𝑗 
+
+are the non-penalised polynomial components (here: 𝜈 1 (𝑥 𝑖 ) = 1 and 𝜈 2 (𝑥 𝑖 ) = 𝑥 𝑖 )and 𝜔 𝑗 form the penalised basis. We use mgcv::s() (Wood, 2003; Wood, 2017) in brms::brm() (B¨ urkner, 2017). Smoothness is controlled by penalising 𝑢 which corresponds to a prior 𝑢 | 𝜎 𝑠 ∼ normal (0, 𝜎 2 
+
+> 𝑠
+
+𝑆 −1) with 𝑟 × 𝑟 penalty matrix 𝑆 . We consider (3) TPS with 𝜎 𝑠 = ∞ (i.e., no penalisation, fixed degrees of freedom), and (4) TPS with prior for 𝜎 𝑠 ∼ Student-t + (3, 0, 2.5) (i.e., non-fixed penalisation). 
+
+• Hilbert space approximated Gaussian process regression (HSGP, Solin and S ¨arkk ¨a, 2020; Riutort-Mayol et al., 2022) as introduced before in Section 4.3, that is, 
+
+𝑓 (𝑥 𝑖 ) ≈ 
+
+> 𝑘
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑆 𝜃 
+
+√︁ 
+
+𝜆 𝑗 
+
+ 12
+
+𝜙 𝑗 (𝑥 𝑖 ) 𝛽 𝑗 with 𝛽 𝑗 ∼ normal (0, 1), (54) and eigenvectors 𝜙 𝑗 and eigenvalues 𝜆 𝑗 of the covariance operator of the kernel. We assume ℓ ∼ InvGamma (2, 1), 𝜎 2 ∼ InvGamma (2, 1) and use the HSGP implementation in brms (B¨ urkner, 2017). 
+
+62 Riha et al. 
+
+F.2.2 Observed data versus posterior predictions k = 5  k = 10  k = 12  k = 15  k = 20                   
+
+> -2 02-2 02-2 02-2 02-2 02-2 02
+> -2
+> 0
+> 2
+> -2
+> 0
+> 2
+> -2
+> 0
+> 2
+> -2
+> 0
+> 2
+> -2
+> 0
+> 2
+> x
+> y
+> Polynomial (raw)
+> Polynomial (raw, init=0.1)
+> Polynomial (orthogonal)
+> Thin plate splines (fixed df)
+> Thin plate splines
+> HSGP
+> Figure 25.
+
+Experiment 3: Increasing the complexity of nonlinear models. Observed data (𝑛 = 100) and posterior results for six different modelling approaches (columns) with increasing degree/number of basis functions 𝑘 ∈ { 5, 10 , 12 , 15 , 20 } (rows). We compare a raw polynomial (1) without and (2) with improved initial value, (3) an orthogonal polynomial, as well as thin plate splines (4) with fixed degrees of freedom and (5) with non-fixed penalisation, and (6) an HSGP. The data is generated similar to the drowning data set used, for example, by Gelman et al. (2015). 
+
+63 To select or not to select 
+
+F.2.3 Basis values for different modelling approaches TPS HSGP            
+
+> Poly (raw) Poly (orthogonal)
+> -2 02-2 02
+> -0.1
+> 0.0
+> 0.1
+> -0.5
+> 0.0
+> 0.5
+> -200
+> -100
+> 0
+> 100
+> 200
+> -1
+> 0
+> 1
+> x
+> Basis value
+> Basis 12345
+
+Figure 26. Experiment 3: Increasing the complexity of nonlinear models. We compare basis values of the first five bases for a raw polynomial (Poly (raw)), an orthogonal polynomial (Poly (orthogonal)), as well as thin plate splines (TPS) and HSGPs. The range of the basis values for the raw polynomial is much larger and increases much faster with more bases than the basis values for the other modelling approaches (compare y-axis scales). 
+
+64 Riha et al. 
+
+F.2.4 Test performance for 𝑛 ∈ { 20 , 50 , 100 }n = 20       
+
+> 510 15
+> -22
+> -24
+> -26
+> -28
+> -30
+> n = 50
+> 510 15
+> -60
+> -57
+> -54
+> -51
+> -48
+> elpd test  (on elpd loo  scale)
+> Polynomial (raw)
+> Polynomial (orthogonal)
+> Thin plate splines (fixed df)
+> Thin plate splines
+> HSGP
+> n = 100
+> 510 15
+> -120
+> -115
+> -110
+> -105
+> -100
+> -95
+> Degree/number of basis functions
+
+Figure 27. Experiment 3: Increasing the complexity of nonlinear models. For raw and orthogonal polynomials, elpd test drops at higher degrees. For 𝑛 = 20, also non-penalised TPS (with fixed degrees of freedom) deteriorate for higher degrees. Only penalised TPS and HSGP remain stable as 𝑘 increases. 
+
+65 To select or not to select 
+
+F.2.5 Computational issues for the different modelling approaches n = 20  n = 100                     
+
+> 012345678910 11 12 13 14 15 16 17 18 19
+> 0
+> 500
+> 1000
+> 1500
+> 0
+> 500
+> 1000
+> 1500
+> degree/number of basis functions
+> Divergent transitions
+> Polynomial (raw)
+> Polynomial (raw, init=0.1)
+> Polynomial (orthogonal)
+> Thin plate splines (fixed df)
+> Thin plate splines
+> HSGP
+> Figure 28.
+
+Experiment 3: Increasing the complexity of nonlinear models. Number of divergent transitions for each of the modelling approaches averaged across repetitions for each condition. We run four chains with 1000 iterations. The raw polynomials have large numbers of divergent transitions from degree 11 and higher. Better initialisation or orthogonalisation seems to resolve issues with divergent transitions, but, as illustrated in Figure 27, the models still exhibit sharp drops in predictive performance on independent test data after some level of model complexity. 
+
+66 Riha et al. 
+
+F.3 Experiment 4: Treatment Effect 
+
+F.3.1 Proofs for the Treatment Effect Experiment 
+
+We provide formal derivations for the results stated in Section 5.4. Consider the model in Equation (30) in vector form: 𝑦 = 𝛼𝑧 + 𝑋 𝛽 + 𝜀 with 𝜀 ∼ normal (0, 𝜎 2 𝐼 𝑛 ), and independent priors 𝛼 ∼ normal (0, 𝜏 2
+
+> 𝛼
+
+) and 𝛽 ∼ normal (0, Σ𝛽 ).The following assumptions are maintained throughout all propositions in this section unless stated otherwise. 
+
+Maintained assumptions. 
+
+(A1) Well-specified model. The data-generating process is 𝑦 = 𝛼 ∗𝑧 + 𝑋 𝛽 ∗ + 𝜀 with 
+
+𝜀 ∼ normal (0, 𝜎 2 𝐼 𝑛 ), and the model is the normal linear model in Equation (30) .In particular, the likelihood is correctly specified. (A2) Randomised treatment. Treatment assignments 𝑧 𝑖 iid 
+
+∼ Bernoulli (0.5) indepen-dently of 𝑋 and 𝜀 .(A3) Covariate regularity. The columns of 𝑋 ∈ R𝑛 × 𝑝 are drawn independently from a sub-Gaussian distribution with zero mean and unit variance (the standard normal is the leading case). In particular, columns of 𝑋 are independent of 𝑧 .(A4) Gaussian conditional priors. Conditional on all hyperparameters, 𝛼 ∼ normal (0, 𝜏 2
+
+> 𝛼
+
+)
+
+and 𝛽 ∼ normal (0, Σ𝛽 ) independently, with Σ𝛽 positive definite. All derivations condition on 𝜎 2.(A5) Rank condition. rank (𝑋 ) = min (𝑛, 𝑝 ) almost surely, which holds with probability one under Assumption (A3) (Vershynin, 2018). 
+
+Proposition F.3.1 (Marginal posterior variance of 𝛼 ). The conditional posterior (𝛼, 𝛽 ) | 
+
+𝑦, 𝑋, 𝑧, 𝜎 2 is multivariate normal. The marginal posterior variance of 𝛼 is 
+
+Var (𝛼 | 𝑦, 𝑋, 𝑧, 𝜎 2) =
+
+ 1
+
+𝜎 2 𝑧 𝑇 (𝐼 𝑛 − 𝐻 𝛽 )𝑧 + 𝜏 −2
+
+> 𝛼
+
+ −1
+
+, (55) 
+
+where 𝐻 𝛽 = 𝑋 (𝑋 𝑇 𝑋 + 𝜎 2Σ−1 
+
+> 𝛽
+
+)−1 𝑋 𝑇 , and the posterior mean is 
+
+E[𝛼 | 𝑦, 𝑋, 𝑧, 𝜎 2] = Var (𝛼 | 𝑦, 𝑋, 𝑧, 𝜎 2) · 1
+
+𝜎 2 𝑧 𝑇 (𝐼 𝑛 − 𝐻 𝛽 )𝑦. (56) 
+
+Proof. Write 𝑦 ∼ normal (𝑊𝜗, 𝜎 2 𝐼 𝑛 ) with 𝑊 = [𝑧 𝑋 ] ∈ R𝑛 × ( 𝑝 +1) and 𝜗 = (𝛼, 𝛽 𝑇 )𝑇 .The prior is 𝜗 ∼ normal (0, Σ𝜗 ) with Σ𝜗 = diag (𝜏 2
+
+> 𝛼
+
+, Σ𝛽 ). The posterior precision matrix is 
+
+Λ = 𝜎 −2𝑊 𝑇 𝑊 + Σ−1 
+
+> 𝜗
+
+=
+
+𝜎 −2𝑧 𝑇 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+𝜎 −2𝑧 𝑇 𝑋 𝜎 −2 𝑋 𝑇 𝑧 𝜎 −2 𝑋 𝑇 𝑋 + Σ−1
+
+> 𝛽
+
+
+
+. (57) 
+
+67 To select or not to select 
+
+Denote the blocks as Λ11 = 𝜎 −2𝑧 𝑇 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+, Λ12 = 𝜎 −2𝑧 𝑇 𝑋 , Λ22 = 𝜎 −2 𝑋 𝑇 𝑋 + Σ−1 
+
+> 𝛽
+
+. By the Schur complement formula for block matrices, the (1, 1) entry of Λ−1 is Var (𝛼 | ·) =
+
+
+
+Λ11 − Λ12 Λ−122 Λ21 
+
+ −1
+
+. (58) Computing the off-diagonal product: 
+
+Λ12 Λ−122 Λ21 = 𝜎 −4𝑧 𝑇 𝑋 
+
+
+
+𝜎 −2 𝑋 𝑇 𝑋 + Σ−1
+
+> 𝛽
+
+ −1
+
+𝑋 𝑇 𝑧 
+
+= 𝜎 −4𝑧 𝑇 𝑋 · 𝜎 2 
+
+𝑋 𝑇 𝑋 + 𝜎 2Σ−1
+
+> 𝛽
+
+ −1
+
+𝑋 𝑇 𝑧 
+
+= 𝜎 −2𝑧 𝑇 𝑋 
+
+
+
+𝑋 𝑇 𝑋 + 𝜎 2Σ−1
+
+> 𝛽
+
+ −1
+
+𝑋 𝑇 
+
+| {z }
+
+> =𝐻 𝛽
+
+𝑧. (59) Substituting into the Schur complement: 
+
+Λ11 − Λ12 Λ−122 Λ21 = 𝜎 −2𝑧 𝑇 𝑧 − 𝜎 −2𝑧 𝑇 𝐻 𝛽 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+= 𝜎 −2𝑧 𝑇 (𝐼 𝑛 − 𝐻 𝛽 )𝑧 + 𝜏 −2 
+
+> 𝛼
+
+. (60) For the posterior mean, the standard formula for partitioned normal posteriors gives: 
+
+E[𝛼 | ·] = Var (𝛼 | ·) 𝜎 −2𝑧 𝑇 𝑦 − Λ12 Λ−122 · 𝜎 −2 𝑋 𝑇 𝑦 
+
+= Var (𝛼 | ·) · 𝜎 −2 𝑧 𝑇 𝑦 − 𝑧 𝑇 𝐻 𝛽 𝑦 
+
+= Var (𝛼 | ·) · 𝜎 −2𝑧 𝑇 (𝐼 𝑛 − 𝐻 𝛽 )𝑦. □
+
+Throughout the remainder of this section we use the following notation: 𝐻 𝛽 =
+
+𝑋 (𝑋 𝑇 𝑋 + 𝜎 2Σ−1 
+
+> 𝛽
+
+)−1 𝑋 𝑇 , 𝑑 𝑧 = 𝜎 −2𝑧 𝑇 (𝐼 𝑛 − 𝐻 𝛽 )𝑧 , and 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+). We write 
+
+𝜈 1, . . . , 𝜈 min (𝑛, 𝑝 ) for the non-zero eigenvalues of 𝑋 𝑇 𝑋 with associated left singular vectors 𝑢 1, . . . , 𝑢 min (𝑛, 𝑝 ) , and 𝑃 𝑋 for the projection onto col (𝑋 ). The statements that follow consider two regimes: (i) Finite-sample : 𝑛 fixed, 𝑝 increasing towards 𝑛 — analysed non-asymptotically via exact identities, monotonicity in 𝑝 , and explicit finite-𝑛 bounds; (ii) Proportional : 𝑝 = ⌊𝛾𝑛 ⌋ with 𝛾 ∈ ( 0, 1), 𝑛 → ∞ — where the random-matrix 
+
+Θ/𝑜 𝑝 rates are well defined. 
+
+Lemma F.3.2 (Basis-free identity for the residualised data precision) . Under Assump-tions (A2) and (A4), 
+
+E[𝑑 𝑧 | 𝑋, Σ𝛽 ] = 14𝜎 2
+
+  𝑛 − tr (𝐻 𝛽 ) + 1𝑇 𝑛 (𝐼 𝑛 − 𝐻 𝛽 )1𝑛 
+
+, (61) 
+
+with tr (𝐻 𝛽 ) ∈ [ 0, 𝑝 ) strictly whenever Σ−1 
+
+> 𝛽
+
+≻ 0.
+
+68 Riha et al. 
+
+Proof. By Assumption (A2), 𝑧 𝑖 ∼ Bernoulli (0.5) independently, so E[𝑧 ] = 12 1𝑛 and Cov (𝑧 ) = 14 𝐼 𝑛 . Applying E[𝑧 𝑇 𝐴𝑧 ] = E[𝑧 ]𝑇 𝐴 E[𝑧 ] + tr ( 𝐴 · Cov (𝑧 )) with 𝐴 = 𝐼 𝑛 − 𝐻 𝛽 
+
+yields (61) . For any Σ𝛽 ≻ 0, 𝐻 𝛽 = 𝑋 (𝑋 𝑇 𝑋 + 𝜎 2Σ−1 
+
+> 𝛽
+
+)−1 𝑋 𝑇 satisfies 0 ⪯ 𝐻 𝛽 ≺ 𝑃 𝑋 (the strict upper bound follows from 𝜎 2Σ−1 
+
+> 𝛽
+
+≻ 0), so all non-zero eigenvalues of 𝐻 𝛽 lie in 
+
+[0, 1) and tr (𝐻 𝛽 ) < 𝑝 strictly. The argument is basis-free and does not require Σ−1 
+
+> 𝛽
+
+and 
+
+𝑋 𝑇 𝑋 to commute. □
+
+Finite-sample regime: 𝑛 fixed, 𝑝 → 𝑛 
+
+The propositions in this subsection characterise E[𝑑 𝑧 | 𝑋, 𝜙 ], the prior precision 𝜏 −2 
+
+> 𝛼
+
+, the shrinkage factor 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+), the posterior precision 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+, and the posterior variance (𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+)−1 in regime (i). 
+
+Proposition F.3.3 (Normal prior, regime (i)) . Suppose Σ𝛽 = 𝐼 𝑝 and 𝜏 −2 
+
+> 𝛼
+
+= O( 1). The eigendecomposition of 𝐻 𝛽 gives 
+
+E[𝑑 𝑧 | 𝑋 ] = 14𝜎 2
+
+> 𝑝
+
+∑︁ 
+
+> 𝑗 =1
+
+𝜎 2
+
+𝜈 𝑗 + 𝜎 2
+
+1 + ( 𝑢 𝑇 𝑗 1𝑛 )2 + 𝑛 − 𝑝 
+
+4𝜎 2 + ∥( 𝐼 𝑛 − 𝑃 𝑋 )1𝑛 ∥2
+
+4𝜎 2 . (62) 
+
+As 𝑝 → 𝑛 , the second and third terms vanish but the regularisation sum (first term) is strictly positive: the ridge penalty 𝜎 2 𝐼 𝑝 keeps 𝐻 𝛽 ≺ 𝐼 𝑛 even at 𝑝 = 𝑛 . Hence (a) E[𝑑 𝑧 | 𝑋 ] is strictly positive and bounded above by 𝑛 /( 2𝜎 2);(b) the posterior precision 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+lies in (𝜏 −2 
+
+> 𝛼
+
+, ∞) bounded; (c) 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+) lies in (0, 1) bounded away from both endpoints; (d) the posterior variance (𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+)−1 lies in (0, 𝜏 2
+
+> 𝛼
+
+) without attaining 𝜏 2
+
+> 𝛼
+
+.Proof. For Σ𝛽 = 𝐼 𝑝 , Σ−1 
+
+> 𝛽
+
+= 𝐼 𝑝 commutes with 𝑋 𝑇 𝑋 , so 𝐻 𝛽 is co-diagonalisable with 
+
+𝑋 𝑇 𝑋 and its non-zero eigenvalues equal 𝜈 𝑗 /( 𝜈 𝑗 + 𝜎 2). Hence tr (𝐻 𝛽 ) = Í 𝑗 𝜈 𝑗 /( 𝜈 𝑗 + 𝜎 2)
+
+and 1𝑇 𝑛 (𝐼 𝑛 − 𝐻 𝛽 )1𝑛 = Í 𝑗 [𝜎 2/( 𝜈 𝑗 + 𝜎 2)] ( 𝑢 𝑇 𝑗 1𝑛 )2 + ∥( 𝐼 𝑛 − 𝑃 𝑋 )1𝑛 ∥2. Substituting into Lemma F.3.2 gives (62) . Each summand 𝜎 2/( 𝜈 𝑗 + 𝜎 2) lies in (0, 1] and is strictly positive whenever 𝜈 𝑗 < ∞, so the regularisation sum is > 0 for every 𝑝 ≤ 𝑛 . As 
+
+𝑝 → 𝑛 , (𝑛 − 𝑝 ) → 0 and ∥( 𝐼 𝑛 − 𝑃 𝑋 )1𝑛 ∥2 → 0, so E[𝑑 𝑧 | 𝑋 ] > 0 throughout. The upper bound E[𝑑 𝑧 | 𝑋 ] ≤ 𝑛 /( 2𝜎 2) follows from tr (𝐻 𝛽 ) ≥ 0 (so 𝑛 − tr (𝐻 𝛽 ) ≤ 𝑛 ) and 
+
+1𝑇 𝑛 (𝐼 𝑛 − 𝐻 𝛽 )1𝑛 ≤ 1𝑇 𝑛 1𝑛 = 𝑛 (as 𝐻 𝛽 ⪰ 0). The conclusions on posterior precision, 𝑠 , and posterior variance follow by direct substitution into 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+) and (𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+)−1,using 𝜏 −2 
+
+> 𝛼
+
+= O( 1). □
+
+Proposition F.3.4 (Joint R2D2 prior, regime (i)) . Suppose (𝛼, 𝛽 ) share an R2D2 prior with weights 𝜙 = (𝜙 𝛼 , 𝜙 1, . . . , 𝜙 𝑝 ) ∼ Dirichlet (𝑎, . . . , 𝑎 ) of dimension 𝑝 + 1 for some 𝑎 > 0,so 𝜏 2 
+
+> 𝛼
+
+= 𝜏 2𝜙 𝛼 and 𝛽 𝑗 ∼ normal (0, 𝜏 2𝜙 𝑗 ). By Dirichlet aggregation, 𝜙 𝛼 ∼ Beta (𝑎, 𝑝𝑎 ).Then: 
+
+69 To select or not to select 
+
+(a) the conditional prior precision 𝜏 −2 
+
+> 𝛼
+
+= 1/( 𝜏 2𝜙 𝛼 ) grows linearly in 𝑝 : for 𝑎 > 1, the exact Beta inverse moment gives E[𝜏 −2 
+
+> 𝛼
+
+] = (𝑎 ( 𝑝 + 1) − 1)/[( 𝑎 − 1)𝜏 2] = Θ ( 𝑝 /𝜏 2);for any 𝑎 > 0, the in-probability statement 𝜏 −2 
+
+> 𝛼
+
+= Θ 𝑝 ( 𝑝 /𝜏 2) holds (for 𝑎 ≤ 1 the moment E[𝜏 −2 
+
+> 𝛼
+
+] diverges due to mass near 𝜙 𝛼 = 0, but the in-probability statement is unaffected); (b) conditional on 𝜙 , the prior on 𝛽 provides ridge-type regularisation with effec-tive per-coordinate penalty 𝜎 2/( 𝜏 2𝜙 𝑗 ), so the eigenvalues of 𝐻 𝛽 = 𝑋 (𝑋 𝑇 𝑋 +
+
+𝜎 2diag (1/( 𝜏 2𝜙 𝑗 ))) −1 𝑋 𝑇 are strictly below 1, and E[𝑑 𝑧 | 𝑋, 𝜙 ] is strictly positive and bounded as 𝑝 → 𝑛 ;(c) the shrinkage factor 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+) is stochastically decreasing in 𝑝 at stochastic scale 𝑠 = Θ 𝑝 (1/𝑝 ) (no limit is taken at fixed 𝑛 ): quantitatively, 1 − 𝑠 ≥
+
+𝑐 𝑝 /( 𝑐 𝑝 + 𝑑 𝑧, max ), where 𝑐 = Θ 𝑝 (1/𝜏 2) and 𝑑 𝑧, max = sup 𝑝 ≤𝑛 E[𝑑 𝑧 | 𝑋, 𝜙 ] < ∞,so 𝑠 attains its strictly positive minimum at 𝑝 = 𝑛 ;(d) the posterior precision 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+= Θ 𝑝 ( 𝑝 ) is dominated by the prior contribution, so the posterior variance is (𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+)−1 = Θ 𝑝 (1/𝑝 ). The posterior mean 
+
+𝑠 ˆ𝛼 OLS 𝛽 is centred at a fraction 𝑠 of ˆ𝛼 OLS 𝛽 that decreases stochastically in 𝑝 . In the proportional regime this fraction stays bounded away from 1 in probability (Proposition F.3.8), leaving a non-vanishing multiplicative bias rather than a collapse to zero. Proof. For (a), E[𝜙 𝛼 ] = 1/( 𝑝 + 1) and, for 𝑎 > 1, the standard Beta inverse moment 
+
+E[1/𝜙 𝛼 ] = (𝑎 + 𝑝𝑎 − 1)/( 𝑎 − 1) gives E[𝜏 −2 
+
+> 𝛼
+
+] = (𝑎 ( 𝑝 + 1) − 1)/[( 𝑎 − 1)𝜏 2]. For any 
+
+𝑎 > 0, Var (𝜙 𝛼 ) = 𝑝 /[( 𝑝 + 1)2 ( 𝑝𝑎 + 𝑎 + 1)] , so the squared coefficient of variation is Var (𝜙 𝛼 )/ E[𝜙 𝛼 ]2 = 𝑝 /( 𝑝𝑎 + 𝑎 + 1) → 1/𝑎 , a positive constant. The weight 𝜙 𝛼 therefore does not concentrate at its mean for fixed 𝑎 . Instead ( 𝑝 + 1)𝜙 𝛼 → Gamma (𝑎, 𝑎 )
+
+in distribution, a non-degenerate positive limit, so ( 𝑝 + 1)𝜙 𝛼 = Θ 𝑝 (1) and 𝜏 −2 
+
+> 𝛼
+
+=
+
+1/( 𝜏 2𝜙 𝛼 ) = Θ 𝑝 ( 𝑝 /𝜏 2). The order statement holds for every 𝑎 > 0, reflecting that the limit is bounded away from 0 and ∞ in probability rather than concentration of 𝜙 𝛼 at 1/( 𝑝 + 1). For (b), conditional on any draw of 𝜙 with 𝜙 𝑗 > 0, Σ−1 
+
+> 𝛽
+
+= diag (1/( 𝜏 2𝜙 𝑗 )) ≻ 
+
+0. Since Σ−1 
+
+> 𝛽
+
+is heterogeneous, it does not commute with the dense 𝑋 𝑇 𝑋 , so 𝐻 𝛽 
+
+does not share the eigenbasis of 𝑋 𝑇 𝑋 at finite 𝑝 and the per-coordinate formula 
+
+𝜈 𝑗 /( 𝜈 𝑗 + 𝜎 2/( 𝜏 2𝜙 𝑗 )) is not literally an eigenvalue identity. We use a Weyl-type sandwich (Weyl’s monotonicity inequality for self-adjoint matrices): setting 𝑐 min = min 𝑗 1/( 𝜏 2𝜙 𝑗 )
+
+and 𝑐 max = max 𝑗 1/( 𝜏 2𝜙 𝑗 ), the operator inequality 𝑐 min 𝐼 𝑝 ⪯ Σ−1 
+
+> 𝛽
+
+⪯ 𝑐 max 𝐼 𝑝 implies 
+
+𝜈 𝑗 
+
+𝜈 𝑗 + 𝜎 2𝑐 max 
+
+≤ 𝜆 𝑗 (𝐻 𝛽 ) ≤ 𝜈 𝑗 
+
+𝜈 𝑗 + 𝜎 2𝑐 min 
+
+( 𝑗 = 1, . . . , 𝑝 ), (63) where 𝜆 𝑗 (𝐻 𝛽 ) are the non-zero eigenvalues of 𝐻 𝛽 in col (𝑋 ) (the remaining 𝑛 − 𝑝 
+
+eigenvalues are 0). Since 𝜎 2𝑐 min > 0, every 𝜆 𝑗 (𝐻 𝛽 ) < 1 strictly, so by Lemma F.3.2 
+
+E[𝑑 𝑧 | 𝑋, 𝜙 ] is strictly positive and bounded as 𝑝 → 𝑛 . For (c) and (d), since 𝑝 ≤ 𝑛 
+
+is bounded and 𝜏 −2 
+
+> 𝛼
+
+is stochastically increasing in 𝑝 (from (a)) while 𝑑 𝑧 is bounded 
+
+70 Riha et al. 
+
+(from (b)), 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+) is stochastically decreasing in 𝑝 . The lower bound 1 − 𝑠 = 𝜏 −2 
+
+> 𝛼
+
+/( 𝜏 −2 
+
+> 𝛼
+
++ 𝑑 𝑧 ) ≥ 𝜏 −2 
+
+> 𝛼
+
+/( 𝜏 −2 
+
+> 𝛼
+
++ 𝑑 𝑧, max ) holds deterministically; substituting 
+
+𝜏 −2 
+
+> 𝛼
+
+= Θ 𝑝 ( 𝑝 /𝜏 2) gives the explicit form 1 − 𝑠 ≥ 𝑐 𝑝 /( 𝑐𝑝 + 𝑑 𝑧, max ) with 𝑐 = Θ (1/𝜏 2).The posterior precision and variance rates follow by direct substitution. □
+
+Proposition F.3.5 (Heavy-shrinkage tightening for the joint R2D2 prior) . Under the setting of Proposition F.3.4, suppose the heavy-shrinkage condition 
+
+𝑝 + 1
+
+𝑛 ≫ 𝑅 2
+
+1 − 𝑅 2 (64) 
+
+holds, with 𝑅 2 := 𝜏 2/( 𝜏 2 + 𝜎 2) the implied prior 𝑅 2. Then, provided (64) holds up to a 
+
+log 𝑝 factor (made precise in the proof), 𝐻 𝛽 → 0 in operator norm in probability over 𝜙 ,and Lemma F.3.2 reduces to 
+
+E[𝑑 𝑧 | 𝑋, 𝜙 ] = 𝑛 
+
+2𝜎 2 + 𝑜 𝑝 (𝑛 /𝜎 2). (65) 
+
+Combined with 𝜏 −2 
+
+> 𝛼
+
+= Θ 𝑝 ( 𝑝 /𝜏 2) from Proposition F.3.4 and evaluation at the prior mean E[𝜙 𝛼 ] = 1/( 𝑝 + 1), the shrinkage factor satisfies 
+
+𝑠 ≈ 𝑛𝜏 2
+
+𝑛𝜏 2 + 2𝜎 2 ( 𝑝 + 1) = 𝑛𝑅 2
+
+𝑛𝑅 2 + 2(1 − 𝑅 2)( 𝑝 + 1) . (66) 
+
+The approximation is valid for any (𝑛, 𝑝 ) for which (64) holds; in particular it applies in regime (i) and, by Proposition F.3.8 in Appendix F.3.1, also in regime (ii) at any 
+
+𝛾 ∈ ( 0, 1) for which 𝑅 2 is small enough that (64) is satisfied. Proof. We bound the eigenvalues of 𝐻 𝛽 through the Weyl sandwich (63) rather than through concentration of the Dirichlet weights, which does not hold for fixed 
+
+𝑎 (Proposition F.3.4(a)). With 𝑐 min = min 𝑗 1/( 𝜏 2𝜙 𝑗 ) = 1/( 𝜏 2 max 𝑗 𝜙 𝑗 ), (63) gives 
+
+𝜆 𝑗 (𝐻 𝛽 ) ≤ 𝜈 𝑗 /( 𝜈 𝑗 + 𝜎 2𝑐 min ) for every 𝑗 . For a symmetric Dirichlet of dimension 
+
+𝑝 + 1, the largest weight satisfies max 𝑗 𝜙 𝑗 = Θ 𝑝 (( log 𝑝 )/ 𝑝 ) by standard order-statistics concentration of the Beta marginals, so 𝑐 min = Θ 𝑝 ( 𝑝 /( 𝜏 2 log 𝑝 )) and the effective penalty is 𝜎 2𝑐 min = Θ 𝑝 
+
+ 1−𝑅 2 
+
+> 𝑅 2
+
+· 𝑝  
+
+> log 𝑝
+
+
+
+. Under Assumption (A3), the largest eigenvalue of 
+
+𝑋 𝑇 𝑋 satisfies 𝜈 max ≤ 𝐶𝑛 with high probability for some absolute constant 𝐶 depending only on the sub-Gaussian norm (Vershynin, 2018, Thm. 4.6.1). Hence, when (64) holds up to a log 𝑝 factor, that is ( 𝑝 + 1)/ 𝑛 ≫ (𝑅 2/( 1 − 𝑅 2)) log 𝑝 , the penalty 
+
+𝜎 2𝑐 min dominates 𝜈 max with probability tending to one, so 𝜆 max (𝐻 𝛽 ) = 𝑜 𝑝 (1) and 
+
+𝐻 𝛽 → 0 in operator norm. It follows that tr (𝐻 𝛽 ) ≤ 𝑝 𝜆 max (𝐻 𝛽 ) = 𝑜 𝑝 ( 𝑝 ) = 𝑜 𝑝 (𝑛 )
+
+and 1𝑇 𝑛 𝐻 𝛽 1𝑛 ≤ 𝑛 𝜆 max (𝐻 𝛽 ) = 𝑜 𝑝 (𝑛 ). Substituting into Lemma F.3.2 yields (65) ,since 1𝑇 𝑛 1𝑛 = 𝑛 . For the shrinkage factor, 𝜏 −2 
+
+> 𝛼
+
+= Θ 𝑝 ( 𝑝 /𝜏 2) does not concentrate (Proposition F.3.4(a)), so (66) is obtained by evaluating 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+) at the prior mean E[𝜙 𝛼 ] = 1/( 𝑝 + 1), that is with 𝜏 −2 
+
+> 𝛼
+
+replaced by ( 𝑝 + 1)/ 𝜏 2. This plug-in value is an upper bound on the expected shrinkage, since 𝑠 is concave in 𝜙 𝛼 and Jensen’s inequality gives E[𝑠 (𝜙 𝛼 )] ≤ 𝑠 (E[𝜙 𝛼 ]) . □
+
+71 To select or not to select 
+
+Proposition F.3.6 (Split prior (R2D2 on 𝛽 , independent Normal on 𝛼 ), regime (i)) . Sup-pose 𝛽 𝑗 ∼ normal (0, 𝜏 2𝜙 𝑗 ) with 𝜙 ∼ Dirichlet (𝑎, . . . , 𝑎 ) of dimension 𝑝 , and 𝛼 ∼
+
+normal (0, 𝜏 2
+
+> 𝛼
+
+) independently with 𝜏 −2 
+
+> 𝛼
+
+= O( 1). Then 𝐻 𝛽 has the same form as in Proposition F.3.4 (the 𝛽 -weights here are Dirichlet on the 𝑝 -simplex versus marginals of the ( 𝑝 +1)-simplex there, which leaves the eigenvalue orders unchanged), so the Weyl sandwich (63) keeps E[𝑑 𝑧 | 𝑋, 𝜙 ] strictly positive and bounded as 𝑝 → 𝑛 . Combined with 𝜏 −2 
+
+> 𝛼
+
+= O( 1) fixed: (a) the posterior precision 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+lies in (𝜏 −2 
+
+> 𝛼
+
+, ∞) bounded, 𝑠 is bounded in (0, 1),and the posterior variance is bounded above by 𝜏 2 
+
+> 𝛼
+
+without attaining it; (b) under the heavy-shrinkage condition (64) , the eigenvalue analysis of Proposi-tion F.3.5 applies verbatim and tightens to E[𝑑 𝑧 | 𝑋, 𝜙 ] = 𝑛 /( 2𝜎 2) + 𝑜 𝑝 (𝑛 /𝜎 2),so the posterior precision is Θ(𝑛 /𝜎 2) and the posterior variance attains the parametric rate Θ(𝜎 2/𝑛 ).The posterior mean is centred on ˆ𝛼 OLS 𝛽 , which is unbiased for 𝛼 ∗ up to the 𝑂 𝑝 (√︁ 𝑝 /𝑛 )
+
+confounding term of Proposition F.3.10 (and exactly unbiased in the flat-prior limit); since 𝜏 −2 
+
+> 𝛼
+
+= O( 1) keeps 𝑠 bounded away from 0, 𝑠 < 1 controls essentially only variance, not bias. Proof. 𝐻 𝛽 has the same form as in Proposition F.3.4 (same eigenvalue orders), so the Weyl sandwich (63) gives E[𝑑 𝑧 | 𝑋, 𝜙 ] strictly positive and bounded; the independent prior on 𝛼 keeps 𝜏 −2 
+
+> 𝛼
+
+fixed in 𝑝 . Substitution into 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + O( 1)) yields (a). Part (b) follows from Proposition F.3.5: the heavy-shrinkage substitution Σ−1 
+
+> 𝛽
+
+≈ ( 𝑝 + 1)/ 𝜏 2 · 𝐼 𝑝 
+
+and the eigenvalue-domination argument apply identically because they only use the prior on 𝛽 , not on 𝛼 . □
+
+Proportional asymptotic regime: 𝑝 = ⌊𝛾𝑛 ⌋, 𝑛 → ∞ 
+
+The propositions in this subsection treat the regime 𝑝 = ⌊𝛾𝑛 ⌋ with 𝛾 ∈ ( 0, 1) fixed and 
+
+𝑛 → ∞ , complementing the finite-sample analysis of Appendix F.3.1. The qualitative pathologies of regime (i) become more pronounced: only the joint R2D2 prior produces non-vanishing shrinkage bias. 
+
+Proposition F.3.7 (Normal prior, regime (ii)) . Under the setting of Proposition F.3.3 and Assumption (A3), the empirical spectral distribution of 𝑛 −1 𝑋 𝑇 𝑋 converges to the Marchenko–Pastur law on [( 1 − √𝛾 )2, (1 + √𝛾 )2] (Mar ˇcenko and Pastur, 1967; Bai and Silverstein, 2010), so 𝜈 𝑗 = Θ (𝑛 ) uniformly in 𝑗 and the regularisation sum in (62) 
+
+is 𝑂 ( 𝑝 /𝑛 ) = 𝑂 (𝛾 ). Two terms of (62) are of order 𝑛 : the residual-degrees-of-freedom term (𝑛 − 𝑝 )/( 4𝜎 2) and the treatment-mean term ∥( 𝐼 𝑛 − 𝑃 𝑋 )1𝑛 ∥2/( 4𝜎 2). Because the columns of 𝑋 are mean-zero (no intercept lies in col (𝑋 )), the projection of 1𝑛 onto the random 𝑝 -dimensional column space captures only a 𝑝 /𝑛 fraction of its squared norm: 
+
+∥𝑃 𝑋 1𝑛 ∥2 = 𝑝 + 𝑜 𝑝 (𝑛 ), hence ∥( 𝐼 𝑛 − 𝑃 𝑋 )1𝑛 ∥2 = (1 − 𝛾 )𝑛 + 𝑜 𝑝 (𝑛 ). Both contribute, 
+
+72 Riha et al. 
+
+giving 
+
+E[𝑑 𝑧 | 𝑋 ] = (1 − 𝛾 )𝑛 
+
+2𝜎 2 + 𝑂 𝑝 (1) = Θ (𝑛 /𝜎 2).
+
+Combined with 𝜏 −2 
+
+> 𝛼
+
+= O( 1), 𝑠 → 1 and the posterior is consistent for 𝛼 ∗ for every 
+
+𝛾 ∈ ( 0, 1). The leading (1 − 𝛾 )𝑛 term vanishes as 𝛾 → 1, so the posterior variance degrades from the parametric Θ(1/𝑛 ) rate towards Θ(1) and the Normal prior loses its sample-size advantage over Mbase as 𝛾 → 1.Proof. Substitute 𝜈 𝑗 = Θ (𝑛 ) uniformly into (62) ; the regularisation sum is 𝑂 ( 𝑝 /𝑛 ) =
+
+𝑂 (𝛾 ) since each summand is 𝑂 (1/𝑛 ) and there are 𝑝 of them. The two remaining terms are (𝑛 − 𝑝 )/( 4𝜎 2) = (1 − 𝛾 )𝑛 /( 4𝜎 2) and ∥( 𝐼 𝑛 − 𝑃 𝑋 )1𝑛 ∥2/( 4𝜎 2); for a fixed vector and a uniformly random 𝑝 -dimensional subspace, E [∥] 𝑃 𝑋 1𝑛 ∥2 = ( 𝑝 /𝑛 )∥ 1𝑛 ∥2 = 𝑝 , so the latter equals (1 − 𝛾 )𝑛 /( 4𝜎 2) + 𝑜 𝑝 (𝑛 /𝜎 2). Summing the two Θ(𝑛 ) contributions gives the leading term (1 − 𝛾 )𝑛 /( 2𝜎 2). □
+
+Proposition F.3.8 (Joint R2D2 prior, regime (ii)) . Under the setting of Proposition F.3.4, in regime (ii): (a) Lemma F.3.2 gives E[𝑑 𝑧 | 𝑋, 𝜙 ] ≥ ( 1 − 𝛾 )𝑛 /( 4𝜎 2) = Θ (𝑛 ), since tr (𝐻 𝛽 ) < 𝑝 
+
+deterministically; combining with the upper bound E[𝑑 𝑧 | 𝑋, 𝜙 ] ≤ 𝑛 /( 2𝜎 2) =Θ(𝑛 ) yields E[𝑑 𝑧 | 𝑋, 𝜙 ] = Θ (𝑛 );(b) 𝜏 −2 
+
+> 𝛼
+
+= Θ (𝑛 ) via Proposition F.3.4(a) with 𝑝 = Θ (𝑛 );(c) hence the shrinkage factor is bounded away from both endpoints in probability. Both 𝑛 −1𝑑 𝑧 and 𝑛 −1𝜏 −2 
+
+> 𝛼
+
+are Θ𝑝 (1) by parts (a) and (b), so 
+
+0 < lim inf  
+
+> 𝑛
+
+𝑠 ≤ lim sup 
+
+> 𝑛
+
+𝑠 < 1 (in probability). Unlike the Normal and split priors, for which 𝑠 → 1, the joint R2D2 posterior mean 𝑠 ˆ𝛼 OLS 𝛽 therefore retains an asymptotically non-vanishing multiplicative shrinkage relative to ˆ𝛼 OLS 𝛽 . The bias (1 − 𝑠 )𝛼 ∗ stays bounded away from 0,so E[𝛼 | 𝑦, ·] does not converge to 𝛼 ∗. We do not assert a deterministic limit 
+
+𝑠 ∞. Since 𝜏 −2 
+
+> 𝛼
+
+= 1/( 𝜏 2𝜙 𝛼 ) with ( 𝑝 + 1)𝜙 𝛼 → Gamma (𝑎, 𝑎 ) nondegenerate (Proposition F.3.4(a)), 𝑛 −1𝜏 −2 
+
+> 𝛼
+
+does not concentrate, and any distributional limit of 
+
+𝑠 is itself a nondegenerate random variable in (0, 1). The inconsistency conclusion holds regardless of this randomness. A sharper bound on E[𝑑 𝑧 | 𝑋, 𝜙 ] via (63) requires controlling 𝑐 min = 1/( 𝜏 2 max 𝑗 𝜙 𝑗 );for a symmetric Dirichlet, max 𝑗 𝜙 𝑗 = Θ 𝑝 (( log 𝑝 )/ 𝑝 ) by standard order-statistics con-centration for the Beta marginals, giving 𝑐 min = Θ 𝑝 ( 𝑝 /log 𝑝 ), which suffices for the same order conclusion but is not needed here. Proof. Lemma F.3.2 gives tr (𝐻 𝛽 ) < 𝑝 deterministically (any Σ𝛽 ≻ 0), so 𝑛 −tr (𝐻 𝛽 ) >𝑛 −𝑝 = (1−𝛾 )𝑛 , yielding the lower bound. The upper bound is immediate from tr (𝐻 𝛽 ) ≥ 0and 1𝑇 𝑛 (𝐼 𝑛 − 𝐻 𝛽 )1𝑛 ≤ 𝑛 . For parts (b) and (c), Proposition F.3.4(a) gives 𝜏 −2 
+
+> 𝛼
+
+= 1/( 𝜏 2𝜙 𝛼 )
+
+73 To select or not to select 
+
+with ( 𝑝 + 1)𝜙 𝛼 → Gamma (𝑎, 𝑎 ), hence 𝑛 −1𝜏 −2 
+
+> 𝛼
+
+= Θ 𝑝 (1). Together with the null-space lower bound 𝑑 𝑧 ≥ 𝜎 −2 ∥( 𝐼 𝑛 − 𝑃 𝑋 )𝑧 ∥2 = Θ 𝑝 (𝑛 ) and the deterministic upper bound 
+
+𝑑 𝑧 ≤ 𝜎 −2𝑧 𝑇 𝑧 ≤ 𝑛 /𝜎 2, this gives 𝑛 −1𝑑 𝑧 = Θ 𝑝 (1) and bounds 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+) away from 0 and 1 in probability. Because 𝑛 −1𝜏 −2 
+
+> 𝛼
+
+converges in distribution to a nondegenerate limit rather than a constant, the corresponding limit of 𝑠 is random. □
+
+Proposition F.3.9 (Split prior, regime (ii)) . Under the setting of Proposition F.3.6, E[𝑑 𝑧 |
+
+𝑋, 𝜙 ] = Θ (𝑛 ) by Proposition F.3.8(a) (the same 𝐻 𝛽 ), while 𝜏 −2 
+
+> 𝛼
+
+= O( 1) is fixed. Hence 
+
+𝑠 = Θ (𝑛 )/[ Θ(𝑛 ) + O( 1)] → 1 and the posterior is consistent for 𝛼 ∗ for every 𝛾 ∈ ( 0, 1),with posterior variance attaining the parametric rate Θ(𝜎 2/𝑛 ).Proof. Direct substitution into 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+) and (𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+)−1. □
+
+In summary, comparing Propositions F.3.7–F.3.9, only the joint R2D2 prior produces shrinkage bias on 𝛼 in regime (ii) — to 𝑠 ∞𝛼 ∗ rather than 𝛼 ∗. The Normal and split priors are both consistent for 𝛼 ∗, with the split prior achieving the parametric variance rate uniformly in 𝛾 while the Normal prior degrades as 𝛾 → 1. 
+
+Table 6. Full behaviour of the marginal posterior of 𝛼 across both regimes, extending Table 3. Regime (i) holds 𝑛 fixed with 𝑝 → 𝑛 , and regime (ii) sets 𝑝 = ⌊𝛾𝑛 ⌋ with 𝑛 → ∞ and aspect ratio 𝛾 = 𝑝 /𝑛 . Here 𝜏 −2 
+
+> 𝛼
+
+is the conditional prior precision of 𝛼 , 𝑑 𝑧 = 𝜎 −2𝑧 𝑇 (𝐼 𝑛 − 𝐻 𝛽 )𝑧 is the residualised data precision, 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+) is the shrinkage factor, and the posterior of 𝛼 is centred at 𝑠 ˆ𝛼 OLS 𝛽 with variance (𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+)−1. “Heavy shrinkage” refers to condition (64) . The symbol “ ↓” marks stochastic (in-probability) decrease in 𝑝 , and Θ𝑝 (·) denotes a stochastic scale at fixed 𝑛 . In regime (i) the quantities written in 𝑛 are finite-𝑛 constants rather than rates, whereas in regime (ii) they denote genuine orders in 𝑛 . The regime-(i) rows follow from Propositions F.3.3, F.3.6, F.3.4, and F.3.5, and the regime-(ii) rows from Propositions F.3.7, F.3.9, and F.3.8. Prior 𝜏 −2 
+
+> 𝛼
+
+E[𝑑 𝑧 | ·] 𝑠 Var (𝛼 | ·) 
+
+General regime (i): 𝑛 fixed, 𝑝 → 𝑛 
+
+Normal † O( 1) > 0, < 𝑛 /( 2𝜎 2) bounded in (0, 1) O( 1), ≤ 𝜏 2
+
+> 𝛼
+
+Split O( 1) > 0, < 𝑛 /( 2𝜎 2) bounded in (0, 1) O( 1), ≤ 𝜏 2
+
+> 𝛼
+
+Joint R2D2 Θ𝑝 ( 𝑝 /𝜏 2) > 0, < 𝑛 /( 2𝜎 2) ↓; min > 0 ↓; min > 0
+
+Under heavy shrinkage (64) (regime (i)) 
+
+Split O( 1) → 𝑛 /( 2𝜎 2) 1 − O( 𝜎 2/𝑛 ) Θ(𝜎 2/𝑛 )
+
+Joint R2D2 Θ𝑝 ( 𝑝 /𝜏 2) → 𝑛 /( 2𝜎 2) Θ𝑝 
+
+ 𝑛𝑅 2  
+
+> (1−𝑅 2)𝑝
+
+
+
+, ↓ Θ𝑝 (𝜏 2/𝑝 ), ↓
+
+Proportional regime (ii): 𝑝 = ⌊𝛾𝑛 ⌋, 𝑛 → ∞ , 𝛾 = 𝑝 /𝑛 
+
+Normal O( 1) (1 − 𝛾 ) 𝑛 /( 2𝜎 2) → 1 Θ(𝜎 2/𝑛 )
+
+Split O( 1) Θ(𝑛 /𝜎 2) → 1 Θ(𝜎 2/𝑛 )
+
+Joint R2D2 Θ(𝑛 /𝜏 2) Θ(𝑛 /𝜎 2) → 𝑠 ∞ ∈ ( 0, 1) Θ(1/𝑛 )                       
+
+> †The Normal prior’s per-coordinate penalty 𝜎 2is fixed in 𝑝 , so condition (64) is not the relevant regime for it. Its E[𝑑 𝑧 |𝑋 ]stays bounded away from 0as 𝑝 →𝑛 but does not tighten to the ceiling 𝑛 /( 2𝜎 2)that Split attains under heavy shrinkage, and in regime (ii) it settles at (1−𝛾 )𝑛 /( 2𝜎 2)versus Split’s 𝑛 /( 2𝜎 2).
+
+74 Riha et al. 
+
+Frequentist coverage 
+
+Proposition F.3.10 (Frequentist coverage of the posterior credible interval) . Let 𝑑 𝑧 =
+
+𝜎 −2𝑧 𝑇 (𝐼 𝑛 − 𝐻 𝛽 )𝑧 denote the residualised data precision for 𝛼 , let 𝑠 = 𝑑 𝑧 /( 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+)
+
+denote the shrinkage factor, and let 𝛼 ∗ denote the true treatment effect. The (1 − 𝜔 )
+
+central posterior credible interval has length 
+
+𝐿 = 2 𝑧 𝜔 /2
+
+√︃ 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+, (67) 
+
+where 𝑧 𝜔 /2 = Φ −1 (1 − 𝜔 /2) is the standard normal quantile, and its frequentist coverage probability is 
+
+𝐶 = Φ 
+
+ 𝑧 𝜔 /2 + 𝛿 
+
+√𝑠 
+
+
+
+− Φ
+
+ −𝑧 𝜔 /2 + 𝛿 
+
+√𝑠 
+
+
+
+, (68) 
+
+where 𝛿 = (1 − 𝑠 ) | 𝛼 ∗ |√︁ 𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+is the bias-to-posterior-standard-deviation ratio. For the split and base model priors ( 𝑠 ≈ 1, 𝛿 ≈ 0), coverage is near-nominal. For the joint R2D2 prior ( 𝑠 ≪ 1, 𝛿 large), coverage can fall far below the nominal level. (We write the credible level as 𝜔 to avoid collision with the aspect ratio 𝛾 = 𝑝 /𝑛 of regime (ii).) Proof. From Proposition F.3.1, the posterior 𝛼 | 𝑦, 𝑋, 𝑧, 𝜎 2 is normal with mean ˆ𝛼 post = 𝑠 · ˆ𝛼 OLS 𝛽 and variance 𝜎 2post = (𝑑 𝑧 + 𝜏 −2 
+
+> 𝛼
+
+)−1, where ˆ𝛼 OLS 𝛽 = [𝑧 𝑇 (𝐼 𝑛 −
+
+𝐻 𝛽 )𝑧 ]−1𝑧 𝑇 (𝐼 𝑛 − 𝐻 𝛽 )𝑦 is the regularised least-squares estimate from Proposition F.3.1. The (1 − 𝜔 ) central credible interval is ˆ𝛼 post ± 𝑧 𝜔 /2 𝜎 post , so its length is 𝐿 = 2 𝑧 𝜔 /2 𝜎 post .Writing 𝐴 = 𝐼 𝑛 − 𝐻 𝛽 and 𝑏 = 𝑧 𝑇 𝐴𝑧 , under the data-generating process 𝑦 =
+
+𝛼 ∗𝑧 + 𝑋 𝛽 ∗ + 𝜀 the conditional frequentist moments of ˆ 𝛼 OLS 𝛽 given 𝑋, 𝑧 are 
+
+E[ ˆ𝛼 OLS 𝛽 | 𝑋, 𝑧 ] = 𝛼 ∗ + 𝑧 𝑇 𝐴𝑋 𝛽 ∗
+
+𝑏 , Var ( ˆ𝛼 OLS 𝛽 | 𝑋, 𝑧 ) = 𝜎 2 𝑧 𝑇 𝐴 2𝑧 𝑏 2 . (69) We invoke two simplifications. The variance simplification is exact in the flat-prior limit 
+
+𝐻 𝛽 = 𝑃 𝑋 (where 𝐴 2 = 𝐴 ) and asymptotically exact in the heavy-shrinkage limit 𝐻 𝛽 → 0(where 𝐴 → 𝐼 𝑛 , so 𝐴 2 → 𝐴 ); the confounding term, by contrast, is identically zero only in the flat-prior limit ( 𝐴𝑋 = 0) and is merely negligible (not zero) under heavy shrinkage: 
+
+• Confounding term. Under Assumption (A2) ( 𝑧 ⊥ 𝑋 ), taking expectation over 𝑧 
+
+alone, E𝑧 [𝑧 𝑇 𝐴𝑋 𝛽 ∗ | 𝑋 ] = 12 1𝑇 𝑛 𝐴𝑋 𝛽 ∗. Because the columns of 𝑋 are mean-zero, 
+
+1𝑛 is essentially uncorrelated with col (𝑋 ), so 1𝑇 𝑛 𝐴𝑋 𝛽 ∗ = 𝑂 𝑝 (√𝑛𝑝 ); and because 
+
+𝑧 𝑇 𝐴𝑋 𝛽 ∗ is linear in 𝑧 , a sub-Gaussian (Hoeffding/Bernstein) bound controls its fluctuation by ∥ 𝐴𝑋 𝛽 ∗ ∥ ≤ ∥ 𝑋 𝛽 ∗ ∥ = Θ (√𝑛𝑝 ). With 𝑏 = 𝑧 𝑇 𝐴𝑧 = Θ (𝑛 ) this gives 
+
+𝑧 𝑇 𝐴𝑋 𝛽 ∗/𝑏 = 𝑂 𝑝 (√︁ 𝑝 /𝑛 ) under the experiment’s design ( ∥ 𝛽 ∗ ∥2 = Θ ( 𝑝 )). The term is exactly zero in the flat-prior limit ( 𝐴𝑋 = 0); in the heavy-shrinkage limit 
+
+𝐴 → 𝐼 𝑛 it leaves 𝑧 𝑇 𝑋 𝛽 ∗/𝑏 ≠ 0, but it is negligible relative to the shrinkage bias (1 − 𝑠 )| 𝛼 ∗ |, since the same design gives 𝛼 ∗ = Θ (√𝑝 ) and hence a ratio 
+
+Θ(1/√𝑛 ) → 0. We therefore absorb it into the 𝑜 𝑝 (1) correction. 
+
+75 To select or not to select 
+
+• Variance term. 𝐴 is symmetric with eigenvalues 1 − ℎ 𝑗 ∈ ( 0, 1], so 𝐴 2 ⪯ 𝐴 
+
+and 𝑧 𝑇 𝐴 2𝑧 ≤ 𝑧 𝑇 𝐴𝑧 , with equality when every ℎ 𝑗 ∈ { 0, 1}. Approximating 
+
+𝑧 𝑇 𝐴 2𝑧 ≈ 𝑧 𝑇 𝐴𝑧 gives Var ( ˆ𝛼 OLS 𝛽 | 𝑋, 𝑧 ) ≈ 𝜎 2/𝑏 = 𝑑 −1 
+
+> 𝑧
+
+.Under these approximations, the frequentist bias of ˆ𝛼 post = 𝑠 ˆ𝛼 OLS 𝛽 is (𝑠 − 1)𝛼 ∗, and its frequentist variance is 𝑠 2 · 𝑑 −1 
+
+> 𝑧
+
+= 𝑠 · 𝜎 2post (using 𝑑 𝑧 𝜎 2post = 𝑠 ). The standardised frequentist error ( ˆ𝛼 post − 𝛼 ∗)/ 𝜎 post is therefore distributed as normal (− 𝛿, 𝑠 ), where 
+
+𝛿 = (1 − 𝑠 ) | 𝛼 ∗ |/ 𝜎 post . The credible interval ˆ𝛼 post ± 𝑧 𝜔 /2 𝜎 post covers 𝛼 ∗ if and only if 
+
+| ˆ𝛼 post − 𝛼 ∗ | ≤ 𝑧 𝜔 /2 𝜎 post . Standardising: 
+
+𝐶 = Pr 
+
+ ˆ𝛼 post − 𝛼 ∗
+
+𝜎 post 
+
+≤ 𝑧 𝜔 /2
+
+
+
+= Pr 
+
+ −𝑧 𝜔 /2 + 𝛿 
+
+√𝑠 ≤ 𝑍 ≤ 𝑧 𝜔 /2 + 𝛿 
+
+√𝑠 
+
+
+
+, (70) where 𝑍 ∼ normal (0, 1), yielding Equation (68) . For the split prior ( 𝑠 ≈ 1, 𝛿 ≈ 0), 
+
+𝐶 ≈ 1 − 𝜔 . For the joint R2D2 prior, 𝛿 grows with |𝛼 ∗ | and (1 − 𝑠 ), while the interval boundaries widen by 1 /√𝑠 ; the net effect is that the bias shifts the interval away from 𝛼 ∗,producing undercoverage. □
+
+76

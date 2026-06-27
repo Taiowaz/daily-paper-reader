@@ -1,0 +1,8040 @@
+Title: Zero-Shot Size Transfer for Neural ODEs on Sparse Random Graphs: Graphon Limits and Adjoint Convergence
+
+URL Source: https://arxiv.org/pdf/2606.26662v1
+
+Published Time: Fri, 26 Jun 2026 01:03:45 GMT
+
+Number of Pages: 66
+
+Markdown Content:
+# Zero-Shot Size Transfer for Neural ODEs on Sparse Random Graphs: Graphon Limits and Adjoint Convergence 
+
+Mingsong Yan ∗
+
+, Zhida Wang †
+
+, and Sui Tang ‡
+
+Abstract 
+
+Graph Neural Differential Equations (GNDEs) model continuous-time graph dynamics by parameterizing Neural ODE velocity fields with Graph Neural Networks. Their local, size-independent filters suggest a zero-shot size-transfer principle: train on a small graph and deploy on larger, similar graphs without retraining. We develop a quantitative theory for this principle on sparse random graphs sampled from graphons. We consider Graphon Neural Differential Equations (Graphon-NDEs) and adjoint Graphon-NDEs as the infinite-node lim-its of the forward and adjoint GNDE systems, and establish well-posedness. For an n-node random graph with sparsity parameter αn, we prove trajectory-wise convergence of GNDE solutions to Graphon-NDE solutions at rate O(( αnn)−1/2), up to logarithmic factors, with high probability. We also establish uniform-in-time convergence bounds for adjoint systems governing hidden-state and parameter gradients. We further study discretize-then-optimize (DTO) and optimize-then-discretize (OTD) training. Under explicit Euler discretization with M steps, we show that DTO and OTD are asymptotically consistent, with hidden-state and local parameter-gradient discrepancies of orders O(1 /M ) and O(1 /M 2), respectively, up to sparsity and logarithmic factors. Experiments on HSBM and tent graphons support the theoretical rates, while zero-shot transfer experiments across four graphon classes demon-strate accurate deployment of learned GNDEs on larger independently sampled graphs. 
+
+# 1 Introduction 
+
+Neural Ordinary Differential Equations (Neural ODEs) (Chen et al., 2018) are continuous-depth neural network models in which the hidden state evolves according to an ODE whose velocity field is parameterized by a neural network. They can be viewed as continuous-depth analogues of deep residual networks (He et al., 2016), where discrete residual updates are replaced by continuous ODE flows. This continuous-depth formulation provides a flexible framework for modeling temporal dynamics, with applications in generative modeling, time-series analysis, and scientific computing (Avelin and Nyström, 2021; Sander et al., 2022). Neural ODEs are commonly trained through either the discretize-then-optimize (DTO) or optimize-then-discretize 
+
+(OTD) paradigm. Both approaches require numerical ODE solves during training and can become computationally expensive in high-dimensional settings (Chen et al., 2018; Onken and Ruthotto, 2020). Many dynamical systems of interest, such as social, biological, and physical interaction net-works, inherently have graph structure, where each node’s evolution relies on the states of its 
+
+> ∗
+
+Department of Mathematics, University of California, Santa Barbara, CA. ( mingsongyan@ucsb.edu )
+
+> †
+
+Department of Mathematics, University of California, Santa Barbara, CA. ( zhida@ucsb.edu )
+
+> ‡
+
+Department of Mathematics, University of California, Santa Barbara, CA. ( suitang@ucsb.edu )
+
+1
+
+> arXiv:2606.26662v1 [cs.LG] 25 Jun 2026
+
+neighbors. Graph Neural Differential Equations (GNDEs) (Poli et al., 2019; Liu et al., 2025) en-code this relational structure by parameterizing the velocity field with a Graph Neural Network (GNN) (Scarselli et al., 2008; Kipf and Welling, 2016), thereby combining the continuous-depth flexibility of Neural ODEs with graph-based message passing. GNDEs have been applied to diverse tasks, including node classification, traffic forecasting, epidemic modeling, and physical simulation (Chamberlain et al., 2021; Rusch et al., 2022; Fang et al., 2021; Huang et al., 2024; Luo et al., 2023; Huang et al., 2023; Choi et al., 2023). Despite their versatility, training GNDEs can be expensive: on large graphs, each ODE solve requires repeated message passing over the entire graph, which can scale poorly with network size (Finzi et al., 2023; Liu et al., 2025). A natural remedy is zero-shot size transfer : train on a small source graph and reuse the learned parameters, without retraining, on larger, structurally similar target graphs. Such transfer is plausible because graph dynamical systems often exhibit a natural size trans-ferability of their own: they are governed by local rules—each node evolves from its own state and those of its immediate neighbors, with the same rule applied at every node regardless of the graph’s size. A heat, epidemic, or reaction–diffusion process, for instance, follows the same node-level rule on a graph with one hundred nodes as on a graph with ten thousand; only which nodes are connected changes. The graphon formalism (Lovász, 2012) makes this scale-invariance precise: it represents graphs of different sizes as samples of a common continuum kernel, so one can ask whether the finite-graph dynamics converge to a limiting graphon dy-namical system . This has been established for nonlinear heat equations on dense deterministic graph sequences (Medvedev, 2014a), W-random graphs (Medvedev, 2014b), sparse sampling regimes (Kaliuzhnyi-Verbovetskyi and Medvedev, 2022), collective dynamics with time-varying coupling (Ayi and Duteil, 2021), and interacting particle systems (Bayraktar et al., 2023), where the governing rule lives on the limiting graphon rather than on any finite graph. As flexible data-driven surrogates for the classical graph dynamical systems (Poli et al., 2019; Berndt et al., 2026; Chamberlain et al., 2021; Choi et al., 2023), GNDEs raise a natural question: does this graphon-based size transfer extend from classical, prescribed dynamics to learned GNDE surrogates? If the GNDE and the target dynamics are compatible with the same graphon, parameters ˆθ learned on a small source graph Gsmall should remain accurate when the model is evaluated, without retraining, on a larger target graph G from the same family. To organize the analysis, we apply the triangle-inequality decomposition from our companion work (Yan et al., 2025): 
+
+ΦG (ˆθ) − SG ≤ ΦG (ˆθ) − ΦGsmall (ˆθ)
+
+| {z }
+
+> (I) model transfer error
+
++ ΦGsmall (ˆθ) − SGsmall 
+
+| {z }
+
+> (II) training error
+
++ SGsmall − SG
+
+| {z }
+
+> (III) graph discretization error
+
+. (1) Here SG is the exact solution of the target system on G, ΦG (ˆθ) is the GNDE surrogate evaluated on G, and ˆθ is trained on the source graph Gsmall . Term (II) is the source-graph training error, and Term (III) is the size-transfer error of the classical graph dynamics, precisely the error controlled by existing graphon-limit results (Medvedev, 2014a,b). This work focuses on Term (I), the size-transfer error of the learned GNDE surrogate, together with its gradient analogue, under random and sparse graph sampling. 
+
+Contributions. Building on Yan et al. (2025), which established trajectory-wise convergence for deterministic graph sequences, we study the size transferability of GNDEs on random sparse 
+
+graphs. Our random-graph analysis adopts the sparse sampling setting in Keriven et al. (2020), developed for size transferability of GNNs. In this setting, we establish quantitative convergence bounds for finite-graph GNDEs and their adjoint systems toward their Graphon-NDE limits, and further analyze the temporal discretization and DTO–OTD consistency underlying practical 2GNDE training. The resulting bounds make explicit how transfer and discretization depend on graph sparsity and architectural quantities, including activation smoothness and polynomial filter norms. In particular, convergence results for forward trajectories, hidden-state gradients, and parameter gradients require progressively stronger activation regularity, in line with recent observations on activation smoothness for Neural ODEs (Gao et al., 2025). We itemize our contributions as follows. 
+
+• Graphon limits. Based on the analysis of Yan et al. (2025), we consider Graphon Neural Differential Equations (Graphon-NDEs) as the infinite-node limit of finite-graph GNDEs and adapt the corresponding well-posedness result under suitable regularity assumptions (Theorem 1, Section 5). We further derive the infinite-node adjoint system, which serves as the graphon limit of the adjoint GNDEs for hidden-state and parameter gradients, and prove its well-posedness (Theorem 2, Section 5). 
+
+• Forward and adjoint convergence. We establish a forward convergence rate for GNDE solutions on sparse random graphs, showing that they converge with high probability to the Graphon-NDE solution uniformly in time (Theorem 3, Section 6). In addition, we provide convergence bounds for the corresponding adjoint systems governing hidden-state and parameter gradients (Theorems 4–5, Section 6). Together, these results establish the stability of GNDEs under graph-size transfer at both the forward-prediction and adjoint-gradient levels, providing quantitative control of the transfer error of GNDEs (i.e., Term (I) in (1)), and its gradient analogue under random and sparse graph sampling. 
+
+• Temporal discretization and DTO–OTD consistency. We establish temporal dis-cretization error bounds showing that residual GNNs obtained by Euler discretization con-verge to their continuous-time GNDE limits for forward trajectories, hidden-state adjoints, and parameter gradients (Theorems 6–8, Section 7). Building on these estimates, we prove that the DTO and OTD training paradigms produce asymptotically consistent gradients under explicit Euler discretization: the hidden-state gradient discrepancy vanishes at order 
+
+O(1 /M ), while the local parameter-gradient discrepancy vanishes at order O(1 /M 2), up to sparsity and logarithmic factors (Theorems 9–10, Section 8). Our quantitative DTO–OTD consistency rates for continuous-depth graph neural networks complement prior analyses of DTO and OTD training for Neural ODEs (Onken and Ruthotto, 2020). In particular, the results show that, under explicit Euler discretization, the gradients obtained by dif-ferentiating through the discrete solver are asymptotically consistent with those obtained from the continuous adjoint as M → ∞ .
+
+• Numerical experiments. We validate the theoretical convergence rates on the hierarchi-cal stochastic block model (HSBM) and tent graphons in Section 9.1, including graph-size convergence of the forward trajectory and adjoint gradients, temporal discretization error, and DTO–OTD gradient discrepancy. We then test the size transferability of GNDEs as learned surrogates in Section 9.2: a GNDE trained on a small source graph is deployed zero-shot on independently sampled larger target graphs. The experiments cover four sys-tems with qualitatively distinct dynamical behaviors: hierarchical smoothing (linear heat on HSBM graphon), traveling wavefronts (Fisher–KPP on a circular threshold graphon), degree-stratified endemic states (SIS on a rank-1 power-law graphon), and consensus con-traction (bounded-confidence consensus on the tent graphon). Across all four systems, the trained GNDEs accurately fit the source dynamics and achieve small transfer error on independently sampled larger graphs. 3Related work. 1) Size transferability of GNNs. Size transferability of discrete-layer GNNs has been studied across related graph-limit settings (Ruiz et al., 2020; Levie et al., 2021; Maskey et al., 2023; Keriven et al., 2020; Le and Jegelka, 2023; Herbst and Jegelka, 2025). These works provide 
+
+layer-wise guarantees: each hidden layer’s output converges as graph size grows. Our forward convergence result (Theorem 3) generalizes Keriven et al. (2020) from discrete-layer GNNs to continuous-depth GNDEs, where a stronger notion of trajectory-wise convergence is required: the entire solution path must converge uniformly in time, rather than only the outputs of finitely many layers. A key technical step is to extend the spatial chaining argument of Keriven et al. (2020) to a joint node–time domain, which yields uniform-in-time control of the random-graph error along the continuous GNDE trajectory. We additionally establish adjoint convergence and quantify the DTO–OTD discrepancy, which do not arise in the discrete-layer setting and are essential for understanding the transferability of gradient information in training. 
+
+2) Graphon limits of graph dynamical systems. A related line of work studies continuum limits of prescribed dynamics on graph sequences, including nonlinear heat equations, collec-tive dynamics, interacting particle systems, and microscopic-to-macroscopic limits (Medvedev, 2014a,b; Kaliuzhnyi-Verbovetskyi and Medvedev, 2022; Ayi and Duteil, 2021; Bayraktar et al., 2023; Paul and Trélat, 2022). Our analysis shares standard tools with this literature, such as Banach fixed-point arguments for well-posedness and Grönwall-type estimates for stability and convergence. The main difference is that classical graph dynamical systems are driven by fixed or prescribed interaction rules, whereas the vector field of our GNDE surrogate is learned through a GNN parameterization. Consequently, the convergence bounds must track architectural quanti-ties such as activation regularity, convolutional filter norms, depth, and width. Moreover, while classical graphon-limit results mainly concern forward trajectories, we also analyze the associ-ated adjoint systems, which are needed to understand gradient computation and gradient-level stability under graph-size transfer. 
+
+3) Discretization and adjoints for Neural ODEs. The numerical treatment of adjoints is a central issue in Neural ODE training. The original Neural ODE framework computes gradients using the adjoint sensitivity method (Chen et al., 2018). Subsequent work has shown that dis-cretization choices can substantially affect gradient accuracy. Gholami et al. (2019) highlighted numerical issues in adjoint-based training and proposed ANODE to improve gradient accuracy with controlled memory cost. Onken and Ruthotto (2020) compared DTO and OTD training strategies for Neural ODEs in non-graph settings. Xu et al. (2023) showed that certain higher-order discretizations can produce gradient oscillations under automatic differentiation. Recent work further highlights the role of activation smoothness in forward and backward Neural ODE analysis (Gao et al., 2025). Our work studies these issues for GNDEs: under explicit Euler discretization, we prove quantitative DTO–OTD consistency rates showing that gradients ob-tained by backpropagating through the Euler-discretized GNDE asymptotically agree with those obtained by first deriving the continuous adjoint equations and then discretizing them. 
+
+Organization. Section 2 introduces the notation and preliminaries, including graphons, func-tion spaces, and Gâteaux derivatives. Section 3 formulates spectral GNNs, GNDEs, and Graphon-NNs. Section 4 reviews the training paradigms for GNDEs, i.e., DTO and OTD. Section 5 intro-duces Graphon-NDEs and adjoint Graphon-NDEs and establishes their well-posedness. Section 6 proves uniform-in-time convergence of the forward trajectories and of the backward gradients with respect to hidden states and parameters. Section 7 analyzes temporal discretization errors for forward trajectories, hidden-state gradients, and parameter gradients. Section 8 establishes the asymptotic consistency of DTO and OTD under explicit Euler discretization. Section 9 presents numerical experiments. 42 Notation and Preliminaries 
+
+2.1 Basic notations 
+
+Let N := {1, 2, . . . } and R+ := [0 , ∞). For n ∈ N, let [n] := {1, 2, . . . , n } and Zn := {0, 1, . . . , n −
+
+1}. For vectors, ∥ · ∥ 2 denotes the Euclidean norm. For matrices, ∥ · ∥ 2, ∥ · ∥ F, and ∥ · ∥ max denote the spectral, Frobenius, and max (entry-wise) norms, respectively. For tensors, ∥ · ∥ max similarly denotes the maximum absolute entry. We write I := [0 , 1] for the unit interval and I2 := I × I.We write A ≲ B if there exists an absolute constant c > 0 such that A ≤ cB .
+
+2.2 Graphs, graphons, and graph features 
+
+A graph of n nodes is denoted by G = ⟨V, E, W ⟩, where V is the set of n nodes, E ⊆ V × V
+
+is the set of edges, and W = [ Wij ∈ I : i, j ∈ [n]] is the symmetric adjacency matrix with 
+
+Wij = Wji ̸ = 0 if and only if (i, j ) ∈ E. The degree matrix D is the diagonal matrix with entries Dii := P 
+
+> j
+
+Wij , and the symmetric normalized adjacency is L := D−1/2W D −1/2, with the convention [D−1/2]ii := 0 when Dii = 0 . (The associated normalized Laplacian is I − L; we work with L directly because the spectral filters introduced below are polynomials in L.) We denote the graph node feature matrix as Z ∈ Rn×F , where F is the number of features. A graphon is a bounded, symmetric, measurable function W : I2 → I. Graphons serve both as limit objects of convergent graph sequences in the sense of homomorphism density (Lovász, 2012) and as generative models for random graphs. Given a graphon W, a probability distribu-tion P on I and sparsity parameter αn ∈ (0 , 1] , the W-random graph G of n nodes is generated as follows: nodes ui ∈ I, i ∈ [n], are independently sampled from the distribution P ; conditional on these nodes, edges are sampled independently from a Bernoulli distribution, i.e., nodes i
+
+and j are connected with probability αnW(ui, u j ) for i < j . A W-random graph provides a general model for random graphs, including important examples such as Erdős–Rényi graphs and stochastic block models. 
+
+2.3 Function spaces 
+
+We denote by B(I) the Banach space of bounded scalar-valued functions on I with norm 
+
+∥Z∥B(I) := sup u∈I |Z(u)|, and by B(I; R1×F ) the space of bounded vector-valued functions 
+
+Z = [ Zf : f ∈ [F ]] : I → R1×F with norm ∥Z∥ B(I;R1×F ) := ( P   
+
+> f∈[F]
+
+∥Z f ∥2
+
+> B(I)
+
+)1/2. Given a prob-ability measure P on I, we define L2(I; dP ) as the space of square-integrable scalar functions with norm defined by ∥Z∥L2(I;dP ) := ( R 
+
+> I
+
+|Z(u)|2 dP (u)) 1/2 and inner product ⟨Z, eZ⟩L2(I;dP ) := 
+
+R 
+
+> I
+
+Z(u) eZ(u) dP (u). The vector-valued counterpart is L2(I; R1×F ; dP ) with norm ∥Z∥ L2(I;R1×F ;dP ) := (P   
+
+> f∈[F]
+
+∥Z f ∥2 
+
+> L2(I;dP )
+
+)1/2.For an interval Ω ⊆ R+, we write C(Ω; B(I; R1×F )) for the space of continuous vector-valued functions X = [ Xf : f ∈ [F ]] : I × Ω → R1×F satisfying that for each t ∈ Ω, X (·, t ) ∈
+
+B(I; R1×F ); for each f ∈ [F ] and u ∈ I, Xf (u, ·) is continuous on Ω. The norm is defined by ∥X ∥ C(Ω; B(I;R1×F )) := sup t∈Ω ∥X (·, t )∥B(I;R1×F ). By C1(Ω; B(I; R1×F )) we denote a subspace of C(Ω; B(I; R1×F )) , in which the vector-valued function X additionally satisfies that for each 
+
+f ∈ [F ] and u ∈ I, Xf (u, ·) is continuously differentiable. 52.4 Gâteaux derivatives 
+
+Let H1 and H2 be Hilbert spaces. An operator F : H1 → H 2 is Gâteaux differentiable at u ∈ H 1
+
+if the limit δF
+
+δu (h) := lim 
+
+> ϵ→0
+
+F(u + ϵh ) − F (u)
+
+ϵ ,
+
+exists for all h ∈ H 1 and h 7 → δF 
+
+> δu
+
+(h) is a bounded linear operator (Ekeland and Temam, 1999). Its Hilbert-space adjoint   δF
+
+> δu
+
+∗ : H2 → H 1 satisfies 
+
+ δF
+
+δu (h), v 
+
+
+
+> H2
+
+=
+
+
+
+h, 
+
+ δF
+
+δu 
+
+∗
+
+(v)
+
+
+
+> H1
+
+, ∀ h ∈ H 1, v ∈ H 2.
+
+When H2 = R, the operator δF 
+
+> δu
+
+is a continuous linear functional on H1, and the Riesz represen-tation theorem gives δF 
+
+> δu
+
+(h) = ⟨∇ uF, h ⟩H1 , for all h ∈ H 1, where ∇uF ∈ H 1 is the gradient of 
+
+F at u. For a composition F ◦ eF, it follows from the chain rule that 
+
+∇u(F ◦ eF) = δ eF
+
+δu 
+
+!∗
+
+(∇euF), (2) where eu := eF(u). This identity is the foundation of gradient backpropagation in both discrete and continuous architectures. 
+
+# 3 Graph Neural Differential Equations 
+
+We define the architecture of spectral Graph Neural Networks (GNNs) and their continuous-depth extension, the Graph Neural Differential Equations (GNDEs). 
+
+3.1 Spectral graph convolutions 
+
+Graph neural networks operate by alternating graph convolution and pointwise nonlinear activa-tion. We focus on spectral (polynomial filter) convolutions. Given a graph G with symmetric nor-malized adjacency L, the graph convolution is the linear operator ϕ : RF ×F ×K × Rn×F → Rn×F
+
+defined by 
+
+ϕ(h, X) := 
+
+
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+hf gk LkXg : f ∈ [F ]
+
+ , h ∈ RF ×F ×K , X ∈ Rn×F , (3) which aggregates information from the node itself and its neighbors up to K − 1 hops away. The detailed properties of the graph convolutional operators can be found in Appendix L. The output of the ℓ-th GNN layer is 
+
+fX(ℓ) := ϕ(h(ℓ), X(ℓ−1) ), X(ℓ) := σ( fX(ℓ)), (4) where σ is an element-wise activation function. A GNN with L layers is compactly written as 
+
+X(L) := GNN( X(0) ; L, H), (5) where H = [ h(ℓ) 
+
+> f gk
+
+: f, g ∈ [F ], k ∈ ZK , ℓ ∈ [L]] collects all trainable filter coefficients. 63.2 Formulation of GNDEs 
+
+In GNDEs, the GNN output serves as the velocity field of an ODE, i.e., 
+
+ddt X(t) = GNN  X(t); L, H(t),
+
+X(0) = Z ∈ Rn×F ,
+
+(6) where H(t) denotes the collection of time-varying trainable parameters 
+
+H(t) := 
+
+n
+
+h(ℓ,t ) 
+
+> f gk
+
+: f, g ∈ [F ], k ∈ ZK , ℓ ∈ [L]
+
+o
+
+, t ∈ [0 , T ]. (7) Time-varying parameters enable GNDEs to capture nonautonomous dynamics, a capability ab-sent in standard discrete-layer GNNs. If GNN( X(t); L, H(t)) is Lipschitz continuous in X
+
+uniformly over t ∈ [0 , T ] and varies continuously in time, then GNDE (6) admits a unique solution on [0 , T ] for every initial feature matrix Z ∈ Rn×F .
+
+3.3 Graphon convolutions and Graphon Neural Networks 
+
+The continuum analogue of the spectral GNN is the Graphon Neural Network (Graphon-NN). Given a graphon W with probability distribution P , define the degree function dP (u) := R 
+
+> I
+
+W(u, v ) dP (v) and the symmetric normalized kernel LP (u, v ) := W(u, v )/pdP (u) dP (v). The associated integral operator LP : L2(I; dP ) → L2(I; dP ) (the graphon analogue of L) acts as 
+
+(LP X)( u) := 
+
+Z
+
+> I
+
+LP (u, v ) X(v) dP (v), X ∈ L2(I; dP ).
+
+The layer-wise graphon convolution operator Φ : RF ×F ×K × L2(I; R1×F ; dP ) → L2(I; R1×F ; dP )
+
+is defined by 
+
+Φ( h, X ) := 
+
+
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+hf gk LkP Xg : f ∈ [F ]
+
+ , h ∈ RF ×F ×K , X ∈ L2(I; R1×F ; dP ), (8) with detailed properties in Appendix M. The output of the ℓ-th Graphon-NN layer is 
+
+eX (ℓ) := Φ( h(ℓ), X (ℓ−1) ), X (ℓ) = σ( eX (ℓ)), (9) and the Graphon-NN with L layers maps input features X (0) to 
+
+X (L) := WNN( X (0) ; LP , H). (10) 
+
+# 4 Training of GNDEs 
+
+As in Neural ODEs, GNDEs are used in supervised learning settings where the loss is defined on the terminal state X(T ) of the dynamics. Training amounts to finding time-dependent parameters H(·) that minimize the loss, where the dependence of X(T ) on H(·) is governed by the GNDE (6). Since the parameters H(t) influence the loss only through the hidden-state trajectory X(t), the gradient computation decomposes into two stages: 
+
+(S1) compute the gradient of the loss with respect to the hidden-state trajectory; 
+
+(S2) use hidden-state gradients to compute the gradient with respect to the parameters. We describe two paradigms, discretize-then-optimize (DTO) and optimize-then-discretize (OTD), that both follow this structure but differ in the order of discretization and differentiation. Throughout the paper, we use the superscript [·] for quantities on a discrete time grid and 
+
+(·) for their continuous-time counterparts. 74.1 Discretize-Then-Optimize (DTO). 
+
+In DTO, one first discretizes the continuous-time GNDE (6) and then differentiates the resulting discrete objective via backpropagation. We employ the explicit Euler method with step size 
+
+κ := T /M on the uniform time grid tm := mκ , m ∈ ZM +1 . The discretized forward dynamics is 
+
+X[m] := X[m−1] + κ GNN 
+
+
+
+X[m−1] ; L, H(tm−1)
+
+
+
+, m ∈ [M ],
+
+X[0] := Z,
+
+(11) where X[m] denotes the approximation to X(tm) at the m-th time step. The recursion (11) defines a residual GNN with M blocks. 
+
+(S1) Hidden-state gradients. Denote by G[m] := ∇X[m] Loss ∈ Rn×F the gradient of the loss with respect to the m-th hidden state. We obtain the backward recursions of G[m] by differentiating (11) and applying (2) with respect to X[m−1] , which gives 
+
+G[M ] = ∇X(T )Loss ,
+
+G[m−1] = G[m] + κ D[m−1] 
+
+> X
+
+
+
+G[m]
+
+, m = M, . . . , 1, (12) where the adjoint operator D[m] 
+
+> X
+
+: Rn×F → Rn×F is defined by 
+
+D[m] 
+
+> X
+
+:= δGNN  X[m]; L, H(tm)
+
+δX[m]
+
+!∗
+
+. (13) 
+
+(S2) Parameter gradients. Similarly, differentiating (11) and applying (2) with respect to 
+
+h(ℓ,t m−1) gives the parameter gradient. Given {G[m]}Mm=0 from (12), we have 
+
+κ D[ℓ,m ]
+
+> h
+
+
+
+G[m+1] 
+
+= DTO-Gradient of the loss w.r.t. h(ℓ,t m), (14) where the adjoint operator D[ℓ,m ] 
+
+> h
+
+: Rn×F → RF ×F ×K is defined by 
+
+D[ℓ,m ] 
+
+> h
+
+:= δGNN  X[m]; L, H(tm)
+
+δh(ℓ,t m)
+
+!∗
+
+. (15) DTO computes exact gradients of the discretized objective and is straightforward to im-plement via automatic differentiation, but it typically requires storing all intermediate states 
+
+{X[m]}Mm=0 during backpropagation. 
+
+4.2 Optimize-Then-Discretize (OTD). 
+
+In OTD, one first derives the gradient equations at the continuous level and then discretizes them numerically (Kidger, 2022). 
+
+(S1) Hidden-state gradients. Define the continuous adjoint state A(t) := ∇X(t)Loss ∈
+
+Rn×F , the gradient of the loss with respect to the hidden state at time t. The GNDE (6) defines a continuous-time flow X(t) whose infinitesimal change is governed by the GNN vector field. Applying (2) to this flow, as in the DTO derivation, yields the following backward-in-time adjoint equation 
+
+A(T ) = ∇X(T )Loss ,ddt A(t) = −D (t) 
+
+> X
+
+(A(t)) , where D(t) 
+
+> X
+
+:= 
+
+ δGNN( X(t); L, H(t)) 
+
+δX(t)
+
+∗
+
+. (16) 8(S2) Parameter gradients. Similarly, applying (2) with respect to h(ℓ,t ), expresses the pa-rameter gradient directly in terms of the hidden-state adjoint as 
+
+a(ℓ,t ) = D(ℓ,t ) 
+
+> h
+
+(A(t)) , where D(ℓ,t ) 
+
+> h
+
+:= 
+
+ δGNN( X(t); L, H(t)) 
+
+δh(ℓ,t )
+
+∗
+
+. (17) In practice, Eqs. (16) and (17) must be discretized. Using the explicit Euler method with the same step size κ = T /M and time grid {tm} as in DTO, and approximating the continuous operators D(tm) 
+
+> X
+
+and D(ℓ,t m) 
+
+> h
+
+by their discrete counterparts D[m] 
+
+> X
+
+and D[ℓ,m ] 
+
+> h
+
+yields 
+
+(S1, discretized). 
+
+A[M ] := ∇X(T )Loss ,
+
+A[m−1] := A[m] + κ D[m]
+
+> X
+
+ A[m], m = M, . . . , 1. (18) 
+
+(S2, discretized). 
+
+a[ℓ,m ] := D[ℓ,m ]
+
+> h
+
+
+
+A[m]
+
+,κa[ℓ,m ] = OTD-Gradient of the loss w.r.t. h(ℓ,t m).
+
+(19) OTD can avoid storing the full forward trajectory {X[m]}Mm=0 by recomputing or checkpointing the forward states, but it incurs additional computational cost from backward adjoint integration and produces gradients that depend on the chosen time discretization. 
+
+4.3 OTD versus DTO. 
+
+The DTO recursion (12) and the OTD recursion (18) share the same algebraic form but evaluate the adjoint operators at different points: DTO at the left endpoint (X[m−1] , t m−1), OTD at the right endpoint (X[m], t m); Table 1 summarizes the adjoint operators used in DTO and OTD. The explicit forms of these operators can be found in Appendix L (specifically, Eq. (137)). Un-der the backward-in-time Euler discretization with the same step size and time grid, these two recursions become directly comparable, though for higher-order solvers such coincidence gener-ally fails (Onken and Ruthotto, 2020). Later in the paper, we analyze how these discrepancies behave under graph refinement and in the graphon limit, and establish conditions under which DTO and OTD become asymptotically equivalent. 
+
+# 5 Graphon Neural Differential Equations 
+
+A central question motivating this work is whether GNDEs exhibit size transferability : can a GNDE trained on a moderate-sized graph be deployed on a larger, structurally similar graph without retraining? To formalize this, we need an infinite-node reference object against which finite-graph GNDEs can be compared. In this section, we consider Graphon Neural Differential Equations (Graphon-NDEs) as the natural infinite-node limit of GNDEs and establish their well-posedness. Recall that a graphon W ∈ B(I2) serves as a generative model for sequences of structurally similar graphs of increasing size (Lovász, 2012). Replacing the discrete normalized adjacency matrix L in the GNDE (6) by its graphon analogue LP , and letting node features become 9DTO OTD 
+
+Hidden states D[m] 
+
+> X
+
+:= δGNN  X[m]; L, H(tm)
+
+δX[m]
+
+!∗
+
+D(t) 
+
+> X
+
+:= 
+
+ δGNN ( X(t); L, H(t)) 
+
+δX(t)
+
+∗
+
+Parameters D[ℓ,m ] 
+
+> h
+
+:= δGNN  X[m]; L, H(tm)
+
+δh(ℓ,t m)
+
+!∗
+
+D(ℓ,t ) 
+
+> h
+
+:= 
+
+ δGNN ( X(t); L, H(t)) 
+
+δh(ℓ,t )
+
+∗
+
+Evaluation Left endpoint: (X[m−1] , t m−1) Right endpoint: (X[m], t m)
+
+Table 1: Adjoint operators for DTO and OTD. functions X (u, t ) for the continuum nodes u ∈ I, we define the Graphon-NDE as 
+
+∂∂t X (u, t ) = WNN( X (u, t ); LP , H(t)) ,
+
+X (u, 0) = Z(u) ∈ B(I; R1×F ).
+
+(20) The Graphon-NDE (20) is a nonlocal integro-differential equation on the graphon space, where the graphon neural network WNN plays the same architectural role as the GNN in (6) but operates on function-valued features rather than finite-dimensional node vectors. For training, the same two-stage gradient structure (S1)–(S2) from Section 4 carries over to the infinite-node setting. Let A(u, t ) and a(ℓ,t ) denote the gradients of the loss with respect to the hidden state X (u, t ) and parameters h(ℓ,t ), respectively. In parallel to the adjoint GNDE equations (16)–(17), we introduce the following infinite-node adjoint equations. 
+
+(S1) Hidden-state gradients. 
+
+∂∂t A(u, t ) = −
+
+ δWNN 
+
+δX
+
+∗
+
+(A(u, t )) ,
+
+A(u, T ) = δL δX (L,T ) (u) ∈ B(I; R1×F ).
+
+(21) 
+
+(S2) Parameter gradients. 
+
+a(ℓ,t ) =
+
+ δWNN 
+
+δh(ℓ,t )
+
+∗
+
+(A(u, t )) ∈ RF ×F ×K . (22) We note that the explicit form of adjoint operator appearing in (21) and (22) can be found in Appendix M (specifically, Eq. (148)). We now state the assumptions needed for well-posedness. Unlike discrete-layer GNN architectures, which generate only finitely many hidden states during forward propagation, the continuous-depth structure of GNDEs and Graphon-NDEs evolves features through infinitely many intermediate states, forming a trajectory over a continuous time horizon. Ensuring the well-posedness of this trajectory, for both the forward dynamics and the backward adjoint equations, requires regularity conditions on the architecture, which we formalize as follows. 10 • AS0. The convolutional filters are Lh-Lipschitz continuous in time, i.e., for all f, g ∈ [F ],
+
+ℓ ∈ [L], and k ∈ ZK , h(ℓ,t 1) 
+
+> f gk
+
+− h(ℓ,t 2) 
+
+> f gk
+
+≤ Lh|t1 − t2|, for all t1, t 2 ∈ R+.
+
+• AS1. The activation function σ is Lσ-Lipschitz continuous with σ(0) = 0 .
+
+• AS2. The graphon degree function dP is bounded below, i.e., there exists cmin > 0 such that dP (u) > c min for all u ∈ I.Assumptions AS0 and AS1 impose regularity on the neural architecture: AS0 ensures that the time-varying filters evolve smoothly, and AS1 guarantees that the nonlinearity of the activation function does not amplify perturbations, and this property is satisfied by common activations such as ReLU, sigmoid, and tanh. As noted in Gao et al. (2025), the smoothness of the activa-tion function plays a critical role in ensuring well-posedness of both the forward and backward dynamics. Assumption AS2 is the nondegenerate-degree condition used in Keriven et al. (2020); it ensures that the graphon degree function do not approach zero and that the symmetric nor-malized kernel LP is well defined and bounded. The following result directly follows from Yan et al. (2025). 
+
+Theorem 1 (Well-posedness of Graphon-NDE) . Suppose that AS0, AS1, and AS2 hold. If 
+
+W ∈ B(I2) and Z ∈ B(I; R1×F ), then for any T > 0, there exists a unique solution X ∈
+
+C1  [0 , T ]; B(I; R1×F ) to the Graphon-NDE (20) .
+
+For the adjoint system, we require a slightly stronger regularity condition on the activation function. 
+
+• AS1 ′. The activation function σ is differentiable. 
+
+Theorem 2 (Well-posedness of Adjoint Graphon-NDE, proof in Appendix E.1) . Suppose that AS0, AS1 ′, and AS2 hold. Let T > 0 and X be the solution of the Graphon-NDE (20) . There exists a unique solution A ∈ C1  [0 , T ]; B(I; R1×F ) to the adjoint system (21) .
+
+The well-posedness of both the forward Graphon-NDE and its adjoint system ensures that the infinite-node limit provides a well-defined reference for analyzing size transferability. In the following sections, we quantify how closely finite-graph GNDEs approximate this limit. 
+
+# 6 Convergence Analysis: from GNDEs to Graphon-NDEs 
+
+We now turn to the central question: as the number of nodes n grows, do GNDE solutions con-verge to the Graphon-NDE solution? Crucially, because GNDEs are continuous-depth models, we require trajectory-wise convergence, which means convergence of the entire solution trajec-tory over [0 , T ], not merely convergence at finitely many layers. As discussed in Yan et al. (2025), trajectory-wise convergence is important for both forward and backward propagation: it ensures that the continuous-time evolution of node-features is consistent across graph sizes and is necessary for controlling the accumulation of gradient errors along adjoint trajectories. To quantify the trajectory-wise discrepancy, we extend the sampled mean-squared error metric of Keriven et al. (2020) to the continuous-time GNDE setting. Given a set of n distinct samples Un = {uj : j ∈ [n]} in I, a sampling operator SUn : B(I; R1×F ) → Rn×F is defined by 
+
+[SUn Z]i, : := Z(ui), i ∈ [n]. For Graphon-NDE solution X and GNDE solution X, we define 
+
+MSE Un (X (·, t ), X(t)) := 1
+
+√n ∥S Un (X (·, t )) − X(t)∥F .
+
+In addition, we adopt the piecewise-Lipschitz graphon regularity assumption from Keriven et al. (2020). 11 • AS3. The graphon W is piecewise Lipschitz, namely there exist a positive constant cLip ,a positive integer nI , and a partition Is, s ∈ [nI ] of I, such that for any v ∈ I and s ∈ [nI ],
+
+|W(u, v ) − W(u′, v )| ≤ cLip |u − u′|, for all u, u ′ ∈ Is.
+
+6.1 Convergence of forward trajectory 
+
+Theorem 3 (Proof in Appendix C) . Suppose that AS0, AS1, AS2, and AS3 hold. Let γ1, γ 2 ∈
+
+(0 , 1) with 2γ1 + γ2 < 1. Suppose that n is large enough satisfying (176) and sparsity level αn
+
+satisfies (177) . Let X and X be solutions of GNDE (6) and Graphon-NDE (20) , respectively, with initial values satisfying 
+
+X(0) = SUn (X (·, 0)) . (23) 
+
+Then, with probability at least 1 − 2γ1 − γ2,
+
+sup  
+
+> t∈[0 ,T ]
+
+MSE Un (X (·, t ), X(t)) = O 1
+
+√αnn +
+
+plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+√n
+
+!
+
+. (24) We highlight that the error bound established in Theorem 3 is uniform over the entire continuous time horizon t ∈ [0 , T ]. While the resulting convergence rates are structurally similar to those obtained for finite-depth GNNs (Keriven et al., 2020), our result establishes a stronger dynamic property. The key distinction is that a standard multi-layer GNN involves only finitely many layers, whereas a GNDE defines a trajectory of hidden states indexed by a continuum of times. Consequently, fixed-time concentration estimates alone are not sufficient to obtain trajectory-wise guarantees uniformly over [0 , T ]. To overcome this difficulty, we extend the spatial chaining technique for non-normalized kernels in (Keriven et al., 2020, Lemma 4) to a joint spatial-temporal setting. More precisely, Lemma 48 controls the relevant empirical process over the augmented domain (the Cartesian product of the node and time domains) by combining Hoeffding-type concentration with Dudley’s chaining inequality. This allows the sampling error to be controlled simultaneously over both the node and time variables. We finally remark that the randomness in our GNDE framework is localized strictly to the initial graph generation (the node samples and the Bernoulli edges). Once the graph is drawn, the subsequent ODE dynamics are deterministic, allowing the bound to hold simultaneously for all t ∈ [0 , T ] on a single high-probability event. 
+
+6.2 Convergence of hidden-state gradients 
+
+With the forward trajectory convergence established, we turn to the adjoint equations, which govern the backward propagation of gradients. A stronger regularity condition on the activation function is needed. 
+
+• AS1 ′′ . The derivative σ′ is Lσ′ -Lipschitz continuous. 
+
+Theorem 4 (Proof in Appendix F) . Suppose that AS0, AS1 ′′ , AS2, and AS3 hold. Let γ1, γ 2, γ 3 ∈
+
+(0 , 1) with 2γ1 +γ2 +γ3 < 1. Suppose that n is large enough satisfying (176) and sparsity level αn
+
+satisfies (177) . Let X, X , A and A be the solutions of GNDE (6) , Graphon-NDE (20) , adjoint GNDE (16) , and adjoint Graphon-NDE (21) , respectively. Suppose that initial value condition 
+
+(23) holds, and the terminal values of the adjoint systems satisfy 
+
+A(T ) = SUn (A(·, T )) . (25) 12 Then, with probability at least 1 − 2γ1 − γ2 − γ3, Eq. (24) holds and 
+
+sup  
+
+> t∈[0 ,T ]
+
+MSE Un (A(·, t ), A(t)) = O 1
+
+√αnn +
+
+plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+√n
+
+!
+
+.
+
+(26) The stronger assumption AS1 ′′ (compared to AS1 in Theorem 3) is needed because the adjoint equation (16) involves the derivative of the GNN with respect to the hidden state, which depends on σ′. This mirrors a general principle in continuous-depth models: backward propagation requires higher regularity than forward propagation, as the adjoint operators involve derivatives of the velocity field (Gao et al., 2025). 
+
+6.3 Convergence of parameter gradients 
+
+We next study the convergence of the parameter gradients, under the assumption that the filter parameters are differentiable in time. 
+
+• AS0 ′. The parameters h(ℓ,t ) 
+
+> f gk
+
+, ℓ ∈ [L], f, g ∈ [F ], k ∈ ZK , are differentiable in t.Additionally, we require a stronger smoothness condition on the activation function. 
+
+• AS1 ′′′ . The activation function σ is twice differentiable. 
+
+Theorem 5 (Proof in Appendix I) . Suppose that AS0 ′, AS1 ′′′ , AS2, and AS3 hold. Let 
+
+γ1, γ 2, γ 3, γ 4 ∈ (0 , 1) satisfying 2γ1 + γ2 + γ3 + γ4 < 1. Suppose that n is large enough satisfying 
+
+(176) and αn satisfies (177) . Let X, X , A and A be the solutions of GNDE (6) , Graphon-NDE (20) , adjoint GNDE (16) , and adjoint Graphon-NDE (21) , respectively. Suppose that initial value conditions satisfy (23) and (25) . Let a(ℓ,t ) and a(ℓ,t ) be defined in (17) and (22) ,respectively. Then with probability at least 1 − 2γ1 − γ2 − γ3 − γ4, Eqs. (24) , (26) hold, and 
+
+max  
+
+> ℓ∈[L]
+
+sup  
+
+> t∈[0 ,T ]
+
+a(ℓ,t ) − 1
+
+n a(ℓ,t ) 
+
+> max
+
+= O
+
+plog( LF 2K/γ 4)
+
+√n
+
+!
+
++
+
+O
+
+ 1
+
+√αnn +
+
+plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+√n
+
+!
+
+×
+
+ 1
+
+√αn
+
++ plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+ 
+
+.
+
+(27) Theorems 3, 4 and 5 together establish size transferability at three levels: the forward trajectory (Theorem 3), the hidden-state gradients (Theorem 4), and the parameter gradients (Theorem 5). The progression of regularity assumptions on the activation function σ—from a Lipschitz continuous σ (for the forward pass), to a Lipschitz continuous derivative σ′ (for the hidden-state gradients), and finally to a twice-differentiable σ (for the parameter gradients)— reflects the increasing order of smoothness required at each analytical stage. We remark that the bounds in Theorems 3, 4, and 5 should be interpreted as worst-case upper bounds. The numerical results in Sections 9.1.1, 9.1.2, and 9.1.3 suggest that the forward-trajectory estimate is relatively sharp, whereas the hidden-state gradient estimate and the parameter-gradient estimate can be conservative, especially for sparse graphs. One possible reason is that the adjoint and parameter-gradient analyses are obtained through successive sta-bility estimates. In particular, the hidden-state adjoint bound depends on the forward-trajectory error, and the parameter-gradient bound further depends on both the forward and hidden-state 13 adjoint errors. At each stage, triangle inequalities and worst-case operator-norm estimates are used to control all possible inputs uniformly. These successive worst-case estimates may amplify the apparent sparsity dependence of the bounds, even though faster convergence is observed in the numerical experiments. We leave the derivation of sharper transfer-error bounds for future work. 
+
+# 7 Convergence Analysis: from Residual GNNs to GNDEs 
+
+The previous section established that GNDEs converge to Graphon-NDEs as the number of nodes grows. In practice, however, GNDEs are never solved exactly; they are discretized into residual GNNs via numerical methods such as Euler’s scheme (11). A natural question thus arises: how well do the discrete approximations X[m] approximate the continuous GNDE solution X(t) as the step size κ decreases? The importance of this question is twofold. First, it completes the approximation chain needed for a two-scale convergence result. The previous section establishes the spatial limit, namely the convergence of GNDEs to Graphon-NDEs as the number of nodes grows, while this section establishes the temporal limit, namely the convergence of residual GNNs to GNDEs as the step size tends to zero. Coupling these two results yields an end-to-end convergence guarantee from finite-node, discrete residual GNNs to the infinite-node, time-continuous Graphon-NDE. Second, this result provides the foundation for comparing the DTO and OTD training paradigms in Section 8, as both produce discrete gradient sequences whose difference can be controlled using the discretization-error estimates developed here. 
+
+7.1 Discretization error of forward trajectory 
+
+Theorem 6 (Proof in Appendix D) . Suppose that AS0 ′, AS1 ′, AS2, and AS3 hold. Let γ1, γ 2 ∈
+
+(0 , 1) with 2γ1 + γ2 < 1. Suppose that n is large enough satisfying (176) and (69) ; sparsity level 
+
+αn satisfies (177) . Let X(t) be the solution of GNDE (6) and X[m] : m ∈ [M ] be computed via Euler’s method (11) with step size κ = T /M and initial value 
+
+X[0] = X(0) . (28) 
+
+Then, with probability at least 1 − 2γ1 − γ2, Eq. (24) holds and 
+
+1
+
+√n max   
+
+> m∈[M]
+
+X(tm) − X[m] 
+
+> F
+
+= O
+
+ 1
+
+M
+
+
+
+. (29) The O(1 /M ) rate is the classical first-order convergence of the explicit Euler method, con-firming that the discretization error vanishes as the number of time steps M increases, indepen-dently of the graph size n. We numerically validate the predicted O(1 /M ) convergence rate in Section 9.1.4. 
+
+7.2 Discretization error of hidden-state gradients 
+
+Theorem 7 (Proof in Appendix G) . Suppose that AS0 ′, AS1 ′′′ , AS2, and AS3 hold. Let 
+
+γ1, γ 2, γ 3 ∈ (0 , 1) with 2γ1 + γ2 + γ3 < 1. Suppose that n is large enough satisfying (69) ,
+
+(110) and (176) ; sparsity level αn satisfies (177) . Suppose that initial conditions (23) , (25) and 
+
+(28) hold. Let A(t) be the solution of adjoint GNDE (16) and A[m] : m ∈ [M ] be computed via backward-in-time Euler’s method (18) with step size κ = T /M and terminal value 
+
+A[M ] = A(T ). (30) 14 Then, with probability at least 1 − 2γ1 − γ2 − γ3, Eq. (26) holds and 
+
+1
+
+√n max   
+
+> m∈[M]
+
+A[m] − A(tm) F = O 
+
+> 1√αn
+
++ plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+M
+
+!
+
+.
+
+The adjoint discretization error retains the O(1 /M ) dependence on the temporal step size. However, the prefactor now depends explicitly on the sparsity parameter αn, through a term of order 1/√αn. Thus, in the sparse-graph regime where αn → 0, the discretization error bound deteriorates unless the number of time steps M is chosen large enough relative to the sparsity level. 
+
+7.3 Discretization error of parameter gradients 
+
+Theorem 8 (Proof in Appendix J) . Suppose that AS0 ′, AS1 ′′′ , AS2, and AS3 hold. Let 
+
+γ1, γ 2, γ 3 ∈ (0 , 1) with 2γ1 + γ2 + γ3 < 1. Suppose that n is large enough satisfying (69) , (110) 
+
+and (176) ; sparsity level αn satisfies (177) ; M is large enough such that (120) holds. Suppose that initial conditions (23) , (25) , (28) and (30) hold. Let a(ℓ,t ) and a[ℓ,m ] be defined in (17) and 
+
+(19) , respectively. Then with probability at least 1 − 2γ1 − γ2 − γ3,
+
+1
+
+n max   
+
+> m∈[M],ℓ ∈[L]
+
+a(ℓ,t m) − a[ℓ,m ] 
+
+> max
+
+= O 
+
+> 1√αn
+
++ plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+M
+
+!
+
+.
+
+# 8 DTO versus OTD 
+
+We address the question raised in Section 4: under what conditions do the DTO and OTD training paradigms produce comparable gradients? Recall from the comparison in Section 4 that the DTO gradient and the OTD gradient differ at finite step size κ because their discrete recursions evaluate the adjoint operators at different points (left versus right endpoints). The results of Section 7 show that the OTD gradients, both for hidden states and for parameters, converge to their continuous-time adjoint GNDE counterparts. An analogous convergence result can also be established for DTO gradients. Therefore, by comparing both DTO and OTD gradients against the same continuous-time GNDE limit, we can control their discrepancy in terms of their respective convergence errors. 
+
+Theorem 9 (DTO versus OTD for Hidden-State Gradients, proof in Appendix H) . Let G[m]
+
+and A[m] be generated from (12) and (18) , respectively. Under the same assumptions as Theorem 7, with probability at least 1 − 2γ1 − γ2 − γ3,
+
+1
+
+√n max   
+
+> m∈[M]
+
+G[m] − A[m] 
+
+> F
+
+= O 
+
+> 1√αn
+
++ plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+M
+
+!
+
+.
+
+(31) For the parameter gradients, the estimate concerns the local gradient contribution on each time interval. This contribution contains an explicit factor κ = T /M from the time discretization. As a result, the local difference is multiplied by this extra factor of κ, yielding the rate O(1 /M 2)
+
+for each parameter-gradient contribution. 
+
+Theorem 10 (DTO versus OTD for Parameter Gradients, proof in Appendix K) . Let G[m] and 
+
+A[m] be generated from (12) and (18) , respectively. Under the same assumptions as Theorem 7, 
+
+15 with probability at least 1 − 2γ1 − γ2 − γ3,
+
+1
+
+n max   
+
+> m∈[M],ℓ ∈[L]
+
+κ D[ℓ,m ]
+
+> h
+
+
+
+G[m+1] 
+
+− κ D[ℓ,m ]
+
+> h
+
+
+
+A[m]
+
+> max
+
+= O 
+
+> 1√αn
+
++ plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+M 2
+
+!
+
+.
+
+(32) Theorems 9 and 10 show that DTO and OTD become asymptotically equivalent as M → ∞ .The hidden-state gradient discrepancy vanishes at order O(1 /M ), while each local parameter-gradient difference vanishes at order O(1 /M 2). Thus, for sufficiently fine time discretizations, the gradient discrepancy between DTO and OTD becomes small. The choice between them is then mainly determined by implementation costs: DTO differentiates through the discrete solver and typically requires storing the forward states, whereas OTD computes gradients through the continuous adjoint equation solved backward in time. We numerically assess the two predicted rates in Section 9.1.5. 
+
+# 9 Numerical Experiments 
+
+We organize the numerical experiments into two parts. First, we validate the convergence rates predicted by our analysis in Section 9.1. Second, we test the practical size-transferability of learned GNDE dynamics by training on small source graphs and evaluating on independently sampled larger target graphs in Section 9.2. 
+
+9.1 Validation of theoretical rates 
+
+We validate our theoretical results through five groups of experiments, organized into two cat-egories. First, we study graph-size transfer errors, denoted by T E . These experiments support the convergence results for forward trajectories, hidden-state gradients, and parameter gradi-ents in Theorems 3, 4, and 5, respectively. They are presented in Sections 9.1.1, 9.1.2, and 9.1.3. Second, we study temporal discretization errors and DTO–OTD consistency, denoted by DE .These experiments validate the discretization and gradient-consistency results in Theorems 6, 9, and 10. They are presented in Sections 9.1.4 and 9.1.5. 
+
+Graphons. We consider two graphons: (i) an hierarchical stochastic block model (HSBM) graphon W : [0 , 1] 2 → 0, 1 with two hierarchical levels; and (ii) the tent graphon W(x, y ) = max(0 , 1 − | x − y|). These graphons are shown in Figure 1. 
+
+Graph sampling. Given n nodes sampled independently and uniformly from the unit interval 
+
+I, denoted by Un = {ui}ni=1 , edges are sampled independently as Bernoulli random variables with probabilities αnW(ui, u j ), where αn ∈ (0 , 1] controls the sparsity level. 
+
+GNDE architecture. The vector field of the GNDE is parameterized by a GNN with three hidden layers and one output layer ( fc1 , mid1 , mid2 , fc2 ). The width of each hidden layer is 16 .Each hidden layer applies a polynomial graph convolution filter with K = 3 using the symmetric normalized adjacency matrix L, followed by the Softplus activation σ(x) = log(1+ ex). Node fea-tures of dimension F = 4 are initialized using random Fourier polynomials of degree 10 , i.e., for i-th node ui and f -th feature, the initial feature is [Z]i,f = P10  
+
+> k=1
+
+af,k sin(2 πk u i)+ bf,k cos(2 πk u i),where coefficients af,k and bf,k are drawn independently from normal distribution N (0 , 1) .16 9.1.1 Transfer Error for Forward trajectories 
+
+We numerically validate the convergence rate of finite-node GNDE solutions toward the Graphon-NDE solution established in Theorem 3. The Graphon-NDE solution X (u, t ) has a continuum node variable u ∈ [0 , 1] and time t ∈ [0 , T ], and is not available in closed form. Therefore, we approximate the Graphon-NDE trajectory by a high-resolution GNDE trajectory Xnref (t) on a large reference graph Gnref with nref = 10000 nodes placed at evenly spaced latent positions. This reference GNDE is then solved using Euler’s method with Mref = 256 time steps. We denote the resulting numerical solution by X[m]  
+
+> nref ,M ref
+
+, which serves as a surrogate for Xnref (tm),with tm = mT /M ref .For each smaller graph size n, we compute the corresponding approximation X[m] 
+
+> n,M ref
+
+using the same time discretization. We slightly abuse notation and use SUn to denote the numerical sampling map from the reference grid to the node set Un of the smaller randomly sampled graph by using nearest neighbors. We define the empirical transfer error for forward trajectory by 
+
+T E fwd (n) := max  
+
+> m∈[Mref ]
+
+1
+
+√n X[m] 
+
+> n,M ref
+
+− S Un
+
+
+
+X[m] 
+
+> nref ,M ref
+
+ 
+
+> F
+
+. (33) Here, T E fwd (n) serves as a numerical surrogate for the discrepancy between the GNDE and Graphon-NDE solutions, namely the left-hand side of (24). We choose nref and Mref sufficiently large so that T E fwd (n) accurately approximates this exact error and the reference approxima-tion error is negligible. We therefore expect T E fwd (n) to exhibit the rate O(1 /√αnn), up to logarithmic factors, predicted by Theorem 3. Concretely, we consider graph sizes n ∈ { 100 , 150 , 200 , 300 , 500 , 700 , 1000 , 1500 , 2000 , 3000 }
+
+and run 100 independent trials. In each trial, we sample a set of random Fourier coefficients, and initialize the GNDE, whose weights are shared across all graph sizes in that trial. For each n, we consider three sparsity levels αn ∈ { 1, n −0.25 , n −0.5}. Since the theoretical rate is O(1 /√αnn),the expected log-log slopes are −0.50 , −0.375 , and −0.25 , respectively. Figure 2 shows clear power-law decay across all three regimes for both the tent and HSBM graphons, and the fitted slopes remain close to these theoretical values. 
+
+9.1.2 Transfer Error for Hidden-state Gradients 
+
+We next validate the hidden-state adjoint convergence rate from Theorem 4. We follow the same reference-graph protocol as in Section 9.1.1. In each trial, we additionally draw an independent random Fourier polynomial as the terminal adjoint state and solve the adjoint equation back-ward in time on both the reference graph and each sampled graph, using the same Euler time discretization. We define the empirical transfer error for hidden-state gradients as 
+
+T E state (n) := max  
+
+> m∈[Mref ]
+
+1
+
+√n A[m] 
+
+> n,M ref
+
+− S Un
+
+
+
+A[m] 
+
+> nref ,M ref
+
+ 
+
+> F
+
+. (34) This quantity is the discretized analogue of the left-hand side in (26). Theorem 4 predicts the worst-case rate O(1 /√αnn), up to logarithmic factors. Figure 3 reports the results over the same setting of graph sizes, sparsity levels, and inde-pendent trials as in Section 9.1.1. The empirical decay rates are consistent with the theoretical rate O(1 /√αnn) for both the HSBM and tent graphons; in the sparsest regime αn = n−1/2, the observed convergence is slightly faster than the worst-case prediction. 
+
+9.1.3 Transfer Error for Parameter Gradients 
+
+We validate the parameter-gradient convergence rate from Theorem 5. We apply the same trans-fer protocol as in Sections 9.1.1 and 9.1.2. At each backward-in-time Euler step, we additionally 17 Figure 1: Illustration of the tent and HSBM graphons and representative sampled graphs. The graphs are sampled from each graphon with edge probabilities αnW(ui, u j ), where αn ∈{1, n −0.25 , n −0.5}.extract the gradients of parameters in four layers, and define the transfer error for parameter gradients as 
+
+T E param (n) := max  
+
+> ℓ∈[4]
+
+max   
+
+> m∈[Mref ]
+> 1
+> n
+
+a[ℓ,m ] 
+
+> n,M ref
+
+− 1 
+
+> Nref
+
+a[ℓ,m ] 
+
+> Nref ,M ref max
+
+, (35) which is a discrete analogue of the left-hand side of Eq. (27). It follows from Theorem 5 that the leading worst-case sparsity-dependent rate is O(1 /(αn
+
+√n)) , up to logarithmic factors. As before, we consider three sparsity regimes αn ∈ { 1, n −0.25 , n −0.5}. The corresponding theoretical worst-case rates are O(n−0.5), O(n−0.25 ), and O(1) , respectively. In particular, for the sparsest regime αn = n−0.5, the theorem does not guarantee convergence of the parameter-gradient transfer error. However, in the numerical experiments, we observe substantially faster decay than the worst-case rate predicts. We report the results for T E param (n) in Figure 4. For both the HSBM and tent graphons, the empirical decay is close to O(n−0.5) across all three sparsity levels. Thus, the dense case is consistent with the theoretical worst-case rate, while the sparse cases exhibit faster convergence than the worst-case bound suggests. This indicates that the theoretical bound for parameter-gradient transfer on sparse graphs is conservative in these experiments. 
+
+9.1.4 Discretization Error for Forward Trajectories 
+
+We numerically validate the theoretical error rate established in Theorem 6 for Euler discretiza-tions of GNDEs. The theorem bounds the discrepancy between the exact GNDE solution Xn(tm)
+
+and its Euler approximation X[m] 
+
+> n
+
+. Again, in practice, the exact trajectory Xn(t) is not available 18 Figure 2: Transfer error for forward trajectory: log-log plot of T E fwd (n) versus the number of nodes n for the HSBM graphon (left) and the tent graphon (right). Three sparsity levels αn ∈{1, n −0.25 , n −0.5} are considered. Markers denote empirical means, error bars show standard deviations, and dashed lines indicate fitted power-law trends. The fitted slopes are consistent with the theoretical rate O(1 /√αnn).in closed form. Therefore, we use a fine-resolution Euler solution as a reference approximation. Specifically, we compute a reference trajectory X[k] 
+
+> n,M ref
+
+using Euler’s method with Mref = 256 
+
+time steps. For each coarse resolution M ∈ { 2, 4, 8, 16 , 32 , 64 }, we compute the Euler iterates 
+
+X[m] 
+
+> n,M
+
+on the time grid tm = mT /M , m ∈ [M ]. Since each M divides Mref , the coarse time grid is nested in the reference grid, and the matching fine-grid index is km = mM ref /M . We define 
+
+DE fwd (M ) := 1
+
+√n max   
+
+> m∈[M]
+
+X[m] 
+
+> n,M
+
+− X[km]  
+
+> n,M ref F
+
+. (36) Here X[km] 
+
+> n,M ref
+
+serves as a numerical surrogate for the exact solution Xn(tm) at time tm. We expect DE fwd (M ) to exhibit the first-order rate O(1 /M ) predicted by Theorem 6. For each graphon, we fix a single random graph Gn with n = 2000 nodes, sampled from the 
+
+512 × 512 graphon discretization without edge drop, i.e., in the dense-graph regime. We then vary only the random Fourier initialization and model weights across 50 random seeds. Figure 5 shows that DE fwd (M ) decays approximately as a power law in M for both graphons. The fitted log-log slopes are close to −1, consistent with the theoretical first-order rate O(1 /M ),and this behavior is stable across the 50 random trials. 
+
+9.1.5 DTO–OTD Gradient Discrepancy 
+
+We numerically verify the theoretical DTO–OTD error rates for hidden-state gradients and parameter gradients established in Theorems 9 and 10. To this end, we define hidden-state gradient discrepancy (i.e., the left side of (31)) by 
+
+DE state (M ) := 1
+
+√n max   
+
+> m∈[M]
+
+G[m] − A[m] 
+
+> F
+
+,
+
+and parameter gradient discrepancy (i.e., the left side of (32)) by 
+
+DE (ℓ)param (M ) := 1
+
+n max   
+
+> m∈[M]
+
+κ D[ℓ,m ]
+
+> h
+
+
+
+G[m+1] 
+
+− κ D[ℓ,m ]
+
+> h
+
+
+
+A[m] 
+
+> max
+
+, ℓ ∈ [L].
+
+19 Figure 3: Transfer error for hidden-state gradients: log-log plot of T E state (n) versus the number of nodes n for the HSBM graphon (left) and the tent graphon (right), using the same graph sizes and sparsity levels as in Figure 2. The adjoint trajectories are initialized from a terminal random Fourier state and integrated backward in time. The empirical decay rates are consistent with the theoretical worst-case bound O(1 /√αnn). For sparse graphs, the observed convergence rate is slightly faster than the worst-case theoretical rates. Note that Theorems 9 and 10 establish the theoretical rates DE state (M ) = O(1 /M ) and DE (ℓ)param (M ) = 
+
+O(1 /M 2), up to sparsity and logarithmic factors. We test on a graph Gn with n = 200 nodes. To obtain meaningful gradient quantities, we fit the GNDE to a prescribed target dynamics and define the loss with respect to the corresponding target trajectory. Recall that the GNDE vector field is parameterized by the three-hidden-layer GNN described above. For the parameter-gradient discrepancy, we report the errors for four parameter groups, denoted by fc1 , mid1 , mid2 , and fc2 . We consider the Allen–Cahn equation on a graph ddt X(t) = − ε2
+
+> n
+
+ DX (t) − W X (t) + X(t) − X(t)⊙3, where W is the adjacency matrix, D is the degree matrix, ε = 0 .5, and X(t)⊙3 denotes the element-wise cube of X(t).We approximate the graph Allen–Cahn target trajectory using the adaptive Dormand–Prince solver with tolerance 10 −8 and treat the resulting terminal state as the reference terminal state, denoted by X⋆n(T ). When training the GNDE, we define the loss as the error at the terminal time, i.e., ∥Xn(T ) − X⋆n(T )∥2F. Both the DTO and OTD paradigms use the Euler scheme with step size κ = T /M , where M ∈ { 5, 10 , 20 , 40 , 80 , 160 , 320 , 640 }.Figure 6 presents the numerical results for both tent and HSBM graphons. The hidden-state discrepancy DE state (M ) decays with slope essentially −1, in agreement with the O(1 /M ) rate from Theorem 9. The parameter gradient discrepancy DE (ℓ)param (M ) decays with slopes approx-imately −2 across all considered parameter blocks, supporting the O(1 /M 2) rate predicted by Theorem 10. 
+
+9.2 Size transferability for learned dynamics 
+
+We next test the practical implication of our theory: a GNDE trained on a small source graph (nsrc = 16 nodes) should transfer to much larger target graphs (up to n = 1024 ) sampled independently from the same graphon. Unlike the forward-convergence study of Section 9.1.1, which compares each sampled graph against a single large reference graph serving as a proxy for the graphon limit, here the source and target are two independent random graphs of different sizes: they share neither latent positions nor edge realizations. Successful prediction therefore 20 Figure 4: Transfer error for parameter gradients: log-log plot of T E param (n) versus the number of nodes n for the HSBM graphon (left) and tent graphon (right). Three sparsity levels αn ∈{1, n −0.25 , n −0.5} are considered. The observed empirical rates for both graphons across three sparsity levels are all around O(n−0.5). The empirical rate matches the dense-graph theoretical rate and is much faster than the worst-case theoretical rates predicted for sparse graphs. requires the trained GNDE to generalize to a genuinely new graph, not merely to reproduce its behavior on the (small) graph it was trained on. 
+
+Dynamics. We consider four graph-based dynamical systems, summarized in Table 2. Three of them take the nonlocal diffusion form 
+
+ddt [X]i = c
+
+> n
+
+X
+
+> j=1
+
+Lij f  [X]j − [X]i
+
+ + g [X]i
+
+, (37) where Lij = Wij /pDii Djj is the symmetric normalized adjacency weight ( W is the adjacency, 
+
+D is the degree matrix, as in Section 2.2), f controls how a difference between neighbors con-tributes to the local change, and g is an on-node reaction term. When f is the identity, the sum is a standard graph-Laplacian diffusion: P 
+
+> j
+
+Lij 
+
+ [X]j − [X]i
+
+ = −(DL − L)X
+
+> i
+
+, where 
+
+DL := diag( L1) is the diagonal matrix of row sums of L. These models can be viewed as graph discretizations of nonlocal diffusion equations on graphons (Medvedev, 2014a); the four systems span standard application regimes and cover different kinds of nonlinearity in the GNDE velocity field: pure diffusion, diffusion with reaction, multiplicative coupling, and saturating influence. We describe each system together with its paired graphon and visualized pattern below. Throughout, each node i carries a latent position ui ∈ [0 , 1] (its graphon coordinate), and u
+
+denotes a generic such position. We use four graphons: the HSBM and tent graphons considered in Section 9.1, together with two additional ones, the circular threshold graphon and the rank-1 power-law graphon (illustrated in Figure 7). We pair each dynamics with a graphon whose structure makes its characteristic dynamical behavior clearly visible (diffusion, reaction–diffusion growth, epidemic propagation, or consensus formation), and visualize the resulting trajectories on a source graph with nsrc = 16 nodes in Figure 8. 
+
+• Linear heat flow on graphs (Chung, 1997; Chung et al., 2007). On the HSBM graphon (Fig-ure 8, first column), heat smooths within each community quickly and equalizes between communities more slowly, producing a hierarchical relaxation with two distinct timescales. 21 Figure 5: Temporal discretization error: log-log plot of DE fwd (M ) versus the number of Euler steps M for the HSBM graphon (left) and the tent graphon (right). The setup uses n = 2000 
+
+nodes in the dense-graph setting ( αn = 1 ). The fitted log-log slopes are close to −1, consistent with the theoretical rate O(1 /M ).
+
+• Fisher–KPP reaction–diffusion (Fisher, 1937; Kolmogorov et al., 1937; Du et al., 2020; Hoffman and Holzer, 2019) models population growth with spatial spreading. On the circular threshold graphon (Figure 8, second column), a small population initially confined near latent position u = 0 .125 grows and spreads outward as a finite-speed traveling wavefront, illustrating how a species invades new spatial regions. 
+
+• Network SIS epidemic dynamics (Lajmanovich and Yorke, 1976; Van Mieghem et al., 2009; Van Mieghem, 2011) is the only system not in the diffusion form above; its multiplicative term (1 − [X]i) P 
+
+> j
+
+Lij [X]j pairs susceptibility with infection pressure from neighbors. On the rank-1 power-law graphon (Figure 8, third column), well-connected hub nodes sustain higher endemic infection levels than peripheral ones, mirroring how epidemics concentrate in highly connected sub-populations. 
+
+• Nonlinear consensus with saturating influence (Hegselmann and Krause, 2002; Motsch and Tadmor, 2014; Brooks et al., 2024) is a smooth bounded-confidence variant of classical opinion dynamics. On the Tent graphon (Figure 8, fourth column), trajectories starting from a spread of initial opinions contract toward a single common value, modeling how a group reaches agreement when mutual influence saturates with disagreement size. 
+
+Initial conditions. In the transfer experiments, we take the node feature dimension F to be 1. Thus, the initial condition is a scalar field obtained by evaluating a continuous function 
+
+Z : I → R at the sampled node positions, i.e., [X(0)] i = Z(ui), for i ∈ [n]. We use two families of initial conditions, each chosen for a different purpose. For the quantitative transfer experiment in Table 3, we use random Fourier polynomials Z(u) = P10  
+
+> k=1
+
+ak sin(2 πku )+ bk cos(2 πku ), with i.i.d. Gaussian coefficients (ak, b k), where errors are averaged over random draws. The same realization of Z is reused across all graph sizes within a trial. For the qualitative visualization in Figure 8, we instead pick a single initial condition tailored to each dynamics: a Fourier polynomial for linear heat and consensus; a sigmoidal localized seed for Fisher–KPP, Z(u) = V σ (−s(u − uthresh )) 
+
+with V = 1 , s = 20 , uthresh = 0 .125 , which models a small population initially confined near 
+
+u = 0 .125 ; and the constant Z(u) = 0 .5 for SIS, so that the graphon’s row-sum profile alone shapes the resulting spatial structure. 22 Figure 6: DTO–OTD gradient discrepancy: log-log plots of the DTO–OTD gradient discrepan-cies versus the number of Euler steps M for the HSBM graphon (top row) and the tent graphon (bottom row). Left column: hidden-state gradient discrepancy DE state (M ). The fitted log-log slopes are close to −1, consistent with the theoretical rate O(1 /M ). Right column: parameter-gradient discrepancy DE (ℓ)param (M ) for the four parameter blocks fc1 , mid1 , mid2 , and fc2 . The fitted log-log slopes are close to −2, consistent with the theoretical rate O(1 /M 2).
+
+GNDE architecture. In the theoretical analysis, we primarily take the graph shift operator in the graph convolutional operation to be the symmetric normalized adjacency matrix L. In the transfer experiments below, however, we choose the graph shift operator S to match the linear graph operator appearing in the target dynamics. For the linear heat equation, Fisher–KPP dynamics, and nonlinear consensus dynamics, the linear graph-dependent term has the form 
+
+−c eLX , where eL := DL − L. We therefore set S = eL and use a GNN of one hidden layer with width 16 and Tanh activation. For the SIS dynamics, the interaction is multiplicative rather than driven by pairwise differences, so we instead set S = L and use a GNN of two hidden layers with width 16 and the same Tanh activation. For all experiments, we use a polynomial filter with K = 2 .
+
+Training protocol. For training, we use velocity regression rather than trajectory match-ing, in order to isolate approximation and transfer performance from the cost of differentiating through an ODE solver. Ground-truth position–velocity pairs {(X(tm), ddt X(tm)) }2 
+
+> m=0
+
+are gen-23 Dynamics Equation on node i Description Linear Heat ddt [X]i = c                                          
+
+> nX
+> j=1
+> Lij
+>  [X]j−[X]i
+> Classical diffusion (graph Laplacian flow); models linear heat propagation on graphs. Coupling constant c= 0 .5.
+> Fisher–KPP ddt [X]i=c
+> nX
+> j=1
+> Lij
+>  [X]j−[X]i
+> + [ X]i(1 −[X]i)
+> Diffusion with logistic reaction; models population growth with spatial spreading. Coupling constant c= 1 .0.
+> SIS Epidemic ddt [X]i=−β[X]i+γ(1 −[X]i)
+> nX
+> j=1
+> Lij [X]j
+> Epidemic spreading with recovery; models disease spread through infected neighbors. Parameters β= 1 ,γ= 5 .
+> Consensus ddt [X]i=c
+> nX
+> j=1
+> Lij
+> [X]j−[X]i
+> 1 + ([ X]j−[X]i)2
+> Nonlinear averaging with saturating influence; models bounded-confidence consensus. Coupling constant c= 10 .
+
+Table 2: Graph-based dynamical systems used in the size-transfer experiment. Here Lij =
+
+Wij /pDii Djj is the symmetric normalized adjacency weight and [X]i denotes the node feature at node i.
+
+Figure 7: Two graphons used in the pattern-formation experiment, with representative sample graphs at n = 24 drawn under the same Bernoulli sampling protocol as in Section 9.1. Left: 
+
+circular threshold graphon W(u, v ) = 1{d(u, v ) ≤ 0.15 }, where d(u, v ) = min( |u − v|, 1 − | u − v|)
+
+is the periodic distance. Right: rank-1 power-law graphon W(u, v ) = uv , whose continuous graphon yields a weighted graph with edge weights W(ui, u j ).erated by approximating the target dynamics with an adaptive Dormand–Prince solver with tolerance 10 −8, sampled at three uniformly spaced times {t0, t 1, t 2} in [0 , T ]. Let X⟨q⟩ denote the target trajectory generated from the q-th initial condition. We minimize the following loss 
+
+L(H) = 13Q
+
+> Q
+
+X
+
+> q=1 2
+
+X
+
+> m=0
+
+GNN( X⟨q⟩(tm); S, H) − ddt X⟨q⟩(tm)
+
+> 2
+
+, (38) with Q = 500 initial conditions. We optimize the model using Adam (Kingma and Ba, 2014) with learning rate 10 −3 for up to 500 epochs, with early stopping. Since each update only requires GNN forward evaluations and does not involve an inner ODE solve, this velocity-regression training procedure is substantially cheaper than trajectory-based training through a differen-tiable ODE solver such as torchdiffeq (Chen et al., 2018). 
+
+Transfer protocol. With training in place, we evaluate transfer as follows. For each graphon– dynamics pair, we train on a source graph with nsrc = 16 nodes and apply the learned parameters 24 bH to independently sampled target graphs of size n = 32 , 64 , 128 , 256 , 512 , 1024 , between 2×
+
+and 64 × larger than the source. Both the source graph Gnsrc and the target graph Gn are drawn independently from the graphon, by the same Bernoulli mechanism used in Section 9.1: latent positions ui ∈ [0 , 1] together with random edges generated from the graphon W. For the {0, 1}-valued graphons (HSBM and circular threshold), the edges are unweighted with edge probability αnW(ui, u j ); for the weighted graphons (tent and rank-1 power-law), we retain the value W(ui, u j ) as an edge weight and impose sparsity through αn. We use a dense regime (αn = 1 ) and a sparse regime ( αn = n−1/2 for the Tent, Circular, and Power-law graphons, 
+
+αn = 0 .1 for the binary HSBM graphon), with surviving edges rescaled by 1/α n. We define the transfer error to be 
+
+T E (n) := sup t∈[0 ,T ] Xn(t; bH) − X⋆n(t)
+
+sup t∈[0 ,T ] X⋆n(t) , (39) where X⋆n(t) is the ground-truth solution on the target graph. Since X⋆n has no closed form, in our experiments we approximate it with the adaptive Dormand–Prince solver with tolerance 
+
+10 −6; the GNDE solution Xn(·; bH) is numerically solved by a Runge-Kutta method of order four with step size 0.02 , and each supremum of t ∈ [0 , T ] is taken as the maximum over 50 uniformly spaced output times tm ∈ [0 , T ].
+
+Results. We report T E (n) in Table 3 as mean ± std over 10 trials, each redrawing the target graph, initial condition, and model initialization. Its numerator is the absolute prediction error bounded by (I)+(II)+(III) in (1), and the denominator sup t ∥X⋆n(t)∥ = O(√n) matches that scaling, so rows are comparable across n: the source row ( nsrc = 16 ) is the relative training error (II), each transfer row is the relative total, and T E (n) comparable to the source value means the size-induced terms (I) and (III) do not dominate (II) 
+
+Dense regime ( αn = 1 ): transfer succeeds across graphons. For every dynamics graphon pair, the transfer error on the larger target graph stays comparable to the source error at nsrc = 16 
+
+(e.g., Fisher–KPP on Tent: 0.018 at n = 1024 versus 0.022 at nsrc ). The comparable source and target errors indicate that transfer to larger dense graphs does not produce a noticeable size-induced degradation. The main exception is SIS on the rank-1 power-law graphon, where the multiplicative interaction (1 − X)LX amplifies the effect of smooth degree heterogeneity and the transfer error rises modestly from 0.011 at nsrc to 0.024 at n = 1024 .
+
+Sparse regime: sparsification effects depend on the graphon. On the Tent, circular threshold, and rank-1 power-law graphons, using αn = n−1/2 generally increases the transfer error compared with the dense setting αn = 1 , especially at smaller transfer sizes. As n grows, however, the sparse-regime errors move closer to the corresponding dense-regime errors, suggesting that the effect of edge subsampling weakens at larger graph sizes. For the HSBM graphon, the dense graph (αn = 1 ) is the deterministic two-level block pattern and carries no edge-sampling randomness. We therefore probe sparsity using a fixed keep-probability 0.1 (discarding around 90% of edges); the transfer error is elevated at small n but returns toward the dense value as n grows. Finally, Figure 8 illustrates that, on the source graph ( nsrc = 16 ), the GNDE prediction visually matches the ground truth for each of the four dynamics. The training and transfer protocol is identical to the experiment above; the only difference is that we rescale the per-dynamics coupling in (37) ( c = 3 for linear heat and SIS, c = 15 for consensus, d = 0 .6,
+
+r = 0 .5 for Fisher–KPP) so that each dynamics’ characteristic behavior develops clearly within the simulated time window. 
+
+Computational platform. All experiments were run on NVIDIA RTX A4000 GPUs with 16 GB of memory. 25 Table 3: Transfer error of GNDEs trained on nsrc = 16 and transferred to n ∈{128 , 256 , 512 , 1024 } across four graphon families. Dense regime αn = 1; sparse regime 
+
+αn = n−1/2 for Tent, Circular, and Power-law, and a fixed αn = 0 .1 for the HSBM graphon. 
+
+Tent HSBM Circular Power-law 
+
+Dynamics n α=1 α=n−1/2 α=1 α=0 .1 α=1 α=n−1/2 α=1 α=n−1/2
+
+Linear Heat 16 (src) 0.004 ± 0.002 0.004 ± 0.002 0.004 ± 0.002 0.004 ± 0.002 
+
+128 0.003 ±0.001 0.006 ±0.004 0.004 ±0.004 0.006 ±0.003 0.003 ±0.002 0.005 ±0.003 0.004 ±0.002 0.005 ±0.003 
+
+256 0.003 ±0.001 0.005 ±0.004 0.004 ±0.004 0.005 ±0.004 0.003 ±0.002 0.005 ±0.003 0.004 ±0.002 0.004 ±0.003 
+
+512 0.003 ±0.001 0.004 ±0.003 0.004 ±0.004 0.004 ±0.004 0.003 ±0.002 0.004 ±0.002 0.004 ±0.002 0.004 ±0.002 
+
+1024 0.003 ±0.001 0.004 ±0.003 0.004 ±0.004 0.004 ±0.004 0.003 ±0.002 0.004 ±0.002 0.004 ±0.002 0.004 ±0.002 
+
+Fisher–KPP 16 (src) 0.022 ± 0.011 0.026 ± 0.013 0.032 ± 0.014 0.029 ± 0.012 
+
+128 0.019 ±0.009 0.023 ±0.009 0.022 ±0.010 0.027 ±0.010 0.026 ±0.010 0.039 ±0.011 0.027 ±0.009 0.029 ±0.009 
+
+256 0.018 ±0.008 0.021 ±0.008 0.021 ±0.009 0.023 ±0.009 0.025 ±0.010 0.033 ±0.010 0.027 ±0.009 0.028 ±0.009 
+
+512 0.018 ±0.008 0.020 ±0.008 0.021 ±0.009 0.022 ±0.009 0.024 ±0.010 0.029 ±0.010 0.027 ±0.009 0.027 ±0.009 
+
+1024 0.018 ±0.008 0.019 ±0.008 0.021 ±0.009 0.021 ±0.009 0.024 ±0.010 0.027 ±0.010 0.027 ±0.009 0.027 ±0.009 
+
+SIS 16 (src) 0.016 ± 0.010 0.012 ± 0.010 0.011 ± 0.009 0.011 ± 0.007 
+
+128 0.016 ±0.010 0.025 ±0.006 0.022 ±0.017 0.053 ±0.031 0.008 ±0.008 0.053 ±0.025 0.023 ±0.016 0.065 ±0.028 
+
+256 0.016 ±0.010 0.022 ±0.007 0.021 ±0.016 0.041 ±0.022 0.008 ±0.008 0.029 ±0.012 0.023 ±0.015 0.061 ±0.025 
+
+512 0.016 ±0.010 0.021 ±0.007 0.019 ±0.016 0.032 ±0.016 0.008 ±0.008 0.019 ±0.010 0.023 ±0.014 0.054 ±0.022 
+
+1024 0.017 ±0.010 0.020 ±0.008 0.019 ±0.017 0.027 ±0.015 0.008 ±0.008 0.013 ±0.008 0.024 ±0.015 0.050 ±0.020 
+
+Consensus 16 (src) 0.213 ± 0.055 0.201 ± 0.059 0.213 ± 0.041 0.193 ± 0.055 
+
+128 0.165 ±0.051 0.199 ±0.035 0.183 ±0.066 0.214 ±0.041 0.206 ±0.030 0.208 ±0.021 0.157 ±0.047 0.182 ±0.032 
+
+256 0.156 ±0.049 0.187 ±0.035 0.174 ±0.064 0.194 ±0.049 0.204 ±0.027 0.210 ±0.016 0.147 ±0.047 0.171 ±0.035 
+
+512 0.154 ±0.049 0.177 ±0.038 0.172 ±0.065 0.183 ±0.056 0.203 ±0.028 0.211 ±0.016 0.147 ±0.043 0.163 ±0.036 
+
+1024 0.151 ±0.048 0.171 ±0.040 0.170 ±0.066 0.177 ±0.060 0.199 ±0.028 0.208 ±0.018 0.145 ±0.043 0.158 ±0.037 
+
+# Acknowledgment 
+
+M. Yan acknowledges support from an AMS-Simons travel grant. S. Tang is supported by NSF DMS CAREER Grant No. 2340631. The authors thank Mr. Fangqian Zhang for his careful proofreading of the manuscript and helpful discussions. 
+
+# References 
+
+Benny Avelin and Kaj Nyström. Neural ODEs as the deep limit of ResNets with constant weights. Analysis and Applications , 19(03):397–437, 2021. Nathalie Ayi and Nastassia Pouradier Duteil. Mean-field and graph limits for collective dynamics models with time-varying weights. Journal of Differential Equations , 299:65–110, 2021. Erhan Bayraktar, Suman Chakraborty, and Ruoyu Wu. Graphon mean field systems. The Annals of Applied Probability , 33(5):3587–3619, 2023. Torben Berndt, Benjamin Walker, Tiexin Qin, Jan Stühmer, and Andrey Kormilitzin. Permu-tation equivariant neural controlled differential equations for dynamic graph representation learning. Advances in Neural Information Processing Systems , 38:98276–98311, 2026. Heather Z. Brooks, Philip S. Chodrow, and Mason A. Porter. Emergence of polarization in a sig-moidal bounded-confidence model of opinion dynamics. SIAM Journal on Applied Dynamical Systems , 23(2):1442–1475, 2024. Ben Chamberlain, James Rowbottom, Maria I Gorinova, Michael Bronstein, Stefan Webb, and Emanuele Rossi. Grand: Graph neural diffusion. In International Conference on Machine Learning , pages 1407–1418. PMLR, 2021. 26 Figure 8: Ground truth versus GNDE prediction on source graphs with nsrc = 16 . Each dynamics is paired with a graphon that highlights its characteristic dynamical behavior. Top row: ground-truth trajectories. Bottom row: GNDE predictions, with relative trajectory error annotated. Heat, SIS, and consensus use t ∈ [0 , 1] ; Fisher–KPP on the circular graphon uses rescaled time 
+
+τ ∈ [0 , 18] .Ricky TQ Chen, Yulia Rubanova, Jesse Bettencourt, and David K Duvenaud. Neural ordinary differential equations. Advances in Neural Information Processing Systems , 31, 2018. Jeongwhan Choi, Seoyoung Hong, Noseong Park, and Sung-Bae Cho. GREAD: Graph neural reaction-diffusion networks. In International Conference on Machine Learning , pages 5722– 5747. PMLR, 2023. Fan R. K. Chung. Spectral Graph Theory , volume 92 of CBMS Regional Conference Series in Mathematics . American Mathematical Society, 1997. Soon-Yeong Chung, Yun-Sung Chung, and Jong-Ho Kim. Diffusion and elastic equations on networks. Publications of the Research Institute for Mathematical Sciences , 43(3):699–726, 2007. Sever Silvestru Dragomir. Some Gronwall type inequalities and applications. Science Direct Working Paper , (S1574-0358):04, 2003. Yihong Du, Bendong Lou, Rui Peng, and Maolin Zhou. The fisher–kpp equation over simple graphs: Varied persistence states in river networks. Journal of Mathematical Biology , 80: 1559–1616, 2020. Ivar Ekeland and Roger Temam. Convex analysis and variational problems . SIAM, 1999. Zheng Fang, Qingqing Long, Guojie Song, and Kunqing Xie. Spatial-temporal graph ODE networks for traffic flow forecasting. In Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery & Data Mining , pages 364–373, 2021. Marc Finzi, Andres Potapczynski, Matthew Choptuik, and Andrew Gordon Wilson. A stable and scalable method for solving initial value PDEs with neural networks. arXiv preprint arXiv:2304.14994 , 2023. R. A. Fisher. The wave of advance of advantageous genes. Annals of Eugenics , 7(4):355–369, 1937. 27 Tianxiang Gao, Siyuan Sun, Hailiang Liu, and Hongyang Gao. Global convergence in neural ODEs: Impact of activation functions. arXiv preprint arXiv:2509.22436 , 2025. Amir Gholami, Kurt Keutzer, and George Biros. ANODE: Unconditionally accurate memory-efficient gradients for neural odes. arXiv preprint arXiv:1902.10298 , 2019. Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition ,pages 770–778, 2016. Rainer Hegselmann and Ulrich Krause. Opinion dynamics and bounded confidence models, analysis, and simulation. Journal of Artificial Societies and Social Simulation , 5(3):2, 2002. Daniel Herbst and Stefanie Jegelka. Higher-order graphon neural networks: Approximation and cut distance. arXiv preprint arXiv:2503.14338 , 2025. Aaron Hoffman and Matt Holzer. Invasion fronts on graphs: The fisher–kpp equation on homo-geneous trees and erdős–rényi graphs. Discrete and Continuous Dynamical Systems - Series B, 24(2):671–694, 2019. Zijie Huang, Yizhou Sun, and Wei Wang. Generalizing graph ODE for learning complex system dynamics across environments. In Proceedings of the 29th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pages 798–809, 2023. Zijie Huang, Jeehyun Hwang, Junkai Zhang, Jinwoo Baik, Weitong Zhang, Dominik Wodarz, Yizhou Sun, Quanquan Gu, and Wei Wang. Causal graph ODE: Continuous treatment effect modeling in multi-agent dynamical systems. In Proceedings of the ACM Web Conference 2024 ,pages 4607–4617, 2024. Dmitry Kaliuzhnyi-Verbovetskyi and Georgi S Medvedev. Sparse Monte Carlo method for non-local diffusion problems. SIAM Journal on Numerical Analysis , 60(6):3001–3028, 2022. Nicolas Keriven, Alberto Bietti, and Samuel Vaiter. Convergence and stability of graph convolu-tional networks on large random graphs. Advances in Neural Information Processing Systems ,33:21512–21523, 2020. Patrick Kidger. On neural differential equations. arXiv preprint arXiv:2202.02435 , 2022. Diederik P Kingma and Jimmy Ba. Adam: A method for stochastic optimization. arXiv preprint arXiv:1412.6980 , 2014. Thomas N Kipf and Max Welling. Semi-supervised classification with graph convolutional net-works. arXiv preprint arXiv:1609.02907 , 2016. A. N. Kolmogorov, I. G. Petrovskii, and N. S. Piskunov. A study of the diffusion equation with increase in the amount of substance, and its application to a biological problem. Bulletin of Moscow University, Mathematics and Mechanics , 1(6):1–26, 1937. Ana Lajmanovich and James A. Yorke. A deterministic model for gonorrhea in a nonhomoge-neous population. Mathematical Biosciences , 28(3–4):221–236, 1976. Thien Le and Stefanie Jegelka. Limits, approximation and size transferability for GNNs on sparse graphs via graphops. Advances in Neural Information Processing Systems , 36:41305–41342, 2023. 28 Ron Levie, Wei Huang, Lorenzo Bucci, Michael Bronstein, and Gitta Kutyniok. Transferability of spectral graph convolutional neural networks. Journal of Machine Learning Research , 22 (272):1–59, 2021. Zewen Liu, Xiaoda Wang, Bohan Wang, Zijie Huang, Carl Yang, and Wei Jin. Graph ODEs and beyond: A comprehensive survey on integrating differential equations with graph neural networks. In Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining V. 2 , pages 6118–6128, 2025. László Lovász. Large networks and graph limits , volume 60. American Mathematical Society, 2012. Xiao Luo, Jingyang Yuan, Zijie Huang, Huiyu Jiang, Yifang Qin, Wei Ju, Ming Zhang, and Yizhou Sun. HOPE: High-order graph ODE for modeling interacting dynamics. In Interna-tional Conference on Machine Learning , pages 23124–23139. PMLR, 2023. Sohir Maskey, Ron Levie, and Gitta Kutyniok. Transferability of graph neural networks: an extended graphon approach. Applied and Computational Harmonic Analysis , 63:48–83, 2023. Georgi S Medvedev. The nonlinear heat equation on dense graphs and graph limits. SIAM Journal on Mathematical Analysis , 46(4):2743–2766, 2014a. Georgi S Medvedev. The nonlinear heat equation on W-random graphs. Archive for Rational Mechanics and Analysis , 212(3):781–803, 2014b. Sébastien Motsch and Eitan Tadmor. Heterophilious dynamics enhances consensus. SIAM Review , 56(4):577–621, 2014. Derek Onken and Lars Ruthotto. Discretize-optimize vs. optimize-discretize for time-series regression and continuous normalizing flows. arXiv preprint arXiv:2005.13420 , 2020. Thierry Paul and Emmanuel Trélat. From microscopic to macroscopic scale equations: mean field, hydrodynamic and graph limits. arXiv preprint arXiv:2209.08832 , 2022. Michael Poli, Stefano Massaroli, Junyoung Park, Atsushi Yamashita, Hajime Asama, and Jinkyoo Park. Graph neural ordinary differential equations. arXiv preprint arXiv:1911.07532 ,2019. Luana Ruiz, Luiz Chamon, and Alejandro Ribeiro. Graphon neural networks and the trans-ferability of graph neural networks. Advances in Neural Information Processing Systems , 33: 1702–1712, 2020. T Konstantin Rusch, Ben Chamberlain, James Rowbottom, Siddhartha Mishra, and Michael Bronstein. Graph-coupled oscillator networks. In International Conference on Machine Learn-ing , pages 18888–18909. PMLR, 2022. Michael Sander, Pierre Ablin, and Gabriel Peyré. Do residual neural networks discretize neural ordinary differential equations? Advances in Neural Information Processing Systems , 35: 36520–36532, 2022. Franco Scarselli, Marco Gori, Ah Chung Tsoi, Markus Hagenbuchner, and Gabriele Monfardini. The graph neural network model. IEEE Transactions on Neural Networks , 20(1):61–80, 2008. Piet Van Mieghem. The N -intertwined SIS epidemic network model. Computing , 93(2–4):147– 169, 2011. 29 Piet Van Mieghem, Jasmina Omic, and Robert Kooij. Virus spread in networks. IEEE/ACM Transactions on Networking , 17(1):1–14, 2009. Yewei Xu, Shi Chen, and Qin Li. Correcting auto-differentiation in neural-ODE training. arXiv preprint arXiv:2306.02192 , 2023. Mingsong Yan, Charles Kulick, and Sui Tang. On the convergence and size transferability of continuous-depth graph neural networks. arXiv preprint arXiv:2510.03923 , 2025. 
+
+# A Notation Conventions 
+
+Because the vector fields of our GNDEs and Graphon-NDEs are parameterized by multi-layer architectures, we explicitly track their hidden states using the following conventions. Super-scripts denote the layer and time indices. Parentheses (ℓ, t ) indicate continuous time t, while square brackets [ℓ, m ] indicate discrete steps tm. Base inputs ( ℓ = 0 ) frequently omit the zero for brevity (e.g., X(0 ,t ) ≡ X(t) ≡ X(t), X (0 ,t ) ≡ X (·, t ), and X[0 ,m ] ≡ X[m]). The ℓ-th layer outputs of the forward passes GNN ( X(t); L, H(t)) , WNN( X (u, t ); LP , H(t)) , and GNN( X[m]; L, H(tm)) 
+
+are denoted by X(ℓ,t ), X (ℓ,t ), and X[ℓ,m ], respectively. For the layer-wise operations, the two-variable graph and graphon convolutional operators, 
+
+ϕ(h, X) and Φ( h, X ), are introduced in the main text (i.e., Eqs. (3) and (8)). By fixing one variable, we define their associated linear operators ϕh and ϕX (defined in (132) and (133)), as well as the continuous counterparts Φh and ΦX (defined in (142) and (143)). Detailed properties of these single-variable operators, including their adjoints, are provided in Appendices L and M. To layer-wisely notate the backward gradients (i.e., the layer-wise output of the adjoint operator in the adjoint systems (16), (17), (21), (22)), we reverse the layer indexing: ℓ = L
+
+denotes the initial input to the backward pass, and ℓ = 0 denotes the final output. Analogous to the forward states, we omit the L index for brevity: A(L,t ) ≡ A(t) ≡ A(t), A(L,t ) ≡ A (·, t ),and A[L,m ] ≡ A[m]. These represent the gradients of the forward pass output (i.e., the inputs to the adjoint operators). Under this convention, applying the adjoint of the network’s Gateaux derivative to the terminal state yields the gradient with respect to the initial forward state: 
+
+ δGNN 
+
+δX(0 ,t )
+
+∗
+
+(A(L,t )) = A(0 ,t ),
+
+ δWNN 
+
+δX (0 ,t )
+
+∗
+
+(A(L,t )) = A(0 ,t ),
+
+ δGNN 
+
+δX[0 ,m ]
+
+∗
+
+(A[L,m ]) = A[0 ,m ].
+
+The explicit recursive chain-rule derivations for these backward states, along with the gradients with respect to the filter weights, are detailed in (137) of Appendix L and (148) of Appendix M. 
+
+# B Boundedness and Temporally Lipschitz of Graphon-NDE so-lutions 
+
+Proposition 11 (Boundedness of Graphon-NDE solutions) . Suppose that AS0, AS1, and AS2 hold. Let X be the solution of the Graphon-NDE (20) . Let eX (ℓ,t ), X (ℓ,t ) be defined in Eq. (9) .Then for each ℓ ∈ ZL+1 , it holds that 
+
+X (ℓ)   
+
+> C([0 ,T ]; B(I;R1×F))
+
+≤ C(ℓ)  
+
+> X,max
+
+:= ( F C 0,W ChLσ)ℓ ∥X ∥ C([0 ,T ]; B(I;R1×F )) , (40) 
+
+
+
+Or eX (ℓ)  
+
+> C([0 ,T ]; B(I;R1×F))
+
+
+
+where constants Ch and C0,W are defined in (138) and (151) , respectively. 
+
+30 Proof. It follows from updating formula (9) that X (ℓ,t ) = σ(Φ h(ℓ,t ) (X (ℓ−1,t ))) , ℓ ∈ [L], t ∈ [0 , T ],where we adopt the notations of graphon convolutional operators in Appendix M. Then we obtain from AS1 and Lemma 43 that 
+
+X (ℓ,t )  
+
+> B(I;R1×F)
+
+≤ (F C 0,W ChLσ) ∥X (ℓ−1,t )∥B(I;R1×F ),
+
+which with a recursion and the norm defined in C([0 , T ]; B(I; R1×F )) yields 
+
+X (ℓ,t )  
+
+> B(I;R1×F)
+
+≤ (F C 0,W ChLσ)ℓ∥X (·, t )∥B(I;R1×F ) ≤ (F C 0,W ChLσ)ℓ∥X ∥ C([0 ,T ]; B(I;R1×F )) ,
+
+Since X (0) = X , Eq. (40) trivially holds when ℓ = 0 . Therefore, Eq. (40) holds for all ℓ ∈ ZL+1 .Noting that Eq. (9) can be rewritten as eX (ℓ,t ) = Φ h(ℓ,t ) (σ( eX (ℓ−1,t ))) , ℓ ∈ [L], the result for eX (ℓ,t )
+
+can be derived with a similar argument as above. 
+
+Proposition 12 (Temporally Lipschitz of Graphon-NDE solutions) . Suppose that AS0, AS1, and AS2 hold. Let X = [ Xf : f ∈ [F ]] be the solution of the Graphon-NDE (20) . Let eX (ℓ,t ), X (ℓ,t )
+
+be defined in Eq. (9) . Then for each ℓ ∈ ZL+1 , it holds that 
+
+X (ℓ,t 1) 
+
+> f
+
+− X (ℓ,t 2)  
+
+> fB(I)
+
+≤ C(ℓ) 
+
+> X,Lip
+
+|t1 − t2|, ∀t1, t 2 ∈ [0 , T ], ∀f ∈ [F ], (41) 
+
+
+
+Or eX (ℓ,t 1) 
+
+> f
+
+− eX (ℓ,t 2) 
+
+> fB(I)
+
+
+
+where constant C(ℓ)  
+
+> X,Lip
+
+is defined recursively as C(ℓ)  
+
+> X,Lip
+
+:= C0,W Lσ
+
+√F L hC(ℓ−1)   
+
+> X,max
+
++ F C hC(ℓ−1)  
+
+> X,Lip
+
+
+
+,and C(0)   
+
+> X,Lip
+
+:= C(L) 
+
+> X,max
+
+.Proof. We begin with the case of ℓ = 0 . Since X is the solution of Graphon-NDE (20), it holds that ∂∂t X (u, t ) = WNN( X (u, t ); LP , H(t)) . (42) According to Theorem 1, the unique solution X belongs to C1  [0 , T ]; B(I; R1×F ), which implies that ∂∂t X (u, t ) is a continuous function about t. Therefore, it holds that 
+
+|X f (u, t 1) − X f (u, t 2)| ≤ sup  
+
+> t∈[0 ,T ]
+
+∂∂t Xf (u, t ) |t1 − t2|. (43) We obtain from Eq. (42) that 
+
+sup 
+
+> u∈I
+
+max    
+
+> f∈[F]
+
+sup  
+
+> t∈[0 ,T ]
+
+∂∂t Xf (u, t ) ≤ sup  
+
+> t∈[0 ,T ]
+
+∥WNN( X (·, t ); LP , H(t)) ∥B(I;R1×F ) . (44) It follows from Proposition 11 that 
+
+sup  
+
+> t∈[0 ,T ]
+
+∥WNN( X (·, t ); LP , H(t)) ∥B(I;R1×F ) ≤ C(L) 
+
+> X,max
+
+. (45) Collecting estimates (43), (44) and (45) yields |X f (u, t 1) − X f (u, t 2)| ≤ C(0)  
+
+> X,Lip
+
+|t1 − t2|, u ∈ I.This verifies Eq. (41) when ℓ = 0 .We next assume that, for ℓ ∈ [L], f ∈ [F ],
+
+X (ℓ−1,t 1) 
+
+> f
+
+− X (ℓ−1,t 2)  
+
+> fB(I)
+
+≤ C(ℓ−1)  
+
+> X,Lip
+
+|t1 − t2|, u ∈ I, t 1, t 2 ∈ [0 , T ], (46) 31 holds with a constant C(ℓ−1)   
+
+> X,Lip
+
+and will prove Eq. (41). Note that 
+
+X (ℓ,t 1) 
+
+> f
+
+− X (ℓ,t 2)  
+
+> fB(I)
+
+=
+
+h
+
+σ
+
+
+
+Φh(ℓ,t 1) (X (ℓ−1,t 1))
+
+i  
+
+> f
+
+−
+
+h
+
+σ
+
+
+
+Φh(ℓ,t 2) (X (ℓ−1,t 2))
+
+i  
+
+> fB(I)
+
+(by Eq. (9) )
+
+≤ LσC0,W 
+
+
+
+Lh
+
+√F X (ℓ−1)    
+
+> C([0 ,T ]; B(I;R1×F))
+
++ F C hLip( X (ℓ−1) )
+
+
+
+|t1 − t2|
+
+(by AS1 and Lemma 44) 
+
+≤ C(ℓ)  
+
+> X,Lip
+
+|t1 − t2| (by Proposition 11, Eq. (46) and definition of C(ℓ) 
+
+> X,Lip
+
+)
+
+This proves Eq. (41). The result for eX (ℓ,t ) 
+
+> f
+
+can be shown in a similar manner. 
+
+# C Infinite-node Convergence of GNDEs 
+
+Proposition 13. Suppose that AS0, AS1, and AS2 hold. Let X and X be the solutions of GNDE (6) and Graphon-NDE (20) , respectively. For each ℓ ∈ ZL+1 , define 
+
+ϵ(ℓ,t ) := MSE Un (X (ℓ,t ), X(ℓ,t )) = 1
+
+√n SUn (X (ℓ,t )) − X(ℓ,t ) 
+
+> F
+
+, (47) 
+
+eϵ(ℓ,t ) := MSE Un ( eX (ℓ,t ), fX(ℓ,t )) = 1
+
+√n SUn ( eX (ℓ,t )) − fX(ℓ,t ) 
+
+> F
+
+. (48) 
+
+Then for ℓ ∈ ZL and t ∈ [0 , T ], there holds 
+
+ϵ(ℓ+1 ,t ) ≤ Lσeϵ(ℓ+1 ,t ) ≤ (LσF KC h) ϵ(ℓ,t ) + ∆ (ℓ,t )1 + ∆ (ℓ,t )2 ,
+
+where 
+
+∆(ℓ,t )1 := LσF K 2Ch ∥L − LUn ∥2 X (ℓ,t )  
+
+> B(I;R1×F)
+
+, (49) 
+
+∆(ℓ,t )2 := LσF KC h ∥L Un ∥KB(I)→B(I)
+
+vuut FX
+
+> g=1
+> K
+
+X
+
+> k=1
+> k−1
+
+X
+
+> s=0
+
+(LUn − L P )
+
+
+
+Lk−1−sP X (ℓ,t )
+
+> g
+
+ 2
+
+> B(I)
+
+. (50) 
+
+Proof. Note that 
+
+ϵ(ℓ+1 ,t ) = MSE Un
+
+
+
+X (ℓ+1 ,t ), X(ℓ+1 ,t )
+
+= MSE Un
+
+
+
+σ(Φ h(ℓ+1 ,t ) (X (ℓ,t )), σ (ϕh(ℓ+1 ,t ) (X(ℓ,t ))) 
+
+
+
+(by Eqs. (9) and (4) )
+
+≤ LσMSE Un
+
+
+
+Φh(ℓ+1 ,t ) (X (ℓ,t )), ϕ h(ℓ+1 ,t ) (X(ℓ,t ))
+
+
+
+= Lσeϵ(ℓ+1 ,t ) (by AS1) 
+
+≤ (LσF KC h) MSE Un
+
+
+
+X (ℓ,t ), X(ℓ,t )
+
++ ∆ (ℓ,t )1 + ∆ (ℓ,t )2 (by Lemma 47) 
+
+= ( LσF KC h) ϵ(ℓ,t ) + ∆ (ℓ,t )1 + ∆ (ℓ,t )2
+
+Lemma 14. Suppose that AS0, AS1, AS2, and AS3 hold. Let uj , j ∈ [n] be independent random variables following a distribution P . Let X be the solution of Graphon-NDE (20) . If Eq. (169) 32 holds and n satisfies (171) , then with probability at least 1 − γ2, for all ℓ ∈ ZL, g ∈ [F ], k ∈ [K]
+
+and s ∈ Zk,
+
+sup  
+
+> t∈[0 ,T ]
+
+(LUn − L P )
+
+
+
+Lk−1−sP X (ℓ,t )
+
+> g
+
+
+
+> B(I)
+
+≲ C1,W 
+
+plog(4 nI /γ 1) + C2,W 
+
+plog(4 nI LF K/γ 2)
+
+√n
+
+!  cmax 
+
+cmin 
+
+k−1−s
+
+max {CX ,max , C X ,Lip }
+
+(51) 
+
+where C1,W and C2,W are defined in (170) and (175) , respectively; and 
+
+CX ,max := max 
+
+n
+
+C(ℓ)  
+
+> X,max
+
+: ℓ ∈ ZL+1 
+
+o
+
+, CX ,Lip := max 
+
+n
+
+C(ℓ)  
+
+> X,Lip
+
+: ℓ ∈ ZL+1 
+
+o
+
+. (52) 
+
+As a result, for all ℓ ∈ ZL,
+
+sup  
+
+> t∈[0 ,T ]
+
+vuut FX
+
+> g=1
+> K
+
+X
+
+> k=1
+> k−1
+
+X
+
+> s=0
+
+(LUn − L P )
+
+
+
+Lk−1−sP X (ℓ,t )
+
+> g
+
+ 2
+
+> B(I)
+
+≲ C1,W 
+
+plog(4 nI /γ 1) + C2,W 
+
+plog(4 nI LF K/γ 2)
+
+√n
+
+!
+
+C3,W max {CX ,max , C X ,Lip }
+
+(53) 
+
+where 
+
+C3,W := 
+
+vuutF
+
+> K
+
+X
+
+> k=1
+> k−1
+
+X
+
+> s=0
+
+ cmax 
+
+cmin 
+
+2( k−1−s)
+
+. (54) 
+
+Proof. Let m be a nonnegative integer. For each ℓ ∈ ZL and g ∈ [F ], by Eq. (149) and Proposition 11, we have 
+
+sup  
+
+> t∈[0 ,T ]
+
+LmP (X (ℓ,t ) 
+
+> g
+
+) B(I) ≤
+
+ cmax 
+
+cmin 
+
+m
+
+sup  
+
+> t∈[0 ,T ]
+
+X (ℓ,t )  
+
+> gB(I)
+
+≤
+
+ cmax 
+
+cmin 
+
+m
+
+CX ,max ,
+
+and, by Eq. (149) and Proposition 12, we get 
+
+LmP
+
+
+
+X (ℓ,t 1)
+
+> g
+
+
+
+− L mP
+
+
+
+X (ℓ,t 2)
+
+> g
+
+ 
+
+> B(I)
+
+≤
+
+ cmax 
+
+cmin 
+
+m
+
+X (ℓ,t 1) 
+
+> g
+
+− X (ℓ,t 2)  
+
+> gB(I)
+
+≤
+
+ cmax 
+
+cmin 
+
+m
+
+CX ,Lip |t1 − t2|.
+
+Then we take X, Cmax and CLip in Lemma 50 as LmP (X (ℓ) 
+
+> g
+
+), (cmax /c min )mCX ,max and (cmax /c min )mCX ,Lip ,respectively. It follows that for each ℓ ∈ ZL, f ∈ [F ] and non-negative integer m, with probability at least 1 − γ2,
+
+sup  
+
+> (u,t )∈I×[0 ,T ]
+
+
+
+(LUn − L P )
+
+
+
+LmP X (ℓ,t )
+
+> g
+
+ 
+
+(u)
+
+≲ C1,W 
+
+plog(4 nI /γ 1) + C2,W 
+
+plog(4 nI /γ 2)
+
+√n
+
+!  cmax 
+
+cmin 
+
+m
+
+max {CX ,max , C X ,Lip } .
+
+(55) We notice that the number of functions in the set 
+
+n
+
+Lk−1−sP X (ℓ) 
+
+> g
+
+: s ∈ Zk, k ∈ [K], g ∈ [F ], ℓ ∈ ZL
+
+o
+
+is equal to (LF K ). Then we apply (55) with an union bound for all functions in the set, which proves Eq. (51). And Eq. (53) immediately follows. 33 Proposition 15. Suppose that AS0, AS1, AS2, and AS3 hold. Let X be the solution of Graphon-NDE (20) . Let γ1, γ 2 ∈ (0 , 1) with 2γ1 + γ2 < 1. Suppose that Eqs. (173) , (178) and (51) hold. Then for all ℓ ∈ [L] and t ∈ [0 , T ], it holds that 
+
+ϵ(ℓ,t ) ≤ (LσF KC h)ℓ ϵ(0 ,t ) +
+
+> ℓ−1
+
+X
+
+> s=0
+
+(LσF KC h)s
+
+!
+
+QX (n, γ 1, γ 2), (56) 
+
+where 
+
+QX (n, γ 1, γ 2)
+
+≈
+
+LσF KC h
+
+ 2cmax 
+
+> cmin
+
+K 
+
+C1,W 
+
+plog(4 nI /γ 1) + C2,W 
+
+plog(4 nI LF K/γ 2)
+
+
+
+C3,W max {CX ,max , C X ,Lip }√n
+
++
+
+LσF K 2Ch cmax 
+
+> c2min
+
+CX ,max 
+
+√αnn = O 1
+
+√αnn +
+
+plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+√n
+
+!
+
+.
+
+(57) 
+
+Here, ≈ denotes equality up to an absolute multiplicative constant. Proof. We obtain from Proposition 13 that 
+
+ϵ(ℓ+1 ,t ) ≤ (LσF KC h) ϵ(ℓ,t ) +
+
+
+
+∆(ℓ,t )1 + ∆ (ℓ,t )2
+
+
+
+, ℓ ∈ ZL, t ∈ [0 , T ], (58) with ∆(ℓ,t )1 and ∆(ℓ,t )2 defined by Eqs. (49) and (50), respectively. It follows from Proposition 11, Eq. (178) and definition (49) of ∆(ℓ,t )1 that 
+
+∆(ℓ,t )1 ≲ LσF K 2Ch
+
+cmax 
+
+c2min 
+
+CX ,max 
+
+1
+
+√αnn , ℓ ∈ ZL, t ∈ [0 , T ].
+
+Moreover, assumption of Eq. (51) implies Eq. (53) due to Lemma 14. Then definition (50) of 
+
+∆(ℓ,t )2 with estimate (53) and assumption (173) yields that for all ℓ ∈ ZL and t ∈ [0 , T ],
+
+∆(ℓ,t )2 ≲ LσF KC h
+
+ 2cmax 
+
+cmin 
+
+K C1,W 
+
+plog(4 nI /γ 1) + C2,W 
+
+plog(4 nI LF K/γ 2)
+
+√n
+
+!
+
+C3,W max {CX ,max , C X ,Lip } .
+
+Combining the above estimates for ∆(ℓ,t )1 and ∆(ℓ,t )2 , with definition (57) of QX , we have 
+
+∆(ℓ,t )1 + ∆ (ℓ,t )2 ≤ Q X (n, γ 1, γ 2). (59) Then it follows from Eq. (58) that for all ℓ ∈ ZL and t ∈ [0 , T ], ϵ(ℓ+1 ,t ) ≤ (LσF KC h) ϵ(ℓ,t ) +
+
+QX (n, γ 1, γ 2). We obtain Eq. (56) by recursively applying the above relation, which completes the proof. 
+
+Proposition 16. Suppose that Eq. (56) holds, and the initial values in (6) and (20) satisfy (23) .Then 1. For all ℓ ∈ ZL+1 , it holds that 
+
+sup  
+
+> t∈[0 ,T ]
+
+ϵ(ℓ,t ) ≤ Cerr QX (n, γ 1, γ 2), (60) 34 where 
+
+Cerr := max 
+
+n
+
+C(0) 
+
+> err
+
+, C (1) 
+
+> err
+
+o
+
+, (61) 
+
+C(0)  
+
+> err
+
+:= 
+
+
+
+exp 
+
+
+
+(LσF KC h)L T
+
+
+
+− 1
+
+ L−1X
+
+> ℓ=0
+
+(LσF KC h)ℓ
+
+!
+
+/ (LσF KC h)L , (62) 
+
+C(1)  
+
+> err
+
+:= max 
+
+(
+
+(LσF KC h)ℓ C(0)  
+
+> err
+
++
+
+> ℓ−1
+
+X
+
+> s=0
+
+(LσF KC h)s : ℓ ∈ [L]
+
+)
+
+. (63) 
+
+2. For all ℓ ∈ [L], it holds that 
+
+sup  
+
+> t∈[0 ,T ]
+
+eϵ(ℓ,t ) ≤ eCerr QX (n, γ 1, γ 2), (64) 
+
+where eCerr := ( LσF KC h) Cerr + 1 .Proof. To prove Item 1, we first show that 
+
+sup  
+
+> t∈[0 ,T ]
+
+ϵ(0 ,t ) ≤ C(0) 
+
+> err
+
+QX (n, γ 1, γ 2). (65) Let 
+
+∆( t) := ( ϵ(0 ,t ))2 = (MSE Un (X (·, t ), X(t))) 2 = 1
+
+n ∥S Un (X (·, t )) − X(t)∥2F . (66) Then ddt ∆( t) = 2
+
+n
+
+
+
+SUn (X (·, t )) − X(t), ddt (SUn (X (·, t ))) − ddt X(t)
+
+
+
+> F
+
+,
+
+where ⟨· , ·⟩ F is Frobenius inner product. Since X and X are solutions of GNDE (6) and Graphon-NDE (20), respectively, we obtain that 
+
+ddt ∆( t) = 2
+
+n ⟨S Un (X (·, t )) − X(t), SUn (WNN( X (·, t ); LP , H(t))) − GNN( X(t); L, H(t)) ⟩F .
+
+By Cauchy-Schwartz inequality, it follows that 
+
+ddt ∆( t) ≤ 2
+
+n ∥S Un (X (·, t )) − X(t)∥F ∥S Un (WNN( X (·, t ); LP , H(t))) − GNN( X(t); L, H(t)) ∥F
+
+= 2 p∆( t) · ϵ(L,t ).
+
+Let a := ( LσF KC h)L and b := PL−1 
+
+> ℓ=0
+
+(LσF KC h)ℓ for short. Then we apply Eq. (56) with ℓ = L
+
+and obtain that 
+
+ddt ∆( t) ≤ 2p∆( t)
+
+
+
+aϵ (0 ,t ) + bQX (n, γ 1, γ 2)
+
+
+
+= 2 a∆( t) + 2 bQX (n, γ 1, γ 2)p∆( t).
+
+Therefore, ∆( t) ≤ ∆(0) + R t
+
+> 0
+
+
+
+2a∆( x) + 2 bQX (n, γ 1, γ 2)p∆( x)
+
+
+
+dx , t ∈ [0 , T ]. Note that as-sumption (23) implies ∆(0) = 0 . Applying Grönwall’s inequality (Lemma 52), we get 
+
+∆( t) ≤
+
+ exp( at ) − 1
+
+a bQX (n, γ 1, γ 2)
+
+2
+
+≤
+
+
+
+C(0) 
+
+> err
+
+QX (n, γ 1, γ 2)
+
+2
+
+, t ∈ [0 , T ].
+
+By definition (66) of ∆( t), the above inequality further implies (65). It remains to show that for all ℓ ∈ [L],
+
+sup  
+
+> t∈[0 ,T ]
+
+ϵ(ℓ,t ) ≤ C(1) 
+
+> err
+
+QX (n, γ 1, γ 2).
+
+35 Note that the above inequality can be immediately obtained by substituting the estimate (65) into Eq. (56). We finish the proof of Eq. (60). We next prove Item 2. It follows that for ℓ ∈ ZL,
+
+eϵ(ℓ+1 ,t ) ≤ (LσF KC h) ϵ(ℓ,t ) + ∆ (ℓ,t )1 + ∆ (ℓ,t )2 (by Proposition 13) 
+
+≤ (LσF KC h) Cerr QX (n, γ 1, γ 2) + QX (n, γ 1, γ 2) (by Eqs. (60) and (59) )
+
+= eCerr QX (n, γ 1, γ 2)
+
+which proves Eq. (64). 
+
+Proof of Theorem 3 . By Lemma 49, with probability at least 1 − γ1, Eq. (169) holds. We condition on the event that Eq. (169) holds, referring to it as the first event. According to Lemma 51, with probability at least 1 − γ1, Eq. (178) holds. We condition on the event that Eq. (178) holds, referring to it as the second event. Moreover, due to Lemma 14, with probability at least 1 − γ2, for all ℓ ∈ [L] and t ∈ [0 , T ],Eq. (51) holds. We condition on the event that Eq. (51) holds, referring to it as the third event. Therefore, with probability at least 1−2γ1 −γ2, all three events occur, that is, all assumptions in Proposition 15 are satisfied. This implies Eq. (56), which, combining with the initial value condition (23), verifies that all assumptions in Proposition 16 hold. Now, by Eq. (60) with ℓ = 0 
+
+in Proposition 16, with probability of at least 1 − 2γ1 − γ2, it holds that 
+
+sup  
+
+> t∈[0 ,T ]
+
+MSE Un (X (·, t ), X(t)) ≤ C(0) 
+
+> err
+
+QX (n, γ 1, γ 2) ≤ Cerr QX (n, γ 1, γ 2)
+
+where QX and Cerr are defined in Eq. (57) and Eq. (61), respectively. This completes the proof. 
+
+# D Infinite-node Convergence of Discretized GNDEs 
+
+We remark that if the parameters h(ℓ,t ) 
+
+> f gk
+
+, ℓ ∈ [L], f, g ∈ [F ], k ∈ ZK satisfy AS0 ′, then 
+
+sup  
+
+> t∈[0 ,T ]
+
+max  
+
+> f,g ∈[F],ℓ ∈[L],k ∈ZK
+
+ddt h(ℓ,t ) 
+
+> f gk
+
+≤ Lh. (67) Similarly if σ satisfies AS1 ′, then for any Z ∈ Rn×F , Z ∈ B(I) and Z ∈ B(I; R1×F ), ∥σ′(Z)∥max ≤
+
+Lσ, ∥σ′(Z)∥B(I) ≤ Lσ, ∥σ′(Z)∥B(I;R1×F ) ≤ Lσ
+
+√F . In particular, by definitions (135) and (146), for all ℓ ∈ [L], t ∈ [0 , T ], f ∈ [F ], we have 
+
+cX(ℓ,t ) 
+
+> max
+
+= σ′( fX(ℓ,t )) max ≤ Lσ,
+
+bX (ℓ,t )  
+
+> fB(I)
+
+= σ′( eX (ℓ,t ) 
+
+> f
+
+) B(I) ≤ Lσ, bX (ℓ,t )  
+
+> B(I;R1×F)
+
+≤ Lσ
+
+√F . (68) 
+
+Proposition 17. Suppose that Eq. (56) and initial condition (23) hold. If AS0 ′ and AS1 ′ are satisfied, and n is large enough such that 
+
+Cerr QX (n, γ 1, γ 2) ≤ CX ,max , (69) 
+
+then the following statements hold. 
+
+36 1. For all ℓ ∈ ZL+1 , there holds 
+
+sup  
+
+> t∈[0 ,T ]
+
+X(ℓ,t ) 
+
+> F
+
+≤ CX
+
+√n (70) 
+
+sup  
+
+> t∈[0 ,T ]
+
+ddt X(ℓ,t )
+
+> F
+
+≤ CX′
+
+√n (71) 
+
+where CX := 2 CX ,max and 
+
+CX′ := CX × max 
+
+(
+
+LσF KL hℓ−1X
+
+> s=0
+
+(LσF KC h)s + ( LσF KC h)ℓ : ℓ ∈ ZL+1 
+
+)1
+
+.
+
+As a result, 
+
+sup  
+
+> t∈[0 ,T ]
+
+d2
+
+dt 2 X(0 ,t )
+
+> F
+
+≤ CX′
+
+√n. (72) 
+
+2. For all ℓ ∈ [L], there holds 
+
+sup  
+
+> t∈[0 ,T ]
+
+ddt fX(ℓ,t )
+
+> F
+
+≤ CfX′
+
+√n, (73) 
+
+where CfX′ := CX F KL h + F KC hCX′ . Moreover, if AS1 ′′′ holds, then for all ℓ ∈ [L],
+
+sup  
+
+> t∈[0 ,T ]
+
+ddt cX(ℓ,t )
+
+> F
+
+≤ CcX′
+
+√n. (74) 
+
+where CcX′ := Lσ′ CfX′ .Proof. Recall that Eq. (56) with initial condition (23) implies Eq. (60), according to Proposition 16. We first prove Item 1. It follows from Eq. (60) that for all ℓ ∈ ZL+1 , 1√n SUn (X (ℓ,t )) − X(ℓ,t ) 
+
+> F
+
+=
+
+ϵ(ℓ,t ) ≤ Cerr QX (n, γ 1, γ 2), which implies 
+
+X(ℓ,t ) 
+
+> F
+
+≤ √nC err QX (n, γ 1, γ 2) + SUn (X (ℓ,t )) F
+
+≤ √n (Cerr QX (n, γ 1, γ 2) + CX ,max ) (by Eq. (158) and Proposition 11) 
+
+≤ 2CX ,max 
+
+√n = CX
+
+√n. (by Eq. (69) )
+
+This proves Eq. (70). By the updating formula (4) of GNNs and Chain rule, for ℓ ∈ [L], we have  
+
+> ddt
+
+X(ℓ,t ) = σ′( fX(ℓ,t )) ⊙ ddt fX(ℓ,t ). Then due to Eqs. (156) and (68), it follows that 
+
+ddt X(ℓ,t )
+
+> F
+
+≤ σ′( fX(ℓ,t )) max 
+
+ddt fX(ℓ,t )
+
+> F
+
+≤ Lσ
+
+ddt fX(ℓ,t )
+
+> F
+
+. (75) By definition of fX(ℓ,t ), we have fX(ℓ,t ) = ϕh(ℓ,t ) (X(ℓ−1,t )). It follows from Lemma 38 and Eq. (70) that 
+
+ddt fX(ℓ,t )
+
+> F
+
+≤ F KL h X(ℓ−1,t ) 
+
+> F
+
++ F KC h
+
+ddt X(ℓ−1,t )
+
+> F
+
+≤ √n F KL hCX
+
+| {z } 
+
+> denoted by a
+
++ F KC h
+
+| {z }  
+
+> denoted by b
+
+ddt X(ℓ−1,t )
+
+> F
+
+(76) 
+
+> 1
+
+The sum inside is regarded as 0 when ℓ = 0 .
+
+37 which together with Eq. (75) implies ddt X(ℓ,t ) 
+
+> F
+
+≤ Lσ(a√n + b ddt X(ℓ−1,t )
+
+> F
+
+), ℓ ∈ [L]. Arecursion gives 
+
+ddt X(ℓ,t )
+
+> F
+
+≤ Lσa
+
+> ℓ−1
+
+X
+
+> s=0
+
+(Lσb)s
+
+! √n + ( Lσb)ℓ ddt X(0 ,t )
+
+> F
+
+, ℓ ∈ [L]. (77) Note that X(0 ,t ) is the solution of GNDE (6), that is 
+
+ddt X(0 ,t ) = X(L,t ). (78) Therefore, Eq. (77), combining with Eq. (78) and estimate (70) in the case of ℓ = L, implies  
+
+> ddt
+
+X(ℓ,t ) 
+
+> F
+
+≤
+
+
+
+Lσa Pℓ−1
+
+> s=0
+
+(Lσb)s + ( Lσb)ℓCX
+
+ √n ≤ CX′
+
+√n, ℓ ∈ [L], where the last inequality follows from definition of constant CX′ . This proves (71) for ℓ ∈ [L]. Note that (71) is also true when ℓ = 0 due to (78) and (70). Therefore, (71) is true for all ℓ ∈ ZL+1 .As a result, we obtain (72) from taking derivatives about t for both sides of Eq. (78) and using estimate (71) with ℓ = L.We proceed to show Item 2. We immediately obtain Eq. (73) by substituting estimate (71) into Eq. (76). Moreover, we get Eq. (74) by noting that 
+
+ddt cX(ℓ,t )
+
+> F
+
+= σ′′ ( fX(ℓ,t )) ⊙ ddt fX(ℓ,t )
+
+> F
+
+≤ σ′′ ( fX(ℓ,t )) max 
+
+ddt fX(ℓ,t ) 
+
+> F
+> (by Chain rule and Eq. (156) )
+
+≤ Lσ′ CfX′
+
+√n = CcX′
+
+√n. (by relation (108) and Eq. (73) )
+
+The proof is complete. 
+
+Proposition 18. Under assumptions of Proposition 17, let X[m] : m ∈ [M ] be the sequence of approximations to the solution X(t) of GNDE (6) computed via Euler’s method (11) with step size κ := T /M , t0 = 0 and initial value satisfies (28) . Then for all m ∈ [M ], the following statements hold. 1. For all ℓ ∈ ZL+1 ,
+
+1
+
+√n X(ℓ,t m) − X[ℓ,m ] 
+
+> F
+
+≤ C∆X
+
+M (79) 
+
+where C∆X := max 
+
+n
+
+C(0) ∆X , C (1) ∆X
+
+o
+
+and C(0) ∆X := T C X′ 
+
+> 2( LσF KC h)L
+
+
+
+e(Lσ F KC h)LT − 1
+
+
+
+, C(1) ∆X := 
+
+C(0) ∆X max 
+
+n
+
+(LσF KC h)ℓ : ℓ ∈ [L]
+
+o
+
+.2. If AS1 ′′ holds, then (a) for all ℓ ∈ ZL+1 ,
+
+1
+
+√n X[ℓ,m ] 
+
+> F
+
+≤ CX[] , (80) 
+
+1
+
+√n X[ℓ,m ] − X[ℓ,m −1]  
+
+> F
+
+≤ C∆X[] 
+
+M , (81) 
+
+where CX[] := ( C∆X + CX ) max 
+
+n
+
+(LσF KC h)ℓ : ℓ ∈ ZL+1 
+
+o
+
+, C∆X[] := max 
+
+n
+
+C(0) ∆X[] , C (1) ∆X[] 
+
+o
+
+,
+
+C(0) ∆X[] := T (LσF KC h)L CX[] , and 
+
+C(1) ∆X[] := max 
+
+n
+
+(LσF KC h)ℓ C(0) ∆X[] + LσF KL h
+
+
+
+ℓ (LσF KC h)ℓ−1
+
+CX[] : ℓ ∈ [L]
+
+o
+
+.
+
+38 (b) for all ℓ ∈ [L],
+
+1
+
+√n cX(ℓ,t m) − cX[ℓ,m ] 
+
+> F
+
+≤ C∆ cX
+
+M , (82) 
+
+1
+
+√n cX[ℓ,m ] − cX[ℓ,m −1]  
+
+> F
+
+≤ C∆ cX[] 
+
+M , (83) 
+
+where C∆ cX := Lσ′ C∆X and C∆ cX[] := Lσ′ C∆X[] .Proof. According to Lemma 53, with the bound of the second derivative of X(t) derived in Proposition 17 (i.e., Eq. (72)) and Lipschitz constant of the GNN function computed in Propo-sition 37, we obtain by κ = T /M that 
+
+X(tm) − X[m] 
+
+> F
+
+≤√nC X′
+
+2( LσF KC h)L
+
+
+
+e(Lσ F KC h)Ltm − 1
+
+
+
+≤ C(0) ∆X
+
+√nM . (84) Notice that for all ℓ ∈ [L],
+
+X[ℓ,m ] − X(ℓ,t m) 
+
+> F
+
+= σ(ϕh(ℓ,tm ) (X[ℓ−1,m ])) − σ(ϕh(ℓ,tm ) (X(ℓ−1,t m))) F
+
+≤ LσF KC h X[ℓ−1,m ] − X(ℓ−1,t m) 
+
+> F
+
+(by AS1 and Eq. (140) in Lemma 41) 
+
+≤ (LσF KC h)ℓ X[0 ,m ] − X(0 ,t m) 
+
+> F
+
+≤ (LσF KC h)ℓC(0) ∆X
+
+√nM ≤ C(1) ∆X
+
+√nM
+
+(by recurrsion and Eq. (84) )
+
+Therefore, Eq. (79) holds for all ℓ ∈ ZL+1 . We proceed to prove Eq. (80). Note that 
+
+X[m] 
+
+> F
+
+≤ √n C∆X
+
+M + ∥X(tm)∥F (by Eq. (79) with ℓ = 0 and triangle equality) 
+
+≤ √n C∆X
+
+M + CX
+
+√n ≤ (C∆X + CX ) √n (by Eq. (70) in Proposition 17) 
+
+By AS1 and Lemma 36, we have, for all ℓ ∈ ZL+1 and m ∈ [M ],
+
+X[ℓ,m ] 
+
+> F
+
+≤ (LσF KC h)ℓ X[0 ,m ] 
+
+> F
+
+= ( LσF KC h)ℓ X[m] 
+
+> F
+
+, (85) which combining with the previous inequality yields Eq. (80). We next show Eq. (81). Recall that we adopt the notations of X[0 ,m ] ≡ X[m] and X[L,m ] ≡ GNN( X[m]; L, H(tm)) . Hence Eq. (11) can be rephrased as X[0 ,m ] − X[0 ,m −1] = κX[L,m −1] , which implies 
+
+X[0 ,m ] − X[0 ,m −1]  
+
+> F
+
+= TM X[L,m −1]  
+
+> F
+
+≤ TM (LσF KC h)L X[0 ,m −1]  
+
+> F
+
+(by Eq. (85) )
+
+≤ TM (LσF KC h)L √nC X[] =
+
+√nM C(0) ∆X[] . (by Eq. (80) with ℓ = 0 )
+
+39 In addition, for ℓ ∈ [L], we have 
+
+X[ℓ,m ] − X[ℓ,m −1]  
+
+> F
+
+= σ(ϕh(ℓ,tm ) (X[ℓ−1,m ])) − σ(ϕh(ℓ,t m−1) (X[ℓ−1,m −1] )) F
+
+≤ LσF KC h X[ℓ−1,m ] − X[ℓ−1,m −1]  
+
+> F
+
++ LσF K Lh
+
+M X[ℓ−1,m −1] 
+
+> F
+
+(by AS1 and Eq. (140) in Lemma 41) 
+
+≤ (LσF KC h)ℓ X[0 ,m ] − X[0 ,m −1]  
+
+> F
+
++ LσF K Lh
+
+M
+
+> ℓ−1
+
+X
+
+> s=0
+
+(LσF KC h)ℓ−1−s X[s,m −1] 
+
+> F
+
+!
+
+(by recursion) 
+
+≤ (LσF KC h)ℓ
+
+√nM C(0) ∆X[] + LσF K Lh
+
+M
+
+
+
+ℓ (LσF KC h)ℓ−1 √nC X[] ≤√nM C(1) ∆X[] 
+
+(by Eqs. (81) , (85) and definition of C(1) ∆X[] )
+
+Therefore, Eq. (81) holds for all ℓ ∈ ZL+1 . We next prove Eq. (82). By AS1 ′′ and (the proof of) Eq. (79), for all ℓ ∈ [L], we have 
+
+cX[ℓ,m ] − cX(ℓ,t m) 
+
+> F
+
+= σ′(ϕh(ℓ,tm ) (X[ℓ−1,m ])) − σ′(ϕh(ℓ,tm ) (X(ℓ−1,t m))) F ≤ Lσ′
+
+C∆X
+
+M
+
+√n, 
+
+which proves Eq. (82). Finally, by AS1 ′′ and (the proof of) Eq. (81), for all ℓ ∈ [L], we have 
+
+cX[ℓ,m ] − cX[ℓ,m −1]  
+
+> F
+
+= σ′(ϕh(ℓ,tm ) (X[ℓ−1,m ])) − σ′(ϕh(ℓ,t m−1) (X[ℓ−1,m −1] )) F ≤ Lσ′
+
+C∆X[] 
+
+M
+
+√n, 
+
+which proves Eq. (83). 
+
+Proof of Theorem 6 . By Lemmas 49, 51 and 14 with conditions (176) and (177) on n and αn,with probability at least 1 − 2γ1 − γ2, Eqs. (178), (173), (51) hold. Hence, we have Eq. (56) by Proposition 15. This combining with condition (69) on n verifies all assumptions in Proposition 18. Then the desired result follows from Eq. (79) with ℓ = 0 in Proposition 18. 
+
+# E Property of Adjoint Graphon-NDE solutions 
+
+E.1 Boundedness and Well-posedness 
+
+Proposition 19. Suppose that AS0, AS1, and AS2 hold. Let X be the solution of the Graphon-NDE (20) . Let A ∈ C([0 , T ]; B(I; R1×F )) . For each t ∈ [0 , T ], let A(ℓ,t ) : I → R1×F be generated by Eq. (147) . If AS1 ′ holds, then for each ℓ ∈ ZL+1 ,
+
+A(ℓ)   
+
+> C([0 ,T ]; B(I;R1×F))
+
+≤ C(ℓ) 
+
+> A,max
+
+:= ∥A∥ C([0 ,T ]; B(I;R1×F )) (F 32 LσC0,W Ch)L−ℓ. (86) 
+
+Proof. For each ℓ ∈ ZL, it holds that 
+
+A(ℓ,t )  
+
+> B(I;R1×F)
+
+= Φ∗
+
+> h(ℓ+1 ,t )
+
+ bX (ℓ+1 ,t ) ⊙ A (ℓ+1 ,t )  
+
+> B(I;R1×F)
+
+(by Eq. (147) )
+
+≤ Φ∗    
+
+> h(ℓ+1 ,t )B(I;R1×F)→B(I;R1×F)
+
+bX (ℓ+1 ,t )  
+
+> B(I;R1×F)
+
+A(ℓ+1 ,t ) 
+
+> B(I;R1×F)
+
+(by Eq. (155) )
+
+≤ (F C 0,W Ch)Lσ
+
+√F A(ℓ+1 ,t )  
+
+> B(I;R1×F)
+
+(by Lemma 43 and Eq. (68) )
+
+Noting that A = A(L), a recursion indicates Eq. (86) for ℓ ∈ ZL. Note that Eq. (86) is trivially true when ℓ = L. The proof is hence complete. 40 Proof of Theorem 2 . The proof follows a standard Banach contraction mapping argument. We first rewrite the initial-value problem (21) as an integral fixed-point equation. Crucially, by setting ℓ = 0 in Eq. (86) of Proposition 19, we can establish that the operator ( δWNN   
+
+> δX(0)
+
+)∗ is uniformly bounded. This boundedness guarantees that, by choosing a sufficiently short backward time interval, the associated fixed-point operator becomes a contraction. Iterating this local argument then yields a unique solution over the entire interval [0 , T ].
+
+Proposition 20. Suppose that AS0, AS1 ′, and AS2 hold. Let X and A be the solutions of the Graphon-NDE (20) and the adjoint system (21) , respectively. Let bX (ℓ,t ) be defined by Eq. (146) . Then for each ℓ ∈ ZL+1 , bX (ℓ) ⊙ A (ℓ)   
+
+> C([0 ,T ]; B(I;R1×F))
+
+≤ C(ℓ)
+
+> ⊙,max
+
+, where C(ℓ) 
+
+> ⊙,max
+
+:= 
+
+Lσ
+
+√F C (ℓ)
+
+> A,max
+
+.Proof. Note that by Eq. (155), Eq. (68) and Proposition 19, we have 
+
+bX (ℓ,t ) ⊙ A (ℓ,t )  
+
+> B(I;R1×F)
+
+≤ bX (ℓ,t )  
+
+> B(I;R1×F)
+
+A(ℓ,t )  
+
+> B(I;R1×F)
+
+≤ Lσ
+
+√F C (ℓ)
+
+> A,max
+
+.
+
+We obtain the desired result by taking supremum about t over [0 , T ].
+
+E.2 Temporal Lipschitz 
+
+Proposition 21. Suppose that AS0, AS1 ′′ , and AS2 hold. Let X and A be the solutions of the Graphon-NDE (20) and the adjoint system (21) , respectively. Let bX (ℓ,t ) be defined by Eq. (146) .Then for each ℓ ∈ ZL+1 ,
+
+A(ℓ,t 1) 
+
+> g
+
+− A (ℓ,t 2)  
+
+> gB(I)
+
+≤ C(ℓ)
+
+> A,Lip
+
+|t1 − t2|, ∀t1, t 2 ∈ [0 , T ], (87) 
+
+bX (ℓ,t 1) 
+
+> g
+
+A(ℓ,t 1) 
+
+> g
+
+− bX (ℓ,t 2) 
+
+> g
+
+A(ℓ,t 2)  
+
+> gB(I)
+
+≤ C(ℓ)
+
+> ⊙,Lip
+
+|t1 − t2|, ∀t1, t 2 ∈ [0 , T ], (88) 
+
+where 
+
+C(L) 
+
+> A,Lip
+
+:= C(0) 
+
+> A,max
+
+, (89) 
+
+C(ℓ) 
+
+> ⊙,Lip
+
+:= LσC(ℓ) 
+
+> A,Lip
+
++ Lσ′ C(ℓ) 
+
+> X,Lip
+
+C(ℓ)
+
+> A,max
+
+, ℓ ∈ ZL+1 , (90) 
+
+C(ℓ−1)  
+
+> A,Lip
+
+:= C0,W 
+
+
+
+Lh
+
+√F C (ℓ) 
+
+> ⊙,max
+
++ F C hC(ℓ)
+
+> ⊙,Lip
+
+
+
+, ℓ ∈ [L − 1] , (91) 
+
+and these constants are generated in the order of C(L)
+
+> A,Lip
+
+, C(L)
+
+> ⊙,Lip
+
+, C(L−1)  
+
+> A,Lip
+
+, C(L−1)  
+
+> ⊙,Lip
+
+, . . . , C(0) 
+
+> A,Lip
+
+,
+
+C(0) 
+
+> ⊙,Lip
+
+.Proof. We begin with proving Eq. (87) for the case of ℓ = L. Recall notations in Eq. (148) that 
+
+A(L) = A and A(0) =
+
+ δWNN  
+
+> δX(0)
+
+∗
+
+(A). Since A is the solution of Eq. (21), we obtain that 
+
+sup  
+
+> t∈[0 ,T ]
+
+∂∂t Af (u, t ) ≤ −
+
+ δWNN 
+
+δX (0) 
+
+∗
+
+(A) C([0 ,T ]; B(I;R1×F )) 
+
+= −A (0)    
+
+> C([0 ,T ]; B(I;R1×F))
+
+≤ C(0)  
+
+> A,max
+
+= C(L)
+
+> A,Lip
+
+where the second inequality follows from Eq. (86) with ℓ = 0 , and the last equation is due to definition (89). This combining with the fact that Af is continuously differentiable further implies |A f (u, t 1) − A f (u, t 2)| ≤ sup t∈[0 ,T ] ∂∂t Af (u, t ) |t1 − t2| ≤ C(L)
+
+> A,Lip
+
+|t1 − t2|, which proves Eq. (87) when ℓ = L.41 Now we assume that Eq. (87) holds for some ℓ with constant C(ℓ)
+
+> A,Lip
+
+. We will prove Eq. (88) with constant C(ℓ) 
+
+> ⊙,Lip
+
+defined by Eq. (90) (relying on C(ℓ)
+
+> A,Lip
+
+). And then we will show that Eq. (87) holds for ℓ − 1 with constant C(ℓ−1)  
+
+> A,Lip
+
+in the form of Eq. (91). According to Proposition 20, we have bX (ℓ) ⊙ A (ℓ)   
+
+> C([0 ,T ]; B(I;R1×F))
+
+≤ C(ℓ)
+
+> ⊙,max
+
+. (92) Moreover, 
+
+bX (ℓ,t 1) 
+
+> g
+
+A(ℓ,t 1) 
+
+> g
+
+− bX (ℓ,t 2) 
+
+> g
+
+A(ℓ,t 2) 
+
+> gB(I)
+
+≤ bX (ℓ,t 1)  
+
+> gB(I)
+
+A(ℓ,t 1) 
+
+> g
+
+− A (ℓ,t 2)  
+
+> gB(I)
+
++ bX (ℓ,t 1) 
+
+> g
+
+− bX (ℓ,t 2)  
+
+> gB(I)
+
+A(ℓ,t 2) 
+
+> gB(I)
+
+(by triangle inequality) 
+
+≤ LσC(ℓ)
+
+> A,Lip
+
+|t1 − t2| + Lσ′ C(ℓ) 
+
+> X,Lip
+
+|t1 − t2|C(ℓ) 
+
+> A,max
+
+= C(ℓ)
+
+> ⊙,Lip
+
+|t1 − t2|
+
+(by AS1 ′′ , Propositions 12, 19, 21, and definition of C(ℓ)
+
+> ⊙,Lip
+
+)
+
+which proves Eq. (88). We proceed to prove that Eq. (87) holds with ℓ being replaced by ℓ − 1.It follows from Eq. (147) that A(ℓ−1,t ) 
+
+> g
+
+=
+
+h
+
+Φ∗
+
+> h(ℓ,t )
+
+ bX (ℓ,t ) ⊙ A (ℓ,t )
+
+i 
+
+> g
+
+, t ∈ { t1, t 2}, which with Lemma 44, Eqs. (88), (92) and definition of C(ℓ−1) 
+
+> A,Lip
+
+, implies 
+
+A(ℓ−1,t 1) 
+
+> g
+
+− A (ℓ−1,t 2)  
+
+> gB(I)
+
+≤ C0,W 
+
+
+
+Lh
+
+√F C (ℓ) 
+
+> ⊙,max
+
++ F C hC(ℓ)
+
+> ⊙,Lip
+
+
+
+|t1 − t2| = C(ℓ−1) 
+
+> A,Lip
+
+|t1 − t2|,
+
+which proves Eq. (87) for ℓ − 1. This completes the proof. 
+
+# F Infinite-node Convergence of Adjoint GNDEs 
+
+Proposition 22. Suppose that AS0, AS1 ′′ , and AS2 hold. Let X, X , A and A be the solu-tions of GNDE (6) , Graphon-NDE (20) , adjoint GNDE (16) , and adjoint Graphon-NDE (21) ,respectively. Define 
+
+η(ℓ,t ) := MSE Un (A(ℓ,t ), A(ℓ,t )) = 1
+
+√n SUn (A(ℓ,t )) − A(ℓ,t ) 
+
+> F
+
+, ℓ ∈ ZL+1 , t ∈ [0 , T ]. (93) 
+
+Then for ℓ ∈ [L] and t ∈ [0 , T ],
+
+η(ℓ−1,t ) ≤ (LσF KC h) η(ℓ,t ) + e∆(ℓ,t )1 + e∆(ℓ,t )2 + e∆(ℓ,t )3 ,
+
+where 
+
+e∆(ℓ,t )1 := F K 2Ch ∥L − LUn ∥2 bX (ℓ,t ) ⊙ A (ℓ,t )  
+
+> B(I;R1×F)
+
+(94) 
+
+e∆(ℓ,t )2 := F KC h ∥L Un ∥KB(I)→B(I)
+
+vuut FX
+
+> g=1
+> K
+
+X
+
+> k=1
+> k−1
+
+X
+
+> s=0
+
+(LUn − L P )
+
+
+
+Lk−1−sP
+
+ bX (ℓ,t ) 
+
+> g
+
+⊙ A (ℓ,t )
+
+> g
+
+ 2
+
+> B(I)
+
+(95) 
+
+e∆(ℓ,t )3 := F KC hLσ′ C(ℓ)
+
+> A,max
+
+eϵ(ℓ,t ) (96) 42 Proof. Note that 
+
+η(ℓ−1,t ) = MSE Un
+
+
+
+A(ℓ−1,t ), A(ℓ−1,t )
+
+= MSE Un
+
+
+
+Φ∗
+
+> h(ℓ,t )
+
+ bX (ℓ,t ) ⊙ A (ℓ,t )
+
+, ϕ ∗
+
+> h(ℓ,t )
+
+ cX(ℓ,t ) ⊙ A(ℓ,t ) 
+
+(by Eqs. (147) and (136) )
+
+≤ (F KC h) MSE Un
+
+ bX (ℓ,t ) ⊙ A (ℓ,t ), cX(ℓ,t ) ⊙ A(ℓ,t )
+
++ e∆(ℓ,t )1 + e∆(ℓ,t )2 (by Lemma 47) 
+
+in which 
+
+MSE Un
+
+ bX (ℓ,t ) ⊙ A (ℓ,t ), cX(ℓ,t ) ⊙ A(ℓ,t )
+
+= 1
+
+√n SUn ( bX (ℓ,t )) ⊙ S Un (A(ℓ,t )) − cX(ℓ,t ) ⊙ A(ℓ,t )
+
+> F
+
+≤ 1
+
+√n SUn ( bX (ℓ,t )) − cX(ℓ,t ) 
+
+> F
+
+SUn (A(ℓ,t )) max + 1
+
+√n cX(ℓ,t ) 
+
+> max
+
+SUn (A(ℓ,t )) − A(ℓ,t )
+
+> F
+
+(by triangle inequality and Eq. (156) )
+
+≤ 1
+
+√n SUn (σ′( eX (ℓ,t ))) − σ′( fX(ℓ,t )) F A(ℓ,t )  
+
+> B(I;R1×F)
+
++ η(ℓ,t )
+
+(by definitions (135) , (146) , (93) ; Eqs. (159) , (68) )
+
+≤ Lσ′
+
+1
+
+√n SUn ( eX (ℓ,t )) − fX(ℓ,t ) 
+
+> F
+
+C(ℓ) 
+
+> A,max
+
++ Lση(ℓ,t ) (by AS1 ′′ and Proposition 19) 
+
+= Lσ′ eϵ(ℓ,t )C(ℓ) 
+
+> A,max
+
++ Lση(ℓ,t ). (by definition (48) of eϵ(ℓ,t ))
+
+The proof is complete. The following result can be obtained similarly as Lemma 14. 
+
+Lemma 23. Suppose that AS0, AS1 ′′ , AS2, and AS3 hold. Let uj , j ∈ [n] be independent random variables following a distribution P . Let X be the solution of Graphon-NDE (20) and 
+
+A be the solution of adjoint system (21) . If Eq. (169) holds and n satisfies (171) hold, then with probability at least 1 − γ3, for all ℓ ∈ [L], g ∈ [F ], k ∈ [K] and s ∈ Zk,
+
+sup  
+
+> t∈[0 ,T ]
+
+(LUn − L P )
+
+
+
+Lk−1−sP bX (ℓ,t ) 
+
+> g
+
+A(ℓ,t )
+
+> g
+
+
+
+> B(I)
+
+≲ C1,W 
+
+plog(4 nI /γ 1) + C2,W 
+
+plog(4 nI LF K/γ 3)
+
+√n
+
+!  cmax 
+
+cmin 
+
+k−1−s
+
+max {C⊙,max , C ⊙,Lip }
+
+(97) 
+
+where C1,W and C2,W are defined in (170) and (175) , respectively; and 
+
+C⊙,max := max 
+
+n
+
+C(ℓ) 
+
+> ⊙,max
+
+: ℓ ∈ ZL+1 
+
+o
+
+, C⊙,Lip := max 
+
+n
+
+C(ℓ) 
+
+> ⊙,Lip
+
+: ℓ ∈ ZL+1 
+
+o
+
+. (98) 
+
+As a result, for all ℓ ∈ [L],
+
+sup  
+
+> t∈[0 ,T ]
+
+vuut FX
+
+> g=1
+> K
+
+X
+
+> k=1
+> k−1
+
+X
+
+> s=0
+
+(LUn − L P )
+
+
+
+Lk−1−sP bX (ℓ,t ) 
+
+> g
+
+A(ℓ,t )
+
+> g
+
+ 2
+
+> B(I)
+
+≲ C1,W 
+
+plog(4 nI /γ 1) + C2,W 
+
+plog(4 nI LF K/γ 3)
+
+√n
+
+!
+
+C3,W max {C⊙,max , C ⊙,Lip }
+
+(99) 
+
+where C3,W is defined in (54) .
+
+43 Proposition 24. Suppose that AS0, AS1 ′′ , AS2, and AS3 hold. Let X, X , A and A be the solutions of GNDE (6) , Graphon-NDE (20) , adjoint GNDE (16) , and adjoint Graphon-NDE 
+
+(21) , respectively. Suppose that initial value condition (23) holds. Let γ1, γ 2, γ 3 ∈ (0 , 1) with 
+
+2γ1 + γ2 + γ3 < 1. Suppose that Eqs. (173) , (178) , (51) and (97) hold. Then for all ℓ ∈ ZL and 
+
+t ∈ [0 , T ],
+
+η(ℓ,t ) ≤ (LσF KC h)L−ℓ η(L,t ) +
+
+> L−ℓ
+
+X
+
+> s=1
+
+(F KC h)s−1
+
+!
+
+QA(n, γ 1, γ 2, γ 3), (100) 
+
+where 
+
+QA(n, γ 1, γ 2, γ 3) ≈
+
+F K 2Ch cmax 
+
+> c2min
+
+(C⊙,max + CCX ,max )
+
+√αnn
+
+!
+
++
+
+F KC h
+
+ 2cmax 
+
+cmin 
+
+K
+
+C3,W max {C⊙,max , C ⊙,Lip , C X ,max , C X ,Lip }
+
+!
+
+×
+
+C1,W (1 + C) plog(4 nI /γ 1) + CC2,W 
+
+plog(4 nI LF K/γ 2) + C2,W 
+
+plog(4 nI LF K/γ 3)
+
+√n
+
+!
+
+= O 1
+
+√αnn +
+
+plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+√n
+
+!
+
+(101) 
+
+where C := F KC hLσ′ CA,max eCerr and 
+
+CA,max := max 
+
+n
+
+C(ℓ) 
+
+> A,max
+
+: ℓ ∈ ZL+1 
+
+o
+
+. (102) 
+
+Proof. We obtain from Proposition 22 that 
+
+η(ℓ−1,t ) ≤ (LσF KC h) η(ℓ,t ) + e∆(ℓ,t )1 + e∆(ℓ,t )2 + e∆(ℓ,t )3 , ℓ ∈ [L], t ∈ [0 , T ], (103) with e∆(ℓ,t )1 , e∆(ℓ,t )2 and e∆(ℓ,t )3 defined in Eqs. (94), (95) and (96), respectively. According to definition (94) of e∆(ℓ,t )1 , assumption of Eq. (178), and Proposition 20, we get for all ℓ ∈ [L], t ∈ [0 , T ], e∆(ℓ,t )1 ≲ F K 2Ch cmax  
+
+> c2min
+> 1√αnn
+
+C⊙,max . Moreover, according to Lemma 23, as-sumption of Eq. (97) implies Eq. (99). Then, according to definition (95) of e∆(ℓ,t )2 , estimates (173) and (99), we have for all ℓ ∈ [L], t ∈ [0 , T ], e∆(ℓ,t )2 ≲ F KC h
+
+ 2cmax 
+
+> cmin
+
+K  C1,W 
+
+√log(4 nI /γ 1)+ C2,W 
+
+√log(4 nI LF K/γ 3)
+
+> √n
+
+
+
+C3,
+
+It follows from Proposition 15 that under assumptions of Eqs. (173), (178), (51), we have es-timate (56). This with initial condition (23), by Proposition 16, we know that Eq. (64) holds. Then, with definition (96) of e∆(ℓ,t )3 and estimate (64), we obtain that for all ℓ ∈ [L], t ∈ [0 , T ],
+
+e∆(ℓ,t )3 ≲ F KC hLσ′ CA,max eCerr QX (n, γ 1, γ 2) = CQ X (n, γ 1, γ 2).
+
+By combining the above estimates for e∆(ℓ,t )1 , e∆(ℓ,t )2 , and e∆(ℓ,t )3 , we have 
+
+e∆(ℓ,t )1 + e∆(ℓ,t )2 + e∆(ℓ,t )3 ≤ Q A(n, γ 1, γ 2, γ 3), ℓ ∈ [L], t ∈ [0 , T ], (104) where QA(n, γ 1, γ 2, γ 3) is defined in Eq. (101). We substitute estimate (104) into (103) and get 
+
+η(ℓ−1,t ) ≤ (LσF KC h) η(ℓ,t ) + QA(n, γ 1, γ 2, γ 3). A recursion leads to Eq. (100). 44 Proposition 25. Suppose that Eq. (100) holds. If the initial values of adjoint GNDE (16) and adjoint Graphon-NDE (21) satisfy (25) , then for all ℓ ∈ ZL+1 , there holds 
+
+sup  
+
+> t∈[0 ,T ]
+
+η(ℓ,t ) ≤ Cerr QA(n, γ 1, γ 2, γ 3), (105) 
+
+where Cerr is defined by (61) .Proof. The proof follows similarly as the argument present in Proposition 16. We first show that 
+
+sup  
+
+> t∈[0 ,T ]
+
+η(L,t ) ≤ C(0) 
+
+> err
+
+QA(n, γ 1, γ 2, γ 3), (106) where C(0)  
+
+> err
+
+is defined in (62). Let δ(t) := ( η(L,t ))2 = (MSE Un (A(·, t ), A(t))) 2. Since A and A
+
+are solutions of (16) and (21), it follows from Cauchy-Schwartz inequality that 
+
+ddt δ(t) ≤ 2
+
+n ∥A(t) − S Un (A(·, t )) ∥F A(0 ,t ) − S Un (A(0 ,t )) F = 2 η(L,t )η(0 ,t ).
+
+Then we apply Eq. (100) with ℓ = 0 and get 
+
+− ddt δ(t) ≤ ddt δ(t) ≤ 2η(L,t ) (LσF KC h)L η(L,t ) +
+
+> L
+
+X
+
+> ℓ=1
+
+(LσF KC h)ℓ−1
+
+!
+
+QA(n, γ 1, γ 2, γ 3)
+
+!
+
+= 2 ( LσF KC h)L δ(t) + 2 
+
+> L
+
+X
+
+> ℓ=1
+
+(LσF KC h)ℓ−1
+
+!
+
+QA(n, γ 1, γ 2, γ 3)pδ(t).
+
+Note that assumption (25) guarantees δ(T ) = 0 . We integrate the above inequality from t to 
+
+T . Then by Grönwall’s inequality (Lemma 52), we obtain (106) with C(0)  
+
+> err
+
+defined in (62). It remains to show that for all ℓ ∈ ZL,
+
+sup  
+
+> t∈[0 ,T ]
+
+η(ℓ,t ) ≤ C(1) 
+
+> err
+
+QA(n, γ 1, γ 2, γ 3), (107) with C(1)  
+
+> err
+
+defined in (63). This can be obtained in a similar way as in Proposition (16) — Eq. (107) immediately follows from substituting the estimate (106) into (100). 
+
+Proof of Theorem 4 . By Lemmas 49, 51, 23 and 14, with probability at least 1 − 2γ1 −
+
+γ2 − γ3, Eqs. (169), (178), (51) and (97) hold. Then, according to Proposition 24, we have Eq. (100), so the assumptions in Proposition 25 are satisfied. Recall that definition (93) gives 
+
+η(L,t ) = MSE Un (A(L,t ), A(L,t )) = MSE Un (A(·, t ), A(t)) . The desired result immediately follows from Eq. (105) in Proposition 25 with ℓ = L.
+
+# G Infinite-node Convergence of Discretized Adjoint GNDEs 
+
+We assume that AS0 ′, AS1 ′′′ , AS2, and AS3 are satisfied throughout this section. It is clear that if σ satisfies AS1 ′′′ , then for any Z ∈ Rn×F , there holds 
+
+σ′′ (Z) max ≤ Lσ′ . (108) 45 Proposition 26. Let A be the solution of adjoint GNDE (16) . Suppose that Eqs. (56) , (100) ,and initial value conditions (23) , (25) hold. Then for all ℓ ∈ ZL+1 , there holds 
+
+sup  
+
+> t∈[0 ,T ]
+
+A(ℓ,t ) 
+
+> max
+
+≤ Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3), (109) 
+
+where Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) = O
+
+ 1√αn + plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+
+
+.
+
+In addition, if n is large enough such that (69) holds and 
+
+Cerr QA(n, γ 1, γ 2, γ 3) ≤ CA,max , (110) 
+
+then for all ℓ ∈ ZL+1 , there holds 
+
+sup  
+
+> t∈[0 ,T ]
+
+A(ℓ,t ) 
+
+> F
+
+≤ CA
+
+√n, (111) 
+
+sup  
+
+> t∈[0 ,T ]
+
+ddt A(ℓ,t )
+
+> F
+
+≤ CA′ (αn, γ 1, γ 2, γ 3)√n, (112) 
+
+where CA := 2 CA,max and 
+
+CA′ (αn, γ 1, γ 2, γ 3) := O
+
+ 1
+
+√αn
+
++ plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+
+
+.
+
+As a result, 
+
+sup  
+
+> t∈[0 ,T ]
+
+d2
+
+dt 2 A(t) F
+
+≤ CA′ (αn, γ 1, γ 2, γ 3)√n. (113) 
+
+Proof. We first prove Eq. (109). Given Eq. (100) and initial condition (25), by Proposition 25, Eq. (105) holds. Then by definition (93) of η(ℓ,t ) that for all ℓ ∈ ZL+1 ,
+
+SUn (A(ℓ,t )) − A(ℓ,t ) 
+
+> max
+
+≤ SUn (A(ℓ,t )) − A(ℓ,t ) 
+
+> F
+
+≤ Cerr QA(n, γ 1, γ 2, γ 3)√n. 
+
+Then by triangle inequality and Proposition 19 and Eq. (159), we obtain that 
+
+A(ℓ,t ) 
+
+> max
+
+≤ Cerr QA(n, γ 1, γ 2, γ 3)√n + SUn (A(ℓ,t )) max ≤ Cerr QA(n, γ 1, γ 2, γ 3)√n + CA,max .
+
+Then Eq. (109) directly follows from definition (101) of QA.We next prove Eq. (111). Again by Eq. (105) and triangle inequality, we have for all ℓ ∈ ZL+1 ,
+
+A(ℓ,t ) 
+
+> F
+
+≤ √nC err QA(n, γ 1, γ 2, γ 3) + SUn (A(ℓ,t )) F
+
+≤ √n
+
+
+
+Cerr QA(n, γ 1, γ 2, γ 3) + A(ℓ,t ) 
+
+> B(I;R1×F)
+
+
+
+(by Eq. (158) )
+
+≤ √n (Cerr QA(n, γ 1, γ 2, γ 3) + CA,max ) (by Proposition 19 and Eq. (102) )
+
+≤ 2CA,max 
+
+√n = CA
+
+√n. (by Eq. (110) )
+
+This proves Eq. (111). We proceed to show (112). We begin with the case of ℓ ∈ ZL. Recall the updating rule (136), which gives A(ℓ,t ) = ϕ∗
+
+> h(ℓ+1 ,t )
+
+ cX(ℓ+1 ,t ) ⊙ A(ℓ+1 ,t )
+
+
+
+, ℓ ∈ ZL. Then it follows from Lemma 38 that 
+
+ddt A(ℓ,t )
+
+> F
+
+≤ F KL h cX(ℓ+1 ,t ) ⊙ A(ℓ+1 ,t )
+
+> F
+
+| {z } 
+
+> denoted by ∆1
+
++F KC h
+
+ddt 
+
+ cX(ℓ+1 ,t ) ⊙ A(ℓ+1 ,t )
+
+> F
+
+| {z } 
+
+> denoted by ∆2
+
+. (114) 46 Note that by Eqs. (156), (68) and (111), we have ∆1 ≤ cX(ℓ+1 ,t ) 
+
+> max
+
+A(ℓ+1 ,t ) 
+
+> F
+
+≤ Lσ A(ℓ+1 ,t ) 
+
+> F
+
+≤
+
+LσCA
+
+√n. Moreover, 
+
+∆2 ≤ d cX(ℓ+1 ,t )
+
+dt F
+
+A(ℓ+1 ,t ) 
+
+> max
+
++ cX(ℓ+1 ,t )
+
+> max
+
+dA(ℓ+1 ,t )
+
+dt F
+
+(by Chain rule, triangle inequality and Eq. (156) )
+
+≤ CcX′
+
+√n A(ℓ+1 ,t ) 
+
+> max
+
++ Lσ
+
+dA(ℓ+1 ,t )
+
+dt F
+
+(by Eq. (74) in Proposition 17 and Eq. (68) )
+
+≤ CcX′
+
+√nC max  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) + Lσ
+
+dA(ℓ+1 ,t )
+
+dt F
+
+. (by Eq. (109) )
+
+We substitute estimates of ∆1 and ∆2 into Eq. (114), and get 
+
+ddt A(ℓ,t )
+
+> F
+
+≤ LσF KL hCA
+
+√n + F KC h CcX′
+
+√nC max  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) + Lσ
+
+dA(ℓ+1 ,t )
+
+dt F
+
+!
+
+=  CALσF KL h + F KC hCcX′ Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3)| {z } 
+
+> denoted by C1(αn, γ 1, γ 2, γ 3)
+
+√n + ( LσF KC h) dA(ℓ+1 ,t )
+
+dt F
+
+.
+
+A recursion gives 
+
+ddt A(ℓ,t )
+
+> F
+
+≤ (LσF KC h)L−ℓ ddt A(L,t )
+
+> F
+
++
+
+> L−ℓ
+
+X
+
+> s=1
+
+(LσF KC h)s−1
+
+!
+
+C1(αn, γ 1, γ 2, γ 3)√n, ℓ ∈ ZL.
+
+(115) Note that A(L,t ) is the solution of adjoint system (16), that is 
+
+ddt A(L,t ) = A(0 ,t ). (116) Therefore, Eq. (115) combining with Eq. (116) and Eq. (111) implies that for all ℓ ∈ ZL,
+
+ddt A(ℓ,t )
+
+> F
+
+≤ CA (LσF KC h)L−ℓ +
+
+> L−ℓ
+
+X
+
+> s=1
+
+(LσF KC h)s−1
+
+!
+
+C1(αn, γ 1, γ 2, γ 3)
+
+!| {z } 
+
+> denoted by C2(αn,γ 1,γ 2,γ 3)
+
+√n
+
+By letting CA′ (αn, γ 1, γ 2, γ 3) := max {C 2(αn, γ 1, γ 2, γ 3) : ℓ ∈ ZL+1 }2
+
+, we find that Eq. (112) holds for ℓ ∈ ZL. For the case of ℓ = L, we observe that Eq. (112) still holds due to (116) and (112). This completes the proof of Eq. (112) for all ℓ ∈ ZL+1 .We finally prove (113). It follows from (116) that d2 
+
+> dt 2
+
+A(L,t ) = ddt A(0 ,t ). Then the desired inequality (113) immediately follows from Eq. (112) with ℓ = 0 and recalling the notation 
+
+A(L,t ) = A(t).
+
+Lemma 27. If Eqs. (82) and (109) hold, then for all ℓ ∈ ZL and m ∈ [M ],
+
+A[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
+≤ (LσF KC h)L−ℓ A[m] − A(tm) F +
+
+C∆ cX Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3)
+
+> L−ℓ
+
+X
+
+> s=1
+
+(LσF KC h)s
+
+! √nM .
+
+(117) 
+
+> 2
+
+The sum inside is regarded as 0 when ℓ = L.
+
+47 In particular, 
+
+D[m] 
+
+> X
+
+(A[m]) − D (tm) 
+
+> X
+
+(A(tm)) F ≤ (LσF KC h)L A[m] − A(tm) F +
+
+C∆ cX Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3)
+
+> L
+
+X
+
+> s=1
+
+(LσF KC h)s
+
+! √nM .
+
+(118) 
+
+Proof. Note that for each ℓ ∈ [L],
+
+A[ℓ−1,m ] − A(ℓ−1,t m) 
+
+> F
+
+= ϕ∗
+
+> h(ℓ,tm )
+
+ cX[ℓ,m ] ⊙ A[ℓ,m ]
+
+− ϕ∗
+
+> h(ℓ,tm )
+
+ cX(ℓ,t m) ⊙ A(ℓ,t m)
+
+> F
+
+≤ F KC h
+
+ cX[ℓ,m ] 
+
+> max
+
+A[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
++ cX[ℓ,m ] − cX(ℓ,t m) 
+
+> F
+
+A(ℓ,t m)
+
+> max
+
+
+
+(by Eq. (141) in Lemma 41) 
+
+≤ F KC h
+
+
+
+Lσ A[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
++ C∆ cX Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3)√nM
+
+
+
+.
+
+(by AS1 ′, and Eqs. (109) , (82) )
+
+A recursion gives that for ℓ ∈ ZL,
+
+A[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
+≤ (LσF KC h)L−ℓ A[L,m ] − A(L,t m) 
+
+> F
+
++ C∆ cX Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3)√nM
+
+> L−ℓ
+
+X
+
+> s=1
+
+(LσF KC h)s
+
+!
+
+.
+
+Recalling notations A[L,m ] = A[m] and A(L,t m) = A(tm), we obtain (117) for ℓ ∈ ZL. Particu-larly, we take ℓ = 0 in Eq. (117) and note that A[0 ,m ] = D[m] 
+
+> X
+
+(A[m]) and A(0 ,t m) = D(tm) 
+
+> X
+
+(A(tm)) ,which proves (118). 
+
+Proposition 28. Let A be the solution of adjoint GNDE (16) , and A[m] be generated from (18) .Suppose that Eqs. (56) , (100) , and initial value conditions (23) , (25) , (28) hold. Suppose that n
+
+is large enough such that (69) and (110) hold. If the initial values of (16) and (18) satisfy (30) ,then for all m ∈ ZM and ℓ ∈ ZL+1 , it holds that 
+
+1
+
+√n A[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
+≤ C∆A(αn, γ 1, γ 2, γ 3)
+
+M , (119) 
+
+where C∆A(αn, γ 1, γ 2, γ 3) = O
+
+ 1√αn + plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+
+
+.In addition, if M is large enough such that 
+
+C∆A(αn, γ 1, γ 2, γ 3)
+
+M ≤ CA,max , (120) 
+
+then for all m ∈ [M ] and ℓ ∈ ZL+1 ,
+
+A[ℓ,m ] 
+
+> F
+
+≤ CA[] 
+
+√n. (121) 
+
+where CA[] := 3 CA,max .Proof. Let C∆A(αn, γ 1, γ 2, γ 3) := max 
+
+n
+
+C(0) ∆A(αn, γ 1, γ 2, γ 3), C (1) ∆A(αn, γ 1, γ 2, γ 3)
+
+o
+
+where 
+
+C(0) ∆A(αn, γ 1, γ 2, γ 3):= 
+
+
+
+eT (Lσ F KC h)L
+
+− 1
+
+  
+
+2C∆ cX Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) PLs=1 (LσF KC h)s + T C A′ (αn, γ 1, γ 2, γ 3)
+
+
+
+2 ( LσF KC h)L ,
+
+48 C(1) ∆A(αn, γ 1, γ 2, γ 3) := 
+
+> L
+
+X
+
+> s=1
+
+(LσF KC h)s
+
+! 
+
+C(0) ∆A(αn, γ 1, γ 2, γ 3) + C∆ cX Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3)
+
+
+
+.
+
+We first prove that 
+
+1
+
+√n A[m] − A(tm) F ≤ C(0) ∆A(αn, γ 1, γ 2, γ 3)
+
+M , (122) which is Eq. (119) in the case of ℓ = L. We expand A(t) in a Taylor series at tm, and get 
+
+A(t) = A(tm) + ( t − tm) ddt A(tm) + (t − tm)2
+
+2
+
+d2
+
+dt 2 A(ξt),
+
+where ξt is between t and tm. Together with (18) and (16), we obtain 
+
+A[m−1] − A(tm−1) F =
+
+h
+
+A[m] + κ · D [m] 
+
+> X
+
+(A[m])
+
+i
+
+−
+
+
+
+A(tm) − κ ddt A(tm) + κ2
+
+2
+
+d2
+
+dt 2 A(ξtm−1 )
+
+
+
+> F
+
+≤ A[m] − A(tm) F + κ D[m] 
+
+> X
+
+(A[m]) − D (tm) 
+
+> X
+
+(A(tm)) F + κ2
+
+2
+
+d2
+
+dt 2 A(ξtm−1 ) F
+
+. (123) Note that all assumptions in Proposition 26 and Proposition 18 are assumed in the current propo-sition, and hence Eqs. (82) and (109) hold. Then by Lemma 27, we have Eq. (118), which implies 
+
+D[m] 
+
+> X
+
+(A[m]) − D (tm) 
+
+> X
+
+(A(tm)) F ≤ a A[m] − A(tm) F + b√n/M , where a := ( LσF KC h)L and 
+
+b := C∆ cX Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) PLs=1 (LσF KC h)s. It follows from Eq. (113) in Proposition 26 that sup t∈[0 ,T ] d2 
+
+> dt 2
+
+A(t) F ≤ CA′ (αn, γ 1, γ 2, γ 3)√n. Let y(m) := 1√n A[m] − A(tm) F. Then, Eq. (123) implies y(m−1) ≤ (1 + κa ) y(m) + κM b + κ2 CA′ (αn,γ 1,γ 2,γ 3)2 . A recursion gives that for all 
+
+m ∈ ZM ,
+
+y(m) ≤ (1 + κa )M −m y(M ) + 
+
+> M−m−1
+
+X
+
+> s=0
+
+(1 + κa )s
+
+!  κM b + κ2 CA′ (αn, γ 1, γ 2, γ 3)2
+
+
+
+.
+
+Note that κ = T /M , tm = κm ; and the initial condition (30) leads to y(M ) = 0 ; and direct compu-tation gives PM −m−1 
+
+> s=0
+
+(1 + κa )s = (1+ κa )M −m−1 
+
+> κa
+
+and (1 + κa )M −m ≤ eκa (M −m) = ea(T −tm) ≤ eaT .These estimates combining with the last inequality yields Eq. (122). Then Eq. (119) for ℓ ∈ ZL can be immediately obtained by substituting Eq. (122) into estimate (117). Note that 
+
+A[ℓ,m ] 
+
+> F
+
+≤ √n C∆A(αn, γ 1, γ 2, γ 3)
+
+M + A(ℓ,t m)   
+
+> F(by Eq. (119) and triangle inequality)
+
+≤ √n
+
+ C∆A(αn, γ 1, γ 2, γ 3)
+
+M + CA
+
+  
+
+> (by Eq. (111) in Proposition 26)
+
+≤ 3CA,max 
+
+√n = CA[] 
+
+√n (by Eq. (120) and definition of CA[] )
+
+which proves (121). 
+
+Proof of Theorem 7. By Lemmas 49, 51, 14 and 23, with probability at least 1−2γ1 −γ2 −γ3,Eqs. (169), (178), (51) and (97) hold. Hence, by Proposition 15, we have Eq. (56); by Proposition 24, we have (100). Therefore, all assumptions in Proposition 28 are satisfied. The desired result directly follows from Eq. (119) in Proposition 28 with ℓ = L.49 H DTO versus OTD for Gradients of Hidden States 
+
+We assume that AS0 ′, AS1 ′′′ , AS2, and AS3 are satisfied throughout this section. The proof of the following lemma is very similar to Lemma 27. 
+
+Lemma 29. Let A be the solution of adjoint GNDE (16) , and G[m] be generated from (12) . If 
+
+(109) , (111) , (82) and (83) hold, then for all ℓ ∈ ZL and m ∈ [M ],
+
+G[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
+≤ (LσF KC h)L−ℓ G[m] − A(tm) F
+
++  F KC h
+
+ C∆ cX[] + C∆ cX
+
+ Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) + F KL hCA
+
+ L−ℓ−1X
+
+> s=0
+
+(LσF KC h)s
+
+! √nM .
+
+(124) 
+
+In particular, 
+
+D[m−1]  
+
+> X
+
+(G[m]) − D (tm) 
+
+> X
+
+(A(tm)) F ≤ (LσF KC h)L G[m] − A(tm)
+
+> F
+
++  F KC h
+
+ C∆ cX[] + C∆ cX
+
+ Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) + F KL hCA
+
+ L−1X
+
+> s=0
+
+(LσF KC h)s
+
+! √nM .
+
+(125) 
+
+Proof. Note that for each ℓ ∈ [L],
+
+G[ℓ−1,m ] − A(ℓ−1,t m) 
+
+> F
+
+= ϕ∗
+
+> h(ℓ,t m−1)
+
+ cX[ℓ,m −1] ⊙ G[ℓ,m ]
+
+− ϕ∗
+
+> h(ℓ,tm )
+
+ cX(ℓ,t m) ⊙ A(ℓ,t m)
+
+> F
+
+≤ F KC h
+
+ cX[ℓ,m −1]  
+
+> max
+
+G[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
++ cX[ℓ,m −1] − cX(ℓ,t m) 
+
+> F
+
+A(ℓ,t m)
+
+> max
+
+
+
++ F K Lh
+
+M A(ℓ,t m)
+
+> F
+
+(by Eq. (141) in Lemma 41) 
+
+Recall that by AS1 ′, cX[ℓ,m −1]  
+
+> max
+
+≤ Lσ; by Eq. (109), A(ℓ,t m) 
+
+> max
+
+≤ Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3);by Eq. (111), A(ℓ,t m) 
+
+> F
+
+≤ CA
+
+√n; and by Eqs. (82) and (83), cX[ℓ,m −1] − cX(ℓ,t m) 
+
+> F
+
+≤
+
+cX[ℓ,m −1] − cX[ℓ,m ] 
+
+> F
+
++ cX[ℓ,m ] − cX(ℓ,t m) 
+
+> F
+
+≤  C∆ cX[] + C∆ cX
+
+ √nM . Therefore, for ℓ ∈ [L],
+
+G[ℓ−1,m ] − A(ℓ−1,t m) 
+
+> F
+
+≤ LσF KC h G[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
++
+
+ F KC h
+
+ C∆ cX[] + C∆ cX
+
+ Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) + F KL hCA
+
+ √nM .
+
+A recursion gives that for ℓ ∈ ZL,
+
+G[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
+≤ (LσF KC h)L−ℓ G[L,m ] − A(L,t m)
+
+> F
+
++  F KC h
+
+ C∆ cX[] + C∆ cX
+
+ Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) + F KL hCA
+
+ √nM
+
+> L−ℓ−1
+
+X
+
+> s=0
+
+(LσF KC h)s
+
+!
+
+.
+
+Recalling notations G[L,m ] = G[m] and A(L,t m) = A(tm), we obtain (124) for ℓ ∈ ZL. Par-ticularly, we take ℓ = 0 in Eq. (124) and note that G[0 ,m ] = D[m−1]  
+
+> X
+
+(G[m]) and A(0 ,t m) =
+
+D(tm) 
+
+> X
+
+(A(tm)) , which proves (125). 
+
+Proposition 30. If all assumptions of Proposition 28 are satisfied, then for all m ∈ [M ] and 
+
+ℓ ∈ ZL+1 ,
+
+1
+
+√n G[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
+≤ C∆G(αn, γ 1, γ 2, γ 3)
+
+M , (126) 
+
+where C∆G(αn, γ 1, γ 2, γ 3) = O
+
+ 1√αn + plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+
+
+.
+
+50 The proof of Proposition 30 is similar to that of Proposition 28, and is therefore omitted. 
+
+Proof of Theorem 9 . We notice from the proof of Theorem 7 that with probability at least 
+
+1 − 2γ1 − γ2 − γ3, the assumptions in Proposition 28 (or Proposition 30) are satisfied. Then the result immediately follows from the triangle inequality, Eq. (119) in Proposition 28; and Eq. (126) with ℓ = L in Proposition 30. 
+
+# I Infinite-node Convergence of Adjoint GNDEs (Parameter Gra-dients) 
+
+We assume that AS0 ′, AS1 ′′′ , AS2, and AS3 hold throughout this section. 
+
+Lemma 31. Let X and A be the solutions of Graphon-NDE (20) and adjoint Graphon-NDE 
+
+(21) , respectively. Suppose that Eq. (173) holds. Let γ4 ∈ (0 , 1) . Then with probability at least 
+
+1 − γ4, it holds that for all k ∈ ZK , f, g ∈ [F ] and ℓ ∈ [L],
+
+D
+
+LkUn X (ℓ,t ) 
+
+> g
+
+, bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t )
+
+> f
+
+E  
+
+> L2(I;dP )
+
+− 1
+
+n
+
+D
+
+SUn (LkUn X (ℓ,t ) 
+
+> g
+
+), SUn ( bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t ) 
+
+> f
+
+)
+
+E
+
+> Rn
+
+≲
+
+plog(4 LF 2K/γ 4)
+
+√n (1 + CT )
+
+ cmax 
+
+cmin 
+
+K−1
+
+max {CX ,max C⊙,max , C X ,max C⊙,Lip + CX ,Lip C⊙,max }
+
+= O
+
+plog( LF 2K/γ 4)
+
+√n
+
+!
+
+. (127) 
+
+Proof. We notice that to get the desired result, it suffices to take graphon W(u, v ) ≡ 1, u, v ∈ I
+
+and X =
+
+
+
+LkUn X (ℓ,t )
+
+> g
+
+ bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t ) 
+
+> f
+
+, k ∈ ZK , f, g ∈ [F ], ℓ ∈ [L] in Lemma 48. It remains to estimate Cmax and CLip in Lemma 48. It follows from Eq. (173), Propositions 11 and 20 that 
+
+
+
+LkUn X (ℓ,t )
+
+> g
+
+ bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t )  
+
+> fB(I)
+
+≲
+
+ cmax 
+
+> cmin
+
+k
+
+CX ,max C⊙,max , where constants CX ,max and C⊙,max 
+
+are defined in Eq. (52) and Eq. (98), respectively. According to Propositions 12 and 21, with constants CX ,Lip and C⊙,Lip defined in Eqs. (52) and (98), we obtain that for any t1, t 2 ∈ [0 , T ],
+
+
+
+LkUn X (ℓ,t 1)
+
+> g
+
+ bX (ℓ,t 1) 
+
+> f
+
+A(ℓ,t 1) 
+
+> f
+
+−
+
+
+
+LkUn X (ℓ,t 2)
+
+> g
+
+ bX (ℓ,t 2) 
+
+> f
+
+A(ℓ,t 2) 
+
+> fB(I)
+
+≤ LkUn X (ℓ,t 1) 
+
+> gB(I)
+
+bX (ℓ,t 1) 
+
+> f
+
+A(ℓ,t 1) 
+
+> f
+
+− bX (ℓ,t 2) 
+
+> f
+
+A(ℓ,t 2)  
+
+> fB(I)
+
++ LkUn
+
+
+
+X (ℓ,t 1) 
+
+> g
+
+− X (ℓ,t 2)
+
+> g
+
+
+
+> B(I)
+
+bX (ℓ,t 2) 
+
+> f
+
+A(ℓ,t 2) 
+
+> fB(I)
+
+≲
+
+ cmax 
+
+cmin 
+
+k
+
+(CX ,max C⊙,Lip + CX ,Lip C⊙,max ) |t1 − t2| .
+
+Since k ∈ ZK , we enlarge k to K − 1, and the desired result follows. 
+
+Proposition 32. Let γ1, γ 2, γ 3, γ 4 ∈ (0 , 1) with 2γ1 + γ2 + γ3 + γ4 < 1. Let X, X , A and A
+
+be the solutions of GNDE (6) , Graphon-NDE (20) , adjoint GNDE (16) , and adjoint Graphon-NDE (21) , respectively. Suppose that initial value conditions satisfy (23) and (25) . Suppose that Eqs. (173) , (178) , (51) , (97) and (127) hold. Then for all ℓ ∈ [L] and t ∈ [0 , T ], it holds that 
+
+Φ∗X (ℓ,t )
+
+ bX (ℓ,t ) ⊙ A (ℓ,t )
+
+
+
+− 1 
+
+> n
+
+ϕ∗
+
+> X(ℓ,t )
+
+ cX(ℓ,t ) ⊙ A(ℓ,t )
+
+ 
+
+> max
+
+≤ Q h(n, γ 1, γ 2, γ 3, γ 4), where 
+
+Qh(n, γ 1, γ 2, γ 3, γ 4) = O
+
+plog( LF 2K/γ 4)
+
+√n
+
+!
+
++ O
+
+ 1
+
+√αnn +
+
+plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+√n
+
+!
+
+×
+
+ 1
+
+√αn
+
++ plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+ 
+
+.
+
+(128) 51 Proof. For all ℓ ∈ [L], f, g ∈ [F ], k ∈ ZK and t ∈ [0 , T ], by definition of operators Φ∗X (ℓ,t ) and 
+
+ϕ∗
+
+X(ℓ,t ) , we apply the triangle inequality and bound the error as 
+
+
+
+Φ∗X (ℓ,t )
+
+ bX (ℓ,t ) ⊙ A (ℓ,t )
+
+− 1
+
+n ϕ∗
+
+X(ℓ,t ) ( cX(ℓ,t ) ⊙ A(ℓ,t ))
+
+
+
+f gk 
+
+=
+
+D
+
+LkP X (ℓ,t )
+
+g , bX (ℓ,t )
+
+f A(ℓ,t )
+
+f
+
+E
+
+L2(I;dP ) − 1
+
+n
+
+D
+
+LkX(ℓ,t )
+
+g , cX(ℓ,t )
+
+f ⊙ A(ℓ,t )
+
+f
+
+E
+
+Rn ≤ X
+
+j∈[5] 
+
+∆j (129) in which 
+
+∆1 := 
+
+D
+
+LkP X (ℓ,t )
+
+g , bX (ℓ,t )
+
+f A(ℓ,t )
+
+f
+
+E
+
+L2(I;dP ) −
+
+D
+
+LkUn X (ℓ,t )
+
+g , bX (ℓ,t )
+
+f A(ℓ,t )
+
+f
+
+E
+
+L2(I;dP )
+
+∆2 := 
+
+D
+
+LkUn X (ℓ,t )
+
+g , bX (ℓ,t )
+
+f A(ℓ,t )
+
+f
+
+E
+
+L2(I;dP ) − 1
+
+n
+
+D
+
+SUn (LkUn X (ℓ,t )
+
+g ), SUn ( bX (ℓ,t )
+
+f A(ℓ,t )
+
+f )
+
+E
+
+Rn
+
+∆3 := 1
+
+n
+
+D
+
+SUn (LkUn X (ℓ,t )
+
+g ), SUn ( bX (ℓ,t )
+
+f A(ℓ,t )
+
+f )
+
+E
+
+Rn − 1
+
+n
+
+D
+
+LkUn X(ℓ,t )
+
+g , SUn ( bX (ℓ,t )
+
+f A(ℓ,t )
+
+f )
+
+E
+
+Rn
+
+∆4 := 1
+
+n
+
+D
+
+LkUn X(ℓ,t )
+
+g , SUn ( bX (ℓ,t )
+
+f A(ℓ,t )
+
+f )
+
+E
+
+Rn − 1
+
+n
+
+D
+
+LkX(ℓ,t )
+
+g , SUn ( bX (ℓ,t )
+
+f A(ℓ,t )
+
+f )
+
+E
+
+Rn
+
+∆5 := 1
+
+n
+
+D
+
+LkX(ℓ,t )
+
+g , SUn ( bX (ℓ,t )
+
+f A(ℓ,t )
+
+f )
+
+E
+
+Rn − 1
+
+n
+
+D
+
+LkX(ℓ,t )
+
+g , cX(ℓ,t )
+
+f ⊙ A(ℓ,t )
+
+f
+
+E
+
+Rn .
+
+We will bound each ∆j , for j ∈ [5] , individually. Note that, according to Proposition 20 and with constant C⊙,max defined in Eq. (98) , we have bX (ℓ,t )
+
+f A(ℓ,t )
+
+f B(I) ≤ C⊙,max , ∀ f ∈ [F ], ℓ ∈ ZL+1 . (130) We begin with estimating ∆1 by 
+
+∆1 ≤ C⊙,max (LkP − L kUn )( X (ℓ,t )
+
+g ) B(I) (by Cauchy-Schwartz inequality and Eq. (130) )
+
+≤ C⊙,max 
+
+k−1X
+
+s=0 
+
+∥L Un ∥sB(I)→B(I) (LUn − L P )Lk−1−sP X (ℓ,t )
+
+g B(I)
+
+≲ C⊙,max 
+
+k−1X
+
+s=0 
+
+ cmax 
+
+cmin 
+
+k−1 C1,W 
+
+plog(4 nI /γ 1) + C2,W 
+
+plog(4 nI LF K/γ 2)
+
+√n
+
+!
+
+max {CX ,max , C X ,Lip }
+
+(by Eq. (51) and Eq. (173) )
+
+= O
+
+plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+√n
+
+!
+
+.
+
+For ∆2, we notice that assumption (127) gives ∆2 ≲ O
+
+ √log( LF 2K/γ 4)
+
+√n
+
+
+
+.We proceed to estimate ∆3. It follows from Eq. (153) that SUn (LkUn X (ℓ,t )
+
+g ) = LkUn SUn (X (ℓ,t )
+
+g )
+
+52 and therefore, 
+
+∆3 = 1
+
+n
+
+D
+
+LkUn
+
+
+
+SUn (X (ℓ,t ) 
+
+> g
+
+) − X(ℓ,t )
+
+> g
+
+
+
+, SUn ( bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t ) 
+
+> f
+
+)
+
+E
+
+> Rn
+
+≤ 1
+
+√n bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t )  
+
+> fB(I)
+
+SUn (X (ℓ,t ) 
+
+> g
+
+) − X(ℓ,t ) 
+
+> g2
+
+(by Cauchy-Schwartz inequality, ∥LUn ∥2 ≤ 1 and Eq. (154) )
+
+≤ C⊙,max 
+
+1
+
+√n SUn (X (ℓ,t ) 
+
+> g
+
+) − X(ℓ,t )  
+
+> g2
+
+≤ C⊙,max ϵ(ℓ,t ) (by Eq. (130) and definition (47) )
+
+≤ C⊙,max Cerr QX (n, γ 1, γ 2) (by (60) in Proposition 16) 
+
+= O 1
+
+√αnn +
+
+plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+√n
+
+!
+
+.
+
+We then estimate ∆4 with 
+
+∆4 ≤ 1
+
+√n LkUn − Lk 
+
+> 2
+
+X(ℓ,t ) 
+
+> g2
+
+bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t )  
+
+> fB(I)
+
+(by Cauchy-Schwartz inequality and Eq. (154) )
+
+≤ k ∥LUn − L∥2 C⊙,max X(ℓ,t )  
+
+> g2
+
+/√n (by ∥LUn ∥2 ≤ 1, ∥L∥2 ≤ 1 and Eq. (130) )
+
+≤ k ∥LUn − L∥2 C⊙,max CX (by Eq. (70) in Proposition 17) 
+
+≲ k cmax 
+
+c2min 
+
+1
+
+√αnn C⊙,max CX = O
+
+ 1
+
+√αnn
+
+
+
+(by Eq. (178) )
+
+We finally estimate ∆5. Note that 
+
+∆5 ≤ 1
+
+n X(ℓ,t )  
+
+> g2
+
+SUn ( bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t ) 
+
+> f
+
+) − cX(ℓ,t ) 
+
+> f
+
+⊙ A(ℓ,t ) 
+
+> f2
+
+(by Cauchy-Schwartz inequality and ∥L∥2 ≤ 1)
+
+≤ CX
+
+√n SUn ( bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t ) 
+
+> f
+
+) − cX(ℓ,t ) 
+
+> f
+
+⊙ A(ℓ,t )  
+
+> f2
+
+(by Eq. (70) in Proposition 17) 
+
+in which 
+
+1
+
+√n SUn ( bX (ℓ,t ) 
+
+> f
+
+A(ℓ,t ) 
+
+> f
+
+) − cX(ℓ,t ) 
+
+> f
+
+⊙ A(ℓ,t ) 
+
+> f2
+
+≤ SUn ( bX (ℓ,t ) 
+
+> f
+
+) max 
+
+SUn (A(ℓ,t ) 
+
+> f
+
+) − A(ℓ,t ) 
+
+> f2
+
+√n +
+
+SUn ( bX (ℓ,t ) 
+
+> f
+
+) − cX(ℓ,t ) 
+
+> f2
+
+√n A(ℓ,t ) 
+
+> fmax
+
+(by triangle inequality and Eq. (156) )
+
+≤ SUn ( bX (ℓ,t ) 
+
+> f
+
+) max η(ℓ,t ) + Lσ′ eϵ(ℓ,t ) A(ℓ,t )  
+
+> fmax
+
+(by definitions (48) , (93) , (135) , (146) and AS1 ′′ )
+
+≤ η(ℓ,t ) + Lσ′ eϵ(ℓ,t )Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) (by relation (68) and Eq. (109) in Proposition 26) 
+
+≤ Cerr QA(n, γ 1, γ 2, γ 3) + Lσ′ eCerr QX (n, γ 1, γ 2)Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3)
+
+(by Proposition 25 and Eq. (64) in Proposition 16) 
+
+Therefore, 
+
+∆5 ≤ CX
+
+h
+
+Cerr QA(n, γ 1, γ 2, γ 3) + Lσ′ eCerr QX (n, γ 1, γ 2)Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3)
+
+i
+
+≤ O 
+
+ 1
+
+√αnn +
+
+plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+√n
+
+!
+
+×
+
+ 1
+
+√αn
+
++ plog( nI LF K/γ 3) + plog( nI LF K/γ 2) + plog( nI /γ 1)
+
+ 
+
+.
+
+We obtain the desired result by substituting estimates of ∆j , j ∈ [5] , into (129). 53 Proof of Theorem 5 . Note that by Eq. (137), a(ℓ,t ) in form of (17) can be rewritten as a(ℓ,t ) =
+
+ϕ∗
+
+> X(ℓ,t )
+
+ cX(ℓ,t ) ⊙ A(ℓ,t )
+
+
+
+. And according to Eq. (148), a(ℓ,t ) in form of (22) can be rewritten as a(ℓ,t ) = Φ ∗X (ℓ,t )
+
+ bX (ℓ,t ) ⊙ A (ℓ,t )
+
+
+
+. By Lemmas 49, 51, 14, 23, 31, with probability at least 
+
+1 − 2γ1 − γ2 − γ3 − γ4, that Eqs. (169), (178), (51), (97) and (127) hold. Then the desired result immediately follows from Proposition 32. 
+
+# J Infinite-node Convergence of Discretized Adjoint GNDEs (Pa-rameter Gradients) 
+
+We assume that AS0 ′, AS1 ′′′ , AS2, and AS3 hold throughout this section. 
+
+Proposition 33. Let A(t) be the solution of adjoint GNDE (16) . Suppose that Eqs. (56) , (100) ,and initial value conditions (23) , (25) hold. Suppose that n is large enough such that (69) and 
+
+(110) hold. Then for all ℓ ∈ [L] and t ∈ [0 , T ], it holds that 
+
+ddt D(ℓ,t ) 
+
+> h
+
+(A(t)) max 
+
+≤ n  LσCX′ CA + CX
+
+ CcX′ Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3) + LσCA′ (αn, γ 1, γ 2, γ 3) .
+
+Proof. Recall that D(ℓ,t ) 
+
+> h
+
+(A(t)) on the right side of (17) can be rewritten via (137) as D(ℓ,t ) 
+
+> h
+
+(A(t)) = 
+
+ϕ∗
+
+> X(ℓ,t )
+
+ cX(ℓ,t ) ⊙ A(ℓ,t )
+
+
+
+. Then by Lemma 40 with P (t) := cX(ℓ,t ), Q(t) := A(ℓ,t ), we obtain that for all ℓ ∈ [L], f, g ∈ [F ], k ∈ ZK and t ∈ [0 , T ],
+
+ddt 
+
+h
+
+D(ℓ,t ) 
+
+> h
+
+(A(t)) 
+
+i 
+
+> f gk
+
+= ddt 
+
+h
+
+ϕ∗
+
+> X(ℓ,t )
+
+ cX(ℓ,t ) ⊙ A(ℓ,t )i 
+
+> f gk
+
+≤ ddt X(ℓ,t )
+
+> F
+
+cX(ℓ,t ) 
+
+> max
+
+A(ℓ,t ) 
+
+> F
+
++ X(ℓ,t )
+
+> F
+
+ ddt cX(ℓ,t )
+
+> F
+
+A(ℓ,t ) 
+
+> max
+
++ cX(ℓ,t )
+
+> max
+
+ddt A(ℓ,t )
+
+> F
+
+
+
+.
+
+Note that all assumptions in Proposition 17 and Proposition 26 are assumed in the current proposition. Therefore, by Eq. (68), cX(ℓ,t ) 
+
+> max
+
+≤ Lσ; by Eq. (70), X(ℓ,t ) 
+
+> F
+
+≤ CX
+
+√n; by Eq. (71), ddt X(ℓ,t ) 
+
+> F
+
+≤ CX′
+
+√n; by Eq. (74), ddt cX(ℓ,t ) 
+
+> F
+
+≤ CcX′
+
+√n; by Eq. (109), A(ℓ,t ) 
+
+> max
+
+≤
+
+Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3); by Eq. (111), A(ℓ,t ) 
+
+> F
+
+≤ CA
+
+√n; by Eq. (112), ddt A(ℓ,t ) 
+
+> F
+
+≤ CA′ (αn, γ 1, γ 2, γ 3)√n.We obtain the desired result by applying the above bounds. 
+
+Proposition 34. Let A(t) be the solution of adjoint GNDE (16) , and A[m] be generated from 
+
+(18) . Suppose that Eqs. (56) , (100) , and initial value conditions (23) , (25) , (28) , (30) hold. Suppose that n is large enough such that (69) and (110) hold; M is large enough such that (120) 
+
+holds. Then, for ℓ ∈ [L] and m ∈ [M ],
+
+1
+
+n D[ℓ,m ] 
+
+> h
+
+(A[m]) − D (ℓ,t m) 
+
+> h
+
+(A(tm)) max 
+
+≤ LσC∆X CA[] + CX
+
+ LσC∆A(αn, γ 1, γ 2, γ 3) + C∆ cX Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3)
+
+M . (131) 
+
+Proof. It follows from Lemma 42 that 
+
+D[ℓ,m ] 
+
+> h
+
+(A[m]) − D (ℓ,t m) 
+
+> h
+
+(A(tm)) max = ϕ∗
+
+> X[ℓ,m ]
+
+ cX[ℓ,m ] ⊙ A[ℓ,m ]
+
+− ϕ∗
+
+> X(ℓ,tm )
+
+ cX(ℓ,t m) ⊙ A(ℓ,t m)
+
+> max
+
+≤ X[ℓ,m ] − X(ℓ,t m) 
+
+> F
+
+A[ℓ,m ]
+
+> F
+
+cX[ℓ,m ]
+
+> max
+
++ X(ℓ,t m)
+
+> F
+
+ cX[ℓ,m ] 
+
+> max
+
+A[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
++ cX[ℓ,m ] − cX(ℓ,t m) 
+
+> F
+
+A(ℓ,t m)
+
+> max
+
+
+
+.
+
+54 Note that all assumptions in Propositions 17, 18, 26, 28, are assumed in the current proposi-tion. Then by Eq. (68), cX[ℓ,m ] 
+
+> max
+
+≤ Lσ; by Eq. (79) in Proposition 18, X[ℓ,m ] − X(ℓ,t m) 
+
+> F
+
+≤
+
+C∆X
+
+√n/M ; by Eq. (121) in Proposition 28, A[ℓ,m ] 
+
+> F
+
+≤ CA[] 
+
+√n; by Eq. (70) in Proposition 17, 
+
+X(ℓ,t m) 
+
+> F
+
+≤ CX
+
+√n; by Eq. (119) in Proposition 28, A[ℓ,m ] − A(ℓ,t m) 
+
+> F
+
+≤ C∆A(αn, γ 1, γ 2, γ 3)√n/M ;by Eq. (82) in Proposition 18, cX[ℓ,m ] − cX(ℓ,t m) 
+
+> F
+
+≤ C∆ cX
+
+√n/M ; by Eq. (109) in Proposition 26, A(ℓ,t m) 
+
+> max
+
+≤ Cmax  
+
+> A
+
+(αn, γ 1, γ 2, γ 3). We obtain Eq. (131) by using the above estimates. 
+
+Proof of Theorem 8 . Note that by (17) and (19), we have a[ℓ,m ] = D[ℓ,m ] 
+
+> h
+
+(A[m]) and a(ℓ,t m) =
+
+D(ℓ,t m) 
+
+> h
+
+(A(tm)) . Similar to the proof of Theorem 7, with probability at least 1−2γ1 −γ2 −γ3, the assumptions in Proposition 34 are satisfied. Therefore, the desired result immediately follows from Proposition 34. 
+
+# K DTO versus OTD for Gradients of Parameters 
+
+Proposition 35. If all assumptions of Proposition 28 are satisfied, then 
+
+1
+
+n D[ℓ,m ] 
+
+> h
+
+(G[m+1] ) − D [ℓ,m ] 
+
+> h
+
+(A[m]) max 
+
+≤ CX[] Lσ (C∆G(αn, γ 1, γ 2, γ 3) + CA′ (αn, γ 1, γ 2, γ 3) + C∆A(αn, γ 1, γ 2, γ 3)) 
+
+M .
+
+Proof. Note that 
+
+D[ℓ,m ] 
+
+> h
+
+(G[m+1] ) − D [ℓ,m ] 
+
+> h
+
+(A[m]) max = ϕ∗
+
+> X[ℓ,m ]
+
+ cX[ℓ,m ] ⊙ G[ℓ,m +1] 
+
+− ϕ∗
+
+> X[ℓ,m ]
+
+ cX[ℓ,m ] ⊙ A[ℓ,m ]
+
+> max
+
+= ϕ∗
+
+> X[ℓ,m ]
+
+ cX[ℓ,m ] ⊙
+
+
+
+G[ℓ,m +1] − A[ℓ,m ]  
+
+> max
+
+(by linearity of ϕ∗)
+
+= X[ℓ,m ]
+
+> F
+
+cX[ℓ,m ] 
+
+> max
+
+G[ℓ,m +1] − A[ℓ,m ] 
+
+> F
+
+(by Lemma 39 and Eq. (156) )
+
+≤ X[ℓ,m ]
+
+> F
+
+cX[ℓ,m ]
+
+> max
+
+
+
+G[ℓ,m +1] − A(ℓ,t m+1 ) 
+
+> F
+
++ A(ℓ,t m+1 ) − A(ℓ,t m) 
+
+> F
+
++ A(ℓ,t m) − A[ℓ,m ]
+
+> F
+
+
+
+(by triangle inequality) 
+
+Note that assumptions of Proposition 28 guarantee results in Propositions 18, 30 and 26. Then by AS1 ′, cX[ℓ,m ] 
+
+> max
+
+≤ Lσ; by Eq. (80) in Proposition 18, X[ℓ,m ] 
+
+> F
+
+≤ CX[] 
+
+√n; by Eq. (126) in Proposition 30, G[ℓ,m +1] − A(ℓ,t m+1 ) 
+
+> F
+
+≤ C∆G(αn, γ 1, γ 2, γ 3)√n/M ; by Eq. (112) in Propo-sition 26, A(ℓ,t m+1 ) − A(ℓ,t m) 
+
+> F
+
+≤ sup t∈[0 ,T ] ddt A(ℓ,t ) 
+
+> F
+
+|tm+1 − tm| ≤ CA′ (αn,γ 1,γ 2,γ 3)
+
+> M
+
+√n; by Eq. (119) in Proposition 28, A(ℓ,t m) − A[ℓ,m ] 
+
+> F
+
+≤ C∆A(αn,γ 1,γ 2,γ 3)
+
+> M
+
+√n. We obtain the desired the desired result by using above estimates. 
+
+Proof of Theorem 10 . We notice from the proof of Theorem 7 that with probability at least 
+
+1 − 2γ1 − γ2 − γ3, the assumptions in Proposition 28 are satisfied. Then the result immediately follows from Proposition 35 and noting that κ = T /M .
+
+# L Graph Convolution Operators 
+
+Recall that graph convolution operator ϕ is defined in (3). For a fixed h ∈ RF ×F ×K , we define an operator ϕh : Rn×F → Rn×F , associated to h, by 
+
+ϕh(X) := ϕ(h, X), X ∈ Rn×F . (132) 55 For a fixed X ∈ Rn×F , we define an operator ϕX : RF ×F ×K → Rn×F , associated to X, by 
+
+ϕX (h) := ϕ(h, X), h ∈ RF ×F ×K . (133) It is straightforward to verify that both operators ϕh and ϕX are linear. 
+
+Adjoint operators. Noting that the symmetric normalized adjacency matrix L is symmetric, the adjoint operator of ϕh, denoted by ϕ∗ 
+
+> h
+
+: Rn×F → Rn×F , is given by 
+
+ϕ∗
+
+> h
+
+(Z) = 
+
+
+
+> F
+
+X 
+
+> f=1
+> K−1
+
+X
+
+> k=0
+
+hf gk LkZf : g ∈ [F ]
+
+ , Z ∈ Rn×F ,
+
+and the adjoint operator of ϕX , denoted by ϕ∗ 
+
+> X
+
+: Rn×F → RF ×F ×K , is given by 
+
+ϕ∗ 
+
+> X
+
+(Z) = 
+
+hD 
+
+LkXg, Zf
+
+E 
+
+> Rn
+
+: f, g ∈ [F ], k ∈ ZK
+
+i
+
+, Z ∈ Rn×F .
+
+Adjoint operators of Gateaux derivatives of single-layer GNNs. Let fX = ϕ(h, X)
+
+and Y = σ( fX). Let cX := σ′( fX). By Chain rule, the Gateaux derivatives of Y with respect to 
+
+X and h are given respectively by 
+
+δY
+
+δX (Z) = cX ⊙ ϕh(Z), Z ∈ Rn×F , δY
+
+δh (z) = cX ⊙ ϕX (z), z ∈ RF ×F ×K .
+
+Their adjoint operators are given by 
+
+ δY
+
+δX
+
+∗
+
+(V ) = ϕ∗
+
+> h
+
+ cX ⊙ V
+
+
+
+,
+
+ δY
+
+δh
+
+∗
+
+(V ) = ϕ∗
+
+> X
+
+ cX ⊙ V
+
+
+
+, V ∈ Rn×F . (134) 
+
+Adjoint operators of Gateaux Derivative of multi-layer GNNs. Now we consider the multi-layer GNNs defined in (5). Let 
+
+cX(ℓ) := σ′( fX(ℓ)), ℓ ∈ [L]. (135) It is straightforward to compute with Chain rule and Eq. (134) that for V ∈ Rn×F ,
+
+ δGNN 
+
+δX(0) 
+
+∗
+
+(V ) = ϕ∗
+
+> h(1)
+
+ cX(1) ⊙ · · · ϕ∗
+
+> h(L−1)
+
+ cX(L−1) ⊙
+
+
+
+ϕ∗
+
+> h(L)
+
+ cX(L) ⊙ V
+
+ 
+
+,
+
+ δGNN 
+
+δh(ℓ)
+
+∗
+
+(V ) = ϕ∗
+
+> X(ℓ)
+
+ cX(ℓ) ⊙ · · · ϕ∗
+
+> h(L−1)
+
+ cX(L−1) ⊙
+
+
+
+ϕ∗
+
+> h(L)
+
+ cX(L) ⊙ V
+
+ 
+
+.
+
+We let 
+
+A(L) := V , A(ℓ) := ϕ∗
+
+> h(ℓ+1)
+
+ cX(ℓ+1) ⊙ A(ℓ+1) 
+
+, ℓ = L − 1, L − 2, · · · , 0, (136) which enables us to rewrite 
+
+ δGNN 
+
+δX(0) 
+
+∗
+
+(A(L)) = A(0) ,
+
+ δGNN 
+
+δh(ℓ)
+
+∗
+
+(A(L)) = ϕ∗
+
+> X(ℓ)
+
+ cX(ℓ) ⊙ A(ℓ)
+
+. (137) 56 Norm estimates. In the following, we present several useful norm estimates regarding to graph convolution operators. 
+
+Lemma 36. Suppose that AS0holds. For any matrix Z ∈ Rn×F , it holds that 
+
+∥ϕh(ℓ,t ) (Z)∥F ≤ F KC h∥Z∥F,
+
+
+
+Or ϕ∗ 
+
+> h(ℓ,t )
+
+(Z) F
+
+
+
+where 
+
+Ch := sup  
+
+> t∈[0 ,T ]
+
+max  
+
+> f,g ∈[F],ℓ ∈[L],k ∈ZK
+
+h(ℓ,t ) 
+
+> f gk
+
+. (138) 
+
+Proof. We recall that if AS0holds, then the parameters h(ℓ,t ) 
+
+> f gk
+
+, f, g ∈ [F ], ℓ ∈ [L], k ∈ ZK ,appearing in Eq. (7), are continuous functions of t. Therefore, the constant Ch is well-defined. Note that ∥L∥2 ≤ 1. Therefore, for any Z ∈ Rn×F ,
+
+∥ϕh(ℓ,t ) (Z)∥F =
+
+vuuut
+
+> F
+
+X 
+
+> f=1
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+h(ℓ,t ) 
+
+> f gk
+
+LkZg
+
+> 22
+
+≤ √F KC h
+
+vuut FX 
+
+> f=1
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+∥Zg∥22 = F KC h ∥Z∥F .
+
+The proof for the case of ϕ∗ 
+
+> h(ℓ,t )
+
+is similar. 
+
+Proposition 37. Suppose that AS0 and AS1 hold. For any t ∈ [0 , T ], the GNN function 
+
+GNN( ·; L, H(t)) in GNDE (6) is (LσF KC h)L-Lipschitz continuous. Proof. Let X, Z ∈ Rn×F and X(L) := GNN( X; L, H(t)) , Z(L) := GNN( Z; L, H(t)) . By AS1, linearity of ϕh, and Lemma 36, for each ℓ ∈ ZL, we have 
+
+Z(ℓ+1) − X(ℓ+1)  
+
+> F
+
+= σ
+
+
+
+ϕh(ℓ,t ) (Z(ℓ))
+
+
+
+− σ
+
+
+
+ϕh(ℓ,t ) (X(ℓ))
+
+
+
+> F
+
+≤ Lσ ϕh(ℓ,t ) (Z(ℓ) − X(ℓ)) F ≤ LσF KC h Z(ℓ) − X(ℓ) 
+
+> F
+
+.
+
+A recursion gives Z(L) − X(L) 
+
+> F
+
+≤ (LσF KC h)L ∥Z − X∥F, which completes the proof. 
+
+Lemma 38. Suppose that AS0 ′ holds. Let Z(t) ∈ Rn×F be a matrix-valued function, which is (entry-wisely) differentiable about t. Then for any ℓ ∈ [L], it holds that 
+
+ddt ϕh(ℓ,t ) (Z(t)) F
+
+≤ F KL h Z(t) 
+
+> F
+
++ F KC h
+
+ddt Z(t)
+
+> F
+
+.
+
+
+
+Or ddt ϕ∗ 
+
+> h(ℓ,t )
+
+(Z(t)) F
+
+
+
+Proof. By definition of operator ϕh(ℓ,t ) , we compute 
+
+ddt ϕh(ℓ,t ) (Z(t)) = ddt (
+
+
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+h(ℓ,t ) 
+
+> f gk
+
+LkZ(t) 
+
+> g
+
+: f ∈ [F ]
+
+)=
+
+
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+ddt h(ℓ,t ) 
+
+> f gk
+
+LkZ(t) 
+
+> g
+
++ h(ℓ,t ) 
+
+> f gk
+
+Lk ddt Z(t) 
+
+> g
+
+: f ∈ [F ]
+
+ = ϕ ddt h(ℓ,t )
+
+
+
+Z(t)
+
++ ϕh(ℓ,t )
+
+ ddt Z(t)
+
+
+
+.
+
+57 Therefore, 
+
+ddt ϕh(ℓ,t ) (Z(t)) F
+
+≤ ϕ ddt h(ℓ,t )
+
+
+
+Z(t) 
+
+> F
+
++ ϕh(ℓ,t )
+
+ ddt Z(t)
+
+
+
+> F
+
+(by triangle inequality) 
+
+≤ F KL h Z(t) 
+
+> F
+
++ F KC h
+
+ddt Z(t)
+
+> F
+
+(by Lemma 36 and Eq. (67) )
+
+It is similar to prove the case of ϕ∗ 
+
+> h(ℓ,t )
+
+.
+
+Lemma 39. Let X, Z ∈ Rn×F . Then ∥ϕ∗ 
+
+> X
+
+(Z)∥max ≤ ∥ X∥F ∥Z∥F.Proof. It follows from the definition of ϕ∗ 
+
+> X
+
+and the fact of ∥L∥2 ≤ 1 that [ϕ∗ 
+
+> X
+
+(Z)] f gk =
+
+LkXg, Zf Rn ≤ ∥ Xg∥2 ∥Zf ∥2 ≤ ∥ X∥F ∥Z∥F, for all f, g ∈ [F ], k ∈ ZK .
+
+Lemma 40. Let X(t), P (t), Q(t) ∈ Rn×F be matrix-valued functions, which are (entry-wisely) dif-ferentiable about t. Let Z(t) := P (t)⊙Q(t). Then ddt 
+
+h
+
+ϕ∗ 
+
+> X(t)
+
+(Z(t))
+
+i 
+
+> max
+
+≤ ddt X(t) 
+
+> F
+
+P (t) 
+
+> max
+
+Q(t)
+
+> F
+
++ X(t)
+
+> F
+
+  ddt P (t) 
+
+> F
+
+Q(t) 
+
+> max
+
++ P (t) 
+
+> max
+> ddt
+
+Q(t)
+
+> F
+
+ .
+
+Proof. According to the definition of ϕ∗ 
+
+> X
+
+and Chain rule, for any f, g ∈ [F ] and k ∈ ZK , we have ddt 
+
+h
+
+ϕ∗ 
+
+> X(t)
+
+(Z(t))
+
+i 
+
+> f gk
+
+= ddt 
+
+D
+
+LkX(t) 
+
+> g
+
+, Z(t)
+
+> f
+
+E 
+
+> Rn
+
+=
+
+D
+
+Lk d dt X(t) 
+
+> g
+
+, Z(t)
+
+> f
+
+E 
+
+> Rn
+
++
+
+D
+
+LkX(t) 
+
+> g
+
+, ddt Z(t)
+
+> f
+
+E 
+
+> Rn
+
+=
+
+
+
+ϕ∗ 
+
+> ddt X(t)
+
+ Z(t) + ϕ∗
+
+> X(t)
+
+  ddt Z(t)
+
+> f gk
+
+. Therefore, by Lemma 39, we obtain 
+
+ddt 
+
+h
+
+ϕ∗ 
+
+> X(t)
+
+(Z(t))
+
+i
+
+> max
+
+≤ ddt X(t)
+
+> F
+
+Z(t) 
+
+> F
+
++ X(t)
+
+> F
+
+ddt Z(t)
+
+> F
+
+. (139) By definition of Z(t), it follows that Z(t) 
+
+> F
+
+≤ P (t) 
+
+> max
+
+Q(t)
+
+> F
+
+, and ddt Z(t) 
+
+> F
+
+≤ ddt P (t) 
+
+> F
+
+Q(t)
+
+> max
+
++
+
+P (t) 
+
+> max
+> ddt
+
+Q(t) 
+
+> F
+
+. The desired result immediately follows from plugging the above two esti-mates into Eq. (139). 
+
+Lemma 41. Suppose that AS0 holds. For any matrices X1, X2, A1, A2 ∈ Rn×F and t1, t 2 ∈
+
+[0 , T ], it holds that 
+
+ϕh(ℓ,t 1) (X1) − ϕh(ℓ,t 2) (X2) F ≤ F KC h ∥X1 − X2∥F + F K |t1 − t2| ∥ X2∥F , (140) 
+
+and 
+
+ϕ∗ 
+
+> h(ℓ,t 1)
+
+(X1 ⊙ A1) − ϕ∗ 
+
+> h(ℓ,t 2)
+
+(X2 ⊙ A2) F
+
+≤ F KC h (∥X1∥max ∥A1 − A2∥F + ∥X1 − X2∥F ∥A2∥max ) + F KL h |t1 − t2| ∥ X2∥max ∥A2∥F .
+
+(141) 
+
+Proof. Note that 
+
+ϕh(ℓ,t 1) (X1) − ϕh(ℓ,t 2) (X2) F
+
+≤ ϕh(ℓ,t 1) (X1 − X2) F + ϕh(ℓ,t 1)−h(ℓ,t 2) (X2) F (by triangle inequality) 
+
+≤ F KC h ∥X1 − X2∥F + F K |t1 − t2| ∥ X2∥F (by AS0 and Lemma 36) 
+
+58 and 
+
+ϕ∗ 
+
+> h(ℓ,t 1)
+
+(X1 ⊙ A1) − ϕ∗ 
+
+> h(ℓ,t 2)
+
+(X2 ⊙ A2) F
+
+≤ ϕ∗ 
+
+> h(ℓ,t 1)
+
+(X1 ⊙ A1 − X2 ⊙ A2) F + ϕ∗ 
+
+> h(ℓ,t 1)−h(ℓ,t 2)
+
+(X2 ⊙ A2) F (by triangle inequality) 
+
+≤ F KC h ∥X1 ⊙ A1 − X2 ⊙ A2∥F + F KL h |t1 − t2| ∥ X2 ⊙ A2∥F (by AS0 and Lemma 36) 
+
+≤ F KC h (∥X1∥max ∥A1 − A2∥F + ∥X1 − X2∥F ∥A2∥max ) + F KL h |t1 − t2| ∥ X2∥max ∥A2∥F
+
+(by triangle inequality and Eq. (156) )
+
+Lemma 42. For any matrices X1, X2, cX1, cX2, A1, A2 ∈ Rn×F , it holds that 
+
+ϕ∗
+
+> X1
+
+ cX1 ⊙ A1
+
+
+
+− ϕ∗
+
+> X2
+
+ cX2 ⊙ A2
+
+
+
+> max
+
+≤ ∥ X1 − X2∥F ∥A1∥F cX1 max + ∥X2∥F
+
+ cX1 max ∥A1 − A2∥F + cX1 − cX2 F ∥A2∥max 
+
+
+
+.
+
+Proof. Note that 
+
+ϕ∗
+
+> X1
+
+ cX1 ⊙ A1
+
+
+
+− ϕ∗
+
+> X2
+
+ cX2 ⊙ A2
+
+
+
+> max
+
+≤ ϕ∗
+
+> X1
+
+ cX1 ⊙ A1
+
+
+
+− ϕ∗
+
+> X2
+
+ cX1 ⊙ A1
+
+ 
+
+> max
+
++ ϕ∗
+
+> X2
+
+ cX1 ⊙ A1
+
+
+
+− ϕ∗
+
+> X2
+
+ cX2 ⊙ A2
+
+
+
+> max
+
+(by triangle inequality) 
+
+= ϕ∗
+
+> X1−X2
+
+ cX1 ⊙ A1
+
+ 
+
+> max
+
++ ϕ∗
+
+> X2
+
+ cX1 ⊙ A1 − cX2 ⊙ A2
+
+ 
+
+> max
+
+(by linearity of ϕ∗)
+
+≤ ∥ X1 − X2∥F cX1 ⊙ A1 F + ∥X2∥F cX1 ⊙ A1 − cX2 ⊙ A2 F (by Lemma 39) 
+
+≤ ∥ X1 − X2∥F ∥A1∥F cX1 max + ∥X2∥F
+
+ cX1 max ∥A1 − A2∥F + cX1 − cX2 F ∥A2∥max 
+
+
+
+(by triangle inequality and Eq. (156) )
+
+# M Graphon Convolution Operators 
+
+Recall that graphon convolution operator Φ is defined in (8). For a fixed h ∈ RF ×F ×K , we define an operator Φh : L2(I; R1×F ; dP ) → L2(I; R1×F ; dP ), associated to h, by 
+
+Φh(X ) := Φ( h, X ), X ∈ L2(I; R1×F ; dP ). (142) For a fixed X ∈ L2(I; R1×F ; dP ), we define an operator ΦX : RF ×F ×K → L2(I; R1×F ; dP ),associated to X , by 
+
+ΦX (h) := Φ( h, X ), h ∈ RF ×F ×K . (143) It is straightforward to verify that both operators Φh and ΦX are linear. 
+
+Adjoint operators. Note that the integral operator LP is self-adjoint, then the adjoint oper-ator of Φh, denoted by Φ∗ 
+
+> h
+
+: L2(I; R1×F ; dP ) → L2(I; R1×F ; dP ), is given by 
+
+Φ∗
+
+> h
+
+(Z) := 
+
+
+
+> F
+
+X 
+
+> f=1
+> K−1
+
+X
+
+> k=0
+
+hf gk LkP Z : g ∈ [F ]
+
+ , Z ∈ L2(I; R1×F ; dP ), (144) and the adjoint operator of ΦX , denoted by Φ∗X : L2(I; R1×F ; dP ) → RF ×F ×K , is given by 
+
+Φ∗X (Z) := 
+
+D
+
+LkP Xg, Zf
+
+E  
+
+> L2(I;dP )
+
+: f, g ∈ [F ], k ∈ ZK
+
+
+
+, Z ∈ L2(I; R1×F ; dP ).
+
+59 Adjoint operators of Gateaux derivatives of single-layer Graphon-NNs. Let eX =Φ( h, X ) and Y = σ( eX ). Let bX := σ′( eX ). By Chain rule, the Gateaux derivatives of Y with respect to X and h are given respectively by 
+
+δY
+
+δX (Z) = bX ⊙ Φh(Z), Z ∈ L2(I; R1×F ; dP ), δY
+
+δh (z) = bX ⊙ ΦX (z), z ∈ RF ×F ×K .
+
+Their adjoint operators are given by 
+
+ δY
+
+δX
+
+∗
+
+(V) = Φ ∗
+
+> h
+
+ bX ⊙ V 
+
+
+
+,
+
+ δY
+
+δh
+
+∗
+
+(V) = Φ ∗X
+
+ bX ⊙ V 
+
+
+
+, V ∈ L2(I; R1×F ; dP ). (145) 
+
+Adjoint operators of Gateaux derivatives of multi-layer Graphon-NNs. Now we con-sider the multi-layer Graphon-NNs defined in (10). Let 
+
+bX (ℓ) := σ′( eX (ℓ)), ℓ ∈ [L]. (146) It is straightforward to compute with Chain rule and Eq. (145) that for V ∈ L2(I; R1×F ; dP ),
+
+ δWNN 
+
+δX (0) 
+
+∗
+
+(V) = Φ ∗
+
+> h(1)
+
+ bX (1) ⊙ · · · Φ∗
+
+> h(L−1)
+
+ bX (L−1) ⊙
+
+
+
+Φ∗
+
+> h(L)
+
+ bX (L) ⊙ V 
+
+ 
+
+,
+
+ δWNN 
+
+δh(ℓ)
+
+∗
+
+(V) = Φ ∗X (ℓ)
+
+ bX (ℓ) ⊙ · · · Φ∗
+
+> h(L−1)
+
+ bX (L−1) ⊙
+
+
+
+Φ∗
+
+> h(L)
+
+ bX (L) ⊙ V 
+
+ 
+
+.
+
+We let 
+
+A(L) := V, A(ℓ) := Φ ∗
+
+> h(ℓ+1)
+
+ bX (ℓ+1) ⊙ A (ℓ+1) 
+
+, ℓ = L − 1, L − 2, · · · , 0 (147) which enables to rewrite 
+
+ δWNN 
+
+δX (0) 
+
+∗
+
+(A(L)) = A(0) ,
+
+ δWNN 
+
+δh(ℓ)
+
+∗
+
+(A(L)) = Φ ∗X (ℓ)
+
+ bX (ℓ) ⊙ A (ℓ)
+
+. (148) 
+
+Norm estimates. In the following, we present several useful norm estimates regarding to graphon convolution operators. Note that by letting cmax := sup u,v ∈I W(u, v ) and AS2, we have 
+
+∥L P ∥B(I)→B(I) ≤ sup 
+
+> u,v ∈I
+
+|LP (u, v )| ≤ cmax /c min . (149) 
+
+Lemma 43. If AS0 and AS2 hold, then for all ℓ ∈ [L],
+
+∥Φh(ℓ,t ) ∥B(I;R1×F )→B(I;R1×F ) ≤ F C 0,W Ch, (150) 
+
+
+
+Or Φ∗   
+
+> h(ℓ,t )B(I;R1×F)→B(I;R1×F)
+
+
+
+where constant Ch is defined in Eq. (138) and 
+
+C0,W := 
+
+> K−1
+
+X
+
+> k=0
+
+ cmax 
+
+cmin 
+
+k
+
+. (151) 
+
+Proof. Let X ∈ B(I; R1×F ) be arbitrary but fixed, and Y := Φ h(ℓ,t ) (X ). It follows from defini-tion of Φh(ℓ,t ) and graphon convolution that Yf = PFg=1 
+
+PK−1 
+
+> k=0
+
+h(ℓ,t ) 
+
+> f gk
+
+LkP Xg. Then by AS2 and Eq. (149), we have ∥Y f ∥B(I) ≤ PK−1
+
+> k=0
+
+PFg=1 h(ℓ,t )
+
+> f gk
+> ck
+> max
+> ck
+> min
+
+∥X g∥B(I) ≤ (C0,W Ch) PFg=1 ∥X g∥B(I). It follows that ∥Y f ∥2 
+
+> B(I)
+
+≤ F (C0,W Ch)2 PFg=1 ∥X g∥2 
+
+> B(I)
+
+= F (C0,W Ch)2 ∥X ∥ 2 
+
+> B(I;R1×F)
+
+. We sum the above inequality over f ∈ [F ] for both sides and obtain that ∥Y∥ 2  
+
+> B(I;R1×F)
+
+= PFf =1 ∥Y f ∥2 
+
+> B(I)
+
+≤
+
+(F C 0,W Ch)2 ∥X ∥ 2 
+
+> B(I;R1×F)
+
+, that is, for any X ∈ B(I; R1×F ), there holds ∥Φh(ℓ,t ) (X )∥B(I;R1×F ) ≤
+
+(F C 0,W Ch) ∥X ∥ B(I;R1×F ). This proves Eq. (150). The proof for operators Φ∗ 
+
+> h(ℓ,t )
+
+is similar. 60 Lemma 44. Suppose that Z = [ Zg : g ∈ [F ]] ∈ C([0 , T ]; B(I; R1×F )) and for all g ∈ [F ], Zg is 
+
+Lip( Z)-Lipschitz continuous about t, i.e., 
+
+∥Z g(·, t 1) − Z g(·, t 2)∥B(I) ≤ Lip( Z)|t1 − t2|, ∀t1, t 2 ∈ [0 , T ], ∀g ∈ [F ]. (152) 
+
+Then for any ℓ ∈ [L] and f ∈ [F ], it holds that 
+
+Φh(ℓ,t 1) (Z(·, t 1))  
+
+> f
+
+− Φh(ℓ,t 2) (Z(·, t 2))   
+
+> fB(I)
+
+≤ C|t1 − t2|, ∀t1, t 2 ∈ [0 , T ],
+
+
+
+Or Φ∗ 
+
+> h(ℓ,t 1)
+
+(Z(·, t 1))  
+
+> f
+
+− Φ∗ 
+
+> h(ℓ,t 2)
+
+(Z(·, t 2))  
+
+> fB(I)
+
+
+
+where C := C0,W 
+
+
+
+Lh
+
+√F ∥Z∥ C([0 ,T ]; B(I;R1×F )) + F C hLip( Z)
+
+
+
+.Proof. We obtain from triangle inequality and definition of operators Φh(ℓ,t ) that, for t1, t 2 ∈
+
+[0 , T ], Φh(ℓ,t 1) (Z(·, t 1))  
+
+> f
+
+− Φh(ℓ,t 2) (Z(·, t 2))   
+
+> fB(I)
+
+≤ ∆1 + ∆ 2 where 
+
+∆1 := 
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+(h(ℓ,t 1) 
+
+> f gk
+
+− h(ℓ,t 2) 
+
+> f gk
+
+)LkP Zg(·, t 1)
+
+> B(I)
+
+, ∆2 := 
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+h(ℓ,t 2) 
+
+> f gk
+
+LkP (Zg(·, t 1) − Z g(·, t 2)) 
+
+> B(I)
+
+.
+
+Note that 
+
+∆1 ≤
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+h(ℓ,t 1) 
+
+> f gk
+
+− h(ℓ,t 2) 
+
+> f gk
+
+∥L P ∥kB(I)→B(I)∥Z g(·, t 1)∥B(I)
+
+≤
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+Lh|t1 − t2| ck
+
+> max
+
+ck
+
+> min
+
+∥Z g(·, t 1)∥B(I) = ( C0,W Lh|t1 − t2|)
+
+> F
+
+X
+
+> g=1
+
+∥Z g(·, t 1)∥B(I)
+
+(by AS0 and Eq. (149) )
+
+≤ C0,W Lh
+
+√F ∥Z∥ C([0 ,T ]; B(I;R1×F )) |t1 − t2| (by norm defined in C([0 , T ]; B(I; R1×F )) )
+
+and 
+
+∆2 ≤
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+h(ℓ,t 2) 
+
+> f gk
+
+∥L P ∥kB(I)→B(I) ∥Z g(·, t 1) − Z g(·, t 2)∥B(I)
+
+≤
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+Ch
+
+ck
+
+> max
+
+ck
+
+> min
+
+Lip( Z)|t1 − t2| = F C 0,W ChLip( Z)|t1 − t2|. (by Eq. (149) and Eq. (152) )
+
+We apply estimates of ∆1 and ∆2 and obtain the desired result. The proof is similar when operator Φh(ℓ,t ) is replaced by Φ∗ 
+
+> h(ℓ,t )
+
+.
+
+# N Iterative MSE estimates 
+
+Empirical operators. Recall that LUn is the empirical graphon integral operator defined in (168). Let h ∈ RF ×F ×K . In the following, we introduce several empirical operators. We define an operator Φh,U n : B(I; R1×F ) → B(I; R1×F ) (empirical version of Eq. (142)) as 
+
+Φh,U n (Z) := 
+
+
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+hf gk LkUn Zg : f ∈ [F ]
+
+ , Z ∈ B(I; R1×F ).
+
+61 Define an operator Φ∗ 
+
+> h,U n
+
+: B(I; R1×F ) → B(I; R1×F ) (empirical version of Eq. (144)) as 
+
+Φ∗ 
+
+> h,U n
+
+(Z) := 
+
+
+
+> F
+
+X 
+
+> f=1
+> K−1
+
+X
+
+> k=0
+
+hf gk LkUn Zf : g ∈ [F ]
+
+ , Z ∈ B(I; R1×F ).
+
+Let matrix LUn be defined in (179). For each ℓ ∈ [L], we define operators 
+
+ϕh,U n (Z) := 
+
+
+
+> F
+
+X
+
+> g=1
+> K−1
+
+X
+
+> k=0
+
+hf gk LkUn Zf : f ∈ [F ]
+
+ , Z ∈ Rn×F ,
+
+and 
+
+ϕ∗ 
+
+> h,U n
+
+(Z) := 
+
+
+
+> F
+
+X 
+
+> f=1
+> K−1
+
+X
+
+> k=0
+
+hf gk LkUn Zf : g ∈ [F ]
+
+ , Z ∈ Rn×F .
+
+The following observations are useful. For any function Z ∈ B(I),
+
+LUn SUn (Z) = SUn (LUn Z), (153) 
+
+∥S Un (Z)∥2 ≤ √n ∥Z∥B(I) . (154) For any functions Z, V ∈ B(I; R1×F ),
+
+∥Z ⊙ V∥ B(I;R1×F ) ≤ ∥Z∥ B(I;R1×F ) ∥V∥ B(I;R1×F ) . (155) For any matrices Z, V ∈ Rn×F ,
+
+∥Z ⊙ V ∥F ≤ ∥ Z∥F ∥V ∥max . (156) For any function Z ∈ B(I; R1×F ),
+
+SUn (Φ h,U n (Z)) = ϕh,U n (SUn (Z)) , (157) 
+
+∥S Un (Z)∥F ≤ √n∥Z∥ B(I;R1×F ), (158) 
+
+∥S Un (Z)∥max ≤ max    
+
+> f∈[F]
+
+∥Z f ∥B(I) ≤ ∥Z∥ B(I;R1×F ) . (159) 
+
+Lemma 45. Suppose that AS0 holds. For any matrix Z ∈ Rn×F , it holds that 
+
+ϕh(ℓ,t ),U n (Z) − ϕh(ℓ,t ) (Z) F ≤ F K 2Ch∥LUn − L∥2∥Z∥F
+
+
+
+Or ϕ∗ 
+
+> h(ℓ,t ),U n
+
+(Z) − ϕ∗ 
+
+> h(ℓ,t )
+
+(Z) F
+
+
+
+.
+
+Proof. Note that ∥LUn ∥2 ≤ 1 and ∥L∥2 ≤ 1, implying LkUn − Lk 
+
+> 2
+
+≤ k ∥LUn − L∥2 , k ∈ ZK .The result then immediately follows from standard norm estimates. 
+
+Lemma 46. Suppose that AS0 holds. For any Z ∈ B(I; R1×F ), it holds that 
+
+Φh(ℓ,t ) (Z) − Φh(ℓ,t ),U n (Z) B(I;R1×F )
+
+
+
+Or Φ∗ 
+
+> h(ℓ,t )
+
+(Z) − Φ∗ 
+
+> h(ℓ,t ),U n
+
+(Z) B(I;R1×F )
+
+
+
+≤ F KC h ∥L Un ∥KB(I)→B(I)
+
+vuut FX
+
+> g=1
+> K
+
+X
+
+> k=1
+> k−1
+
+X
+
+> s=0
+
+(LUn − L P )
+
+
+
+Lk−1−sP Zg
+
+ 2
+
+> B(I)
+
+62 Proof. This result can be directly shown by noting that the difference between the k-th powers of the operators can be expanded via the telescoping identity LkUn − L kP = Pk−1 
+
+> s=0
+
+LsUn (LUn −LP )Lk−1−sP , followed by standard norm inequalities. 
+
+Lemma 47. Suppose that AS0 holds. For any matrix Z ∈ Rn×F and function Z ∈ B(I; R1×F ),it holds that for all t ∈ [0 , T ] and ℓ ∈ [L],
+
+MSE Un (Φ h(ℓ,t ) (Z), ϕ h(ℓ,t ) (Z)) ≤ (F KC h) MSE Un (Z, Z) + ∆ 1 + ∆ 2,
+
+
+
+Or MSE Un (Φ ∗ 
+
+> h(ℓ,t )
+
+(Z), ϕ ∗ 
+
+> h(ℓ,t )
+
+(Z))) 
+
+
+
+where ∆1 := F K 2Ch∥LUn − L∥2∥Z∥ B(I;R1×F ) and 
+
+∆2 := F KC h ∥L Un ∥KB(I)→B(I)
+
+vuut FX
+
+> g=1
+> K
+
+X
+
+> k=1
+> k−1
+
+X
+
+> s=0
+
+(LUn − L P )
+
+
+
+Lk−1−sP Zg
+
+ 2
+
+> B(I)
+
+.
+
+Proof. By triangle inequality, we have 
+
+MSE Un (Φ h(ℓ,t ) (Z), ϕ h(ℓ,t ) (Z)) = 1
+
+√n ∥S Un (Φ h(ℓ,t ) (Z)) − ϕh(ℓ,t ) (Z)∥F ≤ ∆ + e∆,
+
+where ∆ := 1√n ∥S Un (Φ h(ℓ,t ) (Z)) − ϕh(ℓ,t ) (SUn (Z)) ∥F and e∆ := 1√n ∥ϕh(ℓ,t ) (SUn (Z) − Z)∥F. We first estimate ∆. Again by triangle inequality, we have ∆ ≤ α1+α2, where α1 := 1√n SUn (Φ h(ℓ,t ) (Z) − Φh(ℓ,t ),U n (Z
+
+and α2 := 1√n SUn (Φ h(ℓ,t ),U n (Z)) − ϕh(ℓ,t ) (SUn (Z)) F Note that by Eq. (157), Lemma 45, Eq. (158), and definition of ∆1, we have 
+
+α1 = 1
+
+√n ϕh(ℓ,t ),U n (SUn (Z)) − ϕh(ℓ,t ) (SUn (Z)) F ≤ 1
+
+√n F K 2Ch∥LUn − L∥2∥S Un (Z)∥F ≤ ∆1.
+
+Moreover, due to Eq. (158), Lemma 46, and definition of ∆2, we have 
+
+α2 ≤ Φh(ℓ,t ) (Z) − Φh(ℓ,t ),U n (Z) B(I;R1×F ) ≤ ∆2.
+
+In addition, by Lemma 36, we obtain that 
+
+e∆ ≤ 1
+
+√n F KC h∥S Un (Z) − Z∥F = ( F KC h) MSE Un (Z, Z).
+
+We get the desired result by collecting all above estimates. 
+
+# O Auxiliary results 
+
+The following lemma extends Lemma 4 in Keriven et al. (2020) to a time-uniform setting, and its proof follows the same chaining argument. 
+
+Lemma 48. Let W : I2 → I be a graphon satisfying AS3. Let Ω = I × [0 , T ]. Suppose that function X : Ω → R is Lipschitz continuous about t, i.e., there exists a positive constant CLip 
+
+such that for any u ∈ I,
+
+|X(u, t 1) − X(u, t 2)| ≤ CLip |t1 − t2|, ∀t1, t 2 ∈ [0 , T ]. (160) 63 Suppose that Cmax := sup t∈[0 ,T ] ∥X(·, t )∥B(I) exists. Let uj , j ∈ [n] be independent random variables following a distribution P . For each (u, t ) ∈ Ω, let 
+
+Y(u,t ) := 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+W(u, u j )X(uj , t ) −
+
+Z
+
+> I
+
+W(u, v )X(v, t )dP (v). (161) 
+
+Then with probability at least 1 − γ, it holds that 
+
+sup 
+
+> (u,t )∈Ω
+
+Y(u,t ) ≲
+
+plog(4 nI /γ )
+
+√n (1 + CT ) max {cmax , c Lip } max {Cmax , C Lip } , (162) 
+
+where CT is a constant only depending on T .Proof. Let {Is : s ∈ [nI ]} be the partition of I assumed in AS3. Let s ∈ [nI ] be arbitrary but fixed. By Ωs we denote the set Is × [0 , T ]. Let (u0, t 0) be an arbitrary but fixed point in Ωs. By triangle inequality, we have 
+
+sup 
+
+> (u,t )∈Ωs
+
+Y(u,t ) ≤ Y(u0,t 0) + sup 
+
+> (u,t ),(u′,t ′)∈Ωs
+
+Y(u,t ) − Y(u′,t ′) . (163) It is clear that, for each j ∈ [n], we have |W(u0, u j )X(uj , t )| ≤ cmax Cmax . Therefore, by Hoeffding’s inequality, with probability at least 1 − γ/ 2, it holds that 
+
+Y(u0,t 0) ≲ cmax Cmax 
+
+plog(4 /γ )
+
+√n . (164) In addition, note that for each (u, t ) ∈ Ω, |Y(u,t )| ≤ 2cmax Cmax . This implies that the random variable Y(u,t ) is bounded, and hence sub-gaussian. For any (u, t ), (u′, t ′) ∈ Ωs, via triangle inequality of sub-gaussian norm ∥ · ∥ ψ2 , we have Y(u,t ) − Y(u′,t ′) ψ2 ≤ Y(u,t ) − Y(u′,t ) ψ2 +
+
+Y(u′,t ) − Y(u′,t ′) ψ2 . Similar to the proof in Keriven et al. (2020), by the properties of sub-gaussian process, we have Y(u,t ) − Y(u′,t ) ψ2 ≲ cLip  
+
+> √n
+
+Cmax |u − u′|, and Y(u′,t ) − Y(u′,t ′) ψ2 ≲ 
+
+> cmax √n
+
+CLip |t − t′|. It follows that Y(u,t ) − Y(u′,t ′) ψ2 ≲ max {cLip Cmax ,c max CLip }√n ∥(u, t ), (u′ − t′)∥1.Then we apply Dudley’s inequality and obtain that with probability at least 1 − γ/ 2,
+
+sup 
+
+> (u,t ),(u′,t ′)∈Ωs
+
+Y(u,t ) − Y(u′,t ′)
+
+≲ max {cLip Cmax , c max CLip }√n
+
+Z ∞
+
+> 0
+
+plog N (Ω s, ∥ · ∥ 1, ϵ )dϵ + diam(Ω s)plog(4 /γ )
+
+
+
+,
+
+(165) where N (Ω s, ∥ · ∥ 1, ϵ ) is the covering number of Ωs with respect to ℓ1 norm and radius ϵ, and 
+
+diam(Ω s) is the diameter of Ωs defined by diam(Ω s) := sup {∥ (u, t ) − (u′, t ′)∥2 : ( u, t ), (u′, t ′) ∈
+
+Ωs}. Noting that the integral in Eq. (165) is finite and only depending on T ; also diam(Ω s) is bounded above by √T 2 + 1 . By CT we denote a uniform upper bound (only relying on T ) for the integral in Eq. (165) and diam(Ω s). It follows that 
+
+sup 
+
+> (u,t ),(u′,t ′)∈Ωs
+
+Y(u,t ) − Y(u′,t ′) ≲ max {cLip Cmax , c max CLip }√n
+
+
+
+CT + CT
+
+plog(4 /γ )
+
+
+
+. (166) With plugging estimates Eq. (164) and Eq. (166) into Eq. (163), then with probability at least 
+
+1 − γ, there holds 
+
+sup 
+
+> (u,t )∈Ωs
+
+Y(u,t ) ≲
+
+plog(4 /γ )
+
+√n (1 + CT ) max {cmax , c Lip } max {Cmax , C Lip } .
+
+With applying an union bound for all s ∈ [nI ], we obtain Eq. (162) as desired. 64 Given Un = {uj : j ∈ [n]}, a set of n distinct points in I, we define the empirical degree function dUn : I → I by dUn (u) := 1
+
+> n
+
+Pnj=1 W(u, u j ), u ∈ I, the empirical symmetric normalized adjacency function LUn : I2 → I by 
+
+LUn (u, v ) := W(u, v )
+
+pdUn (u)dUn (v) , u, v ∈ I, (167) and the empirical graphon integral operator LUn : B(I) → B(I) by 
+
+LUn X := 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+LUn (·, u j )X(uj ), X ∈ B(I). (168) Following the chaining argument in Lemma 5 of Keriven et al. (2020), we obtain the following two auxiliary lemmas adapted to our setting. 
+
+Lemma 49. Suppose that AS2 and AS3 hold. Then with probability at least 1 − γ1,
+
+sup 
+
+> u∈I
+
+|dP (u) − dUn (u)| ≲ max {cmax , c Lip }
+
+plog(4 nI /γ 1)
+
+√n . (169) 
+
+Define a constant 
+
+C1,W := 
+
+ max {cmax , c Lip }
+
+cmin 
+
+2
+
+. (170) 
+
+Moreover, if Eq. (169) holds and 
+
+n ≳ C1,W log(4 nI /γ 1), (171) 
+
+then 
+
+dUn (u) ≳ cmin , ∀u ∈ I, (172) 
+
+∥L Un ∥B(I)→B(I) ≲ cmax 
+
+cmin 
+
+, (173) 
+
+|LUn (u, v ) − LP (u, v )| ≲ C1,W 
+
+plog(4 nI /γ 1)
+
+√n . (174) 
+
+Lemma 50. Suppose that AS2 and AS3 hold. Let Ω = I ×[0 , T ]. Suppose that function X : Ω →
+
+R is Lipschitz continuous about t, i.e., Eq. (160) . Suppose that Cmax := sup t∈[0 ,T ] ∥X(·, t )∥B(I)
+
+exists. Let uj , j ∈ [n] be independent random variables following a distribution P . If Eqs. (169) 
+
+and (171) hold, then with probability at least 1 − γ,
+
+sup 
+
+> (u,t )∈Ω
+
+|(( LUn − L P ) X(·, t )) ( u)| ≲ C1,W 
+
+plog(4 nI /γ 1)
+
+√n + C2,W 
+
+plog(4 nI /γ )
+
+√n
+
+!
+
+max {Cmax , C Lip } .
+
+where C1,W is defined in (170) and 
+
+C2,W := (1 + CT ) max 
+
+ cmax 
+
+cmin 
+
+, cLip 
+
+cmin 
+
+
+
+1 + cmax 
+
+2cmin 
+
+ 
+
+. (175) The following result is a slight modification of Corollary 1 in Keriven et al. (2020). 65 Lemma 51. Suppose that Eq. (169) holds, 
+
+n ≳ C1,W log(4 nI /γ 1) + 1 /γ 1, (176) 
+
+and 
+
+αn ≳ cmax c−2min n−1 log n. (177) 
+
+Then, with probability at least 1 − γ1, there holds 
+
+∥L − LUn ∥2 ≲ cmax 
+
+c2min 
+
+1
+
+√αnn , (178) 
+
+where 
+
+LUn := D−1/2 
+
+> Un
+
+WUn D−1/2 
+
+> Un
+
+, (179) 
+
+WUn := [ W(ui, u j ) : i, j ∈ [n]] ∈ Rn×n, and DUn is the degree matrix of WUn .
+
+The following result is a special case of Theorem 21 in Dragomir (2003); the backward version is obtained through a standard change of variables. 
+
+Lemma 52 (Generalized Grönwall’s inequality) . Let a, b, T be positive constants. Let u :[0 , T ] → R be a non-negative function. If for all t ∈ [0 , T ], u (t) ≤
+
+Z t
+
+> 0
+
+
+
+au (s) + bpu(s)
+
+
+
+ds, then u(t) ≤
+
+ exp( at/ 2) − 1
+
+a b
+
+2
+
+, t ∈ [0 , T ].
+
+If for all t ∈ [0 , T ], u (t) ≤
+
+Z Tt
+
+
+
+au (s) + bpu(s)
+
+
+
+ds, then u(t) ≤
+
+ exp( a(T − t)/2) − 1
+
+a b
+
+2
+
+, t ∈ [0 , T ].
+
+Lemma 53 (Convergence for Euler’s Method) . Let a, b ∈ R with a < b . Consider the ordinary differential equation defined by dx dt = f (x, t ), t ∈ [a, b ] with initial value conition x(a) = x0.Suppose that the solution x has a bounded second derivative with an upper bound B; and f is 
+
+L-Lipschitz continuous in x. For M ∈ N, let κ := ( b − a)/M be the time step. Consider Euler’s method: for m ∈ [M ],
+
+x[m] := x[m−1] + κf (x[m−1] , t m−1),tm := tm−1 + κ, 
+
+with initial value t0 := a and x[0] := x0. Then for all m ∈ [M ],
+
+x(tm) − x[m] ≤ κB 
+
+2L
+
+
+
+eL(tm−a) − 1
+
+
+
+.
+
+66

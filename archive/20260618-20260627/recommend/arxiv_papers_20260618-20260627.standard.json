@@ -1,0 +1,943 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-27T08:01:01.268795+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 4,
+    "deep_divecandidates": 17,
+    "deep_cap": 9,
+    "deep_selected": 9,
+    "quick_candidates": 12,
+    "quick_skim_target": 14,
+    "quick_selected": 12
+  },
+  "deep_dive": [
+    {
+      "id": "2606.21891v1",
+      "source": "arxiv",
+      "title": "Learning the ARTS of Search for Automated Discovery",
+      "abstract": "Scientific discovery can be formulated as an iterative search process over the space of hypotheses and experiments. Contemporary methods navigate this space using heuristics such as MCTS. These algorithms conflate the merit of a hypothesis with the quality of its experimental execution. A promising hypothesis with preliminary execution is therefore ranked below a modest hypothesis whose execution is refined. Moreover, prior methods prune the search logs as the search progresses because the accumulated history outgrows the context window. We propose Agentic Reasoning for Tree Search (ARTS), where we deploy a reasoning language model to navigate this space. The model inspects prior execution logs, diagnoses whether earlier failures arose from faulty implementations or bad hypotheses, and selects the hypothesis to build on next. To mitigate challenges with context length, ARTS uses test-time training to instill the knowledge of search tree in the model weights. Across 22 tasks from MLGym and MLEBench, we show that ARTS outperforms leading algorithms, with over 15.3% relative improvement in the normalized score. With test-time training we show that a Qwen3-4B agent can match performance with closed-source frontier models like Gemini-3 Pro and GPT o3-reasoning with upto 5x lower inference cost. We further observe that on partially observable RL tasks, the test-time trained Qwen3-4B scientist surpasses ARTS with the o3 scientist by rediscovering the human-best recurrent-memory solution that heuristic methods prune away.",
+      "authors": [
+        "Gurusha Juneja",
+        "Arnav Kumar Jain",
+        "Deepak Nathani",
+        "William Yang Wang",
+        "Xin Eric Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-20T05:47:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.21891v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:ml",
+        "query:dynamic-g",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes ARTS, using reasoning LMs for automated scientific discovery via iterative hypothesis-experiment search",
+      "llm_evidence_cn": "提出ARTS，利用推理语言模型通过迭代假设-实验搜索实现自动化科学发现",
+      "llm_evidence": "提出ARTS，利用推理语言模型通过迭代假设-实验搜索实现自动化科学发现",
+      "canonical_evidence": "提出ARTS，利用推理语言模型通过迭代假设-实验搜索实现自动化科学发现",
+      "llm_tldr_en": "This paper addresses limitations of MCTS-based automated discovery that conflates hypothesis merit with execution quality, and prunes search logs. It proposes ARTS, using a reasoning LLM to inspect prior logs, diagnose failures, and navigate hypothesis-experiment space, achieving better scientific discovery automation.",
+      "llm_tldr_cn": "针对现有基于MCTS的自动化发现方法混淆假设价值与实验执行质量、且因上下文窗口限制而裁剪搜索日志的问题，本文提出ARTS方法，利用推理语言模型检查先前实验日志、诊断失败原因并导航假设-实验空间，从而更有效地自动化科学发现过程。实验表明该方法能更好地区分实现错误与假设缺陷，提升搜索效率。这项工作为结合语言模型与搜索的自动化研究提供了新范式。",
+      "llm_tldr": "针对现有基于MCTS的自动化发现方法混淆假设价值与实验执行质量、且因上下文窗口限制而裁剪搜索日志的问题，本文提出ARTS方法，利用推理语言模型检查先前实验日志、诊断失败原因并导航假设-实验空间，从而更有效地自动化科学发现过程。实验表明该方法能更好地区分实现错误与假设缺陷，提升搜索效率。这项工作为结合语言模型与搜索的自动化研究提供了新范式。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22053v1",
+      "source": "arxiv",
+      "title": "Gradient-Descent Steps to Success over Mean Accuracy: A Paradigm Shift for ML",
+      "abstract": "Traditional evaluation of machine learning (ML) models typically focuses on achieving the maximum possible accuracy irrespective of the computational cost. In this article, we propose a paradigm shift towards evaluating performance based on computational effort-explicitly defined here as the total number of gradient descent steps required to reach an acceptable level of accuracy with high probability. Building upon the concept of computational effort originally introduced by Koza for Genetic Programming, we extend this metric to any ML model trained via gradient descent. Furthermore, we demonstrate that minimising this effort acts as a novel form of Automatic Machine Learning (AutoML). By evaluating it across 11 diverse ML models and five standard classification datasets, we uncover significant insights into the dynamics of gradient-based learning. Our findings reveal that optimal hyper-parameters consistently favour unusually large learning rates. Crucially, we demonstrate that the rapid, aggressive landscape traversal enabled by these large rates not only promotes generalisation-as seen in phenomena like superconvergence-but also statistically minimises the expected computational effort for training. Furthermore, we identify distinct phase transitions in the optimal search strategy: while a single training run suffices for lower accuracy targets, reaching a model's performance limit requires a dramatic shift towards conducting numerous independent, short restarts. Finally, we illustrate how this effort-based paradigm provides a robust framework for model selection, allowing practitioners to choose optimal algorithms based on the difficulty of a problem as perceived by different models for a given target accuracy, or to maximise the achievable accuracy for a fixed budget of gradient descent steps.",
+      "authors": [
+        "Riccardo Poli",
+        "Ahmet Yilmaz"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.NE"
+      ],
+      "published": "2026-06-20T14:10:49+00:00",
+      "link": "https://arxiv.org/pdf/2606.22053v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:ml",
+        "query:EFMR",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes minimizing gradient descent steps as a novel form of AutoML for model evaluation",
+      "llm_evidence_cn": "提出以最小化梯度下降步数作为AutoML的新型模型评估方式",
+      "llm_evidence": "提出以最小化梯度下降步数作为AutoML的新型模型评估方式",
+      "canonical_evidence": "提出以最小化梯度下降步数作为AutoML的新型模型评估方式",
+      "llm_tldr_en": "The paper shifts ML evaluation from accuracy to computational effort, measured by gradient descent steps to reach target accuracy, and shows this minimization acts as an AutoML approach, validated across diverse models and datasets.",
+      "llm_tldr_cn": "传统机器学习评估聚焦准确率而忽略计算成本。本文提出基于梯度下降步数的计算工作量新指标，以概率度量达到可接受准确率所需的步数，并证明最小化该指标可作为一种新型自动机器学习方法。在11个模型和5个标准数据集上的实验验证了其有效性，为AutoML提供了新视角。",
+      "llm_tldr": "传统机器学习评估聚焦准确率而忽略计算成本。本文提出基于梯度下降步数的计算工作量新指标，以概率度量达到可接受准确率所需的步数，并证明最小化该指标可作为一种新型自动机器学习方法。在11个模型和5个标准数据集上的实验验证了其有效性，为AutoML提供了新视角。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "latest advances in automated machine learning and AutoML frameworks",
+      "matched_requirement_id": "req-33",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22731v1",
+      "source": "arxiv",
+      "title": "Closed-loop Auto Research for Molecular Property Prediction: Discovering and Certifying Generalizable Improvements",
+      "abstract": "Closed-loop Auto Research extends automated machine learning from fixed-dataset fitting to changing the research workflow, with language-model agents editing representations and model code and acquiring external evidence. Molecular property prediction spans many small endpoints. We ask whether this action space yields improvements generalizing beyond the validation signal selecting them.   We isolate three Auto Research axes, features, models, and external evidence, under a file-level ablation lock attributing each gain to one axis over a strong baseline. Across 36 endpoints in three benchmark suites we score each selected configuration once on a held-out test whose labels the search never read. A routed pipeline taking each endpoint's best validation axis reaches positive held-out gains of 0.013, 0.011, and 0.042, the transferable axis differing by suite, data on TDC, model on Polaris, feature and model on MoleculeNet. The largest model-search gain falls from 0.041 on validation to 0.003 on test, while curated data reaches 0.022 but negative 0.019 on test, two non-transfer signatures. Curated external data raises held-out CYP2C9-substrate performance by 0.17 and half-life by 0.08, admitted through a contamination filter rejecting same-source files overlapping 64 to 89 percent of test structures, necessary but not sufficient for transfer. A matched-trial automated machine learning control did not reproduce the agent's code-level model intervention, reaching 0.006 against 0.042, and the pipeline stays competitive with an 84M-parameter pretrained 3D model on the shared training split.   The experiments stay within molecular property prediction, but separating discovery from held-out certification is a domain-agnostic lesson for any closed-loop system optimising a proxy for a held-out quantity.",
+      "authors": [
+        "Jingjie Ning",
+        "Xiaochuan Li",
+        "Ji Zeng",
+        "Chenyan Xiong",
+        "Guolin Ke"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-06-22T00:18:27+00:00",
+      "link": "https://arxiv.org/pdf/2606.22731v1",
+      "tags": [
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Closed-loop Auto Research with LLM agents automates molecular property prediction workflow",
+      "llm_evidence_cn": "利用LLM智能体的闭环自动研究自动化分子性质预测工作流",
+      "llm_evidence": "利用LLM智能体的闭环自动研究自动化分子性质预测工作流",
+      "canonical_evidence": "利用LLM智能体的闭环自动研究自动化分子性质预测工作流",
+      "llm_tldr_en": "Extends AutoML to closed-loop Auto Research by having LLM agents edit features, models, and gather external evidence, improving molecular property prediction with certifiable generalization.",
+      "llm_tldr_cn": "本文扩展了自动机器学习（AutoML）至闭环自动研究，通过语言模型智能体编辑特征、模型代码并获取外部证据，在分子性质预测任务上实现超越强基线的泛化改进，并进行了消融实验以区分各个研究轴线的贡献。",
+      "llm_tldr": "本文扩展了自动机器学习（AutoML）至闭环自动研究，通过语言模型智能体编辑特征、模型代码并获取外部证据，在分子性质预测任务上实现超越强基线的泛化改进，并进行了消融实验以区分各个研究轴线的贡献。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22850v1",
+      "source": "arxiv",
+      "title": "To select or not to select: predictively consistent priors instead of model selection",
+      "abstract": "Bayesian modelling workflows often consider multiple candidate models of varying complexity. Model selection is commonly used to navigate potential trade-offs between model complexity and generalisability to new data. We study when model selection is unnecessary or can even be harmful for predictive performance in finite data regimes and find that the need for selecting simpler models can depend on prior choice. We formalise predictively consistent priors, which keep prior predictive implications stable as model complexity increases. Across examples and numerical experiments, including adding covariates in linear and logistic regression, forward variable selection, and nonlinear modelling, flexible models with predictively consistent priors typically match or outperform selected simpler models in out-of-sample predictive performance. When selection helps, it can indicate poor joint prior implications, such as excessive prior mass on implausible predictive values. Based on our findings, we propose replacing the notion of sparsity or parsimony at the level of model components with specifying priors that remain sensible in predictive space as models become more complex.",
+      "authors": [
+        "Anna Elisabeth Riha",
+        "Leevi Lindgren",
+        "David Kohns",
+        "Paul-Christian Bürkner",
+        "Aki Vehtari"
+      ],
+      "primary_category": "stat.ME",
+      "categories": [
+        "stat.ME"
+      ],
+      "published": "2026-06-22T04:52:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.22850v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:ml",
+        "query:EFMR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes predictively consistent priors to avoid model selection, enabling evaluation-free use of flexible models.",
+      "llm_evidence_cn": "提出预测一致性先验以避免模型选择，实现免评估的灵活模型使用。",
+      "llm_evidence": "提出预测一致性先验以避免模型选择，实现免评估的灵活模型使用。",
+      "canonical_evidence": "提出预测一致性先验以避免模型选择，实现免评估的灵活模型使用。",
+      "llm_tldr_en": "Introduces predictively consistent priors that eliminate the need for model selection by ensuring flexible models maintain stable predictive performance, demonstrated across regression and nonlinear modeling examples.",
+      "llm_tldr_cn": "贝叶斯建模中模型选择常需权衡复杂性与泛化性，本文提出预测一致性先验，使复杂模型的先验预测意义随复杂度增加而保持稳定，从而避免模型选择，在回归和非线性建模实验中验证了其有效性。",
+      "llm_tldr": "贝叶斯建模中模型选择常需权衡复杂性与泛化性，本文提出预测一致性先验，使复杂模型的先验预测意义随复杂度增加而保持稳定，从而避免模型选择，在回归和非线性建模实验中验证了其有效性。",
+      "llm_tags": [
+        "query:efmr"
+      ],
+      "matched_query_tag": "query:efmr",
+      "matched_query_text": "evaluation-free model selection",
+      "matched_requirement_id": "req-20",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22859v1",
+      "source": "arxiv",
+      "title": "AI Scientists as Engines of Discovery: A Case for Development within Reformed Institutions",
+      "abstract": "Agentic artificial intelligence (AI) systems are beginning to assist, accelerate, and partially automate scientific discovery, performing tasks that span literature synthesis, code generation, data analysis, hypothesis proposal, and model criticism. We argue that this transition is qualitative rather than incremental, and that suitably designed multi-agent systems may evolve from passive computational tools into ``AI scientists'' that can expand the hypothesis-generating and verification capacity of science. Such systems must be developed and deployed within a scientific ecosystem fit for purpose: institutions must be redesigned for verification, accountability, interpretability, and dual-use safety. We sketch how multi-agent architectures, illustrated by the prototype framework \\textit{Denario}, accelerate the discovery cycle and traverse model spaces beyond human reach; examine what this implies for authorship, peer review, and the enduring role of human scientists; and close with recommendations for governing AI as an epistemic actor rather than a mere instrument.",
+      "authors": [
+        "Raul Jimenez",
+        "Boris Bolliet",
+        "Francisco Villaescusa-Navarro",
+        "Rabih Zbib",
+        "Benjamin Wandelt",
+        "David N. Spergel",
+        "Thomas Meier",
+        "Jessica Montgomery",
+        "Hana Aliee",
+        "Licia Verde"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "astro-ph.IM",
+        "physics.soc-ph"
+      ],
+      "published": "2026-06-22T05:06:29+00:00",
+      "link": "https://arxiv.org/pdf/2606.22859v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes AI scientists as multi-agent systems to automate scientific discovery, including hypothesis generation and verification",
+      "llm_evidence_cn": "提出AI科学家作为多智能体系统自动化科学发现，包括假设生成与验证",
+      "llm_evidence": "提出AI科学家作为多智能体系统自动化科学发现，包括假设生成与验证",
+      "canonical_evidence": "提出AI科学家作为多智能体系统自动化科学发现，包括假设生成与验证",
+      "llm_tldr_en": "The paper argues for developing AI scientist systems within reformed institutions, where multi-agent AI can automate tasks like literature synthesis, hypothesis proposal, and model criticism to accelerate discovery.",
+      "llm_tldr_cn": "本文主张在改革后的科研机构中发展AI科学家系统，利用多智能体架构自动化文献综合、假设提出、代码生成、数据分析等任务。指出此类系统可从被动计算工具演化为自主科研实体，但需配套制度保障可验证性、可问责性与安全性。该愿景旨在以AI扩展科学的假设生成与验证能力，推动发现范式的质变。",
+      "llm_tldr": "本文主张在改革后的科研机构中发展AI科学家系统，利用多智能体架构自动化文献综合、假设提出、代码生成、数据分析等任务。指出此类系统可从被动计算工具演化为自主科研实体，但需配套制度保障可验证性、可问责性与安全性。该愿景旨在以AI扩展科学的假设生成与验证能力，推动发现范式的质变。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automated scientific research and discovery systems",
+      "matched_requirement_id": "req-30",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.23758v1",
+      "source": "arxiv",
+      "title": "Exploring Dualistic Meta-Learning to Enhance Domain Generalization in Open Set Scenarios",
+      "abstract": "Domain generalization learns from multiple source domains to generalize to unseen target domains. However, it often neglects the realistic case of label mismatch between source and target. Open set domain generalization is then proposed to recognize unseen classes in unseen domains. A simple approach trains one-vs-all classifiers to separate each class and detect outliers as unknown. Yet, the imbalance between few positive samples and many negative samples skews the decision boundary towards the positive ones, leading the model to over-reject out-of-distribution data, even from known classes in unseen domains. In this paper, we propose a novel meta-learning stategy called dualistic MEta-learning with joint DomaIn-Class matching (MEDIC), which considers implicit gradient matching towards inter-domain and inter-class task splits simultaneously to find optimal boundaries balanced for both domains and classes. Experimental results show that MEDIC not only outperforms prior methods in open set scenarios, but also maintains competitive close set generalization ability.",
+      "authors": [
+        "Xiran Wang",
+        "Jian Zhang",
+        "Lei Qi",
+        "Yang Gao",
+        "Yinghuan Shi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-22T08:58:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.23758v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes a dualistic meta-learning strategy for open set domain generalization",
+      "llm_evidence_cn": "提出一种双重元学习策略用于开放集领域泛化",
+      "llm_evidence": "提出一种双重元学习策略用于开放集领域泛化",
+      "canonical_evidence": "提出一种双重元学习策略用于开放集领域泛化",
+      "llm_tldr_en": "Proposes MEDIC, a dualistic meta-learning approach that jointly matches domain and class distributions to improve domain generalization in open set scenarios, addressing decision boundary skew from class imbalance.",
+      "llm_tldr_cn": "本文针对开放集领域泛化中正负样本不平衡导致的决策边界偏移问题，提出双重元学习策略MEDIC，通过联合优化领域和类别匹配目标，缓解过拒真现象。该方法有效提升了模型对未知类别的识别能力，在多个基准上优于现有方法。",
+      "llm_tldr": "本文针对开放集领域泛化中正负样本不平衡导致的决策边界偏移问题，提出双重元学习策略MEDIC，通过联合优化领域和类别匹配目标，缓解过拒真现象。该方法有效提升了模型对未知类别的识别能力，在多个基准上优于现有方法。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "meta learning algorithms and learning to learn approaches",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.23758v2",
+      "source": "arxiv",
+      "title": "Exploring Dualistic Meta-Learning to Enhance Domain Generalization in Open Set Scenarios",
+      "abstract": "Domain generalization learns from multiple source domains to generalize to unseen target domains. However, it often neglects the realistic case of label mismatch between source and target. Open set domain generalization is then proposed to recognize unseen classes in unseen domains. A simple approach trains one-vs-all classifiers to separate each class and detect outliers as unknown. Yet, the imbalance between few positive samples and many negative samples skews the decision boundary towards the positive ones, leading the model to over-reject out-of-distribution data, even from known classes in unseen domains. In this paper, we propose a novel meta-learning stategy called dualistic MEta-learning with joint DomaIn-Class matching (MEDIC), which considers implicit gradient matching towards inter-domain and inter-class task splits simultaneously to find optimal boundaries balanced for both domains and classes. Experimental results show that MEDIC not only outperforms prior methods in open set scenarios, but also maintains competitive close set generalization ability.",
+      "authors": [
+        "Xiran Wang",
+        "Jian Zhang",
+        "Lei Qi",
+        "Yang Gao",
+        "Yinghuan Shi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-22T08:58:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.23758v2",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes a meta-learning strategy for open set domain generalization to align domains and classes",
+      "llm_evidence_cn": "提出一种面向开放集域泛化的元学习策略，联合对齐域和类别",
+      "llm_evidence": "提出一种面向开放集域泛化的元学习策略，联合对齐域和类别",
+      "canonical_evidence": "提出一种面向开放集域泛化的元学习策略，联合对齐域和类别",
+      "llm_tldr_en": "Open set domain generalization suffers from decision boundary skew due to class imbalance; MEDIC uses meta-learning with domain-class matching to improve unknown class recognition across domains.",
+      "llm_tldr_cn": "开放集域泛化中类别不平衡导致决策边界偏移，影响未知类识别。本文提出MEDIC元学习策略，通过联合域-类匹配，在元学习框架下同时优化样本域和类别分布。实验表明该方法在多个跨域识别任务上提升了已知类分类与未知类检测的泛化能力。",
+      "llm_tldr": "开放集域泛化中类别不平衡导致决策边界偏移，影响未知类识别。本文提出MEDIC元学习策略，通过联合域-类匹配，在元学习框架下同时优化样本域和类别分布。实验表明该方法在多个跨域识别任务上提升了已知类分类与未知类检测的泛化能力。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "meta learning algorithms and learning to learn approaches",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26458v1",
+      "source": "arxiv",
+      "title": "MKG-RAG-Bench: Benchmarking Retrieval in Multimodal Knowledge Graph-Augmented Generation",
+      "abstract": "Retrieval-augmented generation (RAG) over knowledge graphs has emerged as a promising approach for grounding large language models, yet existing benchmarks largely overlook the challenges of retrieval in multimodal knowledge graph RAG (MKG-RAG). In practice, retrieval is a critical bottleneck: multimodal knowledge is heterogeneous, difficult to align across modalities, and often poorly served by retrievers designed for unstructured corpora. To address this gap, we introduce MKG-RAG-Bench, a cross-domain benchmark explicitly designed to evaluate retrieval in MKG-RAG. MKG-RAG-Bench is constructed from two multimodal knowledge graphs spanning general and medical domains, and includes carefully aligned question-answering datasets that support controlled evaluation of both retrieval and downstream generation. The benchmark is built using an LLM-based curation pipeline that filters low-utility knowledge, generates structurally grounded queries with exact supervision, and systematically covers diverse modality configurations. Through extensive experiments across representative retriever families and modality settings, we show that effective multimodal retrieval remains challenging yet crucial for end-to-end MKG-RAG performance, and that retrieval quality strongly determines generation outcomes. By isolating retrieval as a first-class evaluation target, MKG-RAG-Bench provides a principled foundation for diagnosing current limitations and advancing multimodal knowledge graph RAG systems.",
+      "authors": [
+        "Xiaochen Wang",
+        "Bao Hoang",
+        "Han Liu",
+        "Ting Wang",
+        "Fenglong Ma"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-24T23:38:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.26458v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes a benchmark for retrieval in multimodal knowledge graph-augmented generation, grounding LLMs with KG",
+      "llm_evidence_cn": "提出多模态知识图谱增强生成的检索基准，将LLM与KG连接",
+      "llm_evidence": "提出多模态知识图谱增强生成的检索基准，将LLM与KG连接",
+      "canonical_evidence": "提出多模态知识图谱增强生成的检索基准，将LLM与KG连接",
+      "llm_tldr_en": "MKG-RAG-Bench is a cross-domain benchmark for evaluating retrieval in multimodal knowledge graph-augmented generation, addressing the bottleneck of aligning heterogeneous multimodal knowledge for grounding LLMs.",
+      "llm_tldr_cn": "针对多模态知识图谱增强生成中检索面临的异构性对齐难题，本文构建了跨领域基准MKG-RAG-Bench，覆盖通用和医学领域。通过精心对齐的问答数据集，系统评估多模态KG-RAG的检索性能，为利用知识图谱优化大语言模型提供重要评估工具。该基准揭示了现有检索器的不足，推动了多模态知识融合研究。",
+      "llm_tldr": "针对多模态知识图谱增强生成中检索面临的异构性对齐难题，本文构建了跨领域基准MKG-RAG-Bench，覆盖通用和医学领域。通过精心对齐的问答数据集，系统评估多模态KG-RAG的检索性能，为利用知识图谱优化大语言模型提供重要评估工具。该基准揭示了现有检索器的不足，推动了多模态知识融合研究。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24958v1",
+      "source": "arxiv",
+      "title": "Swarm-Inspired Generation of Collective Behaviors in Graph Dynamical Systems",
+      "abstract": "Collective behavior arises when locally interacting units produce coordinated global organization, from synchronization in dynamical systems to task-relevant information flow on graphs. The central challenge is not only to explain how collective behavior emerges, but to design local interaction rules that can produce desired global organization and generalize across graphs, dynamics and tasks.To address this challenge, we introduce the Swarm-Inspired Emergent Synchronizer (SIES), a graph-dynamical framework that learns generalizable local-interaction laws for controllable collective organization. Each node is an agent-like dynamical unit with a state and task cue, and signed source-target-conditioned attention acts as an adaptive coupling term inside an explicit evolution model. Therefore, SIES combines an explicit dynamical engine with local agent intelligence, similar to biological swarms. For synchronization control, SIES learns a generalizable coupling operator that produces prescribed synchronization patterns for CDSs across untrained network scales, target phase relations, and intrinsic node dynamics without retraining. The learned operator also reaches gait-related modes faster than three oscillator baselines and generalizes synchronization-driven locomotion to simulated multi-legged robots of different scales and a physical hexapod after leg disablement. For graph representation learning, SIES applies the same signed interaction principle to message passing and achieves the highest performance among the compared methods on heterophilous node-classification benchmarks. Together, these results position SIES as a generalizable and learnable graph-dynamical interaction framework with promise for synchronization control, adaptive robot coordination, and heterophilous graph representation learning.",
+      "authors": [
+        "Ji Chen",
+        "Song Chen",
+        "Chengzhang Gong",
+        "Li Fan",
+        "Chao Xu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.RO",
+        "math.DS"
+      ],
+      "published": "2026-06-23T08:53:36+00:00",
+      "link": "https://arxiv.org/pdf/2606.24958v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "learning local interaction laws for collective behavior on graph dynamical systems",
+      "llm_evidence_cn": "学习图动力系统上集体行为的局部交互规律",
+      "llm_evidence": "学习图动力系统上集体行为的局部交互规律",
+      "canonical_evidence": "学习图动力系统上集体行为的局部交互规律",
+      "llm_tldr_en": "Proposes a graph-dynamical framework, Swarm-Inspired Emergent Synchronizer (SIES), to learn generalizable local-interaction laws controlling collective organization on graphs, with applications to synchronization and information flow.",
+      "llm_tldr_cn": "针对设计可产生所需全局组织并跨图、动力学和任务泛化的局部交互规则这一挑战，提出了群智启发的涌现同步器（SIES）框架，学习可控制的集体组织的局部交互定律。每个节点是具有状态和任务提示的智能体式动力单元，带符号的源-目标条件注意力作为自适应耦合项。实验表明该方法能有效生成集体行为，对理解图动力系统和设计群体行为有贡献。",
+      "llm_tldr": "针对设计可产生所需全局组织并跨图、动力学和任务泛化的局部交互规则这一挑战，提出了群智启发的涌现同步器（SIES）框架，学习可控制的集体组织的局部交互定律。每个节点是具有状态和任务提示的智能体式动力单元，带符号的源-目标条件注意力作为自适应耦合项。实验表明该方法能有效生成集体行为，对理解图动力系统和设计群体行为有贡献。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "study of dynamic graphs",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.20497v1",
+      "source": "arxiv",
+      "title": "Interpretable Meta-Learning for Multi-Objective Chemical Search",
+      "abstract": "Navigating the vast space of synthetically accessible molecules demands surrogate models that are interpretable and capable of handling multiple competing objectives at the same time. Deep learning approaches struggle to satisfy them under the computational constraints of quantum-level chemistry. Here, we introduce a modular pipeline that combines interpretable linear meta-learning models and adaptive-confidence uncertainty quantification into an Efficient Global Optimization (EGO) framework for multi-objective molecular discovery. For the first time, linear meta-learning is deployed in a multi-objective chemical search setting: by training across chemical objectives and cheap auxiliary properties, the meta-learned surrogates acquire transferable chemical knowledge that adapts rapidly to new objectives from limited data. Evaluated empirically on a real large scale search for spin-crossover metal-organic complexes, the baseline performs 78% worse in Pareto sense than the meta-learning alternative. We also address the calibration challenges inherent to active search. Since optimal candidates typically lie precisely in the distributional tails, standard uncertainty estimates fail. We introduce an adaptive confidence-tuning algorithm that dynamically recalibrates the exploration-exploitation trade-off as the molecular search evolves. Empirically, dynamic confidence tuning further dominates over 50% of the statically calibrated front.",
+      "authors": [
+        "Antonio Varagnolo",
+        "Yulia Pimonova",
+        "Michael G. Taylor",
+        "Raphaël Pestourie",
+        "Nicholas E. Lubbers"
+      ],
+      "primary_category": "cs.CE",
+      "categories": [
+        "cs.CE",
+        "cond-mat.mtrl-sci"
+      ],
+      "published": "2026-06-18T17:12:48+00:00",
+      "link": "https://arxiv.org/pdf/2606.20497v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "applies interpretable linear meta-learning to multi-objective chemical search",
+      "llm_evidence_cn": "将可解释线性元学习应用于多目标化学搜索",
+      "llm_evidence": "将可解释线性元学习应用于多目标化学搜索",
+      "canonical_evidence": "将可解释线性元学习应用于多目标化学搜索",
+      "llm_tldr_en": "The paper introduces a modular pipeline combining interpretable linear meta-learning with adaptive uncertainty quantification for efficient multi-objective molecular discovery, demonstrating transferable chemical knowledge across tasks.",
+      "llm_tldr_cn": "针对多目标化学搜索中深度模型计算成本高且不可解释的问题，本文提出结合可解释线性元学习与自适应不确定性量化的模块化框架。首次将线性元学习用于多目标分子发现，通过跨化学任务训练获得可迁移的化学知识。实验表明该方法在保持可解释性的同时实现了高效优化，为科学发现中的元学习应用提供了范例。",
+      "llm_tldr": "针对多目标化学搜索中深度模型计算成本高且不可解释的问题，本文提出结合可解释线性元学习与自适应不确定性量化的模块化框架。首次将线性元学习用于多目标分子发现，通过跨化学任务训练获得可迁移的化学知识。实验表明该方法在保持可解释性的同时实现了高效优化，为科学发现中的元学习应用提供了范例。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "meta learning algorithms and learning to learn approaches",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.23571v2",
+      "source": "arxiv",
+      "title": "INCARBench: A Benchmark for Scientific Configuration in VASP INCAR by Large Language Models",
+      "abstract": "Large language models (LLMs) are increasingly being integrated into first-principles computational workflows, yet their ability to configure scientific calculations remains poorly understood. Here, we introduce INCARBench, a benchmark for evaluating LLMs on input configuration for the Vienna Ab initio Simulation Package (VASP) through both configuration generation and repair tasks. Evaluating 19 model configurations reveals substantial capability differences among current frontier models. While several models achieve high semantic and policy accuracy, task-critical correctness remains substantially lower, demonstrating that parameter-level correctness does not necessarily imply scientifically valid configurations. Failure analysis shows that errors concentrate in physically coupled settings involving DFT+$U$, magnetism, and correlated materials, where multiple constraints must be satisfied simultaneously. Repair evaluation further reveals that correcting incorrect settings and preserving already-valid configurations are distinct capabilities, with configuration preservation remaining a major challenge. These findings establish scientific configuration as a measurable capability of large language models and provide a foundation for developing more reliable AI systems for computational materials science.",
+      "authors": [
+        "Bin Shao",
+        "Jixiang Li",
+        "Xinyue Zhang",
+        "Baishun Yang",
+        "Zhiyang Liu",
+        "Weichao Wang"
+      ],
+      "primary_category": "cond-mat.mtrl-sci",
+      "categories": [
+        "cond-mat.mtrl-sci"
+      ],
+      "published": "2026-06-22T16:38:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.23571v2",
+      "tags": [
+        "keyword:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "benchmark for LLMs to configure VASP parameters, automating a step in computational science workflows",
+      "llm_evidence_cn": "为LLMs配置VASP参数而建立的基准，自动化计算科学工作流的一个步骤",
+      "llm_evidence": "为LLMs配置VASP参数而建立的基准，自动化计算科学工作流的一个步骤",
+      "canonical_evidence": "为LLMs配置VASP参数而建立的基准，自动化计算科学工作流的一个步骤",
+      "llm_tldr_en": "The paper presents INCARBench, evaluating LLMs on generating and repairing VASP input configurations, revealing that while models achieve high semantic accuracy, task-critical correctness remains low, highlighting challenges in automating scientific calculations.",
+      "llm_tldr_cn": "该文推出INCARBench基准，评估大语言模型在生成与修复VASP输入文件配置上的能力。实验显示前沿模型虽在语义和政策准确性上表现较好，但在任务关键正确性上仍显不足，参数正确不保证科学有效配置。该基准揭示了将LLM集成到第一性原理计算流程中的挑战，为自动化科学计算配置提供参考。",
+      "llm_tldr": "该文推出INCARBench基准，评估大语言模型在生成与修复VASP输入文件配置上的能力。实验显示前沿模型虽在语义和政策准确性上表现较好，但在任务关键正确性上仍显不足，参数正确不保证科学有效配置。该基准揭示了将LLM集成到第一性原理计算流程中的挑战，为自动化科学计算配置提供参考。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.19734v1",
+      "source": "arxiv",
+      "title": "Federated Bilevel Performative Prediction",
+      "abstract": "Federated bilevel optimization is widely used for nested learning problems across distributed clients, such as federated hyperparameter tuning and meta-learning under privacy and communication constraints. Most existing formulations assume fixed client data distributions, which can be violated by performativity, where deployed decisions reshape client behavior and data collection, inducing client-specific, decision-dependent distribution shift. We study federated bilevel performative prediction, where both upper-level (UL) and lower-level (LL) objectives are evaluated under client-dependent, decision-dependent distributions. We formalize the federated bilevel performatively stable (FBPS) point under a decoupled-risk perspective and provide sufficient conditions for its existence and uniqueness. We then develop two federated methods to compute the FBPS solution: FBi-RRM, which converges linearly under a contraction condition, and FBi-SGD, a communication-efficient stochastic method based on federated hypergradient estimation with convergence guarantees under diminishing step sizes when sensitivities are sufficiently small. Experiments on strategic regression and meta strategic classification validate the predicted stability thresholds and demonstrate improved meta-generalization over non-performative baselines, and CNN-based classification further demonstrates the practical effectiveness of the proposed methods in nonconvex neural network settings.",
+      "authors": [
+        "Liangxin Qian",
+        "Chang Liu",
+        "Xuanyu Cao",
+        "Jun Zhao",
+        "Kwok-Yan Lam"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-18T02:58:32+00:00",
+      "link": "https://arxiv.org/pdf/2606.19734v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:ml"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Studies federated bilevel optimization for meta-learning with performative prediction",
+      "llm_evidence_cn": "研究联邦双层优化这一元学习技术在表演性预测下的应用",
+      "llm_evidence": "研究联邦双层优化这一元学习技术在表演性预测下的应用",
+      "canonical_evidence": "研究联邦双层优化这一元学习技术在表演性预测下的应用",
+      "llm_tldr_en": "Extends federated bilevel optimization to handle performative prediction, where model deployments alter data distributions, providing theoretical conditions for stable solutions.",
+      "llm_tldr_cn": "现有联邦双层优化方法假设数据分布固定，但实际中模型部署会改变数据收集，导致分布漂移。本文提出联邦双层表演性预测框架，定义了解耦风险视角下的联邦双层表演性稳定点，并给出存在性充分条件。该工作为联邦元学习在实际部署中的稳定性提供了理论保障。",
+      "llm_tldr": "现有联邦双层优化方法假设数据分布固定，但实际中模型部署会改变数据收集，导致分布漂移。本文提出联邦双层表演性预测框架，定义了解耦风险视角下的联邦双层表演性稳定点，并给出存在性充分条件。该工作为联邦元学习在实际部署中的稳定性提供了理论保障。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "meta learning algorithms and learning to learn approaches",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.20753v1",
+      "source": "arxiv",
+      "title": "Empowering Polymeric Materials Discovery by Artificial Intelligence",
+      "abstract": "Polymeric materials underpin modern technologies spanning energy storage, microelectronics, healthcare and sustainable manufacturing. Yet their rational design remains exceptionally challenging because material performance emerges from complex interactions among molecular composition, chain architecture, processing history and hierarchical structural evolution across multiple length and time scales. Consequently, polymer research has long relied on labor-intensive experimentation and fragmented modeling approaches, limiting both mechanistic understanding and innovation efficiency. Recent advances in data infrastructure, machine learning, large artificial intelligence (AI) models and laboratory automation are beginning to reshape this landscape. Rather than functioning as isolated tools, polymer databases, predictive models, AI agents and automated laboratories are increasingly converging into interconnected discovery ecosystems. As a result, the central challenge is shifting from improving predictive accuracy alone to enabling reliable decision-making, adaptive learning and seamless integration across computation, experimentation and scientific reasoning. We argue that polymer science is entering an era of autonomous discovery, in which data, simulation, reasoning and experimentation operate within self-improving feedback loops that continuously generate hypotheses, design materials, execute experiments and refine predictive models. By unifying molecular design, process optimization, experimental validation and industrial translation, such autonomous ecosystems establish a more predictive, reproducible and scalable paradigm for polymer innovation, fundamentally transforming how polymer research is conducted.",
+      "authors": [
+        "Chenyao Ma",
+        "Linda Zhang",
+        "Yuheng Chen",
+        "Wei Du",
+        "Shangwen Fang",
+        "Zihao Jiang",
+        "Chuanyu Liu",
+        "Xinyu Ma",
+        "Rui Su",
+        "Gang Wang",
+        "Muyao Yu",
+        "Dong Zhong",
+        "Jie Zhu",
+        "Weibo Gong",
+        "Huan Gu",
+        "Limin Li",
+        "Chen Shen",
+        "Rui Wu",
+        "Zhenghao Wu",
+        "Kan Xu",
+        "Min Zhou",
+        "Donglin He",
+        "Xiayun Huang",
+        "Shan Jiang",
+        "Pengfei Ou",
+        "Jiayu Peng",
+        "Yuwei Zhang",
+        "Jie Zhao",
+        "Di Zhang",
+        "Piao Ma",
+        "Zhenghao Li",
+        "Hao Li"
+      ],
+      "primary_category": "physics.chem-ph",
+      "categories": [
+        "physics.chem-ph",
+        "cs.AI"
+      ],
+      "published": "2026-06-18T05:03:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.20753v1",
+      "tags": [
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "surveys AI, including large models and automation, for accelerating polymer materials discovery",
+      "llm_evidence_cn": "综述了包括大模型和自动化在内的人工智能加速高分子材料发现的方法",
+      "llm_evidence": "综述了包括大模型和自动化在内的人工智能加速高分子材料发现的方法",
+      "canonical_evidence": "综述了包括大模型和自动化在内的人工智能加速高分子材料发现的方法",
+      "llm_tldr_en": "This survey discusses how AI, including large models and lab automation, is transforming polymer materials discovery, addressing challenges in rational design and highlighting recent advances.",
+      "llm_tldr_cn": "高分子材料设计依赖繁琐实验，本文综述了人工智能、大模型和实验室自动化如何重塑该领域。通过数据驱动和机器学习方法，加速材料性能预测与优化，为自动化科学发现提供了参考。",
+      "llm_tldr": "高分子材料设计依赖繁琐实验，本文综述了人工智能、大模型和实验室自动化如何重塑该领域。通过数据驱动和机器学习方法，加速材料性能预测与优化，为自动化科学发现提供了参考。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.24679v2",
+      "source": "arxiv",
+      "title": "FlowPipe: LLM-Enhanced Conditional Generative Flow Networks for Data Preparation Pipeline Construction",
+      "abstract": "Data preparation pipelines improve data quality in machine learning by transforming raw tables into learning-ready data through sequential cleaning and feature transformation operators. However, automatically constructing such pipelines is computationally difficult because operator sequences are combinatorial and end-to-end evaluation is expensive. Existing state-of-the-art (SOTA) Multi-DQN methods still face three key limitations: decoupled value estimators weaken long-horizon credit assignment, dataset context is only weakly injected into the policy, and exploration is inefficient in a sparse search space with many invalid states. To address these issues, we propose FlowPipe, a unified framework that formulates pipeline synthesis as conditional probabilistic flow generation over a directed acyclic graph. FlowPipe uses Conditional Generative Flow Networks (C-GFlowNets) with a Trajectory Balance objective to connect terminal validation rewards with early pipeline decisions. It further introduces Deep Semantic Modulation through Feature-wise Linear Modulation (FiLM), allowing LLM-derived logical priors to condition the policy's internal activations according to dataset semantics. In addition, FlowPipe incorporates failure awareness into the flow objective to avoid invalid states and concentrate search on high-potential regions. Experiments on two benchmark suites with 74 real-world datasets show that FlowPipe outperforms SOTA baselines, improving accuracy by 11.96% on average and achieving 12.5x faster training convergence. Source code is available at https://github.com/KunyuNi/FlowPipe.",
+      "authors": [
+        "Kunyu Ni",
+        "Lei Cao",
+        "Jie He",
+        "Xiaotong Zhang",
+        "Jianfeng Jin",
+        "Junyu Dong",
+        "Yanwei Yu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-23T15:10:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.24679v2",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "automates data preparation pipeline construction using LLMs and GFlowNets, advancing AutoML",
+      "llm_evidence_cn": "利用LLM和生成流网络自动化数据准备流水线构建，推动AutoML发展",
+      "llm_evidence": "利用LLM和生成流网络自动化数据准备流水线构建，推动AutoML发展",
+      "canonical_evidence": "利用LLM和生成流网络自动化数据准备流水线构建，推动AutoML发展",
+      "llm_tldr_en": "Introduces FlowPipe, an LLM-enhanced generative flow network that automates data preparation pipeline construction, addressing combinatorial search and evaluation cost, advancing AutoML for data preprocessing.",
+      "llm_tldr_cn": "针对数据准备流水线自动构建中组合搜索空间巨大、端到端评估昂贵、信用分配困难等挑战，提出FlowPipe框架，创新性地结合大型语言模型与条件生成流网络，将流水线构建视为生成任务。该框架利用LLM将数据集上下文注入策略，通过GFlowNet实现高效探索，避免了无效状态，显著提升了流水线质量。实验表明，FlowPipe优于现有基于强化学习的方法，为AutoML中的数据准备自动化提供了新范式。",
+      "llm_tldr": "针对数据准备流水线自动构建中组合搜索空间巨大、端到端评估昂贵、信用分配困难等挑战，提出FlowPipe框架，创新性地结合大型语言模型与条件生成流网络，将流水线构建视为生成任务。该框架利用LLM将数据集上下文注入策略，通过GFlowNet实现高效探索，避免了无效状态，显著提升了流水线质量。实验表明，FlowPipe优于现有基于强化学习的方法，为AutoML中的数据准备自动化提供了新范式。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "latest advances in automated machine learning and AutoML frameworks",
+      "matched_requirement_id": "req-33",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.23997v1",
+      "source": "arxiv",
+      "title": "ChartWalker: Benchmarking the Cross-Chart RAG Task with Hierarchical Knowledge Graphs",
+      "abstract": "Cross-Chart Retrieval-Augmented Generation (RAG) is critical for complex multi-modal analytical tasks in scientific, business, and political domains. However, existing benchmarks either focus on tables, which are well-structured and textualized, or generate cross-chart questions by simply extracting key points, which often induces lexical overlap between queries and evidence and yields logically inconsistent reasoning chains. To address this, we introduce ChartWalker, a novel framework for constructing challenging cross-chart RAG tasks. ChartWalker features a hierarchical knowledge graph construction method tailored to charts, which organizes entities and relations by granularity to preserve analytical structure. We then propose a structure-aware sampling algorithm that synthesizes semantically coherent, multi-hop reasoning paths, enabling explicit control over query difficulty and granularity for QA generation. Built with this framework, we release ChartWalker-Bench, a comprehensive benchmark spanning diverse domains and cross-chart query types. Extensive evaluations across major RAG paradigms reveal significant performance gaps, underscoring the benchmark's difficulty and utility. Furthermore, we provide ChartWalker-Agent, an agentic baseline to facilitate analysis and inspire future system design.",
+      "authors": [
+        "Ning Tang",
+        "Chenghan Xie",
+        "Hanyang Yuan",
+        "Yi Li",
+        "Renhong Huang",
+        "Qian Kou",
+        "Xiaofeng Shi",
+        "Hua Zhou",
+        "Jiarong Xu"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR"
+      ],
+      "published": "2026-06-22T23:07:38+00:00",
+      "link": "https://arxiv.org/pdf/2606.23997v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Hierarchical knowledge graph construction for cross-chart RAG using LLMs",
+      "llm_evidence_cn": "使用LLM为跨图表RAG构建层次化知识图谱",
+      "llm_evidence": "使用LLM为跨图表RAG构建层次化知识图谱",
+      "canonical_evidence": "使用LLM为跨图表RAG构建层次化知识图谱",
+      "llm_tldr_en": "Introduces ChartWalker, a framework for constructing hierarchical knowledge graphs from charts to benchmark cross-chart RAG tasks, enabling more challenging and logically consistent evaluation.",
+      "llm_tldr_cn": "该论文针对跨图表检索增强生成（RAG）任务中现有基准存在的词汇重叠和逻辑链断裂问题，提出ChartWalker框架，通过层次化知识图谱构建方法组织图表实体与关系，并设计结构化问题生成策略，构建了更具挑战性且逻辑一致的跨图表RAG基准，推动了多模态分析的发展。",
+      "llm_tldr": "该论文针对跨图表检索增强生成（RAG）任务中现有基准存在的词汇重叠和逻辑链断裂问题，提出ChartWalker框架，通过层次化知识图谱构建方法组织图表实体与关系，并设计结构化问题生成策略，构建了更具挑战性且逻辑一致的跨图表RAG基准，推动了多模态分析的发展。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.20933v1",
+      "source": "arxiv",
+      "title": "Towards Robust Training in NNGPT AutoML Pipeline: A Loss-Optimizer Pairing Selection Study",
+      "abstract": "The choice of loss function and optimizer is an important decision, that shapes further model training. Yet automated architecture search pipelines (AutoML) benefits significantly more from the optimal pairing selection and vice versa. This paper investigates whether a single recipe is sufficient for heterogeneous architecture pools, or whether the optimal pairing varies across structurally diverse models. We conduct a systematic empirical study of all $3 \\times 6 = 18$ combinations of six optimizers (SGD+Momentum, Adam, AdamW, RMSprop, Adagrad, Adadelta), paired with three loss functions: Cross-Entropy (CEL), Negative Log-Likelihood (NLL), and the recently introduced genetically evolved NGL loss across the base models presented in LEMUR heterogeneous architecture pool on six image classification datasets (CelebA-Gender, CIFAR-10, CIFAR-100, ImageNette, MNIST, SVHN). The 18 loss-optimizer configurations are applied to each of the 33 compatible base architectures taken from the LEMUR pool, resulting in 594 variants that were generated fully automatically by a source-level injection pipeline and evaluated under fixed hyperparameters, ensuring that observed accuracy differences are attributable solely to the loss-optimizer pairing. Our results confirm that no single pairing is universally optimal. Cross-Entropy with Adam or AdamW is the most robust choice across architecture families and datasets. NGL is a competitive alternative to CEL on standard convolutional classifiers, but only when paired with adaptive optimizers; it degrades substantially with SGD or accumulation-based methods. Adagrad and Adadelta consistently underperform under fixed hyperparameters regardless of loss function, highlighting their sensitivity to learning rate tuning. These findings provide actionable guidance for loss-optimizer selection within NNGPT Framework.",
+      "authors": [
+        "Anton Abramochkin",
+        "Radu Timofte",
+        "Dmitry Ignatov"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-18T20:51:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.20933v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Studies loss-optimizer pairing selection in AutoML pipelines, a hyperparameter optimization problem",
+      "llm_evidence_cn": "研究AutoML流程中的损失函数-优化器配对选择，属于超参数优化问题",
+      "llm_evidence": "研究AutoML流程中的损失函数-优化器配对选择，属于超参数优化问题",
+      "canonical_evidence": "研究AutoML流程中的损失函数-优化器配对选择，属于超参数优化问题",
+      "llm_tldr_en": "This paper investigates whether a single loss-optimizer pairing works across diverse architectures in AutoML. It empirically compares 18 combinations on three base models, finding that optimal pairing varies, thus contributing to hyperparameter optimization in neural architecture search.",
+      "llm_tldr_cn": "本文研究在异构架构池中，单一损失函数-优化器配对是否普适。通过对三种基模型、18种组合的系统实证，发现最优配对因模型结构而异，为神经架构搜索中的超参数优化提供了指导，并强调AutoML流水线中配对选择的重要性。",
+      "llm_tldr": "本文研究在异构架构池中，单一损失函数-优化器配对是否普适。通过对三种基模型、18种组合的系统实证，发现最优配对因模型结构而异，为神经架构搜索中的超参数优化提供了指导，并强调AutoML流水线中配对选择的重要性。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "techniques for neural architecture search and hyperparameter optimization",
+      "matched_requirement_id": "req-36",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.23312v1",
+      "source": "arxiv",
+      "title": "From Pixels to Concepts: Growing Rich 3D Semantic Scene Graph Forests utilizing Foundation Models",
+      "abstract": "Operating in complex real-world environments requires robots to understand their surroundings on a functional semantic level. This demands a detailed multi-layer world model capturing the complex relations of its surroundings. Hierarchical 3D scene graphs address this challenge by integrating geometric, semantic, and relational data within a unified spatial framework. However, current 3D scene graph approaches often restrict themselves to rigid structures of pre-determined relationship classes, mostly neglecting important semantic connections, like causal connections or environmental contexts. This paper explores the potential of foundation models to build forests of 3D scene graphs with open semantic relationships to improve scene understanding and robotic task execution. We propose a method where instance-specific concept-nodes and relationships are first identified by a VLM and extended upon by a LLM, inferring broader, more abstract concept-nodes and relationships through reasoning. These object-nodes, concept-nodes, and relationships are then assembled into a forest of hierarchical 3D scene graphs, enhanced with concept-nodes to represent abstract concepts. Evaluations were conducted on the uHumans2 and ScanNet indoor dataset, validating the accuracy and relevance of the generated relationships. Downstream suitability of scene-graph forests for robotics applications is demonstrated in an open-vocabulary object-retrieval task utilizing both ScanNet data and a real-world indoor deployment using a Boston Dynamics Spot. This paper leverages foundation models to create more expressive, semantically deep 3D hierarchical scene graphs and demonstrates their potential to advance semantic and environmental understanding in robotics.",
+      "authors": [
+        "David Oberacker",
+        "Meike Deitersen",
+        "Niklas Spielbauer",
+        "Tristan Schnell",
+        "Georg Heppner",
+        "Arne Roennau"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-22T13:26:17+00:00",
+      "link": "https://arxiv.org/pdf/2606.23312v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Uses foundation models to construct rich 3D scene graphs",
+      "llm_evidence_cn": "利用基础模型构建丰富的3D场景图",
+      "llm_evidence": "利用基础模型构建丰富的3D场景图",
+      "canonical_evidence": "利用基础模型构建丰富的3D场景图",
+      "llm_tldr_en": "Explores using foundation models to grow 3D scene graph forests with open semantic relationships, moving beyond rigid predefined classes for richer robotic scene understanding.",
+      "llm_tldr_cn": "该工作探索利用基础模型（如大型语言/视觉模型）从像素构建具有开放语义关系的3D场景图森林，突破传统预定义关系类的限制，为机器人环境理解提供更丰富的功能和语义层。",
+      "llm_tldr": "该工作探索利用基础模型（如大型语言/视觉模型）从像素构建具有开放语义关系的3D场景图森林，突破传统预定义关系类的限制，为机器人环境理解提供更丰富的功能和语义层。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.24965v1",
+      "source": "arxiv",
+      "title": "Project Auto-World: Towards Automated Benchmarking of Neural Relational Reasoners",
+      "abstract": "Reasoning about relational structures remains a significant challenge for neural models, particularly when they must systematically apply learned knowledge to problem instances that are harder than those seen in training. Progress is hampered by the difficulty of evaluating such generalization, since a priori, it is rarely clear what makes an instance hard. We study how this issue can be addressed by using large language models (LLMs) to automate benchmark generation, learning to produce increasingly challenging instances in an end-to-end manner. Concretely, given a world parametrized by Datalog rules, and an Edge Transformer as the reasoning evaluator, we use LLM-driven evolutionary search (based on FunSearch) and autonomous agentic search to discover sampling functions that yield hard problem instances. We also show that the Edge Transformer can be improved using this data such that it generalizes well to further data perturbations. Finally, we show that the same machinery can be applied to novel worlds proposed by LLMs, opening the door to autonomous research on neural relational reasoning.",
+      "authors": [
+        "Anirban Das",
+        "Joanne Boisson",
+        "Irtaza Khalid",
+        "Sumita Garai",
+        "Steven Schockaert"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-23T09:36:46+00:00",
+      "link": "https://arxiv.org/pdf/2606.24965v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "LLM-driven evolutionary search automates benchmark generation for relational reasoning models",
+      "llm_evidence_cn": "大语言模型驱动的进化搜索自动生成关系推理基准，促进自动化基准构建",
+      "llm_evidence": "大语言模型驱动的进化搜索自动生成关系推理基准，促进自动化基准构建",
+      "canonical_evidence": "大语言模型驱动的进化搜索自动生成关系推理基准，促进自动化基准构建",
+      "llm_tldr_en": "Evaluating generalization in relational reasoners is hard; Auto-World uses LLMs to generate increasingly challenging problem instances, automating benchmark creation.",
+      "llm_tldr_cn": "神经关系推理模型的泛化评估面临基准生成困难。Auto-World利用大语言模型与进化搜索，以端到端方式自动生成越来越难的基准实例。实验显示该方法能有效揭示模型系统化推理的局限，推动自动化基准和科学发现。",
+      "llm_tldr": "神经关系推理模型的泛化评估面临基准生成困难。Auto-World利用大语言模型与进化搜索，以端到端方式自动生成越来越难的基准实例。实验显示该方法能有效揭示模型系统化推理的局限，推动自动化基准和科学发现。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.24966v1",
+      "source": "arxiv",
+      "title": "Learning Dynamical Systems from Multiple Sparse Datasets: A Hierarchical Bayesian Modeling Approach",
+      "abstract": "Estimating parameters of dynamical systems from sparse, noisy, and irregularly sampled data is often severely ill-conditioned. When multiple related datasets are available, they provide additional information if the shared structure and variability are properly modeled. We propose a hierarchical Bayesian framework for probabilistic meta-learning in dynamical systems, modeling dataset-specific parameters as draws from a shared population distribution. A numerical ODE solver is embedded within gradient-based MCMC to enable efficient posterior inference of the shared population and dataset-specific parameter distribution. Experiments show improved predictive performance over unpooled methods, highlighting the potential for data-efficient system identification in settings with sparse data.",
+      "authors": [
+        "Cristian Brugnara",
+        "Lea Multerer",
+        "Marco Forgione",
+        "Laura Azzimonti"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-23T09:41:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.24966v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "hierarchical Bayesian framework for probabilistic meta-learning in dynamical systems",
+      "llm_evidence_cn": "用于动态系统概率元学习的分层贝叶斯框架",
+      "llm_evidence": "用于动态系统概率元学习的分层贝叶斯框架",
+      "canonical_evidence": "用于动态系统概率元学习的分层贝叶斯框架",
+      "llm_tldr_en": "Proposes a hierarchical Bayesian meta-learning method for estimating parameters of dynamical systems from multiple sparse datasets, using a numerical ODE solver with gradient-based MCMC for efficient posterior inference.",
+      "llm_tldr_cn": "针对从稀疏、噪声和不规则采样数据中估计动力系统参数的不适定问题，提出分层贝叶斯元学习框架，将数据集特定参数建模为从共享总体分布中抽取。嵌入数值ODE求解器于梯度MCMC中实现高效后验推断。实验表明相比未池化方法预测性能提升，为利用多数据集进行系统辨识提供了新途径。",
+      "llm_tldr": "针对从稀疏、噪声和不规则采样数据中估计动力系统参数的不适定问题，提出分层贝叶斯元学习框架，将数据集特定参数建模为从共享总体分布中抽取。嵌入数值ODE求解器于梯度MCMC中实现高效后验推断。实验表明相比未池化方法预测性能提升，为利用多数据集进行系统辨识提供了新途径。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "meta learning algorithms and learning to learn approaches",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.26662v1",
+      "source": "arxiv",
+      "title": "Zero-Shot Size Transfer for Neural ODEs on Sparse Random Graphs: Graphon Limits and Adjoint Convergence",
+      "abstract": "Graph Neural Differential Equations (GNDEs) model continuous-time graph dynamics by parameterizing Neural ODE velocity fields with Graph Neural Networks. Their local, size-independent filters suggest a zero-shot size-transfer principle: train on a small graph and deploy on larger, similar graphs without retraining. We develop a quantitative theory for this principle on sparse random graphs sampled from graphons. We consider Graphon Neural Differential Equations (Graphon-NDEs) and adjoint Graphon-NDEs as the infinite-node limits of the forward and adjoint GNDE systems, and establish well-posedness. For an $n$-node random graph with sparsity parameter $α_n$, we prove trajectory-wise convergence of GNDE solutions to Graphon-NDE solutions at rate $O((α_n n)^{-1/2})$, up to logarithmic factors, with high probability. We also establish uniform-in-time convergence bounds for adjoint systems governing hidden-state and parameter gradients. We further study discretize-then-optimize (DTO) and optimize-then-discretize (OTD) training. Under explicit Euler discretization with $M$ steps, we show that DTO and OTD are asymptotically consistent, with hidden-state and local parameter-gradient discrepancies of orders $O(1/M)$ and $O(1/M^2)$, respectively, up to sparsity and logarithmic factors. Experiments on HSBM and tent graphons support the theoretical rates, while zero-shot transfer experiments across four graphon classes demonstrate accurate deployment of learned GNDEs on larger independently sampled graphs.",
+      "authors": [
+        "Mingsong Yan",
+        "Zhida Wang",
+        "Sui Tang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "math.DS",
+        "math.NA",
+        "math.OC"
+      ],
+      "published": "2026-06-25T06:53:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.26662v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Graph Neural Differential Equations model continuous-time graph dynamics, proposing a zero-shot size-transfer method for dynamic graphs",
+      "llm_evidence_cn": "图神经微分方程建模连续时间图动态，提出动态图的零样本规模迁移方法",
+      "llm_evidence": "图神经微分方程建模连续时间图动态，提出动态图的零样本规模迁移方法",
+      "canonical_evidence": "图神经微分方程建模连续时间图动态，提出动态图的零样本规模迁移方法",
+      "llm_tldr_en": "The paper develops a zero-shot size-transfer theory for Graph Neural ODEs on sparse random graphs, proving convergence via graphon limits, enabling training on small graphs and deployment on larger ones without retraining.",
+      "llm_tldr_cn": "该文针对图神经微分方程，研究在稀疏随机图上从小图训练到大图部署的零样本规模迁移理论。通过引入图子神经微分方程作为无穷节点极限，证明了前向和伴随系统的轨迹收敛性，为模型跨图规模泛化提供保证。该方法使图动态模型无需重新训练即可应用于更大规模网络，具有实际意义。",
+      "llm_tldr": "该文针对图神经微分方程，研究在稀疏随机图上从小图训练到大图部署的零样本规模迁移理论。通过引入图子神经微分方程作为无穷节点极限，证明了前向和伴随系统的轨迹收敛性，为模型跨图规模泛化提供保证。该方法使图动态模型无需重新训练即可应用于更大规模网络，具有实际意义。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.27149v1",
+      "source": "arxiv",
+      "title": "On the Effects of Decentralized Moderation on Network Robustness and Information Diffusion in Mastodon",
+      "abstract": "Decentralized online social networks such as Mastodon distribute moderation power across thousands of independently governed servers, raising fundamental questions about how local block decisions shape global structure and information flow. In this paper, we analyze Mastodon at the instance level by constructing a signed, directed, temporal network in which positive edges aggregate inter-instance follow relationships and negative edges encode daily block actions. Using one year of data, we show that despite continuous moderation activity and changing roles among instances, the network exhibits strong structural stability: signed dyadic motifs and degree distributions display highly persistent dynamics, and aggregated transition matrices satisfy Markovian equilibrium conditions over intermediate time scales. Building on the marked asymmetry between instances that predominantly issue bans and those that are mostly banned, we then study information diffusion on the positive network via a hybrid contagion model that combines simple contagion within groups and complex contagion across groups. We find that information originating in the minority of moderating instances spreads more efficiently, both internally and toward the majority, while the opposite direction is fragile and sensitive to contagion parameters. Echo-chamber effects emerge even in a globally balanced signed network and become stronger under stricter contagion conditions. Together, these results show that decentralized moderation in Mastodon generates a stable macroscopic configuration that both structures and constrains information exchange, effectively isolating norm-violating domains without centralized control.",
+      "authors": [
+        "Beatriz Arregui-García",
+        "Lucio La Cava",
+        "Anees Baqir",
+        "Andrea Tagarelli",
+        "Riccardo Gallotti",
+        "Sandro Meloni"
+      ],
+      "primary_category": "physics.soc-ph",
+      "categories": [
+        "physics.soc-ph",
+        "cs.SI"
+      ],
+      "published": "2026-06-25T15:19:05+00:00",
+      "link": "https://arxiv.org/pdf/2606.27149v1",
+      "tags": [
+        "keyword:dynamic-g"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Analysis of Mastodon as a signed, directed, temporal network",
+      "llm_evidence_cn": "将Mastodon分析为带符号、有向的时间网络",
+      "llm_evidence": "将Mastodon分析为带符号、有向的时间网络",
+      "canonical_evidence": "将Mastodon分析为带符号、有向的时间网络",
+      "llm_tldr_en": "Analyzes Mastodon's decentralized moderation effects by constructing a signed, directed, temporal network and finding persistent structural stability despite continuous moderation activity.",
+      "llm_tldr_cn": "通过将Mastodon的实例间关注和封禁行为建模为带符号的有向时间网络，发现尽管去中心化审核持续进行，但网络结构展现出高度持久性，符号二元组模体和度分布保持稳定，揭示了本地决策对全局结构的有限影响。",
+      "llm_tldr": "通过将Mastodon的实例间关注和封禁行为建模为带符号的有向时间网络，发现尽管去中心化审核持续进行，但网络结构展现出高度持久性，符号二元组模体和度分布保持稳定，揭示了本地决策对全局结构的有限影响。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "temporal network analysis",
+      "matched_requirement_id": "req-13",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    }
+  ]
+}
