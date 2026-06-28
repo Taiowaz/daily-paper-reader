@@ -1,0 +1,198 @@
+Title: SVGym (SciVerseGym): An Environment for Reinforcement Learning and Bayesian Optimization in Crystal Discovery
+
+URL Source: https://arxiv.org/pdf/2606.22425v1
+
+Published Time: Tue, 23 Jun 2026 02:07:24 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+SVGym / SciVerseGym Closed-loop Crystal Discovery 
+
+SEQUENTIAL MATERIALS DISCOVERY 
+
+# SVGym (SciVerseGym): An Environment for Reinforcement Learning and Bayesian Opti-mization in Crystal Discovery 
+
+Bin Cao 
+
+The Hong Kong University of Science and Technology (Guangzhou), China ; Huawei Noah’s Ark Lab, UK 
+
+bcao686@connect.hkust-gz.edu.cn 
+
+Gymnasium-Compatible Environments • ML Interatomic Potentials • BO/RL Agents • Crystal Edit Actions 
+
+Abstract 
+
+Machine-learned interatomic potentials have made atomistic evaluation sufficiently efficient for interactive materials discovery. However, closed-loop crystal search algorithms are still often implemented as isolated pipelines, with bespoke code for structure modification, relaxation, scoring, constraint handling, and experiment bookkeeping. This fragmentation makes it difficult to develop and fairly compare reinforcement learning (RL), Bayesian optimization (BO), evolutionary search, and language-agent workflows under consistent physical assumptions. Here, we introduce SciVerseGym, a Gymnasium-compatible environment for sequential crystal discovery. SciVerseGym formulates crystal design as a Markov decision process in which an agent observes an atomistic structure, applies chemically meaningful edit actions, and receives physically informed feedback from a configurable evaluator. Rather than requiring an agent to generate a complete crystallographic file in a single step, SciVerseGym provides a unified action interface for both local and global structure edits, including elemental substitution, lattice perturbation, atomic displacement, vacancy creation, and atom insertion. The environment supports configurable chemical spaces with broad element sets, user-defined structure pools, atomistic and graph-based observations, customizable reward functions, optional geometry relaxation, and diagnostics such as stability and phonon-related checks. At each step, SciVerseGym applies the selected edit to the current structure, evaluates the resulting candidate using a machine-learned interatomic potential or any ASE-compatible calculator, and returns the standard 
+
+obs, reward, terminated, truncated, info tuple. By decoupling agent logic from materials-specific infrastructure, SciVerseGym enables diverse search algorithms to be trained, evaluated, and benchmarked within a common framework. SciVerseGym thus provides an open, reproducible, and extensible testbed for rapid prototyping, controlled comparison, and scalable evaluation of closed-loop crystal discovery strategies. Code is available at: https://github.com/Bin-Cao/SciVerseGym .
+
+Keywords: Crystal Discovery; Reinforcement Learning; Bayesian Optimization; Gymnasium Environments; SciVerseGym. 
+
+1 
+
+> arXiv:2606.22425v1 [cs.AI] 21 Jun 2026 SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+# INTRODUCTION 
+
+Computational materials discovery increasingly relies on closed-loop algorithms that can propose a candidate, evaluate it, and use the resulting feedback to choose the next candidate [ 1 ]. This paradigm is particularly natural for crystalline materials, where a candidate is defined not only by composition, but also by symmetry, lattice parameters, atomic coordinates, defects, and metastable structural motifs. Small changes in any of these variables can alter thermodynamic stability, dynamical stability, synthesizability, and functional properties. Classical high-throughput workflows have been successful because they systematize atomistic calculations and data management. However, they often expose the search loop only indirectly through file generation, workflow engines, relaxation scripts, and post-processing routines. As a result, candidate-generation logic is frequently entangled with implementation-specific details of structure manipulation, calculator setup, constraint handling, and experiment bookkeeping. At the same time, the algorithmic landscape for materials discovery has broadened. Bayesian optimiza-tion is attractive when each evaluation is expensive and sample efficiency is essential [ 2 ]. Reinforcement learning is attractive when discovery is formulated as a sequence of edits rather than as one-shot generation [ 3 ]. Evolutionary algorithms and Monte Carlo methods rely on mutation operators, local moves, and acceptance rules to explore rugged structure–property landscapes. Large language models can suggest chemically meaningful transformations and coordinate scientific workflows, but they are not reliable validators of complete crystallographic files. Although these algorithmic families differ in how they choose candidates, they share a common requirement: a stable interface that accepts a proposed change, applies it to an atomistic structure, evaluates the resulting candidate, and returns machine-readable feedback. The recent growth of universal and domain-adapted machine-learned interatomic potentials (MLIPs) has made this interface problem more urgent. MLIPs can evaluate energies and forces much faster than density functional theory (DFT), enabling larger candidate sets, repeated relaxation, and more interactive algorithm development [ 4 ]. However, MLIP-based discovery introduces backend-specific details, including model checkpoints, supported chemical elements, relaxation settings, reference energies, convex-hull conventions, uncertainty estimates, and optional stability diagnostics such as phonon-related calculations. If every optimization method implements these details separately, results become difficult to reproduce, difficult to compare, and difficult to extend across materials domains. SciVerseGym addresses this bottleneck by making crystal discovery look like an environment interaction problem while retaining atomistic structures as the central representation. In this formulation, an agent observes the current crystal state, proposes a structured edit, and receives the next state, a scalar reward, termination signals, and diagnostic information. This interaction pattern follows the environment abstraction widely used in reinforcement learning, with Gymnasium providing a standard transition-based API [ 5 ]. In SciVerseGym, however, the same abstraction is useful beyond reinforcement learning: Bayesian optimization can treat environment calls as structured objective evaluations, evolutionary algorithms can reuse the edit actions as mutation operators, Monte Carlo methods can use them as proposal moves, and language-agent systems can call the environment as a validation and scoring tool rather than generating complete crystal structures in a single step. SciVerseGym builds on three lines of work. First, large computational materials databases and high- 
+
+> 2SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+throughput screening platforms have established the value of standardized structure records, calculated properties, and reproducible workflows. Second, MLIPs bridge part of the cost gap between DFT and empirical potentials, making repeated relaxation and scoring feasible inside algorithmic loops. Third, environment APIs from reinforcement learning provide a clean separation between decision-making logic and task-specific transition dynamics. SciVerseGym combines these ideas into a materials-specific environment layer for closed-loop crystal discovery. 
+
+The contribution of SciVerseGym is not a new force field, a new crystal generator, or a new optimizer. Its contribution is an integration layer for materials search: a bounded action schema for chemically meaningful structure edits, a Gymnasium-compatible transition protocol, calculator adapters for atomistic evaluation, observation builders for atomistic and graph-based states, configurable reward functions, optional relaxation and diagnostic checks, and baseline examples that allow different search methods to operate on the same atomistic task. By decoupling search algorithms from materials-specific infrastructure, SciVerseGym provides a common language for comparing reinforcement learning, Bayesian optimization, evolutionary search, Monte Carlo exploration, and language-agent strategies under consistent physical assumptions. 
+
+# DESIGN PRINCIPLES 
+
+SciVerseGym is guided by four design principles. 1. Structured edits instead of raw file generation. Agents interact with crystals through bounded and interpretable edit actions rather than by emitting complete crystallographic files. These actions encode common structure modifications, such as elemental substitution, lattice perturbation, atomic displacement, vacancy creation and atom insertion. This design reduces invalid outputs, makes the search space easier to constrain, and allows the same interface to be used by reinforcement-learning policies, Bayesian optimizers, evolutionary algorithms, language agents and human users. 2. A standard closed-loop transition interface. SciVerseGym follows the Gymnasium interaction protocol, in which each action produces an observation, reward, termination flag, truncation flag and auxiliary information. This standard transition format allows existing reinforcement-learning and optimization tools to interact with the materials discovery task without method-specific wrappers, while preserving the sequential nature of crystal editing. 3. Separation between search policy and physical evaluation. The search algorithm is decoupled from the calculator used to evaluate a candidate structure. The same agent can therefore operate with different backends, including SevenNet [ 6 ], MatterSim[ 7 ], ORB [ 8 ], surrogate models, reference calculators or custom ASE-compatible calculators. Backend choices, relaxation settings, reference data and optional diagnostics are specified when the environment is constructed, rather than being hard-coded into the search method. 4. Transparent and extensible feedback. The scalar reward is returned together with physically meaningful diagnostic information whenever the selected evaluator supports it. This information can include total energy, formation energy, energy above the convex hull, phonon stability, relaxation status and backend metadata. Providing these quantities through the info dictionary makes  
+
+> 3SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+optimization behavior easier to interpret, debug and compare across different algorithms and evaluator configurations. 
+
+# FRAMEWORK OVERVIEW 
+
+SciVerseGym exposes crystal discovery as a sequential decision process over atomistic structures (Figure 1). Instead of treating materials design as a one-shot generation problem, the environment represents discovery as a finite sequence of chemically meaningful edits applied to an initial crystal. At step ( t), an agent observes the current state ( st), selects a structured action ( at), and receives a standard environment transition, 
+
+st+1 , r t, d t, τ t, i t = Env .step( at), (1) where st+1 is the next observation, rt is the scalar reward, dt is the termination flag, τt is the truncation flag, and it is a dictionary of diagnostic information. This interface follows the Gymnasium convention while specializing the state, action, reward, and diagnostic fields for crystal discovery. The current implementation registers the environment as CrystalDiscovery-v0 .An episode begins by sampling or selecting a structure from a dataset. The default workflow uses structures from ALEX-MP-20 [ 9 ], but user-defined datasets can also be mounted if they provide atomistic structures and associated metadata. The environment stores the current crystal as an ASE Atoms 
+
+object and uses it as the central state representation throughout the episode. At every step, the selected action is first interpreted as a bounded crystal edit. The edit is applied to the current structure to produce a candidate structure. The candidate is then evaluated by the configured backend, which may be a machine-learned interatomic potential, a reference-backed physical calculator, a surrogate model, or any ASE-compatible calculator. The resulting energy, optional relaxed structure, reward, and diagnostic metadata are returned to the agent. The observation ( st) is designed to support both atomistic and learning-based agents. It can include the current ASE structure, graph-based representations when graph construction is available, scalar evaluation results such as total energy, and bookkeeping variables such as the current step index and remaining edit budget. The info dictionary provides additional physical and backend-specific information that should not necessarily be compressed into the scalar reward. Depending on the selected evaluator and reference data, this may include the chemical formula, total energy, formation energy per atom, energy above the convex hull, phonon-stability indicators, relaxation status, backend name, and other metadata useful for debugging and analysis. The distinction between terminated and truncated follows the standard environment semantics. A transition may be terminated when the task defines a natural stopping condition, for example when a target stability or property criterion is reached. A transition is truncated when the episode stops because of an external limit, most commonly the maximum number of allowed edit steps. This separation is important for reinforcement-learning algorithms, but it is also useful for Bayesian optimization, evolutionary search, and language agents because it records whether a trajectory ended because it succeeded, failed, or simply exhausted its search budget.  
+
+> 4SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+This design separates three responsibilities that are often entangled in materials-discovery code. The search agent is responsible for choosing actions. The environment is responsible for applying actions, maintaining episode state, checking basic validity constraints, and packaging observations. The evaluator is responsible for assigning physical quantities such as energy, forces, formation energy, hull distance, or phonon stability when the corresponding backend supports them. Because these components are separated, the same search policy can be tested with different MLIP backends, different reward functions, different datasets, or different reference databases without rewriting the agent itself. 
+
+Figure 1: Closed-loop structure of SciVerseGym. A search algorithm proposes a structured crystal edit rather than a complete crystal file. The environment applies the edit to the current atomistic state, calls the selected evaluator, optionally uses reference data for derived physical quantities, and returns a standardized transition. The same interface can be used by Bayesian optimization, reinforcement learning, evolutionary search, Monte Carlo methods, and language-agent workflows.  
+
+> 5SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+Action space 
+
+The action space is designed to modify crystal composition and geometry without requiring agents to generate complete crystallographic files. Each action is represented as a compact dictionary containing an action type field and a small number of typed arguments. The action type specifies the edit operator, while the remaining fields define the target site, chemical element, displacement vector, lattice perturbation, or insertion coordinate. This representation is intentionally simple and algorithm-agnostic: it can be sampled by reinforcement-learning policies, enumerated by Bayesian-optimization baselines, mutated by evolutionary algorithms, proposed by language agents, or inspected directly by human researchers. The current implementation supports five action families. Element replacement selects an existing atomic site and changes its chemical species, making it suitable for substitutional search, dopant discovery, and local exploration of composition space. Lattice perturbation modifies the unit cell through a bounded change to the lattice degrees of freedom, enabling exploration of strain, volume, and cell-shape effects without reconstructing the full structure. Atomic displacement moves a selected atom by a bounded vector and is useful for exploring local distortions, off-center motifs, and nearby metastable configurations. Vacancy creation removes an atom from a selected site, allowing the search process to explore defects and stoichiometric changes. Atom insertion adds a selected element at a fractional coordinate, supporting the exploration of interstitial sites and composition growth. • Element replacement. This action replaces the chemical species at an existing atomic site and is mainly used for substitution, alloying, doping, and local compositional exploration. • Lattice perturbation. This action applies a bounded perturbation to the unit cell, enabling exploration of strain-like moves, volume changes, and cell-shape variations. • Atomic displacement. This action moves a selected atom by a bounded displacement vector. It supports local structural distortion, motif perturbation, and relaxation-like exploration around the current configuration. • Vacancy creation. This action removes an atom from a selected site, allowing the search process to explore point defects, stoichiometric changes, and the removal of unfavorable atoms. • Atom insertion. This action inserts a selected element at a fractional coordinate, supporting composition growth, interstitial-site exploration, and site discovery. Validity handling is implemented at the environment level. Atomic sites are mapped to valid indices of the current structure. Element identifiers are interpreted as atomic numbers and clipped to the supported range. Lattice perturbations and atomic displacements are bounded to prevent early-stage agents from producing extreme or numerically unstable structures. Inserted atoms are specified in fractional coordinates, making the action independent of the absolute cell scale. Vacancy actions preserve at least one atom so that the environment does not collapse into an empty structure. These rules do not guarantee that every generated candidate is physically realistic, but they reduce common syntactic and numerical failures and prevent invalid actions from dominating algorithm development. This bounded action interface is important for fair comparison across search methods. If different algorithms use different hand-written mutation operators or different validity rules, performance dif-ferences may reflect implementation details rather than the search strategy itself. In SciVerseGym,  
+
+> 6SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+reinforcement-learning agents, Bayesian optimizers, evolutionary methods, Monte Carlo samplers, and language-agent workflows can operate through the same edit operators and receive feedback from the same evaluator. Algorithms may therefore differ in how they choose actions, while the structure edits, validity handling, evaluation protocol, and returned diagnostics remain controlled. 
+
+Observation and feedback 
+
+At each environment step, SciVerseGym returns a standard transition containing an observation, scalar reward, termination flag, truncation flag, and diagnostic information. The observation contains the current atomistic state and the information needed by an agent to select the next action. In the default implementation, this includes the current ASE Atoms object, an optional graph representation, the current energy, the step count, the remaining edit budget, and metadata associated with the structure or dataset entry. The info dictionary is deliberately richer than the scalar reward. It records quantities that are useful for physical interpretation, debugging, benchmarking, and post-processing, even when they are not directly used by the default reward. Depending on the selected evaluator and available reference data, info 
+
+can include the backend identity, chemical formula, total energy, formation energy per atom, energy above the convex hull, phonon-stability indicators, minimum phonon frequency, relaxation status, and backend-specific metadata. This separation between observation, reward, and diagnostic information is central to the design of SciVerseGym. Learning algorithms can optimize a scalar reward, while researchers can inspect the diagnostic fields to understand why a candidate performed well or poorly. The same transition can also be reused to define alternative objectives. For example, one study may optimize energy above hull, another may prioritize novelty or elemental abundance, and a later screening stage may incorporate phonon stability or elastic properties, all without changing the high-level environment interface. 
+
+Evaluation backends 
+
+SciVerseGym separates the environment loop from the physical evaluator. The recommended workflow selects a machine-learned force-field backend during environment construction. Built-in adapters are provided for SevenNet [ 6 ], MatterSim[ 7 ] and ORB [ 8] when the corresponding packages and checkpoints are available. Users may also provide a custom ASE-compatible calculator, which allows the same environment interface to be used with surrogate models, reference-backed calculators, empirical potentials, or higher-fidelity atomistic methods. If no physical backend is supplied, a deterministic surrogate calculator can be used for smoke tests and interface development, but it should not be interpreted as a scientific energy model. A force field directly provides quantities such as total energy and forces. Derived thermodynamic quantities require additional reference data. Formation energy requires same-force-field elemental reference energies, and convex-hull distance requires compatible reference phases evaluated under the same backend and convention. When these references are unavailable, SciVerseGym returns None 
+
+rather than fabricating thermodynamic quantities. This behavior makes missing information explicit and prevents downstream algorithms from silently optimizing inconsistent physical targets. For a candidate structure with total energy E, element counts ni, elemental reference energies μi, and  
+
+> 7SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+total atom count N , the formation energy per atom is computed as 
+
+Eform = E − P 
+
+> i
+
+niμi
+
+N . (2) Energy above hull is computed by comparing this formation energy with the lowest compatible combina-tion of same-force-field reference phases at the same composition. Phonon stability, when enabled, is estimated using finite-displacement force calculations through Phonopy [ 10 ]. These optional diagnostics allow SciVerseGym to support both fast algorithm development and more physically informed screening without requiring changes to the agent logic. 
+
+Reward design 
+
+The current default reward is deliberately transparent and lightweight: 
+
+r = 0 .80 rstability + 0 .10 rabundance + 0 .10 rnovelty . (3) The stability term is derived from same-force-field energy above hull when that quantity is available; otherwise, it is set to zero. The abundance term is a simple proxy based on average atomic number, encouraging candidates composed of lighter and more abundant elements. The novelty term rewards chemical formulas that have not yet appeared in the current episode, encouraging the search process to explore new regions of composition space rather than repeatedly revisiting the same formula. Phonon stability is not included in the current default reward. It may still be reported by the evaluator through the info dictionary and can be incorporated into custom objectives in future studies. This distinction is intentional: the default reward provides a transparent reference objective for benchmarking and development, while the environment interface remains flexible enough to support task-specific reward functions. The reward should therefore be viewed as a reference objective rather than a universal materials-design target. Different materials-discovery tasks may require different trade-offs between stability, novelty, synthesizability, cost, abundance, mechanical properties, or functional performance. SciVerseGym is designed so that users can replace the reward function without changing the action schema, observation format, evaluator interface, or closed-loop transition protocol. 
+
+# AGENT PROTOCOL 
+
+SciVerseGym defines a common interaction protocol for search agents. An agent does not need to know how structures are stored, how calculators are executed, or how diagnostic quantities are computed. Instead, it observes the current state, selects a structured crystal-edit action, submits the action to the environment, and updates its internal model from the returned transition. At step t, the agent receives an observation st, chooses an action at ∈ A (st), and obtains st+1 , r t, d t, τ t, i t = Env .step (at), where 
+
+rt is the scalar reward, dt is the termination flag, τt is the truncation flag, and it contains diagnostic  
+
+> 8SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+information such as backend identity, formula, energy, formation energy, energy above hull, or phonon-related quantities when available. This protocol separates the search logic from materials-specific infrastructure. Different agents may use different policies, surrogate models, acquisition functions, or memory mechanisms, but they interact with the same action schema, evaluator, reward definition, and transition format. 
+
+Bayesian-optimization agent 
+
+SciVerseGym can be used with Bayesian optimization by treating each environment step as a structured black-box evaluation. In this setting, the BO agent first constructs a discrete candidate set of valid edits At = {a(1)  
+
+> t
+
+, . . . , a (M ) 
+
+> t
+
+} from the current observation. Each state-action pair is then mapped to a fixed-dimensional feature vector, 
+
+x(j) 
+
+> t
+
+= ϕ(st, a (j) 
+
+> t
+
+), (4) where ϕ may include composition descriptors, atomic numbers, action type, target-site information, energy history, graph features, or handcrafted structure features. A surrogate model is fitted to the accumulated data and used to predict the expected reward and uncertainty of each candidate action. For example, an upper-confidence-bound acquisition function can be written as 
+
+αt(a) = μt(ϕ(st, a )) + κtσt(ϕ(st, a )) , (5) where μt and σt are the surrogate posterior mean and uncertainty, and κt controls the exploration– exploitation trade-off [11]. The agent selects 
+
+a⋆t = arg max 
+
+> a∈A t
+
+αt(a), (6) submits a⋆t to the environment, and records the returned reward and next state. The BO history is updated as 
+
+Dt+1 = Dt ∪ { (st, a ⋆t , r t, s t+1 , i t)}. (7) This usage is particularly useful when the evaluator is expensive, the number of allowed crystal edits is limited, or sample efficiency is more important than long-horizon policy learning. Because the action space is structured, the BO agent can enumerate or sample chemically meaningful edits instead of optimizing over unconstrained crystal files. The same protocol also makes it straightforward to compare different feature maps, surrogate models, and acquisition functions under identical environment settings. 
+
+Reinforcement-learning agent 
+
+Reinforcement learning treats crystal discovery as a sequential editing problem. A policy observes the current state, selects a crystal-edit action, receives a reward, and continues until the episode terminates or the edit budget is exhausted. The policy may be deterministic or stochastic,  
+
+> 9SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+at ∼ πθ(a | st), (8) where θ denotes the learnable parameters. The resulting trajectory is 
+
+τ = ( s0, a 0, r 0, s 1, a 1, r 1, . . . ), (9) and the agent can be trained to maximize the discounted return 
+
+Gt = 
+
+> T−t
+
+X
+
+> k=0
+
+γkrt+k, (10) where γ is the discount factor and T is the episode length. The same environment interface can support simple tabular or action-value methods, policy-gradient algorithms, actor–critic methods, graph neural-network policies, or hybrid language-model policies. These methods differ in how they represent 
+
+st and how they choose at, but they all consume the same standardized transition 
+
+(st, a t, r t, s t+1 , d t, τ t, i t). (11) An RL agent may learn from graph embeddings, handcrafted composition and structure descriptors, energy histories, diagnostic metadata, or multimodal state summaries. For example, a graph neural-network policy can use atomic numbers, local environments, and connectivity as input, whereas a simpler baseline can use action values over a controlled candidate-action set. A language-model-assisted policy can propose high-level chemical edits, but the environment remains responsible for applying the edit, validating the action, evaluating the candidate, and returning numerical feedback. The bounded action schema is important for RL stability. Since actions correspond to interpretable structure edits, invalid operations are easier to clip, reject, or diagnose than in free-form crystal generation. This reduces the burden on the policy during early training and allows failures to be recorded through the info dictionary rather than hidden inside task-specific scripts. As a result, RL methods can focus on learning search strategies while SciVerseGym handles structure bookkeeping, evaluation, reward calculation, and transition formatting. 
+
+# IMPLEMENTATION AND AVAILABILITY 
+
+SciVerseGym is implemented in Python and distributed as an open-source repository. The package is built around the Gymnasium environment protocol and uses ASE for atomistic structure representation and calculator interoperability. It also relies on standard scientific Python libraries for numerical computation and tabular data handling, with optional support for graph-style observations, convex-hull analysis, and phonon-related diagnostics through external packages such as PyTorch Geometric, SciPy, and Phonopy. When the package is imported, it registers the CrystalDiscovery-v0 environment, which provides the main interface for closed-loop crystal discovery.  
+
+> 10 SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+The implementation is designed to keep the agent interface stable while allowing backend details to evolve. Users can configure the environment with machine-learned interatomic potentials, reference-backed physical calculators, surrogate evaluators, or custom ASE-compatible calculators. Optional components such as geometry relaxation, convex-hull references, phonon diagnostics, graph observa-tions, and reward definitions can be enabled or modified depending on the scientific task. This modular structure allows new evaluators, datasets, action constraints, and diagnostic quantities to be added without changing the conceptual environment protocol. The repository ( https://github.com/Bin-Cao/SciVerseGym ) includes source code, tests, example Bayesian-optimization and reinforcement-learning baselines, dataset utilities, calculator adapters, and documentation. Detailed installation instructions, environment configuration options, action schemas, reward definitions, formation-energy and convex-hull conventions, phonon settings, dataset formats, and troubleshooting notes are provided in the project documentation. 
+
+# LIMITATIONS 
+
+SciVerseGym is an interface and benchmarking substrate, not a guarantee of physical validity. Its predictions are only as reliable as the selected calculator, reference data and validation protocol. Energy above hull is meaningful only when candidate and reference phases are evaluated in a consistent energy convention. Phonon stability is optional and can be computationally expensive. The default reward is intentionally simple and should be replaced for domain-specific studies. Finally, structured edit actions make the search problem easier to validate, but they do not enforce charge balance, synthesis feasibility, or all forms of chemical reasonableness. 
+
+# DISCUSSION 
+
+The central claim of SciVerseGym is that materials-search algorithms should be compared through a common interaction protocol. Such a protocol does not remove the need for domain expertise, careful reference data or high-fidelity validation. It does, however, make algorithmic experiments easier to reproduce: the same starting structures, action schema, evaluator and reward can be shared across Bayesian optimization, reinforcement learning, evolutionary search and language-agent workflows. This separation should help materials researchers focus on scientific objectives while allowing algorithm developers to test policies without rewriting atomistic infrastructure. 
+
+# ACKNOWLEDGEMENTS 
+
+SciVerseGym builds on the open scientific Python ecosystem, including Gymnasium, ASE, NumPy, SciPy, PyTorch Geometric and Phonopy, as well as modern machine-learned force-field packages.  
+
+> 11 SVGym / SciVerseGym Closed-loop Crystal Discovery
+
+# REFERENCES 
+
+[1] Bin Cao. Physics-Constrained Learning of Crystal Structures and Properties from Powder Diffrac-tion . PhD thesis, The Hong Kong University of Science and Technology, 2026. [2] Bin Cao, Jie Xiong, Jiaxuan Ma, Yuan Tian, Yirui Hu, Mengwei He, Longhan Zhang, Jiayu Wang, Jian Hui, Li Liu, et al. Bgolearn: a unified bayesian optimization framework for accelerating materials discovery. arXiv preprint arXiv:2601.06820 , 2026. [3] Zhongwei Yu, Rasul Tutunov, Alexandre Max Maraval, Zikai Xie, Zhenzhi Tan, Jiankang Wang, Bin Cao, Zijing Li, Liangliang Xu, Qi Yang, et al. Efficient and principled scientific discovery through bayesian optimization: A tutorial. arXiv preprint arXiv:2604.01328 , 2026. [4] Bin Cao, Yang Liu, Longhan Zhang, Yifan Wu, Zhixun Li, Yuyu Luo, Hong Cheng, Yang Ren, and Tong-Yi Zhang. Beyond structure: Invariant crystal property prediction with pseudo-particle ray diffraction. arXiv preprint arXiv:2509.21778 , 2025. [5] Mark Towers, Ariel Kwiatkowski, John Balis, Gianluca De Cola, Tristan Deleu, Manuel Goul ˜ao, Kallinteris Andreas, Markus Krimmel, Arjun Kg, Rodrigo Perez-Vicente, et al. Gymnasium: A standard interface for reinforcement learning environments. Advances in Neural Information Processing Systems , 38, 2026. [6] Yutack Park, Jaesun Kim, Seungwoo Hwang, and Seungwu Han. Scalable parallel algorithm for graph neural network interatomic potentials in molecular dynamics simulations. J. Chem. Theory Comput. , 20(11):4857–4868, 2024. [7] Han Yang, Chenxi Hu, Yichi Zhou, Xixian Liu, Yu Shi, Jielan Li, Guanzhi Li, Zekun Chen, Shuizhou Chen, Claudio Zeni, et al. Mattersim: A deep learning atomistic model across elements, tempera-tures and pressures. arXiv preprint arXiv:2405.04967 , 2024. [8] Mark Neumann, James Gin, Benjamin Rhodes, Steven Bennett, Zhiyi Li, Hitarth Choubisa, Arthur Hussey, and Jonathan Godwin. Orb: A fast, scalable neural network potential. arXiv preprint arXiv:2410.22570 , 2024. [9] Philipp H ¨ollmer, Thomas Egg, Maya M Martirossyan, Eric Fuemmeler, Zeren Shui, Amit Gupta, Pawan Prakash, Adrian Roitberg, Mingjie Liu, George Karypis, et al. Open materials generation with stochastic interpolants. arXiv preprint arXiv:2502.02582 , 2025. [10] Atsushi Togo. First-principles phonon calculations with phonopy and phono3py. Journal of the Physical Society of Japan , 92(1):012001, 2023. [11] Peter I Frazier. A tutorial on bayesian optimization. arXiv preprint arXiv:1807.02811 , 2018.

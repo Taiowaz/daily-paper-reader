@@ -6,46 +6,43 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-27
-- 运行时间：2026-06-27 20:23:16 UTC
+- 最新运行日期：2026-06-28
+- 运行时间：2026-06-28 21:42:21 UTC
 - 运行状态：成功
-- 本次总论文数：8
-- 精读区：3
-- 速读区：5
+- 本次总论文数：7
+- 精读区：5
+- 速读区：2
 
 ### 今日简报（AI）
-今日聚焦多目标优化实战：进化元强化学习破解供应链难题，AutoML让深度网络训练更绿色。  
-可重点关注进化算法与元强化学习结合解决组合优化，以及用多目标超参优化降低深度学习碳足迹的落地思路。  
-建议相关领域读者尝试将多目标进化或AutoML引入自己的模型调参与资源调度流程。
-- 详情：[/202606/27/README](/202606/27/README)
+今日精读因果DAG先验合成时序数据与最大似然非嵌套模型选择两篇高分论文，并速览超稀疏网络生成模型和GraphRAG优化方案。  
+因果先验能显著提升合成时序分类数据的保真度，而最大似然准则为非嵌套模型比较提供了新尺规。  
+建议读者深入因果结构约束下的生成模型设计，或将非嵌套选择准则落地到实际模型评估中。
+- 详情：[/202606/28/README](/202606/28/README)
 
 ### 精读区论文标签
-1. [Meta-Reinforcement Learning via Evolution for Multi-Objective Combinatorial Supply Chain Optimisation](/202606/27/2606.22146v1-meta-reinforcement-learning-via-evolution-for-multi-objective-combinatorial-supply-chain-optimisation)  
+1. [A Causal DAG Prior for Synthetic Time-Series Classification Datasets](/202606/28/2606.21776v1-a-causal-dag-prior-for-synthetic-time-series-classification-datasets)  
    标签：评分：9.0/10、query:ml
-   evidence：提出基于种群的元强化学习框架，是一种明确的元学习算法
-2. [Leveraging AutoML for Sustainable Deep Learning: A Multi-Objective HPO Approach on Deep Shift Neural Networks](/202606/27/2606.23208v1-leveraging-automl-for-sustainable-deep-learning-a-multi-objective-hpo-approach-on-deep-shift-neural-networks)  
+   evidence：引入用于元学习合成时间序列数据集的因果DAG先验
+2. [Maximum Likelihood Criterion for Non-nested Model Selection](/202606/28/2606.22403v1-maximum-likelihood-criterion-for-non-nested-model-selection)  
    标签：评分：9.0/10、query:ml
-   evidence：在深度移位网络上应用多目标超参数优化实现精度-能耗权衡，体现AutoML超参数优化技术。
-3. [PaperClaw: Harnessing Agents for Autonomous Research and Human-in-the-Loop Refinement](/202606/27/2606.22610v1-paperclaw-harnessing-agents-for-autonomous-research-and-human-in-the-loop-refinement)  
+   evidence：提出非嵌套模型选择的最大似然准则
+3. [Socratic agents for autonomous scientific discovery in high-dimensional physical systems](/202606/28/2606.26722v1-socratic-agents-for-autonomous-scientific-discovery-in-high-dimensional-physical-systems)  
+   标签：评分：9.0/10、query:ml
+   evidence：用于自主物理系统实验的多智能体AI科学家
+4. [SVGym (SciVerseGym): An Environment for Reinforcement Learning and Bayesian Optimization in Crystal Discovery](/202606/28/2606.22425v1-svgym-sciversegym-an-environment-for-reinforcement-learning-and-bayesian-optimization-in-crystal-discovery)  
    标签：评分：8.0/10、query:ml
-   evidence：自主多智能体系统，自动整理文献、头脑风暴、执行实验并撰写论文，实现研究流程自动化
+   evidence：提供通过强化学习和贝叶斯优化进行自动化晶体发现的强化学习环境
+5. [MapReason-OSM: Can Vision-Language Models Make Graph-Verifiable Mobility Decisions from Street Maps ?](/202606/28/2606.22597v2-mapreason-osm-can-vision-language-models-make-graph-verifiable-mobility-decisions-from-street-maps-)  
+   标签：评分：8.0/10、query:graph-llm
+   evidence：评估VLMs在图可验证的地图决策上的表现
 
 ### 速读区论文标签
-1. [On the Semantics of Generative SPARQL](/202606/27/2606.23875v1-on-the-semantics-of-generative-sparql)  
+1. [A Generative Model for Extremely Sparse Edge-Exchangeable Networks](/202606/28/2606.22105v1-a-generative-model-for-extremely-sparse-edge-exchangeable-networks)  
+   标签：评分：7.0/10、query:dynamic-g
+   evidence：提出一种极稀疏边可交换网络序列的生成模型
+2. [Is GraphRAG Needed? From Basic RAG to Graph-/Agentic Solutions with Context Optimization](/202606/28/2606.25656v1-is-graphrag-needed-from-basic-rag-to-graph-agentic-solutions-with-context-optimization)  
    标签：评分：7.0/10、query:graph-llm
-   evidence：扩展SPARQL生成式查询，调用语言模型进行图查询
-2. [FlowPipe: LLM-Enhanced Conditional Generative Flow Networks for Data Preparation Pipeline Construction](/202606/27/2606.24679v1-flowpipe-llm-enhanced-conditional-generative-flow-networks-for-data-preparation-pipeline-construction)  
-   标签：评分：7.0/10、query:ml
-   evidence：通过LLM增强的生成流网络实现数据管道自动构建，推动AutoML方法发展。
-3. [Communicability-Inspired Positional Encoding (CIPE)](/202606/27/2606.25293v1-communicability-inspired-positional-encoding-cipe)  
-   标签：评分：7.0/10、query:graph-llm
-   evidence：基于可传播性的图Transformer位置编码，为图结构与注意力机制的融合提供新方案，可集成到LLM中。
-4. [Selective Ensemble Based on Preference-Directed Multi-Objective Bandits](/202606/27/2606.21929v1-selective-ensemble-based-on-preference-directed-multi-objective-bandits)  
-   标签：评分：6.0/10、query:ml
-   evidence：在有限评估预算下选择有前景的模型候选，符合自动化模型选择
-5. [FeLoG: Scalable and Efficient Distributed Graph Embedding with Feedback Loop Mechanism](/202606/27/2606.22180v1-felog-scalable-and-efficient-distributed-graph-embedding-with-feedback-loop-mechanism)  
-   标签：评分：6.0/10、query:graph-llm
-   evidence：图嵌入用于图增强检索生成，间接结合大语言模型
+   evidence：在半结构化知识库上评估集成了文本-图检索与LLM的GraphRAG方案
 
 
 <div class="dpr-home-promo-card">

@@ -1,0 +1,296 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-28T21:37:14.250448+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 4,
+    "deep_divecandidates": 5,
+    "deep_cap": 9,
+    "deep_selected": 5,
+    "quick_candidates": 2,
+    "quick_skim_target": 14,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.21776v1",
+      "source": "arxiv",
+      "title": "A Causal DAG Prior for Synthetic Time-Series Classification Datasets",
+      "abstract": "A Prior-data fitted Network learns the posterior predictive induced by its training prior; bringing this paradigm to multivariate time-series classification therefore calls for a synthetic generator that produces complete labelled datasets with temporal structure. We introduce a causal prior that synthesizes each dataset from a randomly sampled DAG over typed nodes across two modalities (tabular attributes and time series), natively producing multivariate, multi-class TSC datasets with cross-modal causal structure across channels, timesteps and labels, a regime not addressed by existing synthetic priors. To validate the prior, we finetune TabPFN v2.5 with minimal adaptations and evaluate on 75 UCR/UEA datasets within TabPFN's operating regime. Finetuning on our generator significantly outperforms both the unmodified upstream model and a tabular-only ablation of the same prior (Wilcoxon signed-rank $p=3.0\\times 10^{-8}$ on ROC-AUC), isolating the contribution of the cross-modal temporal structure.",
+      "authors": [
+        "Franco Martino O'Rourke",
+        "Ana Trisovic",
+        "Dimitris Bertsimas"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-19T21:50:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.21776v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "introduces a causal DAG prior for meta-learning synthetic time-series datasets",
+      "llm_evidence_cn": "引入用于元学习合成时间序列数据集的因果DAG先验",
+      "llm_evidence": "引入用于元学习合成时间序列数据集的因果DAG先验",
+      "canonical_evidence": "引入用于元学习合成时间序列数据集的因果DAG先验",
+      "llm_tldr_en": "Proposes a causal DAG prior to generate synthetic multivariate time-series classification datasets for prior-data fitted networks, enabling meta-learning on time-series data.",
+      "llm_tldr_cn": "先验数据拟合网络的一个范型需要合成数据集生成器。本文提出因果DAG先验，通过采样类型化节点和有向边生成多变量时间序列分类数据集，为TabPFN类元学习框架扩展到时间序列领域提供关键支持。",
+      "llm_tldr": "先验数据拟合网络的一个范型需要合成数据集生成器。本文提出因果DAG先验，通过采样类型化节点和有向边生成多变量时间序列分类数据集，为TabPFN类元学习框架扩展到时间序列领域提供关键支持。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "meta learning algorithms and learning to learn approaches",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22403v1",
+      "source": "arxiv",
+      "title": "Maximum Likelihood Criterion for Non-nested Model Selection",
+      "abstract": "Penalization is a widely used approach to model selection with roots in information theory and Bayesian inference. We study a model selection problem involving non-nested candidate models for which penalization is counterproductive. We propose a Maximum Likelihood Criterion for this non-nested setting that selects the candidate model with the highest maximum likelihood. This criterion does not take into consideration the number of parameters of a candidate model. It is well-suited for situations where all candidate models are regarded as equal with no preference for models having fewer parameters. We establish the consistency of this criterion and compare its performance with that of existing penalization-based criteria.",
+      "authors": [
+        "Min Tsao"
+      ],
+      "primary_category": "stat.ME",
+      "categories": [
+        "stat.ME"
+      ],
+      "published": "2026-06-21T09:18:46+00:00",
+      "link": "https://arxiv.org/pdf/2606.22403v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:ml",
+        "query:EFMR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Proposes maximum likelihood criterion for non-nested model selection",
+      "llm_evidence_cn": "提出非嵌套模型选择的最大似然准则",
+      "llm_evidence": "提出非嵌套模型选择的最大似然准则",
+      "canonical_evidence": "提出非嵌套模型选择的最大似然准则",
+      "llm_tldr_en": "Introduces a Maximum Likelihood Criterion for non-nested model selection that does not penalize parameters, proving consistency and offering an alternative to penalization methods when models are equally preferred.",
+      "llm_tldr_cn": "针对非嵌套模型选择问题，传统惩罚准则可能适得其反，提出基于最大似然的模型选择准则；该准则不考虑参数数量，直接选择似然最大的候选模型，适用于所有模型平等对待的场景；论文证明了准则的一致性，并通过实验对比了其与现有惩罚准则的性能，为非嵌套模型选择提供了简洁有效的方案。",
+      "llm_tldr": "针对非嵌套模型选择问题，传统惩罚准则可能适得其反，提出基于最大似然的模型选择准则；该准则不考虑参数数量，直接选择似然最大的候选模型，适用于所有模型平等对待的场景；论文证明了准则的一致性，并通过实验对比了其与现有惩罚准则的性能，为非嵌套模型选择提供了简洁有效的方案。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automated model selection strategies and algorithms",
+      "matched_requirement_id": "req-29",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26722v1",
+      "source": "arxiv",
+      "title": "Socratic agents for autonomous scientific discovery in high-dimensional physical systems",
+      "abstract": "The automation of scientific discovery has reached an inflection point. While AI systems now operate instruments, optimize parameters and generate hypotheses, most remain procedural: they execute workflows fixed by human designers. True autonomous science demands epistemic autonomy--the capacity to construct, challenge and revise physical explanations in response to evidence. Here we introduce AHOIS, a multi-agent AI scientist that embeds Socratic midwifery into closed-loop experimentation. A physics-critic agent interrogates hypotheses through causal questioning, constraint checking, counterexample generation and falsification-criteria formulation. We evaluate AHOIS on a real multimode-fibre optical platform, a high-dimensional system with complex wave transformations, indirect detection, environmental drift and multi-modal acquisition. Without prior encoding schemes, classifiers or speckle models, the system autonomously proposed and validated a random-interference encoding hypothesis, discovered task-adaptive sparse-measurement strategies, diagnosed distinct failure modes (encoding instability, fluorescence contamination and detector noise) and translated a published imaging protocol into an executable workflow on a non-original configuration. The discovered encoding yielded 16x16 measurements with effective rank 56.9 and classification accuracies of 76.97% on MNIST and 83.17% on Fashion-MNIST. Ablations show that Socratic interrogation improves physical consistency, hypothesis completeness, uncertainty calibration and experimental-plan validity. These results establish a route from workflow automation towards evidence-grounded, self-correcting autonomous discovery in complex physical environments.",
+      "authors": [
+        "Xianrui Zeng",
+        "Pengfei Liu",
+        "Yirui Zang",
+        "Yang Shen",
+        "Fei Yu",
+        "Chunlei Yu",
+        "Minghao Liu",
+        "Yang Du"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "physics.optics"
+      ],
+      "published": "2026-06-25T08:01:07+00:00",
+      "link": "https://arxiv.org/pdf/2606.26722v1",
+      "tags": [
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multi-agent AI scientist for autonomous physical system experimentation",
+      "llm_evidence_cn": "用于自主物理系统实验的多智能体AI科学家",
+      "llm_evidence": "用于自主物理系统实验的多智能体AI科学家",
+      "canonical_evidence": "用于自主物理系统实验的多智能体AI科学家",
+      "llm_tldr_en": "AHOIS, a multi-agent AI scientist that uses Socratic questioning to autonomously construct, challenge, and revise physical explanations in closed-loop experiments on a high-dimensional optical system, demonstrating epistemic autonomy in scientific discovery.",
+      "llm_tldr_cn": "该工作针对当前AI科学发现系统大多仅限于执行既定流程、缺乏认知自主性的问题，提出AHOIS多智能体AI科学家，将苏格拉底式诘问法嵌入闭环实验中，通过物理批判智能体进行因果提问、约束检查、反例生成和证伪标准制定，自主构建、质疑和修正物理解释。在高维多模光纤光学平台上验证，结果表明该系统能有效进行自主科学发现，为AI驱动的自动化研究提供了新范式。",
+      "llm_tldr": "该工作针对当前AI科学发现系统大多仅限于执行既定流程、缺乏认知自主性的问题，提出AHOIS多智能体AI科学家，将苏格拉底式诘问法嵌入闭环实验中，通过物理批判智能体进行因果提问、约束检查、反例生成和证伪标准制定，自主构建、质疑和修正物理解释。在高维多模光纤光学平台上验证，结果表明该系统能有效进行自主科学发现，为AI驱动的自动化研究提供了新范式。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22597v2",
+      "source": "arxiv",
+      "title": "MapReason-OSM: Can Vision-Language Models Make Graph-Verifiable Mobility Decisions from Street Maps ?",
+      "abstract": "Vision-language models (VLMs) are increasingly used to read maps for logistics, delivery, and accessible navigation, where the output is an actionable decision (a route, a pin, a parking choice) that must respect the road network. Yet most map benchmarks grade free text or multiple-choice answers that cannot be verified against the underlying graph. We present MapReason-OSM, a benchmark and evaluation harness for graph-verifiable mobility decisions on self-rendered OpenStreetMap panels. We render fixed-style maps for ten U.S. downtowns at two aligned zoom scales, overlay a consistent marker grammar, and pair each panel with a hidden street graph and exact oracles, yielding 6,000 instances (12,000 panels across the two zooms) over 12 routing, facility-location, and visual disambiguation tasks. Models return structured decisions that we snap back to the graph and score for validity, legality, optimality, and constraint satisfaction, plus cross-zoom consistency. Across seven VLMs, models read maps and route simply but fail at graph cost reasoning (single-facility pin placement is near chance even for frontier reasoning models), and are frequently scale-inconsistent. We release the benchmark, harness, and deterministic generator. Code and data: https://github.com/Vi-Sri/mapreason-osm",
+      "authors": [
+        "Srinivas Venkatanarayanan",
+        "Clement Pakkam Isaac"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-21T17:13:35+00:00",
+      "link": "https://arxiv.org/pdf/2606.22597v2",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "evaluates VLMs on graph-verifiable map decisions",
+      "llm_evidence_cn": "评估VLMs在图可验证的地图决策上的表现",
+      "llm_evidence": "评估VLMs在图可验证的地图决策上的表现",
+      "canonical_evidence": "评估VLMs在图可验证的地图决策上的表现",
+      "llm_tldr_en": "Proposes MapReason-OSM, a benchmark to test if vision-language models can make decisions on map panels that are verifiable against the underlying road graph, revealing limitations in current VLMs' graph reasoning.",
+      "llm_tldr_cn": "视觉语言模型越来越多用于地图任务，但现有基准无法验证决策是否与底层路网图一致。本文提出MapReason-OSM基准，包含6000个实例，测试VLMs在街道地图上的可图验证移动决策能力，发现当前模型在精确图推理上存在严重局限，为提升地图AI的可信度提供关键工具。",
+      "llm_tldr": "视觉语言模型越来越多用于地图任务，但现有基准无法验证决策是否与底层路网图一致。本文提出MapReason-OSM基准，包含6000个实例，测试VLMs在街道地图上的可图验证移动决策能力，发现当前模型在精确图推理上存在严重局限，为提升地图AI的可信度提供关键工具。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.22425v1",
+      "source": "arxiv",
+      "title": "SVGym (SciVerseGym): An Environment for Reinforcement Learning and Bayesian Optimization in Crystal Discovery",
+      "abstract": "Machine-learned interatomic potentials now enable efficient atomistic evaluation for interactive materials discovery, yet closed-loop crystal search methods remain fragmented across bespoke pipelines for editing, relaxation, scoring, constraints, and bookkeeping. We introduce SciVerseGym, a Gymnasium-compatible environment for sequential crystal discovery that frames crystal design as a Markov decision process. Agents observe an atomistic structure, apply chemically meaningful edits, and receive feedback from a configurable evaluator. SciVerseGym supports local and global actions, including elemental substitution, lattice perturbation, atomic displacement, vacancy creation, and atom insertion, along with configurable chemical spaces, structure pools, atomistic and graph-based observations, custom rewards, optional relaxation, and stability or phonon-related diagnostics. Each step applies an edit, evaluates the candidate using a machine-learned interatomic potential or any ASE-compatible calculator, and returns the standard (obs, reward, terminated, truncated, info) tuple. By decoupling agent logic from materials infrastructure, SciVerseGym provides an open, reproducible, and extensible testbed for reinforcement learning, Bayesian optimization, evolutionary search, and language-agent workflows in closed-loop crystal discovery. Code is available at: https://github.com/Bin-Cao/SciVerseGym.",
+      "authors": [
+        "Bin Cao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cond-mat.mtrl-sci"
+      ],
+      "published": "2026-06-21T10:24:27+00:00",
+      "link": "https://arxiv.org/pdf/2606.22425v1",
+      "tags": [
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "provides a gym environment for automated crystal discovery via RL and BO",
+      "llm_evidence_cn": "提供通过强化学习和贝叶斯优化进行自动化晶体发现的强化学习环境",
+      "llm_evidence": "提供通过强化学习和贝叶斯优化进行自动化晶体发现的强化学习环境",
+      "canonical_evidence": "提供通过强化学习和贝叶斯优化进行自动化晶体发现的强化学习环境",
+      "llm_tldr_en": "Introduces SciVerseGym, a Gymnasium-compatible environment for automated crystal discovery, framing design as a Markov decision process with configurable actions and evaluator, enabling standardized benchmarking of RL and BO agents for materials discovery.",
+      "llm_tldr_cn": "针对晶体发现方法分散在定制化流程中的问题，提出统一的环境SciVerseGym，将晶体设计建模为马尔可夫决策过程，支持多种化学编辑动作和可配置评估器。该环境兼容Gymnasium，为序贯晶体搜索提供标准化测试平台，便于对比和开发强化学习与贝叶斯优化智能体，推动自动化材料发现研究。",
+      "llm_tldr": "针对晶体发现方法分散在定制化流程中的问题，提出统一的环境SciVerseGym，将晶体设计建模为马尔可夫决策过程，支持多种化学编辑动作和可配置评估器。该环境兼容Gymnasium，为序贯晶体搜索提供标准化测试平台，便于对比和开发强化学习与贝叶斯优化智能体，推动自动化材料发现研究。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.22105v1",
+      "source": "arxiv",
+      "title": "A Generative Model for Extremely Sparse Edge-Exchangeable Networks",
+      "abstract": "We propose a graph generative model for sequences of extremely sparse, edge-exchangeable networks. Models for sparse graphs often face a trade-off between desirable properties like exchangeability and the ability to capture the sparsity observed in real-world networks. While models based on vertex or edge exchangeability have successfully generated sparse graphs, achieving the \"extremely sparse\" regime, where the number of edges scales near-linearly with the number of nodes, has remained a challenge. Recently, a novel Completely Random Measure (CRM) was introduced, demonstrating that this rate could be achieved within the vertex-exchangeable framework of Caron and Fox. This paper extends this work by demonstrating that this new CRM can be integrated into the alternative edge-exchangeable framework to achieve extreme sparsity.",
+      "authors": [
+        "Valentin Kilian"
+      ],
+      "primary_category": "math.ST",
+      "categories": [
+        "math.ST"
+      ],
+      "published": "2026-06-20T15:37:44+00:00",
+      "link": "https://arxiv.org/pdf/2606.22105v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "proposes a generative model for sequences of extremely sparse edge-exchangeable networks",
+      "llm_evidence_cn": "提出一种极稀疏边可交换网络序列的生成模型",
+      "llm_evidence": "提出一种极稀疏边可交换网络序列的生成模型",
+      "canonical_evidence": "提出一种极稀疏边可交换网络序列的生成模型",
+      "llm_tldr_en": "Proposes a graph generative model for sequences of extremely sparse edge-exchangeable networks, achieving the extremely sparse regime where edges scale near-linearly with nodes, extending a novel CRM to edge-exchangeable models.",
+      "llm_tldr_cn": "该论文针对极稀疏图生成中边数与节点数接近线性增长的挑战，提出了一种基于边可交换性的生成模型，通过积分新型完全随机测度（CRM）实现了序列化极稀疏网络的生成。该方法在保序性和稀疏性之间取得平衡，为动态网络建模提供了新的生成框架。",
+      "llm_tldr": "该论文针对极稀疏图生成中边数与节点数接近线性增长的挑战，提出了一种基于边可交换性的生成模型，通过积分新型完全随机测度（CRM）实现了序列化极稀疏网络的生成。该方法在保序性和稀疏性之间取得平衡，为动态网络建模提供了新的生成框架。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "evolving graphs over time",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.25656v1",
+      "source": "arxiv",
+      "title": "Is GraphRAG Needed? From Basic RAG to Graph-/Agentic Solutions with Context Optimization",
+      "abstract": "As advanced RAG variants like GraphRAG and Agentic RAG emerge, one leading question is when and how to use them. Here, we introduce a framework for different RAG scenarios evaluation and comparison on semi-structured knowledge bases, including regular RAG, GraphRAG, Modular RAG and Agentic RAG. We provide implementation for 9 standardized RAG scenarios, and conduct experiments for a comprehensive comparison. These scenarios are designed for real use cases regarding data and domain restrictions, spanning from simple document-based retrieval to advanced features such as hybrid text-graph retrieval, integration with computed or pre-defined domain knowledge graphs, agentic multi-step planning, and agent-graph integration. Besides, we present a novel context engineering method for GraphRAG and Agentic RAG, addressing the context/memory overflow issues, efficiently managing text and graph retrievals with new representations and agentic loop design, leading to 19%-53% reduction on token usage. Moreover, further analysis identifies a retrieval-generation gap where expanded retrieval does not proportionally improve generation quality, suggesting retrieval-oriented metrics overstate advanced retrieval benefits. This work provides data-driven insights on when and how to use them for building production-ready intelligent RAG systems.",
+      "authors": [
+        "Long Chen",
+        "Ryan Razkenari",
+        "Yuxuan Zhou",
+        "Yuan Tian",
+        "Rahul Ghosh",
+        "Venkatesh Pappakrishnan",
+        "Disha Ahuja",
+        "Vidya Sagar Ravipati"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.IR"
+      ],
+      "published": "2026-06-24T10:11:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.25656v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Evaluates GraphRAG and hybrid text-graph retrieval with LLMs on semi-structured knowledge bases",
+      "llm_evidence_cn": "在半结构化知识库上评估集成了文本-图检索与LLM的GraphRAG方案",
+      "llm_evidence": "在半结构化知识库上评估集成了文本-图检索与LLM的GraphRAG方案",
+      "canonical_evidence": "在半结构化知识库上评估集成了文本-图检索与LLM的GraphRAG方案",
+      "llm_tldr_en": "This paper introduces an evaluation framework for various RAG scenarios including GraphRAG, comparing their performance on semi-structured knowledge to determine when graph-based retrieval is beneficial.",
+      "llm_tldr_cn": "该工作构建了包含GraphRAG等变体的检索增强生成（RAG）评估框架，在半结构化知识库上系统对比多种场景，分析基于图的检索与智能体规划等高级方案的适用条件，为实践中何时使用图增强RAG提供了决策依据。",
+      "llm_tldr": "该工作构建了包含GraphRAG等变体的检索增强生成（RAG）评估框架，在半结构化知识库上系统对比多种场景，分析基于图的检索与智能体规划等高级方案的适用条件，为实践中何时使用图增强RAG提供了决策依据。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
