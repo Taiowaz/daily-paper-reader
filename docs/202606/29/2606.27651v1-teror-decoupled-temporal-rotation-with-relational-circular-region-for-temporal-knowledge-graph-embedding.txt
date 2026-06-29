@@ -1,0 +1,198 @@
+Title: TeRoR: Decoupled Temporal Rotation with Relational Circular Region for Temporal Knowledge Graph Embedding
+
+URL Source: https://arxiv.org/pdf/2606.27651v1
+
+Published Time: Mon, 29 Jun 2026 00:17:39 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# TeRoR: Decoupled Temporal Rotation with Relational Circular Region for Temporal Knowledge Graph Embedding 
+
+Peijia Xie, Yike Liu, Chao He, and Huiling Zhu ⋆
+
+South China Normal University, Guangzhou, China 
+
+Abstract. In recent years, with the emergence of Temporal Knowledge Graphs (TKGs), research on learning entity and relation representations in TKGs has attracted increasing attention, giving rise to a large num-ber of TKG embedding methods. TeRo is a simple and efficient tem-poral knowledge graph embedding approach. However, TeRo does not do well in modeling the mapping properties of various relations, such as one-to-many, many-to-one, and many-to-many. Meanwhile, it also has limitations in the expression of temporal information. To address these issues, we propose a novel TKG embedding method named TeRoR. This method divides the temporal evolution of entity embeddings, and con-ducts independent rotation transformations on head and tail entities in the complex vector space to strengthen temporal information modeling capacity. In terms of relational characteristics, we train a radius ρr to constrain the rotated and translated head entities within a circular re-gion centered on the tail entity, which effectively captures the diverse mapping properties of relations. Experimental results demonstrate that TeRoR achieves competitive performance against state-of-the-art models on four distinct TKG datasets. 
+
+Keywords: Temporal knowledge graphs · Rotation · Complex vector space · Link prediction. 
+
+# 1 Introduction 
+
+In recent years, knowledge graphs (KGs) have emerged as large-scale structured semantic repositories and become indispensable infrastructure for diverse artifi-cial intelligence applications, ranging from question answering and information retrieval to recommendation systems and cognitive reasoning. Classic publicly accessible KGs, including DBpedia [1], YAGO [6], NELL [4], and Freebase [2], store real-world entities and their interconnections in the form of directed graphs. In general, factual knowledge in KGs is standardized as triple notation (s, r, o ),where the subject s and object o correspond to graph nodes (entities), and the re-lation r acts as the edge connecting paired entities. Nevertheless, real-world KGs typically feature massive data volume and heterogeneous attribute distribution,  
+
+> ⋆
+
+Corresponding author.  
+
+> arXiv:2606.27651v1 [cs.LG] 26 Jun 2026 2Peijia Xie, Yike Liu, Chao He, and Huiling Zhu
+
+accompanied by widespread data incompleteness and missing relational facts. To tackle such defects and improve KG completeness, knowledge graph embed-ding (KGE) techniques have been rapidly developed. These technologies project discrete symbolic entities and relations into continuous low-dimensional vector spaces, and adopt customized scoring functions to measure the rationality of triples. Among existing KGE algorithms, translation-based models represented by TransE [3], TransH [20], TransR [14], and TransD [9] have gained widespread attention due to their balanced performance in model complexity and prediction accuracy. Although static KGE models have achieved promising results in link pre-diction tasks, their core assumption that all relational facts hold permanently and universally contradicts real-world scenarios. In fact, most factual relations in practical KGs are time-sensitive and dynamically evolving. For example, the relational fact (Obama, President of, USA) is only valid from 2009 to 2017, while the event (Einstein, Died in, Princeton) uniquely occurred in 1955. To record such time-dependent facts, temporal knowledge graphs (TKGs) including ICEWS [11], GDELT [13], and YAGO3 [15] have been constructed, which extend the traditional triple structure into quadruples with additional timestamps or time intervals. The prevalence of TKGs further promotes the research of tem-poral knowledge graph embedding (TKGE). However, directly applying static KGE models to TKGs usually leads to severe performance degradation, since these static methods ignore temporal characteristics, especially when modeling transient relations such as visits, tenure, and commodity transactions. To address the above limitation, scholars have proposed various TKGE ap-proaches to embed temporal information into entity and relation representa-tions through explicit or implicit encoding strategies. Typical methods such as TTransE [12] and TA-DistMult [7] have proven superior to conventional static KGE models in temporal link prediction tasks. Even so, current TKGE frameworks still have prominent drawbacks. First, most existing TKGE models are simple temporal extensions based on TransE or DistMult, lacking sufficient expressive capability to capture intricate temporal dependencies. Second, sev-eral temporal embedding methods adopt time-specific hyperplane structures to model temporal variation, while inherently assuming that most temporal rela-tions are one-to-one mappings. Such an assumption cannot adapt to the diverse complex relations (many-to-one, one-to-many, and many-to-many) commonly existing in real-world TKGs. Accordingly, designing a high-performance TKGE framework that can accurately capture temporal evolution and flexibly fit multi-type relational mappings remains a challenging research problem. To overcome these challenges, this paper proposes a novel model named TeRoR based on the model TeRo [21]. The innovations of TeRoR lie in two core designs. On the one hand, the model decouples the temporal influence of timestamps on subject and object entities in quadruples and performs indepen-dent temporal evolution, which strengthens the utilization and expression ability of temporal information. On the other hand, relation information is used to pa-rameterize circular validity regions for positive quadruples, enabling the model TeRoR 3
+
+to precisely fit different types of multi-relational interactions. Sufficient experi-mental results on mainstream benchmarks verify that the proposed TeRoR out-performs state-of-the-art baseline models in temporal link prediction. The major contributions of this paper are summarized as follows: A novel TKGE architecture with decoupled temporal evolution for subject and object entities is proposed, which greatly enhances the temporal information representation capability of embedding models. A relation-aware circular region is designed as the plausibility boundary of valid quadruples, which realizes effective modeling of complex multi-relational interactions in TKGs. Systematic experiments are conducted on multiple public TKG datasets. The empirical results demonstrate that TeRoR achieves stable and significant perfor-mance improvements over advanced baseline models in key evaluation metrics, including MRR and Hits@K. 
+
+# 2 Related Work 
+
+This section comprehensively reviews representative static knowledge graph em-bedding (KGE) methods and state-of-the-art temporal knowledge graph embed-ding (TKGE) techniques, with an in-depth discussion on the inherent limitations of existing embedding frameworks. Conventional static KGE models are generally divided into two mainstream categories: translation-based distance measurement models and semantic match-ing models. Distance-based models quantify the credibility of relational triples by calcu-lating geometric vector distances after relational transformation. As a seminal translation-based method, TransE [3] treats relations as translational vectors within a unified embedding space. Nevertheless, it exhibits weak modeling capa-bility for complex multi-relational patterns, including one-to-many, many-to-one and many-to-many interactions. To mitigate this defect, improved variants such as TransH [20], TransR [14], and TransD [9] have been proposed. These models project entities into relation-dependent subspaces and adopt customized map-ping matrices to enhance representation flexibility. Furthermore, RotatE [18] implements rotational transformation in complex space to simulate relational properties. In contrast, semantic matching models evaluate factual rationality by mea-suring latent semantic compatibility between entities and relations. Typical im-plementations cover tensor factorization-based RESCAL [17] and holographic correlation-based HoLE [16]. DistMult [23] simplifies calculation via diagonal relational matrices, yet its symmetric structural design makes it unable to cap-ture asymmetric relations. To address this issue, ComplEx [19] and QuatE [24] extend embeddings to complex and quaternion spaces, enabling effective model-ing of asymmetric and diverse static relational patterns. However, all the above models follow a static learning paradigm without dedicated temporal model-4 Peijia Xie, Yike Liu, Chao He, and Huiling Zhu 
+
+ing modules, which severely restricts their applicability for dynamic temporal knowledge graphs. To capture time-varying factual characteristics, TKGE algorithms embed temporal cues into entity and relation representation learning. Current TKGE techniques can be classified into two primary technical branches: Translation-based temporal extensions. This category evolves from the clas-sic TransE architecture. Representative methods including TTransE [12], TA-TransE [7], HyTE [5], and ATiSE [22] realize temporal modeling through time embedding addition, attention allocation, and time-aware hyperplane projec-tion. Specifically, HyTE [5] builds independent temporal hyperplanes and maps entities to time slices to reflect dynamic temporal characteristics. Semantic matching-based temporal extensions. These approaches are mainly improved on the basis of DistMult [23]. For example, TA-DistMult [7] incorpo-rates temporal information into the matching process. DE-SimplE [8] generates diachronic entity embeddings to capture time-evolving features, which achieves favorable performance on diverse relation types. Despite the progress achieved by existing TKGE methods, two critical draw-backs still remain. Firstly, most models adopt simplistic temporal encoding strategies and fail to capture fine-grained temporal dependencies. Secondly, few algorithms can effectively fit complex multi-relational mappings (1-N, N-1, N-N) in dynamic temporal scenarios. Such unresolved bottlenecks motivate us to con-struct a robust temporal embedding model with stronger temporal perception and relational modeling capability. 
+
+# 3 Method 
+
+This section presents the detailed methodology of TeRoR, a novel knowledge graph embedding model grounded in the temporal rotation mechanism within the complex vector space. As an improved iteration of the classical temporal embedding model TeRo, TeRoR is developed to address two critical inherent drawbacks of the baseline model. To be specific, TeRo suffers from insufficient temporal feature utilization and weak modeling performance for sophisticated multi-relational patterns, such as one-to-many, many-to-one, and many-to-many interactions. For logical clarity, we first revisit the fundamental principles and la-tent deficiencies of TeRo, before elaborating on the detailed architectural design of TeRoR. 
+
+3.1 TeRo [21] 
+
+TeRo implements temporal evolution modeling by rotating entity embeddings in the complex domain, which facilitates the embedding representation and logical inference of time-dependent factual quadruples. In this work, E, R, and T are defined as the entity set, relation set, and timestamp set, respectively. A temporal knowledge graph is composed of numerous quadruples formulated as (s, r, o, t ),where s, o ∈ E correspond to the subject and object entities, r ∈ R denotes the TeRoR 5
+
+relational semantics, and t is the timestamp marking the occurrence of a certain fact. Each valid quadruple (s, r, o, t ) is assigned an individual time step τ ∈ T .In TeRo, time-evolving entity embeddings are generated by applying temporal rotation operations to static entity vectors. The corresponding transformation function is formulated as follows: 
+
+st = s ◦ τ, ot = o ◦ τ (1) where ◦ refers to the Hermitian dot product between two complex vectors. Nev-ertheless, such a temporal rotation paradigm can only capture limited temporal features, resulting in incomplete temporal information perception. For any positive quadruple (s, r, o, t ) ∈ Q+, TeRo treats the relation embed-ding r as a translational vector connecting the time-aware subject embedding 
+
+st and the conjugate of time-aware object embedding ¯ot. Here, r ∈ R , and Q+
+
+represents the collection of all valid positive quadruples. The scoring function adopted in TeRo is defined as: 
+
+score (s, r, o, t )T eRo = ∥st + r − ¯ot∥ (2) Despite its effective temporal rotation design, the above scoring function still has obvious limitations. It cannot precisely fit and distinguish diverse complex re-lational mappings, which restricts its modeling capacity for one-to-many, many-to-one, and many-to-many relational scenarios prevalent in real-world TKGs. 
+
+3.2 TeRoR 
+
+To adress the aforementioned two defects of TeRo, we propose an improved temporal embedding model TeRoR. 
+
+Representation of temporal information Different from the shared single time step adopted in TeRo, TeRoR decouples temporal representation into two independent phase rotations, which are separately assigned to subject s and object o to strengthen temporal evolution. For an arbitrary timestamp t, two exclusive time variables τs and τo are utilized to implement asynchronous rota-tion for subject and object entities. The temporal evolution formula is redefined as: 
+
+st = s ◦ τs, ot = o ◦ τo (3) where ◦ represents the Hermitian dot product for complex vectors. In accor-dance with Euler’s formula eiθ = cos θ + i sin θ, unit complex numbers can be geometrically interpreted as rotational transformations on the complex plane. To satisfy this geometric constraint, every element within the time-related vectors 
+
+τs, τ o ∈ C d is restricted with a unit modulus, namely |τs,j | = 1 and |τo,j | = 1 .Mathematically, each element τs,j can be expressed as eiθ s,j , which corresponds to a counterclockwise rotation with an angle of θs,j for the subject entity s.The object entity o follows the identical rotation rule governed by τo. This rota-tion operation only modifies the phase of entity embeddings while keeping their modulus unchanged. 6 Peijia Xie, Yike Liu, Chao He, and Huiling Zhu 
+
+Relational mapping properties To effectively characterize complex rela-tional mappings (i.e., one-to-many, many-to-one, and many-to-many), a learn-able radius vector ρr ∈ C d is introduced for each relation. This radius parameter constructs a circular valid region to constrain the reasonable distribution of pos-itive quadruples. The scoring calculation is formulated as: 
+
+dis = ∥st + r − ¯ot∥ (4) 
+
+l(s, r, o, t ) = max (dis, k t ◦ ρr ) (5) where kt ∈ C d denotes a time-dependent scaling factor that dynamically adjusts the valid radius ρr at different timestamps.     
+
+> kt◦ρr
+> otst
+> ot
+> r
+> dis
+> τo
+> τss
+> o
+> s′
+> t
+> Fig. 1. Illustration of TeRoR with only one embedding dimension.
+
+For time-interval facts in TKGs, the temporal annotation is defined as t =[tb, t e], where tb and te separately represent the start and end moments of a con-tinuous fact. Following the decomposition paradigm of TeRo, such time-interval quadruples are split into two independent time-point samples: (s, r b, o, t b) and 
+
+(s, r e, o, t e). Accordingly, the original relation set is extended into two disjoint sets Rb and Re, where rb ∈ Rb denotes the initial relational state and re ∈ Re
+
+represents the termination state. The final score of the time-interval fact is com-puted as the average value of the two decomposed quadruples to comprehensively reflect the temporal boundary characteristics: 
+
+l(s, r, o, [tb, t e]) = 12 (l(stb , r b, o tb , t ) + l(ste , r e, o te , t )) (6) Moreover, the proposed TeRoR is adaptable to incomplete temporal anno-tation scenarios. For facts with only a start timestamp (s, r, o, [tb, −]) or an end TeRoR 7
+
+timestamp (s, r, o, [−, t e]) , their scores are determined by the single available time-aware quadruple. The simplified calculation rules are given by 
+
+l(s, r, o, [tb, −]) = l(s, r b, o, t b) (7) 
+
+l(s, r, o, [−, t e]) = l(s, r e, o, t e) (8) 
+
+In terms of model optimization This work adopts the negative sampling loss function proposed in [18], which maintains consistent optimization settings with the original TeRo [21] model. This loss function has been proven effective for distance-based embedding models and has been widely applied in classic KGE models including RotatE [18] and ATiSE [22]. The loss function is defined as: 
+
+Loss (ξ) = − log σ(γ − l(ξ)) −
+
+> η
+
+X
+
+> i=1
+
+1
+
+η log σ(l(ξ′
+
+> i
+
+) − γ) (9) where ξ ∈ Q+ represents a positive quadruple, and ξ′ 
+
+> i
+
+denotes the i-th negative sample generated by randomly corrupting the subject or object entity. σ(·) is the Sigmoid activation function, γ refers to the fixed margin hyperparameter, and η controls the quantity of negative samples during training. 
+
+# 4 Experiments 
+
+4.1 Temporal Knowledge Graph Datasets 
+
+We selected four datasets: ICEWS14, ICEWS05-15, YAGO11k, and Wikidata12k. These datasets are widely used benchmarks in Temporal Knowledge Graph (TKG) embedding research, originating from diverse knowledge sources and cov-ering both event-based facts and general encyclopedic knowledge. ICEWS14 and ICEWS05-15 are both derived from the Integrated Conflict Early Warning System (ICEWS), which records global political and military events. ICEWS14 contains events from the entire year of 2014 and is relatively small in scale, making it suitable for rapid model validation. ICEWS05-15 spans eleven years from 2005 to 2015, featuring longer temporal coverage and a larger number of entities and events, thereby enabling a more rigorous assessment of models’ ability to capture long-term temporal dependencies. Both datasets rep-resent events as quadruples (s, p, o, t ) with a daily timestamp granularity. YAGO11k is a subset extracted from the YAGO knowledge base, primar-ily comprising temporal facts related to historical figures and locations, such as birth/death dates and the start/end times of positions. Its temporal informa-tion is mostly expressed as time intervals or discrete years. With approximately 11,000 entities and encyclopedic-style relations, this dataset is well-suited for evaluating models’ capacity to represent time intervals. Wikidata12k is sourced from Wikidata and filters 12,000 entities along with their associated facts that possess explicit timestamps. Similar to YAGO11k, it 8 Peijia Xie, Yike Liu, Chao He, and Huiling Zhu 
+
+contains a substantial amount of interval-based temporal data; however, it covers broader domains, including geography, organizations, and creative works. This dataset is commonly employed to verify models’ generalization performance on sparse temporal knowledge. In summary, the ICEWS series leans toward event prediction scenarios with fine-grained timestamps and high fact density, whereas YAGO11k and Wiki-data12k are oriented toward encyclopedic fact completion, featuring coarse-grained timestamps and a predominance of interval-based data.Table 1 sum-marizes the statistics of the four datasets used in our model.                            
+
+> Table 1. Statistics of datasets. Dataset Entities Relations Time Span Training Validation Test ICEWS14 6,869 230 2014 72,826 8,941 8,963 ICEWS05-15 10,094 251 2005-2015 368,962 46,275 46,092 YAGO11k 10,623 10 -453-2844 16,406 2,050 2,051 Wikidata12k 12,554 24 1479-2018 32,497 4,062 4,062
+
+4.2 Evaluation Metrics 
+
+Two commonly adopted evaluation metrics are MRR (Mean Reciprocal Ranking) and Hits@K. The core of MRR is to calculate the average of the reciprocal ranks of correct triples among all candidate results. If the correct entity ranks first, its reciprocal rank is 1; if it ranks third, the reciprocal rank is 1/3. The higher the ranking, the closer the MRR value is to 1. It comprehensively reflects the overall ranking capability of the model, is sensitive to incorrectly ranked samples with low rankings, and can objectively demonstrate the global reasoning performance of the model.Hits@K denotes the proportion of samples where the correct entity appears within the top-K positions of the ranking list, with Hit@1, Hit@3 and Hit@10 being the most frequently used. Hit@1 represents the accuracy of exact matching, while Hit@10 evaluates whether the model can place the correct result in the top candidate positions. A higher value indicates better retrieval and recall performance of the model. 
+
+4.3 Baselines 
+
+To comprehensively validate the effectiveness of our model, we selected two cat-egories of baselines: static KGE methods, including TransE [3], DistMult [23], ComplEx-N3 [10], RotatE [18] and QuatE [24]; and temporal KGE methods, in-cluding TTransE [12], TA-TransE [7], TA-DistMult [7], DE-SimplE [8], ATiSE [22] and TeRo [21]. The baseline results are primarily adopted from the studies of [8] and [21], which employed the same evaluation protocol as ours. TeRoR 9
+
+4.4 Experimental Setup 
+
+The experimental setup follows the settings of TeRo, using MRR on the valida-tion set as the early stopping criterion to select the optimal hyperparameters. The maximum number of training epochs is set to 5000, and the batch size is uniformly fixed at 512 for all datasets. The embedding dimension d, the number of negative samples η, the margin γ, and the learning rate r are determined via grid search over the candidate sets 100, 200, ..., 1000, 1, 3, 5, 10, 1, 2, 3, 5, ..., 120, and 1, 0.3, 0.1, 0.03, 0.01, respectively. We adopt Adagrad as the optimizer. The final non-default parameters for each dataset are as follows: ICEWS14 uses 
+
+d = 500 ,lr = 0 .1 and γ = 50 ; ICEWS05-15 uses d = 500 , lr = 0 .1 and γ = 50 ;YAGO11k uses d = 500 , lr = 0 .1 and γ = 50 ; Wikidata12k uses d = 700 , lr = 0 .1
+
+and γ = 10 .
+
+# 5 Results and Analysis 
+
+5.1 Comparative study                                                                                                                
+
+> Table 2. Results on ICEWS14 and ICEWS05-15. *: results are taken from [7]. ⋄: results are taken from [8]. †: results are taken from [21]. Dashes: results are unobtainable. The best results among all models are written bold. The second-best results are underlined. Datasets ICEWS14 ICEWS05-15 Metrics MRR Hits@1 Hits@3 Hits@10 MRR Hits@1 Hits@3 Hits@10 TransE ∗.280 .094 -.637 .294 .090 -.663 DistMult ∗.439 .323 -.672 .456 .337 -.691 ComplEx-N3 †.467 .347 .527 .716 .481 .362 .535 .729 RotatE †.418 .291 .478 .690 .304 .164 .355 .595 QuatE 2†.471 .353 .530 .712 .482 .370 .529 .727 TTransE ⋄.255 .074 -.601 .271 .084 -.616 HyTE ⋄.297 .108 .416 .655 .316 .116 .445 .681 TA-TransE ∗.275 .095 -.625 .299 .096 -.668 TA-DistMult ∗.477 .363 -.686 .474 .346 -.728 DE-SimplE ⋄.526 .418 .592 .725 .513 .392 .578 .748 ATiSE †.550 .436 .629 .750 .519 .378 .606 .794 TeRo †.562 .468 .621 .732 .586 .469 .668 .795 Ours .572 .482 .626 .741 .612 .505 .687 .797
+
+Table 1 and Table 2 report the link prediction performance of TeRoR and baseline models on four typical TKG datasets. As observed in the tables, tempo-ral embedding models generally outperform static KGE methods owing to their ability to capture time-evolving factual information. Owning to the decoupled temporal rotation and relation-defined circular valid region, TeRoR achieves su-perior overall performance. Specifically, compared with TeRo, TeRoR increases the MRR by 1.0% (0.562 →0.572) on ICEWS14 and 2.6% (0.586 →0.612) on 10 Peijia Xie, Yike Liu, Chao He, and Huiling Zhu 
+
+Table 3. Results on YAGO11k and Wikidata12k. †: results are taken from [21]. The best results among all models are written bold. The second-best results are underlined. Datasets YAGO11k Wikidata12k Metrics MRR Hits@1 Hits@3 Hits@10 MRR Hits@1 Hits@3 Hits@10 TransE † .100 .015 .138 .244 .178 .100 .192 .339 DistMult † .158 .107 .161 .268 .222 .119 .238 .460 ComplEx-N3 † .167 .106 .154 .282 .233 .123 .253 .436 RotatE † .167 .103 .167 .305 .221 .116 .236 .461 QuatE 2 † .164 .107 .148 .270 .230 .125 .243 .416 TTransE † .108 .020 .150 .251 .172 .096 .184 .329 HyTE † .105 .015 .143 .272 .180 .098 .197 .333 TA-TransE † .127 .027 .160 .326 .178 .030 .267 .429 TA-DistMult † .161 .103 .171 .292 .218 .122 .232 .447 ATiSE † .170 .110 .171 .288 .280 .175 .317 .481 TeRo † .187 .121 .197 .319 .299 .198 .329 .507 
+
+Ours .189 .121 .197 .326 .288 .190 .320 .487 
+
+ICEWS05-15, with consistent gains in Hits@K metrics. TeRoR achieves the best MRR of 0.189 on YAGO11k. The slight performance lag on Wikidata12k stems from data sparsity, which restricts the optimization of radius parameters. Over-all, TeRoR reliably captures temporal evolution and complex relations, exhibit-ing prominent advantages on dense TKGs. 
+
+5.2 Ablation study 
+
+Table 4. Ablation study results on ICEWS14 and ICEWS05-15. (A): independent entity rotation. (B): radius-constrained circular region. The best results are written bold. Datasets ICEWS14 ICEWS05-15 Metrics MRR Hits@1 Hits@3 Hits@10 MRR Hits@1 Hits@3 Hits@10 TeRo .562 .468 .621 .732 .586 .469 .668 .795 Ours(A) .572 .481 .630 .736 .608 .498 .687 .800 
+
+Ours(A+B) .572 .482 .626 .741 .612 .505 .687 .797 
+
+Ablation studies on the ICEWS14, ICEWS05-15, YAGO11k and Wikidata12k datasets reveal that the performance gains of TeRoR primarily stem from two key modules: independent entity rotation (A) and the radius-constrained circular region (B). First, when only module A is incorporated (TeRoR (A)), the model already outperforms the baseline TeRo across all metrics. On ICEWS14, MRR improves from 0.562 to 0.572 and Hits@1 rises from 0.468 to 0.481; on ICEWS05-15, MRR increases from 0.586 to 0.608 and Hits@10 grows from 0.795 to 0.800. TeRoR 11 
+
+Table 5. Ablation study results on YAGO11k and Wikidata12k. (A): independent entity rotation. (B): radius-constrained circular region. The best results are written bold. Datasets YAGO11k Wikidata12k Metrics MRR Hits@1 Hits@3 Hits@10 MRR Hits@1 Hits@3 Hits@10 TeRo .178 .121 .197 .319 .299 .198 .329 .507 Ours(A) .186 .116 .195 .329 .296 .193 .329 .509 
+
+Ours(A+B) .189 .121 .197 .326 .288 .190 .320 .487 
+
+Performance improvements are also observed on YAGO11k and Wikidata12k. This indicates that performing independent phase rotations for s and o in the complex plane enables more flexible modeling of temporal dependencies and significantly enhances the ranking quality of link prediction. Upon further integrating module B (TeRoR (A+B)), model performance is boosted even further. On ICEWS05-15, MRR reaches 0.612 and Hits@1 climbs to 0.505; on YAGO11k, MRR improves to 0.189 and Hits@10 increases to 0.326. This demonstrates that the radius-constrained circular domain provides more precise geometric boundaries for entity embeddings, effectively strengthening the model’s capacity to model complex relations and temporal information. In summary, both modules A and B contribute significantly to model perfor-mance. Their combination maximizes the advantages of complex space rotational embedding, thereby validating the effectiveness of each component in the TeRoR design. 
+
+5.3 Relation mapping properties 
+
+Table 6. Performance on ICEWS14 by relation mapping properties. The best results are written bold. 1-1 1-N N-1 N-N MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 TeRo .498 .420 .545 .640 .630 .539 .691 .796 .376 .284 .424 .557 .630 .520 .703 .826 Ours .506 .431 .551 .651 .657 .572 .709 .817 .385 .300 .415 .552 .653 .549 .719 .843 
+
+Table 7. Performance on ICEWS05-15 by relation mapping properties. The best results are written bold. 1-1 1-N N-1 N-N MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 TeRo .475 .398 .521 .616 .658 .575 .713 .799 .358 .251 .415 .562 .614 .478 .713 .851 Ours .491 .419 .530 .625 .670 .596 .719 .803 .395 .296 .447 .580 .640 .517 .731 .852 12 Peijia Xie, Yike Liu, Chao He, and Huiling Zhu 
+
+Table 8. Performance on YAGO11k by relation mapping properties. The best results are written bold. 1-1 1-N N-1 N-N MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 TeRo .305 .263 .305 .380 .093 .026 .064 .263 .049 .018 .038 .110 .060 .015 .038 .121 Ours .314 .274 .317 .395 .093 .026 .071 .250 .048 .016 .041 .104 .069 .023 .043 .146 
+
+Table 9. Performance on Wikidata12k by relation mapping properties. The best results are written bold. 1-1 1-N N-1 N-N MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 MRR H@1 H@3 H@10 TeRo .342 .249 .375 .522 .497 .426 .520 .634 .235 .136 .256 .438 .224 .134 .245 .410              
+
+> Ours .328 .244 .347 .500 .484 .407 .521 .641 .223 .133 .248 .409 .219 .139 .237 .370
+
+Table 6, table 7, table 8 and table 9 show that the overall performance im-provement of TeRoR on the ICEWS and YAGO11k datasets is consistently val-idated across most relation types. On ICEWS and YAGO11k, TeRoR maintains consistent positive gains across all four relation types: 1-1, 1-N, N-1, and N-N. Taking ICEWS05-15 as an example, the MRR for 1-1 relations increases from .475 to .491, Hits@10 for 1-N relations rises from .799 to .803, and the MRR im-provement for N-1 relations reaches as high as 0.037. On Wikidata12k, TeRoR maintains comparable overall performance with TeRo. The comparative results verify that TeRoR is highly suitable for processing complex relational patterns, which effectively remedies the weakness of TeRo in multi-relational modeling. 
+
+# 6 Conclusion 
+
+We propose TeRoR to address the limitations of the temporal knowledge graph embedding model TeRo in handling complex relation mapping properties (1-N, N-1, N-N) and modeling temporal information. The core improvements of TeRoR lie in two aspects. First, the temporal evolution of entity embeddings is decomposed into independent complex-plane phase rotations for head and tail entities, which enhances the representation and utilization of temporal informa-tion. Second, relation-aware radius-constrained circular domains are introduced to define effective geometric boundaries for rotated and translated head entities, thereby precisely characterizing the mapping characteristics of various complex relations. Experimental results on four standard datasets demonstrate that TeRoR outperforms existing baseline models and the original TeRo on most evalua-tion metrics, exhibiting strong capability for temporal link prediction. Ablation experiments further verify that both the independent entity rotation module and the radius-constrained circular domain module contribute significantly to model performance, and their collaboration can maximize the advantages of complex space rotation embedding. Analysis at the relation type level shows that TeRoR achieves consistent performance gains across 1-1, 1-N, N-1, and N-TeRoR 13 
+
+N relation types, fully validating the effectiveness of the radius constraint and phase-enhanced rotation mechanisms in modeling complex relations. 
+
+# References 
+
+1. Auer, S., Bizer, C., Kobilarov, G., Lehmann, J., Cyganiak, R., Ives, Z.G.: Dbpedia: A nucleus for a web of open data. In: The Semantic Web, 6th International Seman-tic Web Conference, 2nd Asian Semantic Web Conference. pp. 722–735. Springer (2007) 2. Bollacker, K., Evans, C., Paritosh, P.K., Sturge, T., Taylor, J.: Freebase: a collabo-ratively created graph database for structuring human knowledge. In: Proceedings of the ACM SIGMOD International Conference on Management of Data. pp. 1247– 1250. ACM (2008) 3. Bordes, A., Usunier, N., García-Durán, A., Weston, J., Yakhnenko, O.: Translating embeddings for modeling multi-relational data. In: Advances in Neural Information Processing Systems 26: 27th Annual Conference on Neural Information Processing Systems 2013. pp. 2787–2795 (2013) 4. Carlson, A., Betteridge, J., Kisiel, B., Settles, B., Jr., E.R.H., Mitchell, T.M.: Toward an architecture for never-ending language learning. In: Proceedings of the Twenty-Fourth AAAI Conference on Artificial Intelligence. pp. 1306–1313. AAAI Press (2010) 5. Dasgupta, S.S., Ray, S.N., Talukdar, P.P.: Hyte: Hyperplane-based temporally aware knowledge graph embedding. In: Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing. pp. 2001–2011. Association for Computational Linguistics (2018) 6. Fabian, M., Gjergji, K., Gerhard, W., et al.: Yago: A core of semantic knowledge unifying wordnet and wikipedia. In: 16th International world wide web conference. pp. 697–706 (2007) 7. García-Durán, A., Dumancic, S., Niepert, M.: Learning sequence encoders for tem-poral knowledge graph completion. In: Proceedings of the 2018 Conference on Em-pirical Methods in Natural Language Processing. pp. 4816–4821. Association for Computational Linguistics (2018) 8. Goel, R., Kazemi, S.M., Brubaker, M.A., Poupart, P.: Diachronic embedding for temporal knowledge graph completion. In: The Thirty-Fourth AAAI Conference on Artificial Intelligence, The Thirty-Second Innovative Applications of Artificial Intelligence Conference, The Tenth AAAI Symposium on Educational Advances in Artificial Intelligence. pp. 3988–3995. AAAI Press (2020) 9. Ji, G., He, S., Xu, L., Liu, K., Zhao, J.: Knowledge graph embedding via dynamic mapping matrix. In: Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics and the 7th International Joint Conference on Natural Language Processing of the Asian Federation of Natural Language Processing. pp. 687–696. The Association for Computer Linguistics (2015) 10. Lacroix, T., Usunier, N., Obozinski, G.: Canonical tensor decomposition for knowl-edge base completion. In: Proceedings of the 35th International Conference on Machine Learning. pp. 2869–2878. PMLR (2018) 11. Lautenschlager, J., Shellman, S., Ward, M.: Icews event aggregations (2015) 12. Leblay, J., Chekol, M.W.: Deriving validity time in knowledge graph. In: Compan-ion of the The Web Conference 2018 on The Web Conference 2018. pp. 1771–1776. ACM (2018) 14 Peijia Xie, Yike Liu, Chao He, and Huiling Zhu 13. Leetaru, K., Schrodt, P.A.: Gdelt: Global data on events, location, and tone, 1979– 2012. In: ISA annual convention. vol. 2, pp. 1–49. Citeseer (2013) 14. Lin, Y., Liu, Z., Sun, M., Liu, Y., Zhu, X.: Learning entity and relation embed-dings for knowledge graph completion. In: Proceedings of the Twenty-Ninth AAAI Conference on Artificial Intelligence. pp. 2181–2187. AAAI Press (2015) 15. Mahdisoltani, F., Biega, J., Suchanek, F.M.: YAGO3: A knowledge base from mul-tilingual wikipedias. In: Seventh Biennial Conference on Innovative Data Systems Research. www.cidrdb.org (2015) 16. Nickel, M., Rosasco, L., Poggio, T.A.: Holographic embeddings of knowledge graphs. In: Proceedings of the Thirtieth AAAI Conference on Artificial Intelli-gence. pp. 1955–1961. AAAI Press (2016) 17. Nickel, M., Tresp, V., Kriegel, H.: A three-way model for collective learning on multi-relational data. In: Proceedings of the 28th International Conference on Ma-chine Learning. pp. 809–816. Omnipress (2011) 18. Sun, Z., Deng, Z., Nie, J., Tang, J.: Rotate: Knowledge graph embedding by re-lational rotation in complex space. In: 7th International Conference on Learning Representations. OpenReview.net (2019) 19. Trouillon, T., Welbl, J., Riedel, S., Gaussier, É., Bouchard, G.: Complex embed-dings for simple link prediction. In: Proceedings of the 33nd International Con-ference on Machine Learning. pp. 2071–2080. JMLR Workshop and Conference Proceedings, JMLR.org (2016) 20. Wang, Z., Zhang, J., Feng, J., Chen, Z.: Knowledge graph embedding by trans-lating on hyperplanes. In: Proceedings of the Twenty-Eighth AAAI Conference on Artificial Intelligence. pp. 1112–1119. AAAI Press (2014) 21. Xu, C., Nayyeri, M., Alkhoury, F., Yazdi, H.S., Lehmann, J.: Tero: A time-aware knowledge graph embedding via temporal rotation. In: Proceedings of the 28th In-ternational Conference on Computational Linguistics. pp. 1583–1593. International Committee on Computational Linguistics (2020) 22. Xu, C., Nayyeri, M., Alkhoury, F., Yazdi, H.S., Lehmann, J.: Temporal knowledge graph completion based on time series gaussian embedding. In: The Semantic Web - ISWC 2020 - 19th International Semantic Web Conference. pp. 654–671. Springer (2020) 23. Yang, B., Yih, W., He, X., Gao, J., Deng, L.: Embedding entities and relations for learning and inference in knowledge bases. In: 3rd International Conference on Learning Representations (2015) 24. Zhang, S., Tay, Y., Yao, L., Liu, Q.: Quaternion knowledge graph embeddings. In: Advances in Neural Information Processing Systems 32: Annual Conference on Neural Information Processing Systems 2019. pp. 2731–2741 (2019)

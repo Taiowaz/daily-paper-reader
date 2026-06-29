@@ -1,0 +1,1120 @@
+Title: Halt Fast! Early Stopping for Certified Robustness
+
+URL Source: https://arxiv.org/pdf/2606.27694v1
+
+Published Time: Mon, 29 Jun 2026 00:21:34 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# Halt Fast! Early Stopping for Certified Robustness 
+
+Andrew C. Cullen 
+
+University of Melbourne 
+
+andrew.cullen@unimelb.edu.au 
+
+Paul Montague 
+
+DST Group, Adelaide 
+
+Benjamin I. P. Rubinstein 
+
+University of Melbourne 
+
+Abstract 
+
+Randomized Smoothing (RS) provides rigorous robustness guarantees for neural networks without architectural constraints, yet its adoption is limited by extreme computational costs. Standard RS requires tens of thousands of model evaluations per input and forces practitioners to commit to fixed sample sizes a priori . In this work, we present a novel meta-learning framework for anytime-valid certified robustness that adaptively deploys computational resources. By using a lightweight meta-learner to predict image-specific priors for a sequential E-process, we achieve a 20-fold reduction in sample complexity compared to traditional methods while maintaining rigorous statistical guarantees. Beyond raw efficiency, we demon-strate how anytime-validity enables adaptively allocating compute based upon application-specific risk thresholds, a form of resource triage impossible under classic certification frameworks. That this is achievable while also providing simi-lar certification performance demonstrates that our approach provides a pathway for real-time, safety-critical certification deployments. 
+
+1 Introduction 
+
+For all of their transformative utility, neural networks remain notoriously sensitive to oftentimes semantically meaningless modifications (Szegedy et al., 2013). These modifications, now known as adversarial examples (Goodfellow et al., 2014; Madry et al., 2018), have spurred research that has consistently demonstrated that model decision boundaries often lack the semantic alignment required for safety-critical deployments. While defenses have been proposed against these manipulations, they are fundamentally constrained within a technological arms race, where each new defense provides something new to attack (Good-fellow et al., 2014; Cullen et al., 2025). By contrast, Certified Robustness has emerged as a rigorous framework for mathematically guaranteeing that a model’s prediction remains invariant within a defined neighborhood of an input (Lecuyer et al., 2019; Cohen et al., 2019; Cullen et al., 2022). In the case of classification systems, this formulation is typically defined in terms of a radius r such that for a model F we can guarantee that F (x) = F (x′) for all x′ in the ball Bp(x, r ) = {x′ : ∥x′ − x∥p ≤ r}.Among certifications, Randomised Smoothing (RS) is unique in that it can be applied to any model without architectural modifications. However, this flexibility comes at a cost—to complete a certifica-tion, a sample must be passed through the model tens of thousands of times, with each copy being offset by a small perturbation drawn from the Normal distribution. This high sample complexity, which is required to control for the Type-I (false positive) errors render real-time applications of certifications nigh-on impossible, especially for models at scale. Recent advances have sought to alleviate this overhead through sequential testing and early stopping. Most notably, the introduction of E-values (Shafer & Vovk, 2019; Ramdas et al., 2023) and test martingales have allowed for anytime-valid certifications (Voráˇ cek, 2024). By framing certification as a super-martingale wealth process, sampling can be halted the moment sufficient evidence for robustness is accumulated without violating statistical safety. However, current E-value applications 
+
+> Preprint.
+> arXiv:2606.27694v1 [cs.LG] 26 Jun 2026
+
+in robustness have primarily focused on binary hypothesis testing (e.g., asking if r ≥ c or not), reducing the certifier to a simple threshold-based classifier. This limitation robs the process of the discriminatory detail required to assess relative security across different samples. In this work, we argue that the primary utility of anytime-valid certifications is not necessarily their computational efficiency, but rather the ability to adaptively shape termination conditions around application-based workflows. In aid of this goal, our contributions are three-fold: 1. Method of Mixtures for Continuous Hypotheses: We extend E-value certifications to a mixture-based multiple-hypothesis approach to match traditional certification workflows. 2. Sample-Adaptive Meta-Learning: We introduce an optimized E-value formulation, where a meta-learner predicts the prior distribution to enhance efficiency. We employ a lightweight meta-learner to analyze initial model glimpses, utilizing a Bayesian Negative Log-Likelihood (NLL) objective to fit the distribution of the smoothed model’s success rate for a given input. 3. Adversarial Exits: We introduce task-adaptive termination conditions, that allow for early-termination based upon prespecified domain tasks, producing highly efficient certifications and rejections in a manner that optimizes global compute. Through experimental validation, we demonstrate that our approach can construct certifications significantly faster than fixed-sample methods—demonstrating that viable certifications can be constructed in less than 500 samples, a 20 -fold decrease over prior certification workflows. Perhaps more importantly, our innovations allow for application- and sample-specific exit conditions, which are a crucial innovation for helping certifications transition from a numerically-costly concept to a viable framework for producing real-world security. 
+
+1.1 Motivating Cases 
+
+To underscore the utility of the methods introduced within this paper, we highlight three scenarios where anytime-valid certifications are well motivated. The first is the most natural: computational efficiency . By halting as soon as a target precision is reached, we remove a primary barrier to real-world deployment. The second is resource triage : in large-scale systems, certificates can be used to route inputs into different verification pathways based on their robustness. In such cases, proving that a sample falls within a specific risk bucket is more critical than its exact radius. Finally, we also suggest that streaming contexts (e.g., autonomous driving) could also be an application of this approach, where prior information from preceding frames can be used to initialize E-value certifications, allowing for faster convergence in temporally evolving environments. 
+
+2 Related Work 
+
+RS has evolved from its Differential Privacy foundations (Lecuyer et al., 2019; Dwork et al., 2006) to the current state-of-the-art based on the Neyman-Pearson lemma (Cohen et al., 2019). At their core, all RS-based certifications transform a base model f into a smoothed counterpart g with provable ℓp
+
+margin guarantees. As established by Cohen et al. (2019), for a noise level σ, the certified radius r is a function of the success probability pA = Pϵ∼N (0 ,σ 2I)[f (x + ϵ) = cA] of the most likely class cA
+
+r = σΦ−1(pA) . (1) In practice, certifications are constructed through an independent two-phase approach, where Phase I employs an initial batch to establish the target class, before then estimating pA through Monte-Carlo sampling in Phase II. To control the risk of false certification, standard approaches use the Clopper-Pearson interval (Clopper & Pearson, 1934) to obtain a high-probability lower bound pA.The need for tight lower bounds is the primary driver of RS’s high computational cost. High-variance inputs may require tens of thousands of samples to produce meaningful certificates. Crucially, the peaking problem (Johari et al., 2017) invalidates the Clopper-Pearson bounds on the Type-I error rate if a practitioner monitors the empirical mean and stops early. Consequently, N must be fixed a priori ,leading to massive over-sampling for easy inputs and total failure to certify for marginal ones. In response, sequential testing has emerged as a pathway to efficient robustness. To achieve this, the significance budget α is partitioned across multiple distinct stopping points {n1, n 2, . . . , n k} by way of the Bonferroni correction or alpha-spending functions (Horváth et al., 2022). While these approaches allow for early stopping, they still retain the fundamental drawback of the frequentist 2framework: after each ni, if the model fails to certify, then the model samples further to ni+1 .However, the correction for examining multiple stopping points requires α to be scaled by the number of potential comparisons (which also must be set a priori ), increasing the number of samples required to certify to a given level. As such, these early-stopping frameworks potentially require significantly more net samples to be evaluated in order to certify a sample than a more naive implementation of Cohen et al. (2019). While additional efficiency can be found in a priori estimation of appropriate sample counts (Chen et al., 2022), these approaches are still inherently conservative and expensive. E-values provide a natural response to circumvent these limitations, in that they are anytime-valid and immune to the peeking problem. This allows certifications to be constructed in a manner that allows for early-stopping, based upon arbitrary criteria. The original progenitor of this approach, Voráˇ cek (2024) primarily considered how this could be applied to binary robustness hypotheses (e.g., r ≥ r0). In this work we leverage the Method of Mixtures (Waudby-Smith & Ramdas, 2024; Grünwald et al., 2020) to support continuous radius estimation. Notably, prior mixture-based approaches rely on the Krichevsky–Trofimov (KT) estimator (Krichevsky & Trofimov, 1981) which is optimized for arbitrary sequences. However, we contend that RS sequences are not arbitrary; they are tied to specific input manifolds. This discrepancy is the theoretical foundation for our meta-learning framework, which learns to parameterize bespoke priors that sufficiently accelerate anytime-validity. For narrative clarity further discussions of certifications can be found in Appendix A. 
+
+3 Anytime-Valid Radius Certification 
+
+To evaluate the robustness of a model prediction of a class cA at a point x, we consider the success probability p = P (f (x + ϵ) = cA) of the smoothed classifier (we stress that we presuppose knowledge of cA for mathematical convenience, and that the class is estimated appropriately in our algorithm). Assume that we observe an infinite sequence of i.i.d. Bernoulli trials X1, X 2, . . . , where each Xi = I[f (x + ϵi) = cA] denotes whether the i-th perturbation of x with noise ϵi ∼ N (0 , σ 2I)
+
+aligns with the target class. To construct a certification, we must be able to test the null hypothesis 
+
+H0 : p ≤ p0 for any threshold p0 ∈ [0 , 1] to construct an anytime-valid lower confidence bound on p.
+
+Test Martingales and E-values To achieve this, we leverage the E-value , a non-negative random variable E such that EH0 [E] ≤ 1 (Vovk & Wang, 2021; Shafer, 2019). In our Bernoulli setting, for a point null hypothesis H0 : p = p0 and a point alternative hypothesis H1 : p = q, the appropriate E-value is the likelihood ratio (Waudby-Smith & Ramdas, 2024) 
+
+Ei = qXi (1 − q)1−Xi
+
+pXi 
+
+> 0
+
+(1 − p0)1−Xi
+
+. (2) To verify the significance of an accumulated E-value, we employ a process inspired by betting games (Shafer, 2019; Vovk & Wang, 2021). Consider the wealth process Wt(p0) = Qti=1 Ei, that is the accumulation of E-values over t samples. Then if ht = Pti=1 Xi is the number of successes in the first t trials, the total wealth must be 
+
+Wt(p0) = qht (1 − q)t−ht
+
+pht 
+
+> 0
+
+(1 − p0)t−ht
+
+. (3) This expression represents the ratio of the likelihood of observing the sequence under the alternative hypothesis versus the null hypothesis. The process (Wt(p0)) t≥1 is a non-negative martingale with E[Wt] = 1 under p = p0. By Ville’s inequality (Ville, 1939; Doob, 1940), the set of all p0 for which the wealth has not yet crossed the rejection threshold 1/α forms the confidence interval Ct = p0 ∈ [0 , 1] : max τ ≤t Wτ (p0) < 1
+
+> α
+
+where the Lower Confidence Bound (LCB) is pt = inf Ct.
+
+Theorem 1 (Soundness) For a target class cA, significance level α ∈ (0 , 1) , and prior mixture Q,the lower confidence bound pt = inf {p0 : max τ ≤t W τ (p0) < 1/α } satisfies P (∃t : p < p t) ≤ α.
+
+This result follows from the test martingale inversion principle (Howard et al., 2021; Ramdas et al., 2023). For any fixed p0 ∈ [0 , 1] , the mixture wealth process ¯Wt(p0) is a non-negative martingale 3with ¯W0 = 1 under the point null hypothesis H0 : p = p0. By Ville’s inequality, the probability that the wealth ever exceeds 1/α is bounded by α. Since the confidence set Ct is constructed by inverting this test, and by utilizing the running maximum of the wealth process, we ensure that the confidence bounds monotonically tighten over time, guaranteeing that the set contains the true success probability p for all t ≥ 1 with probability 1 − α. Finally, because the mixture of E-values is generally log-convex with respect to p0, the set of non-rejected hypotheses forms a contiguous interval, ensuring that the anytime-valid lower bound pt = inf Ct is well defined. 
+
+The Method of Mixtures In the context of certifications, we do not know a priori what the alternative q is, and yet knowing this on a sample-by-sample basis is crucially important for providing enough discriminatory information to support downstream applications. As such, we instead propose utilizing the Method of Mixtures (Grünwald et al., 2020; Waudby-Smith & Ramdas, 2024), which tests against the set of hypotheses defined over a prior distribution Q(q) of alternative hypotheses, by way of the mixture E-value 
+
+¯Wt(p0) = 
+
+Z 10
+
+qht (1 − q)t−ht
+
+pht 
+
+> 0
+
+(1 − p0)t−ht
+
+dQ (q) = m(ht, t )
+
+pht 
+
+> 0
+
+(1 − p0)t−ht
+
+, (4) where m(h, t ) = R 10 qh(1 − q)t−hdQ (q) is the integrated likelihood. 
+
+Lemma 1 (Mixture E-values) For any probability measure Q on [0 , 1] , the mixture ¯Wt(p0) is a non-negative martingale under H0 : p = p0, and thus an anytime-valid E-process. 
+
+In the case where Q is a Beta distribution B(β, γ ), then the integrated likelihood admits the closed-form solution (Lai, 1976) 
+
+m(h, t ) = B(h + β, t − h + γ)
+
+B(β, γ ) , (5) allowing wealth accumulation without the imprecision of numerical integration. While this solution is numerically beneficial, the convenience of using the Beta distribution to unimodal distributions, or very restricted bimodal options. Real-world success probabilities are rarely governed by a single mode; instead they may cluster into distinct groups under some contexts. To support flexible prior distributions in heterogeneously clustered data, we extend this approach to a mixture of K Beta distributions, as any convex combination of E-values is also an E-value (Vovk & Wang, 2021; Grünwald et al., 2020; Waudby-Smith & Ramdas, 2024). 
+
+Lemma 2 (Convexity of E-values) Let E(1) , E (2) , . . . , E (K) be a collection of E-values for the same null hypothesis H0. For any set of non-negative weights wk such that PKk=1 wk = 1 , the weighted sum E = PKk=1 wkE(k) is also an E-value for H0.
+
+The integrated likelihood under the k-th prior mk yields the total wealth (under P wk = 1 )
+
+W t(p0) = 
+
+> K
+
+X
+
+> k=1
+
+wk · mk(ht, t )
+
+pht 
+
+> 0
+
+(1 − p0)t−ht
+
+!
+
+, (6) 
+
+4 Sample-Adaptive Meta-Learning 
+
+The efficacy of the Mixture E-value process is fundamentally determined by how the probability mass 
+
+Q(q) is allocated across the space of alternatives to maximize wealth accumulation. Traditionally, this would be approached with the Krichevsky–Trofimov (KT) estimator (Krichevsky & Trofimov, 1981)—equivalent to a Beta (0 .5, 0.5) —as it will provably produce minimum regret for worst-case arbitrary sequences (Xie & Barron, 2000). However, we ask the question: what happens if our inputs are not considered arbitrary? Not only are they drawn from some distribution D, we also have knowledge of the glimpse of Nsel samples, taken through Phase I of the certification. If this information could be employed, then it would produce an information advantage relative to the naturally conservative KT prior (Waudby-Smith & Ramdas, 2024; Grünwald et al., 2020). 4Drawing upon this intuition, we introduce a Sample-Adaptive Meta-Learner Mθ to perform amortized Bayesian inference (Gershman & Goodman, 2014), predicting a bespoke mixture prior for each input. Our meta-learner leverages the Phase I information to parameterize a prior that can then inform the betting strategy for Phase II. Because these Nsel samples are strictly discarded before wealth accumulation begins, the sequential process Wt remains a predictable super-martingale (Shafer & Vovk, 2019), and the statistical guarantee of Theorem 1 remains untainted by the prior’s data-dependency (Ramdas et al., 2023). Our meta-learner ingests three distinct signals: the semantic context ϕ(x), representing the penul-timate layer embedding of the base classifier, providing a high-dimensional representation of the image’s difficulty and class; the raw softmax vector of the clean image p(x), representing the classifier confidence; and the empirical success rate ˆpsel observed over the glimpse of Nsel samples. Of these, the latter provides the most direct evidence of the true success probability p. Based upon our experiments, we extract scalar proxies from the classifier confidence p(x) vector so that it returns either the margin pmax − pnext or the entropy, acting as proxies for the model’s epistemic uncertainty. 
+
+Mθ can thus be trained through a Kelly Criterion based loss, which is equivalent to minimizing the Negative Log-Likelihood (NLL) of the binomial sequence X1: N under the predicted mixture of Beta distributions by 
+
+L(θ) = −Ex∼D 
+
+"
+
+log 
+
+> K
+
+X
+
+> k=1
+
+wk
+
+B(hN + βk, N − hN + γk)
+
+B(βk, γ k)
+
+!# 
+
++ λt Ex∼D [
+
+> K
+
+X
+
+> k=1
+
+dist (ˆ pmle , Rk)] 
+
+| {z }
+
+> Containment Penalty
+
+,
+
+(7) where (βk, γ k, w k) = Mθ (features ), and λt controls a regularizing penalty that minimizes the ℓ1
+
+distance between ˆpmle and the nearest boundary of Rk, where λt starts at 10 .0 and linearly decays to 
+
+1.0 over the first 80% of training epochs. This formalism ensures that the expected growth rate of the wealth process is maximized (Kelly, 1956), while penalizing over-confident predictions as the log-wealth approaches −∞ when the prior mass is zero at the true p. Consequently, the meta-learner learns to output broader, more resilient priors for high-variance inputs while maintaining aggressive, concentrated bets for unambiguous samples so that it safely maximizes wealth accumulation. As the Phase I glimpse is inherently noisy, we augment the training process by sampling M possible realizations of ˆpsel from the ground-truth bitstream by way of draws from a binomial distribution. This forces the meta-learner to learn a mapping (features , glimpse ) → Prior that is robust to the variance of the initial sampling. To ensure the anytime-valid responsiveness of the mixture, we constrain the predicted Beta parameters to β, γ ∈ [0 .1, 500 .0] . The lower bound of 0.1 allows the meta-learner to predict distributions that are sharper than the non-informative KT prior, while the upper bound of 500 acts as a survival bias, preventing a single sampling anomaly triggering wealth bankruptcy. The meta-learner in our experiments takes the form of a 4-layer Residual MLP that maps these features to a K-component mixture prior. For each component k, the model predicts a weight wk,Beta parameters (βk, γ k), and—as will be discussed in Section 4.1—the boundaries of the support region Rk. Our formalism provides significant flexibility in how the meta-learner is constructed. Across our experiments, we consider frameworks where the number of E-values is varied, alongside • Full Support : Where the Beta distribution is defined over p ∈ [0 , 1] .• Hybrid Support : A fixed partition where components are pre-assigned to the robust [0 .5, 1.0] or non-robust [0 .0, 0.5] regions. • Dynamic Support : The model learns to focus on specific probability intervals, concentrating its betting resolution where it predicts the true p will lie. From this point on, we will employ the naming scheme Meta-{K}-{Support} , where K refers to the number of mixed distributions, and Support refers to one of the three convergence frameworks above. 
+
+4.1 Truncated Betas 
+
+To realize the partitioned support modes introduced in the preceding section, we formalize the prior Q as a mixture of truncated Beta distributions. By restricting the probability mass of each mixture component k to the specific (and potentially learned) interval Rk = [ ak, b k], the meta-learner allocates probability mass to capture potential multi-modal distributions. 5A truncated Beta prior is equivalent to a standard Beta distribution that is rejection-sampled to lie within [ak, b k], subject to normalization by the mass of the original distribution contained within the region Zk = Ibk (βk, γ k) − Iak (βk, γ k), where Ix is the regularized incomplete Beta function (the CDF of the Beta distribution). Under this prior, the integrated likelihood mk(ht, t ; Rk)—the marginal likelihood of the data given the regional prior Qk—admits the closed form 
+
+mk(ht, t ; Rk) = B(ht + βk, t − ht + γk)
+
+B(βk, γ k)
+
+| {z }
+
+> Standard Beta Update
+
+· Ibk (ht + βk, t − ht + γk) − Iak (ht + βk, t − ht + γk)
+
+Zk
+
+| {z }
+
+> Truncation Correction
+
+.
+
+(8) Note that this formalism requires Equation 7 to be updated to the form seen within Algorithm 1. Based upon this, the total wealth Wt(p0) is then the weighted sum of the localized likelihood ratios 
+
+Ek(p0) = mk(ht, t ; Rk)
+
+pht 
+
+> 0
+
+(1 − p0)t−ht
+
+and W meta t (p0) = 
+
+> K
+
+X
+
+> k=1
+
+wkEk(p0) . (9) 
+
+Rejection Martingales and Bankruptcy Exits The truncated beta framework enables both heuris-tic and mathematically rigorous exit strategies. Under the Hybrid Support mode, we concentrate a subset of mixture heads on the robust interval [0 .5, 1.0] . If the true success probability p is significantly below 0.5, the likelihood ratios for these robust components will exponentially decay. At every check interval B, we monitor if the total wealth Wt(p0) at p0 = 0 .5 falls below a failure threshold ϵf ail = 0 .1—a bankruptcy exit. If this occurs, the certifier immediately halts and rejects the sample. While this may result in rare false negatives for samples very near the decision boundary, it functions as a high-speed rejection filter that preserves global compute. This design is predicated upon a core principle of certified robustness: that conservative rejections are vastly preferable to certifications that are either computationally expensive or statistically invalid. In practice we require the process to run for 400 samples before triggering an early-rejection. 
+
+The Safety Anchor: Guaranteeing Survival To guard against bankruptcy caused by misspec-ification of the meta-prior, we supplement the meta-learned mixture with a global safety anchor, allocating a small fixed weight wsaf ety = 0 .01 to a KT prior. This ensures the E-process remains robust even if the meta-learned components decay, by defining that 
+
+Wt(p0) = wsaf ety Esaf ety (p0) + (1 − wsaf ety )W meta t (p0) , (10) where Esaf ety (p0) is the E-value generated by a Beta (0 .5, 0.5) prior over the full support [0 , 1] . Here 
+
+Esaf ety (p0) = mKT (ht, t )/[pht 
+
+> 0
+
+(1 − p0)t−ht ] and mKT is the integrated likelihood under the KT prior. This hybrid strategy provides a statistical safety net, where convergence can be reached even in cases where the meta-learners predictions would otherwise compromise convergence. 
+
+5 The Certification Engine: Termination Policies 
+
+While the structural design of the E-process outlined in the preceding subsection ensures safety, efficiency is realized through active termination policies. At each check interval B, we solve for the LCB pt using the Brent-Dekker method (Brent, 1971) to provide a continuous radius estimate 
+
+rt = σΦ−1(pt). Based upon this, we consider two early-stopping frameworks. 
+
+Precision-Based Stopping We implement a heuristic that defines a time-varying precision threshold 
+
+ϵt. We terminate the sequence if the gap between the Maximum Likelihood radius ( rmle ) and the certified radius ( rlcb ) satisfies (rmle − rlcb ) ≤ ϵt, yielding a base threshold 
+
+ϵbase t = ∆ ·
+
+
+
+ϵstart − (ϵstart − ϵend ) · tNmax − Nsel 
+
+
+
+, (11) where ∆ is an aggression factor (typically 1.2), ϵstart = 0 .1, and ϵend = 0 .042 . This allows for rapid early exits on unambiguous samples while ensuring tight bounds for marginal cases. To support application-specific requirements, we can further modulate this threshold with a specialization bias 
+
+b(rmle )—for instance, requiring higher precision ( b < 1) in a target radius zone while allowing relaxed exits ( b > 1) elsewhere (see Section 6 for further details). 6Adversarial and Plateau Exits We prioritize rapid rejection for non-robust samples ( p < 0.5). If 
+
+Wt(0 .5) ≥ 1/α and the empirical mean ˆpmle < 0.5, it implies the Upper Confidence Bound is less than 0.5, and the sample is rejected. Furthermore, we monitor the Radius Velocity: if rlcb does not improve by more than 5% over four consecutive intervals, the system triggers a certification based upon the current LCB, effectively rejecting the sample if the accumulated evidence remains below the robustness threshold, and eschewing further calculations to preserve the computational budget. 
+
+Algorithm The complete operational flow of our sequential radius estimation is synthesized in Algorithms 1 and 2 in Appendix B. This procedure integrates bespoke prior initialization with anytime-valid monitoring, allowing for a dynamic trade-off between certification tightness and computational budget that automatically adapts to the difficulty of the input. 
+
+6 Results and Discussion 
+
+While raw efficiency gains are compelling, it is important to address a fundamental question: why favor an anytime-valid approach over a fixed-horizon Clopper-Pearson bound, which is inherently tighter for a given N ? After all, there is no free lunch when it comes to anytime validity. However, as we will now argue, the advantages are two-fold: the ability to dynamically triage samples and the capacity to construct application-aware termination conditions .We first evaluate the performance of our framework using the Meta-1-hybrid on a classic certifi-cation analysis, as shown in Figure 1 (Left). This approach provides similar certification dynamics to the N = 10 , 000 Cohen baseline (hereafter ‘Cohen-10k’) while requiring an order of magnitude fewer samples. As the average number of samples required by Meta-1-hybrid was N = 454 , we also test Cohen against the same number of samples. In this case the anytime-valid bounds induce the slight (and expected) decrease in certification performance relative to the tighter bounds of Cohen et al. (2019). However, we stress that a priori knowledge of this number of samples is impossible. When exploring the comprehensive set of results in Table 5, the Meta-RS approach typically reduces the average samples required by 8 to 15% , relative to KT, with consistent gains in the high-noise regimes, while also producing an up to 4% tighter bounds for ImageNet. The true strength of anytime-validity is revealed when stopping conditions are tuned to specific downstream regions. In many applications, the importance of an input’s radius may depend upon its scale. Such dynamics are likely in safety critical deployments, where it may be desirable to devote computational resources to refining small radius certifications (to maximize the accuracy of these certifications), or potentially on larger-radius regions, if the small-radius samples are to be subjected to manual verification irrespective of their final radii. To model the implications of such dynamics, we implement Small-R (focusing compute upon 
+
+R < 0.5) and Large-R Specialists (focusing compute upon R > 1.0)—details of how these are implemented can be found in Appendix B.1. As seen in Figure 1 (Middle), by biasing the stopping epsilon ϵt toward targeted regions, we can perfectly recover the Cohen-10k accuracy curve in the region of interest while sacrificing precision elsewhere to save compute. These specialists effectively reduce the sample budget to a minimal rejection floor of ∼300 samples for inputs outside their target zones. This represents a 33 × speedup over the baseline for non-robust samples, focusing computational attention exclusively on the samples that matter. 
+
+6.1 Early Rejection 
+
+An alternative perspective on early-stopping is that it should only be applied to reject non-robust samples , with the total sample count otherwise being let to run to the full 10 , 000 sample horizon. Under these conditions, we only allow the model to exit if its UCB falls below 0.5 or its wealth process falls below 0.1 (bankruptcy). Such an approach is impossible under traditional certification workflows, which must still expend their full computational budget on non-robust samples. Table 1 demonstrates that orders of magnitude decreases in computational cost for rejections only elicits a small decrease in certification performance, while requiring an up to 45 × speedup for sample rejections. That this occurs with only a minor penalty in terms of the achievable radius—stemming from the anytime-valid tax—demonstrates the utility of this approach for allocating computational load to the samples that matter. 7Table 1: Performance of the Efficiency Champion Model (Meta-1-Dynamic-Margin - see Ap-pendix C) vs KT Prior baseline, when samples are allowed to run to 10 , 000 if robust. Cert (%): Certified accuracy at the full horizon; δr : Mean % discrepancy in certified radius relative to the Cohen-10k ground truth; Exit: System-wide average sample latency (including early rejections).                                                      
+
+> Dataset Sigma Cert (%) δr M eta (%) δr KT (%) Exit Meta Exit KT MNIST 0.25 99.20 1.89 5.08 200 350.00 0.50 98.80 2.20 4.46 433.33 283.33 1.00 91.20 2.97 4.01 1659.09 402.27 CIFAR-10 0.25 78.80 3.22 4.87 1003.77 322.64 0.50 62.60 4.31 5.60 862.57 326.74 1.00 44.40 4.21 5.56 788.129 308.63 ImageNet 0.25 76.20 2.47 5.18 232.773 232.77 0.50 73.80 2.49 4.90 263.36 263.36 1.00 72.40 3.33 5.28 534.783 288.41
+
+6.2 Case-Study: Operational Triage Framework 
+
+To further consider the potential for E-values to support dynamic triage, we consider a scenario where the exact values of the certification hold little value, relative to the positioning of the certification within a region defined by its perceived risk. Under fixed-horizon methods, adapting to such a downstream scenario would be impossible—the sample budget must be committed to all inputs. In contrast, E-value certifications halt as soon as the confidence interval [LCB t, U CB t] is entirely contained within one of these buckets. To test this, we consider the partitioning: • Bucket A (Non-Robust): r = 0 .0. Immediate rejection or human intervention. • Bucket B (Low Robustness): 0.0 < r ≤ 1.0. Automated scrutiny. • Bucket C (Medium Robustness): 1.0 < r ≤ 1.5. Monitored deployment. • Bucket D (High Robustness): r > 1.5. Autonomous deployment. To explore the performance under this operational triage framework, we tested Cohen et al. (2019) at 10 , 000 samples, a KT Prior Method-of-Mixtures approach with a constant α = 0 .01 , and two application specific approaches. The Tiered Spec Race assigns each bin a specific budget 
+
+{αA, . . . , α D } = {0.05 , 0.05 , 0.025 , 0.01 }, representing the levels of tolerance of a false-positive in each category, and performs four independent E-processes for each operational bucket. Samples are assigned to bucket i at timestep T if its LCB and UCB are contained within the associated bin with 
+
+Mi(X1: T ) ≥ 1/α ′
+
+> i
+
+, where α′ 
+
+> i
+
+= αi · (0 .2 + 0 .8 · wmeta,i ).The Relaxed Tiered Cascade follows the above process, however, if samples remain unresolved after 
+
+400 samples the system attempts to prove proximity to any bin boundary pb ∈ { 0.5, 0.8413 , 0.9332 }
+
+(corresponding to r = {0, 1, 1.5}), through a dual-rejection process considering H− 
+
+> 0
+
+: p = pb − ϵ
+
+and H+0 : p = pb + ϵ, using an ϵ = 0 .05 . If M (X; pb − ϵ) ≥ 1/α and M (X; pb + ϵ) ≥ 1/α , the sample is mathematically trapped within the [pb − ϵ, p b + ϵ] buffer. If this is achieved, the sample is classified to bin, but provided a secondary label denoting boundary ambiguity. This approach prevents allocating redundant samples to distinguishing infinitesimally close probabilities, such a 
+
+p = 0 .841 from p = 0 .842 . Table 2 demonstrates that the Meta-learner’s ability to partition risk and predict sample-specific density leads to an up to 2.4 × speedup over the KT Prior baseline. Table 2: Operational Triage Performance (CIFAR-10, σ = 1 .0, N = 3000 ). Success is defined as proving containment within the correct triage bucket.                     
+
+> Strategy Avg Samples Avg Bin A Success (%) Definitive (%) Cohen-10k (Ref) 10,000.0 10,000.0 100.0% 100.0% KT Prior (Fixed) 1,733.2 948.8 100.0% 90.8% Tiered Spec Race 1,448.8 988.4 99.9% 92.5% Relaxed Tiered Cascade 710.5 480.0 99.9% 92.5%
+
+80.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5               
+
+> Certified Radius ( R)
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> Certified Accuracy
+> Cohen 10k
+> Cohen 454
+> KT Prior
+> Optimized Meta-RS
+> 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5
+> Certified Radius ( R)
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> Certified Accuracy
+> Cohen 10k
+> Cohen 454
+> Small-R Specialist
+> Large-R Specialist
+> 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5
+> Certified Radius ( R)
+> 10 2
+> 10 3
+> 10 4
+> Sample Count ( N)
+> Cohen 10k
+> Cohen 454
+> KT Prior (Baseline)
+> Optimized Meta-RS
+> Small-R Specialist
+> Large-R Specialist
+
+Figure 1: Specialist Triage via Radius-Biased Stopping for CIFAR-10 at σ = 1 .0. (Left) Generalist accuracy parity with Cohen-10k using 22 × fewer samples. (Middle) Specialist accuracy recovery in targeted zones ( R < 0.5 or R > 1.0). (Right) Corresponding Sample Count ( N ) across radii, showing the significant compute reduction outside target zones. Metrics metrics represent the average for samples with a radius larger than r, following Equation 12, except the dashed lines in (Right), which represent the average counts including rejected samples .
+
+6.3 Ablation Component-Wise Efficiency Attribution To understand the drivers of the 20x–45x speedups observed in our champions, we perform an attribution analysis, the results of which are further detailed in Figure 11. While Precision-Based Stopping provides the bulk of the speedup for certifiable samples, we find that the combination of Bankruptcy and UCB exits is critical for minimizing the costs associated with rejecting non-robust samples, enabling best in class performance. 
+
+Statistical Universality and Zero-Shot Transfer A key concern for meta-learned certifiers is dataset dependency. To evaluate generalization, we employ ImageNet to test a Meta-Learner trained exclusively on CIFAR-10. Figure 10 demonstrates that there is some correlation in termination latencies. This suggests the meta-learner captures universal properties of the classifiers rather than dataset-specific artifacts, enabling zero-shot deployment on new architectures. 
+
+The Precision-Efficiency Pareto Frontier Anytime-validity transforms certified robustness from a binary outcome into a tunable resource. As detailed in Figure 12, sample complexity grows only logarithmically with ϵ over a limited window. This suggests that there is some ability to reliably trade compute for tighter bounds, or conversely, to relax precision for real-time throughput. 
+
+7 Conclusion 
+
+In this work, we demonstrated that randomized smoothing can be transformed from a static, com-putationally exhaustive process into a dynamic, application-aware certification pipeline optimized for strategic resource management . While computational latency has always presented significant concerns for certified robustness, our E-value meta-learner produces substantial empirical gains in this space, without compromising robustness. Achieving a 89% reduction in computational load relative to standard certification workflows, or 15% relative to the KT prior, validates the utility of our meta-learning approach. However, headline computational metrics do not tell the full story of this work. Our framework demonstrates that it is possible to dynamically balance robustness with compute on a sample-by-sample basis, through early rejections or downstream-focused triage. While anytime-validity incurs a marginal cost regarding the realizable tightness of bounds, our results highlight the overwhelming utility of transitioning to meta-learned E-values. The true value of this approach lies not just in its computational efficiency, but in proving that dynamic, application-specific triage is finally possible, marking a definitive leap toward the real-world deployment of certified machine learning. 9Acknowledgments 
+
+This work was supported by the Australian Defence Science and Technology (DST) Group via the Advanced Strategic Capabilities Accelerator (ASCA) program. 
+
+Impact Statement 
+
+This work explores the potential for improving the computational efficiency of mechanisms for achieving Certified Robustness, with the aim of significantly enhancing the range of applicability for these systems. Improving the robustness of models, and lowering the energy consumption of our validation processes, has clear societal implications, especially as we move to a landscape where AI is increasingly integrated into society. However, with that said, we feel that there are two key societal concerns with pursuing robustness research, which we must note here. The first of which is that there are some applications where a lack of robustness in a model may be positive. In a world where broad scale surveillance is increasingly normalized, it may well be the case that adversarial attacks may induce privacy, creating a net public good. The second relates to how works like this position risk and harm. A common precept within the Adversarial Machine Learning community is to assume a particular threat model, with the nature of academic comparisons often incentivizing us to then follow in the footsteps of those who came before us. However, in doing so, we inadvertently create—and, crucially, present—a myopic view of the risk landscape. In essence, we portray to practitioners that risk is concentrated within the areas in which we act as a community, when our investigations may be more motivated by historic alignment to academic norms and mathematical convenience. This work considers ℓ2 perturbations, which while aligned with acoustic threat models, still represent a restriction relative to the overall threat landscape. We emphasize the above point not just for the risks of erroneous portrayals of risk to practitioners, but also because our focus on these spaces inherently biases real attacker behavior away from these threat models. After all, if an attacker understands that an ℓ2 threat model is likely defended against, they’re naturally incentivized to consider an alternative pathway for model manipulation. With these points made, we still believe that research into defenses, and in particular certified defenses, induce a net societal gain. Improving robustness to natural or adversarial perturbations will improve the performance of systems that are already one of the dominant access portals for AI within the community. 
+
+References 
+
+Brent, R. P. An Algorithm with Guaranteed Convergence for Finding a Zero of a Function. The Computer Journal , 14(4):422–425, 1971. Chen, R., Li, J., Yan, J., Li, P., and Sheng, B. Input-Specific Robustness Certification for Randomized Smoothing. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 36, pp. 6295–6303, 2022. Chiang, P.-y., Ni, R., Abdelkader, A., Zhu, C., Studer, C., and Goldstein, T. Certified Defenses for Adversarial Patches. arXiv preprint arXiv:2003.06693 , 2020. Clopper, C. J. and Pearson, E. S. The Use of Confidence or Fiducial Limits Illustrated in the case of the Binomial. Biometrika , 26(4):404–413, 1934. Cohen, J., Rosenfeld, E., and Kolter, Z. Certified Adversarial Robustness via Randomized Smoothing. In International Conference on Machine Learning , pp. 1310–1320. PMLR, 2019. Cullen, A. C., Montague, P., Liu, S., Erfani, S. M., and Rubinstein, B. I. Double Bubble, Toil and Trouble: Enhancing Certified Robustness through Transitivity. Advances in Neural Information Processing Systems , 35:19099–19112, 2022. Cullen, A. C., Montague, P., Erfani, S. M., and Rubinstein, B. I. P. Position: Certified Robustness Does Not (Yet) Imply Model Security. In Proceedings of the 42nd International Conference on Machine Learning , volume 267 of Proceedings of Machine Learning Research , pp. 81185–81198. PMLR, 13–19 Jul 2025. 10 Doob, J. L. Regularity Properties of Certain Families of Chance Variables. Transactions of the American Mathematical Society , 47(3):455–486, 1940. Dwork, C., McSherry, F., Nissim, K., and Smith, A. Calibrating Noise to Sensitivity in Private Data Analysis. In Theory of Cryptography Conference , TCC, pp. 265–284. Springer, 2006. Gershman, S. and Goodman, N. Amortized Inference in Probabilistic Reasoning. In Proceedings of the Annual Meeting of the Cognitive Science Society , volume 36, 2014. Goodfellow, I. J., Shlens, J., and Szegedy, C. Explaining and Harnessing Adversarial Examples. 
+
+arXiv preprint arXiv:1412.6572 , 2014. Grünwald, P., de Heide, R., and Koolen, W. M. Safe Testing. In 2020 Information Theory and Applications workshop (ITA) , pp. 1–54. IEEE, 2020. Hein, M. and Andriushchenko, M. Formal Guarantees on the Robustness of a Classifier Against Adversarial Manipulation. In Advances in Neural Information Processing Systems , volume 30 of 
+
+NeurIPS , 2017. Horváth, M. Z., Mueller, M. N., Fischer, M., and Vechev, M. Boosting randomized smoothing with variance reduced classifiers. In International Conference on Learning Representations , 2022. Howard, S. R., Ramdas, A., McAuliffe, J., and Sekhon, J. Time-Uniform, Nonparametric, Nonasymp-totic Confidence Sequences. The Annals of Statistics , 49(2):1055–1080, 2021. Johari, R., Koomen, P., Pekelis, L., and Walsh, D. Peeking at A/B Tests: Why it matters, and what to do about it. In Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining , pp. 1517–1525, 2017. Kelly, J. L. A New Interpretation of Information Rate. The Bell System Technical Journal , 35(4): 917–926, 1956. Krichevsky, R. and Trofimov, V. The Performance of Universal Encoding. IEEE Transactions on Information Theory , 27(2):199–207, 1981. Krizhevsky, A., Hinton, G., et al. Learning Multiple Layers of Features from Tiny Images. Technical report, University of Toronto, 2009. Lai, T. L. On Confidence Sequences. The Annals of Statistics , pp. 265–280, 1976. LeCun, Y., Bottou, L., Bengio, Y., and Haffner, P. Gradient-Based Learning Applied to Document Recognition. Proceedings of the IEEE , 86(11):2278–2324, 1998. Lecuyer, M., Atlidakis, V., Geambasu, R., Hsu, D., and Jana, S. Certified Robustness to Adversarial Examples with Differential Privacy. In 2019 IEEE Symposium on Security and Privacy (SP) , pp. 656–672. IEEE Computer Society, 2019. Leino, K., Wang, Z., and Fredrikson, M. Globally-Robust Neural Networks. In International Conference on Machine Learning , pp. 6212–6222. PMLR, 2021. Levine, A. and Feizi, S. (de)Randomized Smoothing for Certifiable Defense against Patch Attacks. 
+
+Advances in Neural Information Processing Systems , 33:6465–6475, 2020. Li, B., Chen, C., Wang, W., and Carin, L. Certified Adversarial Robustness with Additive Noise. In 
+
+Advances in Neural Information Processing Systems , volume 32, pp. 9459–9469. NeurIPS, 2019. Lyu, Z., Guo, M., Wu, T., Xu, G., Zhang, K., and Lin, D. Towards Evaluating and Training Verifiably Robust Neural Networks. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pp. 4308–4317, 2021. Madry, A., Makelov, A., Schmidt, L., Tsipras, D., and Vladu, A. Towards Deep Learning Models Resistant to Adversarial Attacks. In International Conference on Learning Representations , 2018. Mirman, M., Gehr, T., and Vechev, M. Differentiable Abstract Interpretation for Provably Robust Neural Networks. In International Conference on Machine Learning , pp. 3578–3586. PMLR, 2018. 11 Mohapatra, J., Weng, T.-W., Chen, P.-Y., Liu, S., and Daniel, L. Towards Verifying Robustness of Neural Networks against a family of Semantic Perturbations. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pp. 244–252, 2020. Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J., Chanan, G., Killeen, T., Lin, Z., Gimelshein, N., Antiga, L., Desmaison, A., Kopf, A., Yang, E., DeVito, Z., Raison, M., Tejani, A., Chilamkurthy, S., Steiner, B., Fang, L., Bai, J., and Chintala, S. Pytorch: An Imperative Style, High-Performance Deep Learning Library. In Wallach, H., Larochelle, H., Beygelzimer, A., d’Alché Buc, F., Fox, E., and Garnett, R. (eds.), Advances in Neural Information Processing Systems , volume 32, pp. 8024–8035. NeurIPS, 2019. Ramdas, A., Grünwald, P., Vovk, V., and Shafer, G. Game-Theoretic Statistics and Safe Anytime-Valid Inference. Statistical Science , 38(4):576–601, 2023. Russakovsky, O., Deng, J., Su, H., Krause, J., Satheesh, S., Ma, S., Huang, Z., Karpathy, A., Khosla, A., Bernstein, M., et al. ImageNet Large Scale Visual Recognition Challenge. International Journal of Computer Vision , 115(3):211–252, 2015. Salman, H., Li, J., Razenshteyn, I., Zhang, P., Zhang, H., Bubeck, S., and Yang, G. Provably Robust Deep Learning via Adversarially Trained Smoothed Classifiers. In Advances in Neural Information Processing Systems , volume 32, pp. 11292–11303. NeurIPS, 2019a. Salman, H., Yang, G., Zhang, H., Hsieh, C.-J., and Zhang, P. A Convex Relaxation Barrier to Tight Robustness Verification of Neural Networks. In Advances in Neural Information Processing Systems , 2019b. Shafer, G. The Language of Betting as a Strategy for Statistical and Scientific Communication. arXiv preprint arXiv:1903.06991 , 2019. Shafer, G. and Vovk, V. Game-Theoretic Foundations for Probability and Finance . John Wiley & Sons, 2019. Shi, Z., Jin, Q., Zhang, H., Kolter, Z., Jana, S., and Hsieh, C.-J. Formal Verification for Neural Networks with General Nonlinearities via Branch-And-Bound. In 2nd Workshop on Formal Verification of Machine Learning (WFVML 2023) , 2023. Singh, G., Gehr, T., Püschel, M., and Vechev, M. An Abstract Domain for Certifying Neural Networks. 
+
+Proceedings of the ACM on Programming Languages , 3(POPL):1–30, 2019. Szegedy, C., Zaremba, W., Sutskever, I., Bruna, J., Erhan, D., Goodfellow, I., and Fergus, R. Intriguing Properties of Neural Networks. arXiv preprint arXiv:1312.6199 , 2013. Tsuzuku, Y., Sato, I., and Sugiyama, M. Lipschitz-Margin Training: Scalable Certification of Perturbation Invariance for Deep Neural Networks. In Advances in Neural Information Processing Systems , volume 31. NeurIPS, 2018. Ville, J. Etude Critique de la Notion de Collectif , volume 3. Gauthier-Villars Paris, 1939. Voráˇ cek, V. Treatment of Statistical Estimation Problems in Randomized Smoothing for Adversarial Robustness. Advances in Neural Information Processing Systems , 37:133464–133486, 2024. Vovk, V. and Wang, R. E-values: Calibration, Combination and Applications. The Annals of Statistics ,49(3):1736–1754, 2021. Wang, S., Zhang, H., Xu, K., Lin, X., Jana, S., Hsieh, C.-J., and Kolter, J. Z. Beta-CROWN: Efficient Bound Propagation with Per-Neuron Split Constraints for Neural Network Robustness Verification. 
+
+Advances in Neural Information Processing Systems , 34, 2021. Waudby-Smith, I. and Ramdas, A. Estimating Means of Bounded Random Variables by Betting. 
+
+Journal of the Royal Statistical Society: Series B-Statistical Methodology , 86(1):1–27, 2024. Weng, L., Zhang, H., Chen, H., Song, Z., Hsieh, C.-J., Daniel, L., Boning, D., and Dhillon, I. Towards Fast Computation of Certified Robustness for ReLU Networks. In International Conference on Machine Learning , pp. 5276–5285. PMLR, 2018. 12 Xie, Q. and Barron, A. R. Asymptotic Minimax Regret for Data Compression, Gambling, and Prediction. IEEE Transactions on Information Theory , 46(2):431–445, 2000. Xu, K., Shi, Z., Zhang, H., Wang, Y., Chang, K.-W., Huang, M., Kailkhura, B., Lin, X., and Hsieh, C.-J. Automatic Perturbation Analysis for Scalable Certified Robustness and Beyond. Advances in Neural Information Processing Systems , 33, 2020. Zhai, R., Dan, C., He, D., Zhang, H., Gong, B., Ravikumar, P., Hsieh, C.-J., and Wang, L. Macer: Attack-Free and Scalable Robust Training via Maximizing Certified Radius. In International Conference on Learning Representations , 2020. Zhang, H., Weng, T.-W., Chen, P.-Y., Hsieh, C.-J., and Daniel, L. Efficient Neural Network Robustness Certification with General Activation Functions. In Neural Information Processing Systems (NeurIPS) , 2018. 
+
+A Expanded Related Work 
+
+A.1 Certification Mechanisms 
+
+First introduced by Lecuyer et al. (2019), randomized smoothing based certified robustness builds upon Monte Carlo estimators of the expectation of a class prediction. While the original formulation was constructed in terms of differential privacy (Dwork et al., 2006), recent approaches have improved performance through Rényi divergence (Li et al., 2019) and parameterising worst-case behaviors (Cohen et al., 2019; Salman et al., 2019a; Cullen et al., 2022). Significant research has focused on improving the underlying base classifier f to be more amenable to randomized smoothing. Salman et al. (2019a) employs adversarial training to harden the model against perturbed inputs, while MACER (Zhai et al., 2020) directly optimizes a robustness loss that encourages large classification margins. Our work is orthogonal to these training-time interventions; we focus on the inference-time efficiency of the certification process itself, allowing for a 20x– 45x reduction in sample complexity for any base model, including those that have undergone the training-time interventions of MACER and Salman et al. (2019a). In all works, the primary metric for evaluating Randomized Smoothing is the Certified Accuracy at radius r, defined as the fraction of the test set that is both correctly classified by the smoothed model and has a certified radius R ≥ r
+
+Acc (r) = P(x,y )∼D [g(x) = y and R(x) ≥ r] (12) where g is the smoothed classifier. 
+
+A.1.1 Interval Bound Propagation 
+
+In the absence of probabilistic methods, conservative certificates upon the impact of norm-bounded perturbations can be constructed by way of either interval bound propagation (IBP) which propagates interval bounds through the model; or convex relaxation, which utilizes linear relaxation to construct bounding output polytopes over input bounded perturbations. In contrast to randomized smoothing, which constructs isotropic measures of ℓp-robustness, interval bound propagation and its associated techniques attempt to propagate the potential influence of all possible perturbations through the model, producing an anisotropic measure of the potential response of a model to any potential perturbation (Salman et al., 2019b; Mirman et al., 2018; Weng et al., 2018; Zhang et al., 2018; Singh et al., 2019; Mohapatra et al., 2020). Of these, IBP is more general, while convex relaxation typically provides tighter bounds (Lyu et al., 2021). Utilizing these techniques requires introducing an augmented loss function during training to promote tight output bounds (Xu et al., 2020)—creating significant architectural friction relative to RS style certifications, which can be applied to any model architecture. Bound propagation schemes have also, until very recently, been heavily limited in the types of network architectures that they can successfully construct bounds through, with only recent works demonstrating an applicability to a nonlinear activation functions beyond ReLU (Shi et al., 2023). Moreover they both exhibit a time and memory complexity that makes them infeasible for complex model architectures or high-dimensional data (Wang et al., 2021; Chiang et al., 2020; Levine & Feizi, 2020). 13 A.1.2 Global Lipschitz 
+
+Global Lipschitz takes an alternative approach to constructing certifications, a point that they distin-guish through the framing of local and global robustness. The guarantees provided by prior works, which can take the form 
+
+∥x − x′∥p ≤ ϵ =⇒ F (x) = F (x′) (13) are considered to be local properties, that relate x and ϵ. Lipschitz based techniques instead attempt to construct their certifications in terms of global robustness, where 
+
+∀x1, x2 : ∥x1 − x2∥p ≤ ϵ =⇒ F (x1) ⊥
+
+= F (x2) . (14) Here ⊥ is the marker for an abstained class prediction, and c1
+
+> ⊥
+
+= c2 denotes that either c1 =⊥,
+
+c2 =⊥, or c1 = c2. In essence such a form of certification involves constructing a model that has not only an infinitesimally thin decision boundary, but a margin between the regions associated with each class, where ϵ then becomes the shortest ℓp distance to span the boundary. Several attempts have been made to use Lipschitz bounds during training to promote robustness. These include constructing provable lower bounds on the norm of the input manipulation required to change classifier decisions based upon the network architecture (Hein & Andriushchenko, 2017); modifying the loss associated with logits different than the ground-truth class (Tsuzuku et al., 2018); and GloRoNets, which add an additional logit corresponding to the predicted class at a point (Leino et al., 2021). While these techniques can be an order of magnitude faster than randomized smoothing, they are both less flexible—in terms of the architectures they support—and often produce smaller certifications than randomized smoothing. (Leino et al., 2021). 
+
+A.2 Anytime Valid Mechanisms 
+
+As an alternative to betting-based martingales, anytime-valid confidence sequences can be constructed using the Law of the Iterated Logarithm (LIL). Of particular note is the stitching construction from Howard et al. (2021), which provides a boundary ut such that the probability of the empirical mean ever crossing ut is bounded by α. While LIL-stitching is robust to prior mis-specification, it is generally less efficient than Mixture E-values when a reasonably accurate prior (like our Meta-Learner) is available, as it lacks the ability to aggressively allocate its convergence on specific regions of the hypothesis space. In our testing, LIL based approaches provide a small improvement on traditional Cohen et al. (2019) style certified robustness, however, it is significantly slower to converge than our Meta-approach. 
+
+B Algorithms 
+
+To provide further details to the processes outlined in Sections 4 and 5, we present the full expanded algorithm for the training of the Meta-Learner using a Kelly-Optimal inspired process in Algorithm 1, and the overall certification approach in Algorithm 2. 
+
+Datasets and Backbone Architecture Our experiments consider attacks against MNIST (LeCun et al., 1998) (GNU v3.0 license), CIFAR-10 (Krizhevsky et al., 2009) (MIT license), and ImageNet (Russakovsky et al., 2015) (which uses a custom, non-commercial license). In the case of models defended by randomised smoothing, each model was trained in PyTorch (Paszke et al., 2019) We trained three backbone models as the base classifiers, each of which were trained to robust under Gaussian noise through augmentations drawn from N (0 , σ 2I). For MNIST and CIFAR-10, we employed a ResNet-18 architecture, which was modified for a single input channel for MNIST. In the case of ImageNet, we considered a ResNet-50 architecture. Features employed by the Meta-Learner are extracted from the final avgpool layer of their respective backbones (512-dimensional for ResNet-18, or 2048-dimensional with a linear projection to 512-dimensional for ResNet-50). 
+
+Meta-Learner Architecture The Meta model Mθ builds upon a LayerNorm stage followed by a linear projection to 512 dimensions. This is then followed by a sequential MLP mapping, containing two linear layers (512 units) with LayerNorm and ReLU activations, before branching into independent linear heads for mixture weights ( π), Beta parameters ( β, γ ), and optionally, dynamic support boundaries ( a, b ). 14 Algorithm 1 Meta-Learner Training (Kelly-Optimal Betting)  
+
+> 1:
+
+Input: Training dataset Dtrain , noise level σ, base classifier f , augmentation factor M , epochs 
+
+E. 
+
+> 2:
+
+Phase I: Data Collection (Offline)  
+
+> 3:
+
+S ← ∅  
+
+> 4:
+
+for each image x(i) ∈ D train do  
+
+> 5:
+
+Extract embedding ϕ(i) and clean-image softmax p(i). 
+
+> 6:
+
+Draw Nmax samples to obtain bitstream successes h(i) 
+
+> N
+
+and rate p(i)
+
+> true
+
+. 
+
+> 7:
+
+S ← S ∪ { (ϕ(i), p(i), h (i) 
+
+> N
+
+, p (i)
+
+> true
+
+)} ▷ Store ground-truth tuples  
+
+> 8:
+
+end for  
+
+> 9:
+
+Phase II: Kelly Optimization (Online)  
+
+> 10:
+
+Initialize Meta-Learner Mθ . 
+
+> 11:
+
+for epoch e = 1 to E do  
+
+> 12:
+
+Sample an index set I ⊂ { 1, . . . , |S|} of size n uniformly at random.  
+
+> 13:
+
+for i ∈ I do  
+
+> 14:
+
+ˆh(i) 
+
+> sel
+
+∼ Binomial (Nsel , p (i)
+
+> true
+
+) ▷ Sample a synthetic Phase I glimpse  
+
+> 15:
+
+ˆp(i) 
+
+> sel
+
+← ˆh(i)
+
+> sel
+
+/N sel . 
+
+> 16:
+
+(w(i), z(i)) ← M θ (ϕ(i), p(i), ˆp(i)
+
+> sel
+
+). ▷ Predict weights and raw parameters  
+
+> 17:
+
+β(i), γ(i) ← Clamp (Softplus (z(i)) + 0 .5, [0 .1, 500 .0]) . ▷ Survival bias & Stability  
+
+> 18:
+
+end for  
+
+> 19:
+
+// Minimize negative expected log-wealth (Kelly Loss)  
+
+> 20:
+
+λe ← max(1 .0, 10 .0 · (1 − e 
+
+> 0.8E
+
+)) ▷ Decay Penalty  
+
+> 21:
+
+L(θ) = − 1
+
+> n
+
+P
+
+> i
+
+h
+
+log P 
+
+> k
+
+wk · P (hi|N,β k ,γ k )     
+
+> Z(ak,b k,β k,γ k)
+
+− λt · dist (ˆ pmle , Rk)
+
+i 
+
+> 22:
+
+θ ← θ − η∇θ L(θ). 
+
+> 23:
+
+end for  
+
+> 24:
+
+Return: Trained Meta-Learner Mθ .
+
+Optimization and Training As discussed in the main body of the text, the meta-learner is trained to maximize the Expected Log-Wealth (Kelly Criterion) over full bitstream sequences. Optimization employed an Adam learner for 60 epochs with a fixed learning rate of 10 −3 and a weight decay of 
+
+10 −4. To support training, we employed randomized deterministic data splits, with 5, 000 samples employed for training with MNIST and CIFAR-10, and 10 , 000 samples for ImageNet. In all cases, the amount of evaluation samples was set to 10% of the training samples. The base models for MNIST and CIFAR-10 were trained on a 12GB RTX2080 Ti GPU, with a training time of less than 1
+
+hour per σ. For speed, ImageNet was trained on a 80GB H100 GPU, with a total training time of 2
+
+hours per σ. Meta-learner training was performed on the 2080Ti, taking about 2 minutes per each Meta-learner for ImageNet, and less than 90 seconds for MNIST and CIFAR-10. 
+
+Differentiable Truncation via Series Expansion Training the meta-learner with a Kelly-optimal loss on truncated Beta distributions requires a differentiable implementation of the regularized incomplete Beta function, Ix(a, b ). As implementations of Ix are typically not compatible with automatic differentiation, we employ a 4th -order Taylor series expansion to approximate the integral mass in the cases where derivatives are required. For a given support boundary x ∈ [ak, b k], the log-mass is approximated as 
+
+log Ix(α, β ) ≈ a log x + b log(1 − x) − log a − log B(a, b ) + log 1 + 
+
+> 4
+
+X
+
+> n=1
+
+Tn
+
+!
+
+, (15) where Tn corresponds to the Pochhammer ratios 
+
+T1 = a + ba + 1 x, Tn = Tn−1 · a + b + n − 1
+
+a + n x . (16) To ensure numerical stability across the entire [0 , 1] probability range, we leverage the symmetry property Ix(a, b ) = 1 − I1−x(b, a ). When the truncation boundary is x > 0.5, the model computes the mass in the complement space using the same expansion, preventing the vanishing gradient issues associated with the high-probability tails of the Beta distribution. 15 Algorithm 2 Sequential Radius Estimation with Dynamic Fast-Exits  
+
+> 1:
+
+Input: Test image x, noise level σ, target classifier f , Meta-Learner M. 
+
+> 2:
+
+Parameters: Significance α, batch size B, max samples Nmax , failure threshold ϵf ail , parame-ters ϵstart , ϵ end . 
+
+> 3:
+
+Phase I: Holdout and Prior Initialization  
+
+> 4:
+
+Extract ϕ(x) and clean-image softmax p(x) from f . 
+
+> 5:
+
+Draw Nsel samples to identify target class cA and empirical mean ˆpsel . 
+
+> 6:
+
+M(ϕ(x), p(x), ˆpsel ) → { wk, β k, γ k, Rk}Kk=1 . 
+
+> 7:
+
+Phase II: Sequential Certification  
+
+> 8:
+
+W0(p0) ← 1 for all p0 ∈ [0 , 1] ; rlcb ← 0; H ← ∅ ▷ Initialize wealth, radius, and radius history  
+
+> 9:
+
+for t = 1 , 2, . . . , N max − Nsel do  
+
+> 10:
+
+Compute Wt(p0) using Mixture of Truncated Betas.  
+
+> 11:
+
+if t (mod B) == 0 or t = Nmax − Nsel then  
+
+> 12:
+
+pt ← BrentSolver (Wt(p0) = 1 /α ); rlcb ← σΦ−1(max( pt, 0.5)) . 
+
+> 13:
+
+rmle ← σΦ−1(max(ˆ pmle , 0.5)) ; Append rlcb to H. 
+
+> 14:
+
+if Wt(0 .5) ≥ 1/α and ˆpmle < 0.5 then Return r = 0 ▷ UCB Exit  
+
+> 15:
+
+else if Wt(0 .5) ≤ ϵf ail then Return r = 0 ▷ Bankruptcy Exit  
+
+> 16:
+
+else  
+
+> 17:
+
+ϵt ← ∆ · [ϵstart − (ϵstart − ϵend ) · tNmax −Nsel ] · b(rmle ). 
+
+> 18:
+
+Plateau ← |H| ≥ 4 and (Hlast − H last −3) < 0.05 · H last −3. 
+
+> 19:
+
+if (rmle − rlcb ) ≤ ϵt or Plateau then Return r = rlcb  
+
+> 20:
+
+end if  
+
+> 21:
+
+end if  
+
+> 22:
+
+end if  
+
+> 23:
+
+end for  
+
+> 24:
+
+Return r = rlcb .
+
+Certification For certifications, we set the error probability α to 0.001 , corresponding to a 99 .9% 
+
+confidence interval. Unless otherwise stated, the selection glimpse took place over Nsel = 100 , and similarly the checking interval B was also set to 100 . All certifications were capped at 10 , 000 max samples. 
+
+B.1 Radius-Specialized Stopping Dynamics 
+
+To articulate the influence of focusing computational allocation across varying difficulty levels, we define two specialists— Small-R and Large-R —using a biased stopping criterion. These conditions incorporate an augmented sequential exit condition defined by the precision threshold ϵt, whereby 
+
+(Rmle − Rlcb ) ≤ ϵt · b(Rmle ) . (17) Here Rmle is the current estimated radius, Rlcb is the anytime-valid lower bound, and b(Rmle ) is a radius-dependent bias factor. For the Small-R specialist, we optimize for R < 0.5. This specialist employs an aggressive bias 
+
+b = 0 .2 when Rmle < 0.5, facilitating rapid exit for low-margin samples. The Large-R specialist is optimized for R > 1.0 by way of a bias b = 0 .6 when Rmle > 1.0.For samples falling outside the radius regime, the bias b is increased to 2.0, to force the specialist to either exit immediately (if the plateua condition is met), or to continue sampling until high precision is achieved. In doing so, the specialists effectively de-prioritize non-target compute, allowing us to demonstrate that specialization is a tool that be employed to leverage the anytime-valid properties of E-values to dynamically adjust sample budgets without sacrificing statistical integrity. 
+
+B.2 Computational Costs 
+
+A critical consideration for sequential certification frameworks is the wall-clock overhead introduced by the decision-making logic (meta-learning and interval checks) relative to the time saved by reducing base model forward passes. In this section, we provide a holistic breakdown of the computational costs associated with the Meta-RS framework. At inference time, the Meta-RS model involves 16 Feature Extraction from the penultimate layer embedding from the backbone model (conducted at 
+
+N = 100 ); and Meta-Learner Inference as a single forward pass through the 4-layer Residual MLP to predict the image-specific prior. After the Meta-RS model has been produced the prediction of the prior, Brent-Dekker Root Finding is performed every B steps, which is required to search for the LCB. We benchmarked these components on an NVIDIA 2080Ti GPU using ResNet-18 (CIFAR-10) and ResNet-50 (ImageNet) backbones. Table 3 summarizes the results. Table 3: Wall-Clock Timing Breakdown . We compare the marginal overhead of the Meta-RS components against the cost of base model forward passes on a 2080Ti GPU.         
+
+> Action Component Latency (ms) Backbone Cost ResNet-18 (100-sample batch) 3.8 ResNet-50 (100-sample batch) 102.9
+> Meta-RS Overhead Meta-Learner 0.9 Brent-Dekker Search (Per Check) 1.9
+
+The total computational overhead for a full N = 10 , 000 ImageNet certification is 10.4 s (comprising 1 batch for class prediction and 100 batches). In contrast, if the Meta learner is able to produce a 
+
+10 fold reduction in the number of samples, then the total cost is 1.15 s , an 89% reduction in the computational cost for ImageNet. This confirms that the computational cost of the anytime-valid logic is negligible—accounting for less than 2% of the total budget—allowing the sample complexity gains to translate directly into massive operational speedups in high-optimized inference systems. 
+
+C Champion Selection Processes 
+
+To evaluate the operational versatility of our framework, we identify three distinct Champion 
+
+archetypes. Each represents a specific optimization of our Meta-learner architecture designed to address different real-world deployment constraints. In short, the Global Champion demonstrates generalisability of the meta-learner, and provides a universal speedup for standard certification; while the Specialists demonstrate the framework’s ability to maximize performance. Of these, the Global Champion was set as Meta-1-Margin-Hybrid across all experiments. This technique produced the optima of 
+
+min 
+
+> Architecture
+
+¯N subject to Acc Meta ≥ Acc Cohen, 10k − 0.02 (18) when testing across all datasets and noise levels, based upon a sweep over the architectural space (K ∈ { 1, 3, 6, 10 }, Entropy or Margin feature modes, and ranges). This configuration demonstrates that a single meta-learned prior can capture universal statistical convictions across multiple semantic domains. For each dataset, we constructed an Accuracy Champion (otherwise labeled as the Dataset Specialist), which restricted the above optimization criteria to a single dataset-and-noise configuration. The choice of champion for each dataset can be found in Table 4. Finally, the Efficiency Champion is optimized using a similar objective, targeting parity with a moderate Cohen-1k baseline 
+
+min 
+
+> Architecture
+
+¯N subject to Acc Meta ≥ Acc Cohen, 1k . (19) 
+
+D Detailed Results and Aggregated Performance 
+
+The full suite of certification and efficiency results for individual datasets and noise levels is provided in Figures 2 through to 9. These figures are included to demonstrate the framework’s consistent performance across three distinct data manifolds (MNIST, CIFAR-10, ImageNet) and various noise levels. By visualizing the Average Sample Count (dashed lines) alongside the Certified Accuracy 
+
+(solid lines), we provide empirical proof that the meta-learned priors effectively deliver 20x–45x 17 Table 4: Champion Configurations by Dataset and Noise Level . We define three champion archetypes: Global (fixed Meta-1-margin-hybrid), Efficiency (absolute minimum average sample count ¯N ), and Accuracy (minimum ¯N maintaining accuracy parity with Cohen-10k). All configura-tions use an aggression factor λ = 1 .2.
+
+Dataset Sigma ( σ) Global Champion Efficiency Champion Accuracy Champion CIFAR-10 0.25 Meta-1-Margin-Hybrid Meta-3-Entropy-Dynamic Meta-1-Entropy-Dynamic 0.5 Meta-1-Margin-Hybrid Meta-1-Entropy-Dynamic Meta-1-Entropy-Dynamic 1. Meta-1-Margin-Hybrid Meta-6-Entropy-Dynamic Meta-3-Entropy-Dynamic ImageNet 0.25 Meta-1-Margin-Hybrid Meta-3-Margin-Hybrid Meta-6-Entropy-Hybrid 0.5 Meta-1-Margin-Hybrid Meta-1-Entropy-Hybrid Meta-1-Entropy-Hybrid 1. Meta-1-Margin-Hybrid Meta-3-Margin-Dynamic Meta-3-Margin-Dynamic MNIST 0.25 Meta-1-Margin-Hybrid Meta-1-Margin-Dynamic Meta-1-Margin-Dynamic 0.5 Meta-1-Margin-Hybrid Meta-1-Entropy-Hybrid Meta-1-Entropy-Hybrid 1. Meta-1-Margin-Hybrid Meta-1-Margin-Dynamic Meta-1-Margin-Dynamic 
+
+speedups over Cohen et al. (2019) while maintaining a similar accuracy profile. When comparing against the KT prior, our Meta-learner is able to consistently reduce the required number of samples to both certify and reject samples. This serves as the primary evidence for the system’s operational viability in high-throughput environments. 0.0 0.2 0.4 0.6 0.8     
+
+> Radius
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> Accuracy
+> Cohen 10k
+> Cohen 1k
+> KT
+> Global Champ
+> Specialist
+> 0.0 0.1 0.2 0.3 0.4
+> Radius
+> 10 2
+> 10 3
+> 10 4
+> Samples (n)
+> Cohen 10k
+> Cohen 1k
+> KT Avg
+> Global Champ Avg
+> Specialist Avg
+
+Figure 2: Certification and efficiency results for ImageNet at σ = 0 .25 . Curves compare the Anytime-Valid Global Champ and Specialist Meta-models against Cohen-10k/1k and KT Prior baselines. 
+
+E Ablation Studies and Sensitivity Analysis 
+
+This section provides empirical justification for the architectural and heuristic choices in the Meta-RS framework. All studies are conducted using ImageNet at σ = 0 .25 unless otherwise specified. 
+
+Statistical Universality and Zero-Shot Transferability (Figure 10). This log-log scatter plot correlates termination latencies across datasets, and demonstrates that the meta-learner may be able to capture fundamental statistical properties of classifier conviction rather than dataset-specific artifacts, justifying its use as a plug-and-play engine for new models. 
+
+Algorithmic Logic Waterfall Figure 11 breaks down the efficiency of our approach into the drivers. It is included to demonstrate the additive value of our Dual-Exit strategy, showing that while precision stopping drives certification, with performance being further refined by the Bankruptcy/UCB suite. 
+
+Precision-Efficiency Pareto Frontier (Figure 12). This plot maps sample complexity against radius precision target ϵ, confirming the influence of this parameterization upon resource demands. 18 Table 5: Comprehensive performance comparison across datasets and noise levels. 
+
+Dataset Sigma Strategy Acc (%) Mean Rad Avg All Avg Cert Avg Rej ImageNet 0.25 KT 72.6% 0.398 934.7 1211.7 200.7 0.25 Global Champ 72.4% 0.412 855.5 1105.4 200.0 0.25 Specialist 72.3% 0.412 855.3 1106.2 200.4 0.25 Cohen-10k 74.7% 0.536 10000 10000 10000 0.25 Cohen-1k 74.2% 0.420 1000 1000 1000 0.5 KT 71.3% 0.748 940.3 1237.4 202.1 0.5 Global Champ 71.2% 0.716 1007.2 1333.6 200.3 0.5 Specialist 71.2% 0.716 1000.9 1324.7 200.3 0.5 Cohen-10k 72.6% 0.997 10000 10000 10000 0.5 Cohen-1k 72.0% 0.787 1000 1000 1000 1. KT 68.4% 1.364 901.3 1221.8 207.6 1. Global Champ 68.5% 1.410 851.3 1149.6 202.5 1. Specialist 68.5% 1.387 844.3 1139.4 202.5 1. Cohen-10k 69.7% 1.801 10000 10000 10000 1. Cohen-1k 68.9% 1.440 1000 1000 1000 MNIST 0.25 KT 99.2% 0.573 1264.8 1273.4 200.0 0.25 Global Champ 99.2% 0.599 1163.6 1171.4 200.0 0.25 Specialist 99.2% 0.585 1162.2 1170.0 200.0 0.25 Cohen-10k 99.2% 0.773 10000 10000 10000 0.25 Cohen-1k 99.2% 0.600 1000 1000 1000 0.5 KT 98.4% 1.062 1199.0 1215.0 212.5 0.5 Global Champ 98.4% 1.095 1103.0 1117.5 212.5 0.5 Specialist 98.4% 1.095 1103.0 1117.5 212.5 0.5 Cohen-10k 98.8% 1.388 10000 10000 10000 0.5 Cohen-1k 98.8% 1.123 1000 1000 1000 1. KT 89.2% 0.981 967.8 1058.7 216.7 1. Global Champ 88.6% 0.946 1059.0 1168.8 205.3 1. Specialist 89.2% 0.993 925.8 1011.7 216.7 1. Cohen-10k 91.2% 1.200 10000 10000 10000 1. Cohen-1k 89.6% 1.070 1000 1000 1000 CIFAR-10 0.25 KT 73.6% 0.308 741.0 934.5 201.5 0.25 Global Champ 72.2% 0.309 659.0 835.5 200.7 0.25 Specialist 74.0% 0.310 678.6 846.8 200.0 0.25 Cohen-10k 78.8% 0.407 10000 10000 10000 0.25 Cohen-1k 77.8% 0.338 1000 1000 1000 0.5 KT 58.6% 0.377 703.2 1054.9 205.3 0.5 Global Champ 57.0% 0.376 695.8 1058.9 214.4 0.5 Specialist 58.6% 0.373 665.8 991.1 205.3 0.5 Cohen-10k 62.6% 0.473 10000 10000 10000 0.5 Cohen-1k 61.0% 0.411 1000 1000 1000 1. KT 41.8% 0.390 603.8 1152.2 210.0 1. Global Champ 41.2% 0.377 665.8 1314.6 211.2 1. Specialist 41.8% 0.395 573.8 1080.4 210.0 1. Cohen-10k 44.4% 0.491 10000 10000 10000 1. Cohen-1k 43.8% 0.431 1000 1000 1000 
+
+19 0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75       
+
+> Radius
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> Accuracy
+> Cohen 10k
+> Cohen 1k
+> KT
+> Global Champ
+> Specialist
+> 0.0 0.2 0.4 0.6 0.8 1.0 1.2
+> Radius
+> 10 2
+> 10 3
+> 10 4
+> Samples (n)
+> Cohen 10k
+> Cohen 1k
+> KT Avg
+> Global Champ Avg
+> Specialist Avg
+
+Figure 3: Certification and efficiency results for ImageNet at σ = 0 .5. Curves compare the Anytime-Valid Global Champ and Specialist Meta-models against Cohen-10k/1k and KT Prior baselines. 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5      
+
+> Radius
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> Accuracy
+> Cohen 10k
+> Cohen 1k
+> KT
+> Global Champ
+> Specialist
+> 0.0 0.5 1.0 1.5 2.0 2.5
+> Radius
+> 10 2
+> 10 3
+> 10 4
+> Samples (n)
+> Cohen 10k
+> Cohen 1k
+> KT Avg
+> Global Champ Avg
+> Specialist Avg
+
+Figure 4: Certification and efficiency results for ImageNet at σ = 1 .0. Curves compare the Anytime-Valid Global Champ and Specialist Meta-models against Cohen-10k/1k and KT Prior baselines. 
+
+E.1 Parameter Influence 
+
+To interrogate the influence of different parameter strategies, we considered meta-model variants across slices in terms of the range (Table 6), mixture component counts (Table 7), and input features (Table 8). The clear signal from these is the lack of signal , in that on average there is no consistent trends to any of these approaches. This is not to say that these factors are not influential, but rather that the drivers of performance are multifactorial. Table 6: Global Influence of prior range strategies . Average influence of different range settings for the Meta-model, radii relative to Cohen et al. (2019). 
+
+Range Avg Cert Samples Mean Radius (rel. Cohen) Dynamic 1071.631 0.773 Full 1254.115 0.731 Hybrid 1123.796 0.781 
+
+20 0.0 0.2 0.4 0.6 0.8 
+
+Radius 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+> Accuracy
+
+Cohen 10k 
+
+Cohen 1k 
+
+KT 
+
+Global Champ 
+
+Specialist 
+
+0.0 0.1 0.2 0.3 0.4 
+
+Radius 
+
+10 2
+
+10 3
+
+10 4
+
+> Samples (n)
+
+Cohen 10k 
+
+Cohen 1k 
+
+KT Avg 
+
+Global Champ Avg 
+
+Specialist Avg Figure 5: Certification and efficiency results for MNIST at σ = 0 .25 . Curves compare the Anytime-Valid Global Champ and Specialist Meta-models against Cohen-10k/1k and KT Prior baselines. 0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75 
+
+Radius 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+> Accuracy
+
+Cohen 10k 
+
+Cohen 1k 
+
+KT 
+
+Global Champ 
+
+Specialist 
+
+0.0 0.2 0.4 0.6 0.8 1.0 1.2 
+
+Radius 
+
+10 2
+
+10 3
+
+10 4
+
+> Samples (n)
+
+Cohen 10k 
+
+Cohen 1k 
+
+KT Avg 
+
+Global Champ Avg 
+
+Specialist Avg 
+
+Figure 6: Certification and efficiency results for MNIST at σ = 0 .5. Curves compare the Anytime-Valid Global Champ and Specialist Meta-models against Cohen-10k/1k and KT Prior baselines. 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 
+
+Radius 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+> Accuracy
+
+Cohen 10k 
+
+Cohen 1k 
+
+KT 
+
+Global Champ 
+
+Specialist 
+
+0.0 0.5 1.0 1.5 2.0 2.5 
+
+Radius 
+
+10 2
+
+10 3
+
+10 4
+
+> Samples (n)
+
+Cohen 10k 
+
+Cohen 1k 
+
+KT Avg 
+
+Global Champ Avg 
+
+Specialist Avg 
+
+Figure 7: Certification and efficiency results for MNIST at σ = 1 .0. Curves compare the Anytime-Valid Global Champ and Specialist Meta-models against Cohen-10k/1k and KT Prior baselines. 21 0.0 0.2 0.4 0.6 0.8     
+
+> Radius
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> Accuracy
+> Cohen 10k
+> Cohen 1k
+> KT
+> Global Champ
+> Specialist
+> 0.0 0.1 0.2 0.3 0.4
+> Radius
+> 10 2
+> 10 3
+> 10 4
+> Samples (n)
+> Cohen 10k
+> Cohen 1k
+> KT Avg
+> Global Champ Avg
+> Specialist Avg
+
+Figure 8: Certification and efficiency results for CIFAR10 at σ = 0 .25 . Curves compare the Anytime-Valid Global Champ and Specialist Meta-models against Cohen-10k/1k and KT Prior baselines. 0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75       
+
+> Radius
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> Accuracy
+> Cohen 10k
+> Cohen 1k
+> KT
+> Global Champ
+> Specialist
+> 0.0 0.2 0.4 0.6 0.8 1.0 1.2
+> Radius
+> 10 2
+> 10 3
+> 10 4
+> Samples (n)
+> Cohen 10k
+> Cohen 1k
+> KT Avg
+> Global Champ Avg
+> Specialist Avg
+
+Figure 9: Certification and efficiency results for CIFAR10 at σ = 0 .5. Curves compare the Anytime-Valid Global Champ and Specialist Meta-models against Cohen-10k/1k and KT Prior baselines. Table 7: Global Influence of mixture components (K) . Average influence of different range settings for the Meta-model, radii relative to Cohen et al. (2019). 
+
+K Avg Cert Samples Mean Radius (rel. Cohen) 1 1130.593 0.761 3 1153.369 0.761 6 1156.495 0.763 10 1158.932 0.762 
+
+Table 8: Global Influence of input features . Average influence of different range settings for the Meta-model, radii relative to Cohen et al. (2019). 
+
+Input Features Avg Cert Samples Mean Radius (rel. Cohen) entropy 1148.657 0.762 margin 1151.037 0.761 
+
+22 10 2 10 3 10 4
+
+> Native ImageNet Samples (Log)
+> 10 2
+> 10 3
+> 10 4
+> Zero-Shot CIFAR-10 Samples (Log)
+
+Figure 10: Zero-Shot Transferability. A log-log scatter plot correlating termination latencies of an ImageNet-native prior vs. a CIFAR-trained prior tested on ImageNet. These results suggest that the meta-learner captures universal statistical properties of classifier conviction that transcend specific datasets. Fixed 10k Anytime + Precision + Suite 
+
+> Step
+> 10 3
+> 10 4
+> Samples
+> Type
+> Cert
+> Rej
+
+Figure 11: Algorithmic Logic Waterfall. Incremental gains from Anytime-Valid LCB, Precision Stopping, and Rejection Heuristics. The comparison shows that while Precision Stopping provides the bulk of certification speedup, the Bankruptcy/UCB rejection suite is critical for minimizing the cost of non-robust samples. 23 10 2 10 1
+
+> Target Gap (eps)
+> 10 3
+> 2 × 10 2
+> 3 × 10 2
+> 4 × 10 2
+> 6 × 10 2
+> Samples
+> 0.35
+> 0.40
+> 0.45
+> 0.50
+> 0.55
+> Radius
+> Total
+> Reject
+> Radius
+
+Figure 12: Precision-Efficiency Pareto Frontier. This plot maps the scaling of sample complexity against the radius precision target ϵ. As the requirement for tightness increases ( ϵ → 0.01 ), the sample cost grows logarithmically, allowing practitioners to choose an operating point based on their computational budget. 24

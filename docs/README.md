@@ -6,43 +6,55 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-28
-- 运行时间：2026-06-28 21:42:21 UTC
+- 最新运行日期：2026-06-29
+- 运行时间：2026-06-29 22:18:03 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：5
+- 本次总论文数：11
+- 精读区：9
 - 速读区：2
 
 ### 今日简报（AI）
-今日精读因果DAG先验合成时序数据与最大似然非嵌套模型选择两篇高分论文，并速览超稀疏网络生成模型和GraphRAG优化方案。  
-因果先验能显著提升合成时序分类数据的保真度，而最大似然准则为非嵌套模型比较提供了新尺规。  
-建议读者深入因果结构约束下的生成模型设计，或将非嵌套选择准则落地到实际模型评估中。
-- 详情：[/202606/28/README](/202606/28/README)
+今天聚焦高价值论文，从组合优化视角重新理解科学发现，并探讨因果概率时序图的估计-预测权衡。
+最值得关注：科学发现可建模为元优化问题，能直接指导自动化科研；同时，因果图上估计与预测性能需平衡，不可兼得。
+建议读者优先消化“元优化”思路，它可能改变你对 AI 辅助科研的认知。
+- 详情：[/202606/29/README](/202606/29/README)
 
 ### 精读区论文标签
-1. [A Causal DAG Prior for Synthetic Time-Series Classification Datasets](/202606/28/2606.21776v1-a-causal-dag-prior-for-synthetic-time-series-classification-datasets)  
+1. [Scientific discovery as meta-optimization: a combinatorial optimization case study](/202606/29/2606.26728v1-scientific-discovery-as-meta-optimization-a-combinatorial-optimization-case-study)  
+   标签：评分：10.0/10、query:ml
+   evidence：将科学发现形式化为元优化，利用LLM生成并聚合目标函数，实现自动演化的评估标准。
+2. [Estimation--Prediction Tradeoff in Causal Probabilistic Temporal Graphs](/202606/29/2606.28225v1-estimation--prediction-tradeoff-in-causal-probabilistic-temporal-graphs)  
+   标签：评分：10.0/10、query:dynamic-g
+   evidence：提出了一个概率因果框架来生成时间图，并研究时间链接预测，解决动态图学习中的估计-预测权衡。
+3. [TeRoR: Decoupled Temporal Rotation with Relational Circular Region for Temporal Knowledge Graph Embedding](/202606/29/2606.27651v1-teror-decoupled-temporal-rotation-with-relational-circular-region-for-temporal-knowledge-graph-embedding)  
+   标签：评分：9.0/10、query:dynamic-g
+   evidence：提出一种用于动态图的时序知识图谱嵌入方法
+4. [The Simulacrum: Decision-Theoretic Pretraining for Near-Optimal Time-Series Forecasting and Inference](/202606/29/2606.27711v1-the-simulacrum-decision-theoretic-pretraining-for-near-optimal-time-series-forecasting-and-inference)  
+   标签：评分：9.0/10、query:efmr
+   evidence：决策论预训练使神经估计器能在时间序列上实现零样本模型选择
+5. [Enhancing Numerical Prediction in LLMs via Smooth MMD Alignment](/202606/29/2606.27731v1-enhancing-numerical-prediction-in-llms-via-smooth-mmd-alignment)  
+   标签：评分：9.0/10、query:graph-llm
+   evidence：利用数值token核图上的图平滑性来对齐LLM数值预测
+6. [Spectral clustering of time-evolving networks using spatio-temporal random walks](/202606/29/2606.27850v1-spectral-clustering-of-time-evolving-networks-using-spatio-temporal-random-walks)  
+   标签：评分：9.0/10、query:dynamic-g
+   evidence：针对时间演化网络的谱聚类方法，直接处理动态图分析
+7. [Towards Automating Scientific Review with Google's Paper Assistant Tool](/202606/29/2606.28277v1-towards-automating-scientific-review-with-googles-paper-assistant-tool)  
    标签：评分：9.0/10、query:ml
-   evidence：引入用于元学习合成时间序列数据集的因果DAG先验
-2. [Maximum Likelihood Criterion for Non-nested Model Selection](/202606/28/2606.22403v1-maximum-likelihood-criterion-for-non-nested-model-selection)  
-   标签：评分：9.0/10、query:ml
-   evidence：提出非嵌套模型选择的最大似然准则
-3. [Socratic agents for autonomous scientific discovery in high-dimensional physical systems](/202606/28/2606.26722v1-socratic-agents-for-autonomous-scientific-discovery-in-high-dimensional-physical-systems)  
-   标签：评分：9.0/10、query:ml
-   evidence：用于自主物理系统实验的多智能体AI科学家
-4. [SVGym (SciVerseGym): An Environment for Reinforcement Learning and Bayesian Optimization in Crystal Discovery](/202606/28/2606.22425v1-svgym-sciversegym-an-environment-for-reinforcement-learning-and-bayesian-optimization-in-crystal-discovery)  
+   evidence：提出用于自动化科学评审的AI智能体框架，直接贡献于自动化科学发现系统。
+8. [Halt Fast! Early Stopping for Certified Robustness](/202606/29/2606.27694v1-halt-fast-early-stopping-for-certified-robustness)  
    标签：评分：8.0/10、query:ml
-   evidence：提供通过强化学习和贝叶斯优化进行自动化晶体发现的强化学习环境
-5. [MapReason-OSM: Can Vision-Language Models Make Graph-Verifiable Mobility Decisions from Street Maps ?](/202606/28/2606.22597v2-mapreason-osm-can-vision-language-models-make-graph-verifiable-mobility-decisions-from-street-maps-)  
-   标签：评分：8.0/10、query:graph-llm
-   evidence：评估VLMs在图可验证的地图决策上的表现
+   evidence：用于随时有效认证鲁棒性的元学习框架
+9. [Extracting behavioural properties from face-to-face interactions temporal networks: a measure of egonet persistency](/202606/29/2606.27860v1-extracting-behavioural-properties-from-face-to-face-interactions-temporal-networks-a-measure-of-egonet-persistency)  
+   标签：评分：8.0/10、query:dynamic-g
+   evidence：量化时序网络中自我网持续性的框架
 
 ### 速读区论文标签
-1. [A Generative Model for Extremely Sparse Edge-Exchangeable Networks](/202606/28/2606.22105v1-a-generative-model-for-extremely-sparse-edge-exchangeable-networks)  
+1. [Exploring Academic Influence of Algorithms by Co-occurrence Network Based on Full-text of Academic Papers](/202606/29/2606.24099v1-exploring-academic-influence-of-algorithms-by-co-occurrence-network-based-on-full-text-of-academic-papers)  
    标签：评分：7.0/10、query:dynamic-g
-   evidence：提出一种极稀疏边可交换网络序列的生成模型
-2. [Is GraphRAG Needed? From Basic RAG to Graph-/Agentic Solutions with Context Optimization](/202606/28/2606.25656v1-is-graphrag-needed-from-basic-rag-to-graph-agentic-solutions-with-context-optimization)  
-   标签：评分：7.0/10、query:graph-llm
-   evidence：在半结构化知识库上评估集成了文本-图检索与LLM的GraphRAG方案
+   evidence：构建年度算法共现网络分析结构演变
+2. [Fast Approximate MM-Estimation for Outlier Robust Model Selection](/202606/29/2606.27638v1-fast-approximate-mm-estimation-for-outlier-robust-model-selection)  
+   标签：评分：7.0/10、query:ml
+   evidence：快速近似MM估计器用于异常稳健的模型选择
 
 
 <div class="dpr-home-promo-card">
