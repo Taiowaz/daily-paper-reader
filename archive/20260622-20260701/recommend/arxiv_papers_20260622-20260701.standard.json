@@ -1,0 +1,815 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-01T03:28:22.105198+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 4,
+    "deep_divecandidates": 17,
+    "deep_cap": 9,
+    "deep_selected": 11,
+    "quick_candidates": 8,
+    "quick_skim_target": 14,
+    "quick_selected": 8
+  },
+  "deep_dive": [
+    {
+      "id": "2606.28916v1",
+      "source": "arxiv",
+      "title": "Latent Bridges for Multi-Table Question Answering",
+      "abstract": "We introduce GRAB, a constructor-encoder-bridge pipeline for table question answering. Our method lifts relational data into an heterogeneous graph, encodes it via message passing, and transfers the signals to an LLM through a small set of query-conditioned latent tokens. This provides the LLM with a compact, task-relevant structural representation together with the flattened text. Crucially, the LLM remains strictly frozen to preserve its general reasoning capabilities; we train only the lightweight graph encoder and latent bridge (91M parameters), allowing the entire pipeline to be trained efficiently. Our pipeline significantly improves performance on relational Question Answering, with the largest gains in demanding multi-table settings, offering an efficient, principled way to connect relational deep learning with LLMs.",
+      "authors": [
+        "Simone Varriale",
+        "Tamara Cucumides",
+        "Floris Geerts",
+        "Paolo Papotti"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.DB"
+      ],
+      "published": "2026-06-27T13:48:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.28916v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "integrates graph neural networks with LLMs via latent bridge tokens",
+      "llm_evidence_cn": "通过潜在桥接标记集成图神经网络与大型语言模型",
+      "llm_evidence": "通过潜在桥接标记集成图神经网络与大型语言模型",
+      "canonical_evidence": "通过潜在桥接标记集成图神经网络与大型语言模型",
+      "llm_tldr_en": "GRAB lifts relational data into a heterogeneous graph, encodes it with message passing, and transfers signals to a frozen LLM through query-conditioned latent tokens, enabling efficient multi-table QA.",
+      "llm_tldr_cn": "GRAB将关系型数据提升为异质图，通过消息传递编码后，利用查询条件的少量潜在标记将结构信息传递给冻结的大语言模型，从而在不微调LLM的情况下提升多表问答性能。",
+      "llm_tldr": "GRAB将关系型数据提升为异质图，通过消息传递编码后，利用查询条件的少量潜在标记将结构信息传递给冻结的大语言模型，从而在不微调LLM的情况下提升多表问答性能。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29773v1",
+      "source": "arxiv",
+      "title": "GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks",
+      "abstract": "Graphs are widely used to model relational systems, with applications in domains such as social networks, finance, and biomedicine. Graph neural networks (GNNs) have become a mainstream approach for learning graph representations. With the rise of large language models (LLMs), recent studies have attempted to combine GNNs with LLMs. However, most existing works concentrate on node-level and edge-level tasks, while graph-level tasks, which require capturing more complex structural and feature information, remain relatively underexplored. Moreover, graph pretraining is a widely adopted strategy to alleviate the challenge of label scarcity. Most existing approaches are designed solely for GNNs such as GraphCL, leaving LLMs uninvolved in the process. To address these limitations, we propose GLIP, a Graph-LLM JoInt Pretraining framework for graph-level tasks. GLIP first performs graph augmentation to construct positive and negative pairs and introduces a multi-token selection strategy to identify patches informative in both structure and features. It further leverages a diffusion-based projector to enrich them with contextual information, enabling GLIP to capture signals from both global and local perspectives. Finally, GLIP employs a joint objective that integrates the LLM's semantic judgments with a contrastive alignment loss, ensuring consistent supervision at both the semantic and structural levels. After pretraining, GLIP is fine-tuned with limited labeled data for downstream tasks, and extensive experiments show that it outperforms state-of-the-art methods on graph-level classification and reasoning tasks. Our source code is publicly available at https://anonymous.4open.science/r/GLIP.",
+      "authors": [
+        "Haoxin Sun",
+        "Yiqing Lin",
+        "Yajun Huang",
+        "Chenhui Dong",
+        "Mingjun Li",
+        "Zhongzhi Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-29T04:30:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.29773v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Combines GNNs and LLMs via joint pretraining for graph-level tasks",
+      "llm_evidence_cn": "通过图级别任务的联合预训练将GNN和LLM结合",
+      "llm_evidence": "通过图级别任务的联合预训练将GNN和LLM结合",
+      "canonical_evidence": "通过图级别任务的联合预训练将GNN和LLM结合",
+      "llm_tldr_en": "Proposes GLIP, which jointly pretrains GNNs and LLMs for graph-level tasks, addressing label scarcity and leveraging both structural and textual modalities.",
+      "llm_tldr_cn": "针对图级任务中标签稀缺且现有预训练多未利用LLM的问题，提出GLIP框架，联合预训练图神经网络和大语言模型，在图级表示中融合结构信息和文本知识。实验表明该方法在多个图分类基准上取得优异性能，为图-语言模型联合学习提供了有效方案。",
+      "llm_tldr": "针对图级任务中标签稀缺且现有预训练多未利用LLM的问题，提出GLIP框架，联合预训练图神经网络和大语言模型，在图级表示中融合结构信息和文本知识。实验表明该方法在多个图分类基准上取得优异性能，为图-语言模型联合学习提供了有效方案。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.30291v1",
+      "source": "arxiv",
+      "title": "PromptGNN-sim: Deep Fusion and Alignment of GNN and LLMs for Text-Attributed Graph Learning",
+      "abstract": "Text-Attributed Graphs (TAGs) combine textual semantics with graph structure and are central to many graph learning tasks. However, existing fusion methods often treat text and structure as separate inputs in a shallow, one-way pipeline, which limits deep interaction between modalities and weakens performance under sparse connectivity or cross-graph generalisation. To address this issue, we propose PromptGNN-sim, a bi-directional structure-semantic fusion framework for collaborative GNN-LLM learning. PromptGNN-sim uses a Graph Attention Network (GAT) for semantically aware neighborhood selection by combining structural attention with textual similarity. The selected structural context is then used to generate structure-aware prompts for an LLM, including the target node summary, label categories, and representative keywords from similar neighbors. During training, bi-directional cross-modal contrastive learning and cross-attention are introduced to jointly optimize the GNN and LLM components. Experiments on six public datasets, including Cora, Pubmed, and WikiCS, evaluate accuracy, generalisation, and robustness under cross-task transfer, cross-dataset generalisation, and sparse perturbations. Results show that PromptGNN-sim outperforms classical GNNs, LLMs, and recent GNN-LLM fusion methods, demonstrating the effectiveness of interactive structure-semantic collaboration for text-attributed graph learning.",
+      "authors": [
+        "Zhifei Hu",
+        "Alexandra I. Cristea"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-29T13:35:05+00:00",
+      "link": "https://arxiv.org/pdf/2606.30291v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "bi-directional structure-semantic fusion framework for collaborative GNN-LLM learning",
+      "llm_evidence_cn": "双向结构-语义融合框架，实现GNN与LLM的协同学习",
+      "llm_evidence": "双向结构-语义融合框架，实现GNN与LLM的协同学习",
+      "canonical_evidence": "双向结构-语义融合框架，实现GNN与LLM的协同学习",
+      "llm_tldr_en": "PromptGNN-sim proposes a bi-directional fusion framework that deeply integrates GNN and LLM for text-attributed graph learning, using semantic-aware neighborhood selection and structure-aware prompts to enhance performance under sparse connectivity and cross-graph generalization.",
+      "llm_tldr_cn": "针对现有文本属性图学习方法中文本与结构浅层单向交互的问题，PromptGNN-sim提出双向结构-语义融合框架，通过语义感知邻域选择结合结构注意力与文本相似度，并利用结构感知提示实现GNN与LLM的协同学习。实验表明该方法在稀疏连接和跨图泛化场景下性能优越。核心贡献在于实现了两种模态的深度融合，为解决图学习中的信息稀疏性问题提供了新思路。",
+      "llm_tldr": "针对现有文本属性图学习方法中文本与结构浅层单向交互的问题，PromptGNN-sim提出双向结构-语义融合框架，通过语义感知邻域选择结合结构注意力与文本相似度，并利用结构感知提示实现GNN与LLM的协同学习。实验表明该方法在稀疏连接和跨图泛化场景下性能优越。核心贡献在于实现了两种模态的深度融合，为解决图学习中的信息稀疏性问题提供了新思路。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.25532v1",
+      "source": "arxiv",
+      "title": "Agentic evolution of physically constrained foundation models",
+      "abstract": "Artificial intelligence increasingly drives automated scientific discovery, yet contemporary generalist agents lack physical grounding, frequently hallucinating hardware-incompatible designs. Here, we present a physically grounded, multi-agent discovery engine that autonomously architects hardware-compliant computing systems. Anchored by an Evolutionary Knowledge Graph structuring past scientific innovations, the framework extracts an \"algorithmic Chain-of-Thought\" to transform blind stochastic search into directed structural evolution. Applied to the extreme testbed of foundation model deployment, the engine evolved two hardware-aware compression methodologies surpassing human-engineered heuristics: Q-Enhance mitigates long-context accuracy loss in dense models, and MoE-Salient-AQ outperforms state-of-the-art manual sparse Mixture-of-Experts designs by 3.7% at sub-3-bit regimes. Utilizing a bandwidth-efficient Sensitivity Profile, we successfully deployed a massive 235-billion-parameter model onto a constrained dual-A100 server, reducing memory requirements by 75% with a marginal 0.64% accuracy degradation. By transforming unconstrained combinatorial search into knowledge-driven autonomy, this establishes a scalable hardware-software co-design paradigm for machine-driven discovery within strict physical boundaries.",
+      "authors": [
+        "Jiangwei Zhang",
+        "Wen Sun",
+        "Chong Wang",
+        "Shiyao Li",
+        "Cheng Che",
+        "Chunjing Han",
+        "Dan Meng",
+        "Jian Yang",
+        "Yu Wang",
+        "Rui Hou"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.AR",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-06-24T08:07:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.25532v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Physically grounded multi-agent discovery engine for automating scientific innovation",
+      "llm_evidence_cn": "物理约束的多智能体发现引擎，用于自动化科学创新",
+      "llm_evidence": "物理约束的多智能体发现引擎，用于自动化科学创新",
+      "canonical_evidence": "物理约束的多智能体发现引擎，用于自动化科学创新",
+      "llm_tldr_en": "Presents a physically grounded multi-agent discovery engine that autonomously architects hardware-compliant computing systems using an Evolutionary Knowledge Graph, evolving hardware-aware compression methods that surpass human-designed heuristics.",
+      "llm_tldr_cn": "针对当代通用智能体缺乏物理约束、常产生硬件不兼容设计的问题，提出一种物理约束的多智能体发现引擎。该引擎以进化知识图谱为核心，提取算法思维链将盲目搜索转化为定向结构演化。应用于基础模型部署任务，演化出Q-Enhance和一种后训练量化方法两种硬件感知压缩技术，性能超越人工设计的启发式策略，展示了自动化科学发现的能力。",
+      "llm_tldr": "针对当代通用智能体缺乏物理约束、常产生硬件不兼容设计的问题，提出一种物理约束的多智能体发现引擎。该引擎以进化知识图谱为核心，提取算法思维链将盲目搜索转化为定向结构演化。应用于基础模型部署任务，演化出Q-Enhance和一种后训练量化方法两种硬件感知压缩技术，性能超越人工设计的启发式策略，展示了自动化科学发现的能力。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automated scientific research and discovery systems",
+      "matched_requirement_id": "req-30",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29100v1",
+      "source": "arxiv",
+      "title": "Toward Exascale AI for Science: A Scalable AI Skill for Autonomous Microkinetics Discovery",
+      "abstract": "We present a scalable AI-driven framework that advances autonomous scientific discovery by combining agentic workflow automation, high-performance computing, and scientific surrogate models. Using microkinetics discovery as a testbed, the work demonstrates how AI can reduce expert intervention, recover from failed simulations, and systematically evaluate surrogate model reliability. This study shows how AI skills can transform complex domain workflows into robust, scalable capabilities for next-generation materials research.",
+      "authors": [
+        "Ken-ichi Nomura",
+        "William Dawson",
+        "Nabankur Dasgupta",
+        "Taufeq Mohammed Razakh",
+        "Thomas Linker",
+        "Kai Ito",
+        "Aiichiro Nakano"
+      ],
+      "primary_category": "cs.CE",
+      "categories": [
+        "cs.CE"
+      ],
+      "published": "2026-06-27T22:10:01+00:00",
+      "link": "https://arxiv.org/pdf/2606.29100v1",
+      "tags": [
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Presents a scalable AI framework for autonomous scientific discovery in microkinetics, combining agentic automation, HPC, and surrogate models.",
+      "llm_evidence_cn": "提出用于微动力学自主科学发现的可扩展AI框架，结合智能体自动化、高性能计算和代理模型。",
+      "llm_evidence": "提出用于微动力学自主科学发现的可扩展AI框架，结合智能体自动化、高性能计算和代理模型。",
+      "canonical_evidence": "提出用于微动力学自主科学发现的可扩展AI框架，结合智能体自动化、高性能计算和代理模型。",
+      "llm_tldr_en": "The paper demonstrates a scalable AI framework for autonomous microkinetics discovery that integrates agentic workflow automation, HPC, and surrogate models, reducing expert intervention and enabling robust, scalable scientific discovery.",
+      "llm_tldr_cn": "针对复杂科学发现流程中人工干预多、仿真易失败的问题，该工作提出一个可扩展的AI框架，整合智能体工作流自动化、高性能计算和科学代理模型，实现微动力学的自主发现。实验表明该系统能自动恢复失败仿真、评估代理模型可靠性，将复杂领域工作流转化为鲁棒可扩展的AI技能，推动科学研究自动化。",
+      "llm_tldr": "针对复杂科学发现流程中人工干预多、仿真易失败的问题，该工作提出一个可扩展的AI框架，整合智能体工作流自动化、高性能计算和科学代理模型，实现微动力学的自主发现。实验表明该系统能自动恢复失败仿真、评估代理模型可靠性，将复杂领域工作流转化为鲁棒可扩展的AI技能，推动科学研究自动化。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29582v1",
+      "source": "arxiv",
+      "title": "Bilevel Optimization for Neural Architecture Search",
+      "abstract": "Bilevel optimization has become an influential and widely adopted framework for addressing hierarchical optimization problems in machine learning, providing an effective approach to modeling the interaction between two levels of optimization, with applications such as hyperparameter tuning, meta-learning, adversarial training, and data poisoning. Neural Architecture Search (NAS), a subfield of hyperparameter optimization, is a prime example of a bilevel optimization problem, with architecture parameters optimized at the outer-level and network weights optimized at the inner level. This paper presents a structured overview of NAS through the lens of bilevel optimization. We categorize existing NAS approaches into two main classes: sampling-based methods, which search optimal architectures using different architecture samplers, and bilevel theory-based methods, which solve the architecture search problem using bilevel optimization principles. We further highlight our current research direction, wherein the bilevel NAS formulation is addressed through an auxiliary mathematical programming framework. This framework enables the systematic integration of second-order information from the model's training loss function and ensures the optimality of the model parameters while modifying architecture parameters. By simultaneously updating the architecture and model parameters along their respective optimal descent directions derived from the auxiliary mathematical program, these methods achieve more principled and theoretically consistent results. The same auxiliary program can also be used for simultaneous hyperparameter and model fine-tuning. A comparative analysis shows that bilevel theory-based approaches generally outperform sampling-based methods, both in accuracy and efficiency.",
+      "authors": [
+        "Abhishek Shukla",
+        "Ankur Sinha",
+        "Faiz Hamid"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-28T19:54:20+00:00",
+      "link": "https://arxiv.org/pdf/2606.29582v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:ml",
+        "query:EFMR",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "systematically reviews NAS through bilevel optimization framework",
+      "llm_evidence_cn": "以双层优化视角系统综述神经架构搜索方法",
+      "llm_evidence": "以双层优化视角系统综述神经架构搜索方法",
+      "canonical_evidence": "以双层优化视角系统综述神经架构搜索方法",
+      "llm_tldr_en": "This survey unifies neural architecture search under bilevel optimization, categorizing methods into sampling-based and gradient-based approaches and highlighting future challenges.",
+      "llm_tldr_cn": "本文从双层优化角度对神经架构搜索（NAS）进行结构化综述：将现有方法分为基于采样和基于梯度两大类，详述其优化机制与核心挑战；双层优化为理解NAS提供了统一的理论视角，并指出可微架构搜索、效率提升等未来方向，对AutoML研究具有重要参考价值。",
+      "llm_tldr": "本文从双层优化角度对神经架构搜索（NAS）进行结构化综述：将现有方法分为基于采样和基于梯度两大类，详述其优化机制与核心挑战；双层优化为理解NAS提供了统一的理论视角，并指出可微架构搜索、效率提升等未来方向，对AutoML研究具有重要参考价值。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "techniques for neural architecture search and hyperparameter optimization",
+      "matched_requirement_id": "req-36",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29876v1",
+      "source": "arxiv",
+      "title": "Clinical Reasoning Graphs: Structured Evaluation of LLM Diagnostic Reasoning Reveals Competence Without Consistency",
+      "abstract": "Modern large language models (LLMs) reach 60-70% diagnostic accuracy on complex clinical case benchmarks, but accuracy alone cannot distinguish stable clinically-grounded reasoning from pattern matching. We introduce clinical reasoning graphs, structured graph representations extracted from free-text LLM diagnostic traces using a domain-grounded ontology with 5 node types and 7 edge types. We apply this pipeline to 750 traces from five LLMs across 50 New England Journal of Medicine Clinicopathological Conference cases and three prompt conditions, and test whether diagnostic traces show stable structured reasoning patterns, or diagnostic schemas, for clinically similar cases. We operationalize this as higher graph similarity among clinically similar cases than among clinically dissimilar ones. Across 15 model-condition comparisons, within-cluster and between-cluster composite similarity are nearly equal, and no comparison survives multiple-testing correction; a component-level analysis finds any residual content signal far below schema scale. Graph similarity is also nearly identical for pairs of models that are both correct (0.488) and both incorrect (0.484), suggesting that graph structure captures a dimension not reflected in diagnostic accuracy. Structured reflection prompting increases explicit discriminating-feature analysis within traces (+33%) but does not increase cross-case consistency. These results show diagnostic competence without schema-scale reasoning consistency, and indicate that final-answer accuracy should be complemented by process-level evaluation. We release the ontology, extraction pipeline, validation protocol, and the extracted reasoning graphs and similarity artifacts as resources for structured evaluation of LLM clinical reasoning.",
+      "authors": [
+        "Nisarg A. Patel"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "q-bio.QM"
+      ],
+      "published": "2026-06-29T07:16:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.29876v1",
+      "tags": [
+        "keyword:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "structured graph representations of LLM diagnostic reasoning",
+      "llm_evidence_cn": "LLM诊断推理的结构化图表示",
+      "llm_evidence": "LLM诊断推理的结构化图表示",
+      "canonical_evidence": "LLM诊断推理的结构化图表示",
+      "llm_tldr_en": "Constructs clinical reasoning graphs from LLM diagnostic traces to assess reasoning consistency, finding competence but unstable schemas.",
+      "llm_tldr_cn": "针对LLM临床诊断准确率无法区分稳定推理的问题，提出临床推理图方法，从LLM诊断文本中提取结构化图表示，发现LLM表现出能力但缺乏跨相似病例的稳定推理模式，为可解释医学AI评估提供了工具。",
+      "llm_tldr": "针对LLM临床诊断准确率无法区分稳定推理的问题，提出临床推理图方法，从LLM诊断文本中提取结构化图表示，发现LLM表现出能力但缺乏跨相似病例的稳定推理模式，为可解释医学AI评估提供了工具。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.29981v1",
+      "source": "arxiv",
+      "title": "Hephaestus: Toward a Cybersecurity AI Scientist",
+      "abstract": "Cyber offense is moving to machine speed; cyber research itself is not. Existing AI scientist systems make end-to-end research automation increasingly plausible, but they target relatively stable scientific domains. We argue that AI-native cybersecurity is a different kind of scientific object. Its recurring units of study are security events and interaction traces, not static assets; its model and tool substrate is non-stationary, not steady-state; and credible evaluation depends on digital twins, cyber ranges, and auditable evidence rather than on a single benchmark score. We call this object the Cybersecurity AI Scientist. A practical realization is a modular, role-specialized multi-agent research system that coordinates problem framing, threat modeling, tool generation, controlled experimentation, evaluation, governance, and scientific reporting, and that anchors its concrete objectives in a four-zeros frame spanning risk, trust, incident, and energy dimensions. As a representative agenda we focus on AI-native defense, where steady-state perimeters give way to resilient agent legions and the classical category of terminal security is itself being deconstructed into agent security. This paper defines the object, separates it from any single organizational realization, and offers an architecture and an agenda on which later systems, benchmarks, and empirical programs can be built.",
+      "authors": [
+        "Jiaqi Li",
+        "Yang Zhao",
+        "Wen Lu",
+        "Lvyang Zhang",
+        "Lidong Zhai"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-06-29T08:56:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.29981v1",
+      "tags": [
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "proposes a modular multi-agent AI scientist system for automated cybersecurity research",
+      "llm_evidence_cn": "提出模块化多代理AI科学家系统，用于自动化网络安全研究",
+      "llm_evidence": "提出模块化多代理AI科学家系统，用于自动化网络安全研究",
+      "canonical_evidence": "提出模块化多代理AI科学家系统，用于自动化网络安全研究",
+      "llm_tldr_en": "Hephaestus is a role-specialized multi-agent research system for cybersecurity, automating problem framing, threat modeling, and tool generation, targeting non-stationary security domains with digital twins for evaluation.",
+      "llm_tldr_cn": "现有AI科学家系统多针对相对稳定的科学领域，难以适应网络安全的高度非平稳性。Hephaestus提出模块化、角色专精的多代理研究系统，协调问题框架构建、威胁建模、工具生成等环节，并利用数字孪生进行可信评估。该框架为自动化网络安全研究提供了新范式，展示了AI科学家在对抗性动态环境中的潜力。",
+      "llm_tldr": "现有AI科学家系统多针对相对稳定的科学领域，难以适应网络安全的高度非平稳性。Hephaestus提出模块化、角色专精的多代理研究系统，协调问题框架构建、威胁建模、工具生成等环节，并利用数字孪生进行可信评估。该框架为自动化网络安全研究提供了新范式，展示了AI科学家在对抗性动态环境中的潜力。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automated scientific research and discovery systems",
+      "matched_requirement_id": "req-30",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.30175v1",
+      "source": "arxiv",
+      "title": "CORTEX: High-Quality Cross-Domain Organization of Web-Scale Corpora through Ontological Corpus Graph",
+      "abstract": "The continuous evolution of large language models drives escalating demands on data scale and quality, and as different training stages impose increasingly tailored data requirements, systematic organization of high-quality corpora becomes indispensable. Existing corpus construction pipelines confine the resulting corpora to flat, undifferentiated document collections, universally lacking systematic knowledge organization. We present Cortex, to our knowledge the first framework that elevates web-scale corpus construction from flat document filtering to structured knowledge organization through an Ontological Corpus Graph (OCG), a three-layer heterogeneous structure unifying a quality-refined content layer, a hierarchical lightweight ontology layer via LLM-driven automated evolution, and a cross-domain alignment layer enabling inter-domain association at arbitrary taxonomic resolution. Comprehensive experiments confirm the effectiveness of Cortex. In particular, we leverage the OCG to synthesize CortexBench, a cross-domain search-and-reasoning benchmark whose evaluation across eight frontier LLMs validates the effectiveness of quality refinement, domain organization, and cross-domain data synthesis. We will publicly release the complete codebase, a 24.14B-token refined corpus with its OCG, and CortexBench.",
+      "authors": [
+        "Chengtao Gan",
+        "Xiaoke Guo",
+        "Yushan Zhu",
+        "Zhaoyan Gong",
+        "Zhiqiang Liu",
+        "Songze Li",
+        "Huajun Chen",
+        "Wen Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-29T11:51:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.30175v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Uses an Ontological Corpus Graph to structure web-scale corpora for LLM training, enhancing data quality.",
+      "llm_evidence_cn": "使用本体语料图结构化大规模语料库以增强大语言模型训练数据质量。",
+      "llm_evidence": "使用本体语料图结构化大规模语料库以增强大语言模型训练数据质量。",
+      "canonical_evidence": "使用本体语料图结构化大规模语料库以增强大语言模型训练数据质量。",
+      "llm_tldr_en": "The paper proposes CORTEX, a framework that organizes web-scale corpora into an Ontological Corpus Graph to improve training data quality for large language models.",
+      "llm_tldr_cn": "现有语料构建管道将语料库视为扁平文档集合，缺乏系统知识组织。本文提出CORTEX框架，通过三层异构本体语料图将语料构建从平面过滤提升为结构化知识组织，从而为大语言模型训练提供高质量、跨领域的系统性语料，解决了大语言模型训练中数据规模和质量不足的问题。",
+      "llm_tldr": "现有语料构建管道将语料库视为扁平文档集合，缺乏系统知识组织。本文提出CORTEX框架，通过三层异构本体语料图将语料构建从平面过滤提升为结构化知识组织，从而为大语言模型训练提供高质量、跨领域的系统性语料，解决了大语言模型训练中数据规模和质量不足的问题。",
+      "llm_tags": [
+        "query:graph-llm:composite"
+      ],
+      "matched_query_tag": "query:graph-llm:composite",
+      "matched_query_text": "Papers central to 图大型语言模型, especially work that connects or combines: integrating graph neural networks with large language models; using large language models for graph-structured data; graph reasoning capabilities of large language models; graph representation learning combined with large language models; graph machine learning techniques for large language models; graph-enhanced training of large language models; How to integrate graph neural networks with large language models?; Training graph enhanced large language models.",
+      "matched_requirement_id": "req-composite-graph-llm",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.30247v1",
+      "source": "arxiv",
+      "title": "Grounding LLM Reasoning under Incomplete Graph Evidence",
+      "abstract": "Knowledge graphs can guide large language models (LLMs) reasoning, but the graph seen by a system is usually a retrieved, linked, temporally scoped, and incomplete evidence state rather than a complete account of truth. We develop a theoretical perspective on grounding observable LLM trajectories under such incomplete graph evidence.The evidence state induces entity anchors, typed relation residuals, path energies, and support regions, while the language model supplies a prior over candidate trajectories. We show that, under open-world incompleteness, no hard rule based only on the observed state can both reject every false unsupported trajectory and retain every true-but-unobserved one.We then characterize soft grounding as a KL-regularized deformation of the LLM prior: finite slack preserves support for unsupported but non-contradicted trajectories, whereas hard conditioning appears as an infinite-penalty limit.The framework also yields stability bounds under evidence perturbations and clarifies the constraint regimes appropriate for GraphRAG, KGQA, graph agents, constrained decoding, and faithful generation. The claims are evidence-relative: KG compatibility is treated as declared support, not factual truth.",
+      "authors": [
+        "Jiaqi Li",
+        "Fanghui Song"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-29T12:56:21+00:00",
+      "link": "https://arxiv.org/pdf/2606.30247v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Knowledge graphs guide LLM reasoning, addressing graph reasoning capabilities under incompleteness.",
+      "llm_evidence_cn": "知识图谱指导大语言模型推理，处理不完整图证据下的推理能力。",
+      "llm_evidence": "知识图谱指导大语言模型推理，处理不完整图证据下的推理能力。",
+      "canonical_evidence": "知识图谱指导大语言模型推理，处理不完整图证据下的推理能力。",
+      "llm_tldr_en": "Provides a theoretical framework for grounding LLM reasoning trajectories under incomplete knowledge graph evidence, showing that soft grounding via KL regularization can retain true unobserved paths.",
+      "llm_tldr_cn": "针对知识图谱在指导大语言模型推理时常面临不完整证据的问题，本文从理论角度出发，定义了证据状态下的实体锚点、关系残差、路径能量等概念，并证明在开放世界不完整性下，无法仅基于观测状态同时拒绝所有错误无支持轨迹并保留所有真实但未观测的轨迹。进一步，将软对齐刻画为对语言模型先验的KL正则化变形。该工作为图增强大语言模型推理提供了形式化基础。",
+      "llm_tldr": "针对知识图谱在指导大语言模型推理时常面临不完整证据的问题，本文从理论角度出发，定义了证据状态下的实体锚点、关系残差、路径能量等概念，并证明在开放世界不完整性下，无法仅基于观测状态同时拒绝所有错误无支持轨迹并保留所有真实但未观测的轨迹。进一步，将软对齐刻画为对语言模型先验的KL正则化变形。该工作为图增强大语言模型推理提供了形式化基础。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.30335v1",
+      "source": "arxiv",
+      "title": "BayesEvolve: Explicit Belief States for Autonomous Scientific Discovery",
+      "abstract": "Autonomous scientific discovery systems increasingly use large language models (LLMs) to propose new hypotheses, but many such systems condition primarily on experimental memory: archives of high-scoring candidates or heuristic summaries of recent trials. We argue that discovery agents should instead maintain explicit, uncertainty-aware beliefs about hypothesis quality. We introduce BayesEvolve, a belief-guided discovery framework that converts experimental evidence into a predictive belief state and uses this belief to guide future experimentation. As a controlled testbed for belief-guided discovery, we evaluate BayesEvolve on shifted BBOB-style black-box optimization tasks, leaving program and laboratory discovery domains to future work. BayesEvolve improves sample efficiency over memory- and archive-guided LLM baselines under a fixed evaluation budget. We further show that the belief state is predictive on held-out candidate pools, that controlled decision-rule ablations favor belief-guided selection with an annealed uncertainty bonus, and that BayesEvolve exhibits productive late-stage concentration rather than unfocused exploration.",
+      "authors": [
+        "Xuening Wu",
+        "Shan Yu",
+        "Qianya Xu",
+        "Shenqin Yin"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-29T14:14:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.30335v1",
+      "tags": [
+        "keyword:ml",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "belief-guided autonomous scientific discovery using LLMs",
+      "llm_evidence_cn": "利用大语言模型的信念引导自主科学发现",
+      "llm_evidence": "利用大语言模型的信念引导自主科学发现",
+      "canonical_evidence": "利用大语言模型的信念引导自主科学发现",
+      "llm_tldr_en": "Introduces BayesEvolve, which maintains explicit uncertainty-aware beliefs to guide LLM-driven experimentation for scientific discovery.",
+      "llm_tldr_cn": "针对现有自主发现系统依赖经验记忆的局限，提出BayesEvolve框架，通过将实验证据转化为预测性信念状态并使用大语言模型指导实验，在BBOB优化任务上验证了信念引导发现的有效性，为自动化科学研究提供了新方法。",
+      "llm_tldr": "针对现有自主发现系统依赖经验记忆的局限，提出BayesEvolve框架，通过将实验证据转化为预测性信念状态并使用大语言模型指导实验，在BBOB优化任务上验证了信念引导发现的有效性，为自动化科学研究提供了新方法。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.27492v1",
+      "source": "arxiv",
+      "title": "QueenBee Planner: Skill-Evolving Communication Topologies for Token-Efficient LLM Multi-Agent Systems",
+      "abstract": "Large language model (LLM) multi-agent systems increasingly depend not only on how individual agents reason, but also on how agents are connected. This paper introduces QueenBee Planner, a framework that treats inter-agent communication topology as a retrievable and self-improving design skill. A pool of worker agents, the task adapter, and the scoring function are frozen; only an outer LLM planner learns to generate temporal communication DAGs specifying who sends information to whom, in which round, who merges messages, and who emits the final answer. Execution traces are distilled into evidence-backed design rules with three actions: \\emph{Preserve}, \\emph{Modify}, and \\emph{Avoid}. To prevent self-evolution from turning lucky runs or plausible but false explanations into policy, QueenBee uses held-out acceptance gates, variance-aware credit, motif-level attribution, transfer trust, insight falsification, and structural deduplication. We evaluate the method on Count-Frequency aggregation and Silo-Bench-style distributed coordination tasks. With fixed workers, self-evolved graph generation produces communication structures that improve over fixed topologies and cold generation. In the CF fulltest setting, the best generated graph reduces RMSE from 12.53 for the strongest fixed topology to 7.87 while also reducing messages, model calls, and token cost; Silo-style results show the same direction of improvement over cold and fixed-topology baselines. These results suggest that multi-agent systems can learn reusable architectural design knowledge rather than merely memorizing task answers.",
+      "authors": [
+        "Congjia Tian",
+        "Yuhang Yao",
+        "Jiaming Cui"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA"
+      ],
+      "published": "2026-06-25T19:16:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.27492v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "LLM planner generates temporal communication DAGs (graph-structured topologies)",
+      "llm_evidence_cn": "LLM规划器生成时序通信DAG（图结构拓扑）",
+      "llm_evidence": "LLM规划器生成时序通信DAG（图结构拓扑）",
+      "canonical_evidence": "LLM规划器生成时序通信DAG（图结构拓扑）",
+      "llm_tldr_en": "QueenBee Planner lets an LLM planner evolve temporal communication DAGs for multi-agent systems, distilling execution traces into design rules for efficient and scalable topologies.",
+      "llm_tldr_cn": "针对大语言模型多智能体系统通信拓扑固定、效率受限的问题，本文提出QueenBee Planner框架：将通信拓扑视为可进化的设计技能，由外层LLM规划器动态生成时序DAG，规定消息传递、融合与最终回答的规则；通过蒸馏执行轨迹为保留、修改、避免三种规则，防止自退化；实验表明，该方法能生成高效拓扑，提升多智能体任务性能与资源利用率。",
+      "llm_tldr": "针对大语言模型多智能体系统通信拓扑固定、效率受限的问题，本文提出QueenBee Planner框架：将通信拓扑视为可进化的设计技能，由外层LLM规划器动态生成时序DAG，规定消息传递、融合与最终回答的规则；通过蒸馏执行轨迹为保留、修改、避免三种规则，防止自退化；实验表明，该方法能生成高效拓扑，提升多智能体任务性能与资源利用率。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.27863v1",
+      "source": "arxiv",
+      "title": "GNBAN: Graph Neural Basis Attention Networks for Long-Horizon Forecasting over Large Entity Sets",
+      "abstract": "Demand forecasting at the bottom of a retail hierarchy requires predicting tens of thousands of correlated long-horizon series across products, stores, and regions. Modern systems must scale across massive catalogs, capture shared demand dynamics, and remain interpretable enough to be trusted. Classical statistical methods need a separate model per series and are hard to manage at scale; deep autoregressive models struggle as the joint state grows to tens of thousands of dimensions; and recent graph-based forecasters, while capturing cross-entity dependencies, often produce opaque long-horizon forecasts. We propose GNBAN (Graph Neural Basis Attention Network), an end-to-end architecture combining heterogeneous graph representation learning with an interpretable basis-decomposition head. Retail data are represented directly as a heterogeneous graph derived from the relational schema, so a single model serves the entire catalog. Rather than predicting the horizon directly, GNBAN decomposes each forecast into trend, seasonal, and generic components. Its key innovation is a per-basis attention mechanism: each basis function keeps its own learnable query and retrieves information independently from the entity's historical neighborhood, letting different bases specialize to distinct temporal patterns while preserving interpretability. On two large-scale benchmarks, M5 Walmart and Favorita Grocery Sales, evaluated under matched protocols, GNBAN improves volume-weighted WRMSSE by roughly 4-5% over a matched graph baseline. Qualitative analysis shows the learned decomposition exposes trend, seasonal, and residual demand drivers without post-hoc explanation methods. These results demonstrate that scalable relational forecasting and interpretable forecast decomposition can be achieved together in a unified graph-based framework.",
+      "authors": [
+        "Janak M. Patel",
+        "Anirudh Deodhar",
+        "Dagnachew Birru"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-26T09:05:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.27863v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Graph neural basis attention network for long-horizon forecasting over dynamic entity sets",
+      "llm_evidence_cn": "面向动态实体集长期预测的图神经基注意力网络",
+      "llm_evidence": "面向动态实体集长期预测的图神经基注意力网络",
+      "canonical_evidence": "面向动态实体集长期预测的图神经基注意力网络",
+      "llm_tldr_en": "Proposes GNBAN, combining heterogeneous graph representation and basis attention for interpretable long-horizon demand forecasting at scale.",
+      "llm_tldr_cn": "零售业底层需求预测面临大规模实体集和可解释性挑战。本文提出GNBAN，一个图神经基注意力网络，通过异质图表示跨实体依赖，并利用基注意力生成可解释长期预测。在大规模零售数据上验证了其预测精度和可解释性优于现有方法，为大规模实体集长期预测提供了可扩展方案。",
+      "llm_tldr": "零售业底层需求预测面临大规模实体集和可解释性挑战。本文提出GNBAN，一个图神经基注意力网络，通过异质图表示跨实体依赖，并利用基注意力生成可解释长期预测。在大规模零售数据上验证了其预测精度和可解释性优于现有方法，为大规模实体集长期预测提供了可扩展方案。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.27780v1",
+      "source": "arxiv",
+      "title": "Understanding Rollout Error in Graph World Models",
+      "abstract": "World models are often used for planning by rolling learned dynamics forward. Many planning environments, however, are not vectors or images; they are graphs of agents, tools, skills, routes, and dependencies. In these settings, a local prediction error may stay local or spread through the graph, and the failure mode changes again when edges are predicted rather than fixed. This paper studies long-horizon rollout error in Graph World Models (GWMs). We formulate a unified fixed-edge and dynamic-edge GWM framework with action nodes for node-, edge-, and graph-level decisions. We develop graph-valued rollout bounds that separate topology-induced amplification from model-induced amplification, and we introduce a joint node-edge operator for dynamic-edge rollouts. Guided by the analysis, we propose Error-Aware GWM, which combines spectral regularization, rollout consistency, and critical-node weighting. Across synthetic topologies and heterogeneous agent-graph testbeds, rollout error and planning regret grow with horizon, dynamic-edge training is needed when structure evolves, and Error-Aware GWM prevents long-horizon divergence while preserving prediction accuracy. Real-world graph benchmarks clarify the scope of GWMs: they are most useful for dynamic graph rollout and agent planning, while specialized graph models remain strong on static or sparse prediction tasks.",
+      "authors": [
+        "Xinyuan Song",
+        "Zekun Cai"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-26T07:11:29+00:00",
+      "link": "https://arxiv.org/pdf/2606.27780v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Analyzes rollout error in dynamic-edge graph world models.",
+      "llm_evidence_cn": "分析动态边图世界模型中的推演误差，属于动态图学习方法。",
+      "llm_evidence": "分析动态边图世界模型中的推演误差，属于动态图学习方法。",
+      "canonical_evidence": "分析动态边图世界模型中的推演误差，属于动态图学习方法。",
+      "llm_tldr_en": "Studies long-horizon rollout error in Graph World Models with both fixed and dynamic edges, deriving graph-valued bounds and introducing a joint node-edge operator for dynamic-edge rollouts.",
+      "llm_tldr_cn": "本文针对基于图世界模型进行规划时，局部预测误差可能沿图传播的问题，统一了固定边和动态边的图世界模型框架，推导了图值推演误差界，分离了拓扑诱导放大和模型诱导放大，并提出了用于动态边推演的联合节点-边算子。该工作为理解动态图上的世界模型推演提供了理论工具。",
+      "llm_tldr": "本文针对基于图世界模型进行规划时，局部预测误差可能沿图传播的问题，统一了固定边和动态边的图世界模型框架，推导了图值推演误差界，分离了拓扑诱导放大和模型诱导放大，并提出了用于动态边推演的联合节点-边算子。该工作为理解动态图上的世界模型推演提供了理论工具。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.30093v1",
+      "source": "arxiv",
+      "title": "Efficient Retrieval-Augmented Generation via Token Co-occurrence Graphs",
+      "abstract": "Retrieval-Augmented Generation (RAG) mitigates hallucinations in Large Language Models (LLMs) by grounding the generation process on external knowledge. However, standard RAG approaches struggle with multi-hop reasoning. While recent graph-based RAG methods improve the retrieval of interconnected chunks, they often rely on computationally expensive and error-prone LLM-based extraction pipelines. To address these issues, we propose TIGRAG (Token-Induced GraphRAG), an efficient graph-augmented RAG framework based on a token co-occurrence Knowledge Graph. TIGRAG directly models topological relationships between tokens using sliding-window co-occurrence statistics, thus enabling scalable graph construction. During inference, it combines graph-based semantic expansion and neural reranking to retrieve interconnected evidence for multi-hop reasoning. Specifically, it introduces an iterative entity-driven retrieval strategy that progressively expands the query using bridging entities extracted from previously retrieved contexts. We evaluated TIGRAG on three widely adopted multi-hop Question Answering (QA) benchmarks. Experimental results demonstrated that our framework consistently outperforms dense retrieval and graph-based RAG methods in both retrieval and downstream QA tasks, while substantially reducing indexing time, inference latency, and prompt footprint.",
+      "authors": [
+        "Gianluca Bonifazi",
+        "Christopher Buratti",
+        "Michele Marchetti",
+        "Federica Parlapiano",
+        "Giulia Quaglieri",
+        "Davide Traini",
+        "Domenico Ursino",
+        "Luca Virgili"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.IR"
+      ],
+      "published": "2026-06-29T10:29:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.30093v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Token co-occurrence graph enhances LLM retrieval, bridging graph and language model.",
+      "llm_evidence_cn": "基于词共现图增强大语言模型的多跳推理检索，桥接图结构与语言模型。",
+      "llm_evidence": "基于词共现图增强大语言模型的多跳推理检索，桥接图结构与语言模型。",
+      "canonical_evidence": "基于词共现图增强大语言模型的多跳推理检索，桥接图结构与语言模型。",
+      "llm_tldr_en": "TIGRAG uses token co-occurrence knowledge graphs for efficient retrieval-augmented generation, improving multi-hop reasoning in LLMs without expensive LLM-based extraction.",
+      "llm_tldr_cn": "针对标准RAG方法在多跳推理中表现不佳，且基于图的RAG方法常依赖昂贵且易出错的LLM抽取管线的问题，本文提出TIGRAG框架，利用滑动窗口词共现统计直接构建词共现知识图谱，实现可扩展的图构建，并在推理时结合基于图的语义检索。该方法高效地增强了LLM的多跳推理能力，避免了LLM抽取的开销。",
+      "llm_tldr": "针对标准RAG方法在多跳推理中表现不佳，且基于图的RAG方法常依赖昂贵且易出错的LLM抽取管线的问题，本文提出TIGRAG框架，利用滑动窗口词共现统计直接构建词共现知识图谱，实现可扩展的图构建，并在推理时结合基于图的语义检索。该方法高效地增强了LLM的多跳推理能力，避免了LLM抽取的开销。",
+      "llm_tags": [
+        "query:graph-llm:composite"
+      ],
+      "matched_query_tag": "query:graph-llm:composite",
+      "matched_query_text": "Papers central to 图大型语言模型, especially work that connects or combines: integrating graph neural networks with large language models; using large language models for graph-structured data; graph reasoning capabilities of large language models; graph representation learning combined with large language models; graph machine learning techniques for large language models; graph-enhanced training of large language models; How to integrate graph neural networks with large language models?; Training graph enhanced large language models.",
+      "matched_requirement_id": "req-composite-graph-llm",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.28447v1",
+      "source": "arxiv",
+      "title": "SemFlowRAG: Directed Semantic Flow from Abstraction to Evidence for Complex Reasoning",
+      "abstract": "Retrieval-Augmented Generation (RAG) enhanced by Knowledge Graphs has shown promise in complex multi-hop reasoning tasks. However, existing graph-based retrieval methods typically rely on flat, undirected topologies. During the retrieval process, the probability flow often gets trapped in high-degree abstract concept nodes which we define as ``probability black holes'', leading to semantic drift and noise accumulation. To address this, we propose SemFlowRAG, a framework that reconstructs the flat retrieval space into a corpus-adaptive semantic gradient graph. This data-driven self-organization enables a hierarchical structure to emerge naturally from the data distribution, capturing the intrinsic semantic granularity of the corpus to suppress structural noise. By quantifying the semantic abstractness of entities through the embedding variance of their associated passages, we transform static undirected edges into directed semantic constraints. Furthermore, we design an abstractness-guided directed PageRank algorithm that forces the retrieval trajectory to follow a ``high-to-low semantic abstractness'' gradient. This mechanism ensures layer-by-layer evidence convergence, smoothly guiding the retrieval process from abstract concepts to specific document evidence. Extensive experiments on complex QA datasets demonstrate that SemFlowRAG effectively mitigates the ``probability black holes'' issue, outperforming existing baselines in both retrieval and downstream reasoning performance.",
+      "authors": [
+        "Houyuan Qin",
+        "Rong Wu",
+        "Qinyuan Qin",
+        "Botian Shi",
+        "Jingjing Qu",
+        "Yang Sun",
+        "Pinlong Cai"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.AI"
+      ],
+      "published": "2026-06-26T08:40:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.28447v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Uses knowledge graphs to direct semantic flow for LLM-based complex reasoning",
+      "llm_evidence_cn": "利用知识图谱引导LLM复杂推理中的语义流",
+      "llm_evidence": "利用知识图谱引导LLM复杂推理中的语义流",
+      "canonical_evidence": "利用知识图谱引导LLM复杂推理中的语义流",
+      "llm_tldr_en": "SemFlowRAG constructs a corpus-adaptive semantic gradient graph to guide retrieval, mitigating probability black holes and improving multi-hop reasoning accuracy.",
+      "llm_tldr_cn": "现有图谱增强RAG存在检索过程中概率流陷入高度数抽象节点导致语义漂移的问题。SemFlowRAG构建语料自适应的语义梯度图，将扁平检索空间重构为层次化语义结构，引导有向语义流从抽象到证据，抑制噪声积累。实验表明，该方法在复杂多跳推理任务上显著提升答案准确性和推理保真度。",
+      "llm_tldr": "现有图谱增强RAG存在检索过程中概率流陷入高度数抽象节点导致语义漂移的问题。SemFlowRAG构建语料自适应的语义梯度图，将扁平检索空间重构为层次化语义结构，引导有向语义流从抽象到证据，抑制噪声积累。实验表明，该方法在复杂多跳推理任务上显著提升答案准确性和推理保真度。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "graph reasoning capabilities of large language models",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.28933v1",
+      "source": "arxiv",
+      "title": "FinInvest-GTCN: Explainable Graph-Temporal-Causal Modeling for Risk-Aware Investment Decision Optimization",
+      "abstract": "Venture capital (VC) investment decisions face distinct challenges, such as multi-source heterogeneous data, non-stationary time series, and the demand for explainable predictions in high-stakes, low-data settings. To overcome these issues, we introduce \\textbf{FinInvest-GTCN}, a Graph-Temporal-Causal Network that redefines the task from content recommendation to quantitative risk-return assessment. This architecture combines a relational graph encoder to capture the investment ecosystem's topology, a multi-scale temporal fusion module to handle long-term dependencies and non-stationarity, and a causal decision head that generates risk-adjusted predictions with interpretable causal attributions. A core innovation is the Meta-Causal Adaptation (MCA) strategy, which facilitates robust fine-tuning for new, data-scarce sectors by aligning updates with causally-plausible structures derived from meta-pretraining. Comprehensive experiments on proprietary VC datasets show that FinInvest-GTCN delivers state-of-the-art results, markedly lowering the primary Risk-Adjusted Mean Squared Error (RA-MSE) to 2.51 from a baseline of 3.05 and boosting the cumulative return of a simulated portfolio by 18.7\\%. Ablation studies underscore the essential role of each component, while additional analyses confirm the model's stability, interpretability, and enhanced adaptability. This work pioneers a data-driven, explainable framework for investment decision support.",
+      "authors": [
+        "Junyan Tan",
+        "Yifan Li",
+        "Minghao Wang",
+        "Zihan Chen",
+        "Haoyu Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-27T14:09:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.28933v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Graph-temporal-causal network for risk-aware investment decision on temporal graph data",
+      "llm_evidence_cn": "面向时序图数据的图-时序-因果网络",
+      "llm_evidence": "面向时序图数据的图-时序-因果网络",
+      "canonical_evidence": "面向时序图数据的图-时序-因果网络",
+      "llm_tldr_en": "Proposes FinInvest-GTCN, a graph-temporal-causal network for risk-aware investment, combining relational graph encoder, multi-scale temporal fusion, and causal decision head.",
+      "llm_tldr_cn": "风险投资决策面临多源异构数据和非平稳时序挑战。本文提出FinInvest-GTCN，一个图-时序-因果网络，将任务重新定义为风险收益评估。架构融合关系图编码器、多尺度时序融合和因果决策头，实现可解释的风险调整预测，为投资决策优化提供了新范式。",
+      "llm_tldr": "风险投资决策面临多源异构数据和非平稳时序挑战。本文提出FinInvest-GTCN，一个图-时序-因果网络，将任务重新定义为风险收益评估。架构融合关系图编码器、多尺度时序融合和因果决策头，实现可解释的风险调整预测，为投资决策优化提供了新范式。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "temporal graph neural network architectures",
+      "matched_requirement_id": "req-16",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.30009v1",
+      "source": "arxiv",
+      "title": "Node-to-Neighborhood Semantic Consistency: Text-Topology Alignment for TAGs Anomaly Detection",
+      "abstract": "Graph anomaly detection (GAD) on text-attributed graphs (TAGs) is vital for applications such as fraud detection and academic integrity verification. Existing approaches generally fall into two paradigms. GNN-based methods effectively capture structural patterns but struggle to capture fine-grained textual semantics. Methods integrating LLMs with graphs improve semantic understanding yet fail to fully comprehend topological relationships among neighboring nodes. Moreover, both paradigms overlook the correspondence between textual semantics and graph topological relationships, limiting their ability to identify nodes whose semantics are inconsistent with their neighborhoods. In this paper, we formalize TAG anomaly detection as a node-to-neighborhood semantic consistency problem, where anomalies may arise from either textual semantic mismatch or topological deviation between a node and its neighbors. We propose N2NSC (Node-to-Neighborhood Semantic Consistency), a framework that captures the correspondence between graph topology and textual semantics through two complementary fusion paths. The two pathways work synergistically, enabling the LLM to fully leverage both textual and structural neighborhood information for anomaly detection. Extensive experiments across eight datasets demonstrate that N2NSC consistently outperforms current state-of-the-art methods.",
+      "authors": [
+        "Bochen Lin",
+        "Jianxiang Yu",
+        "Jiayi Wu",
+        "Lin Qi",
+        "Huang Lu",
+        "Xiang Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-29T09:14:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.30009v1",
+      "tags": [
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "integrates LLMs with graphs for anomaly detection on text-attributed graphs",
+      "llm_evidence_cn": "将大语言模型与图结合用于文本属性图的异常检测",
+      "llm_evidence": "将大语言模型与图结合用于文本属性图的异常检测",
+      "canonical_evidence": "将大语言模型与图结合用于文本属性图的异常检测",
+      "llm_tldr_en": "The paper formalizes anomaly detection on text-attributed graphs by aligning textual semantics with graph topology, addressing limitations of both GNN and LLM-only approaches.",
+      "llm_tldr_cn": "该工作针对文本属性图异常检测，提出文本-拓扑语义对齐框架，弥补现有方法分别侧重结构或语义而忽略二者对应关系的缺陷，用于识别语义与邻域不一致的异常节点。",
+      "llm_tldr": "该工作针对文本属性图异常检测，提出文本-拓扑语义对齐框架，弥补现有方法分别侧重结构或语义而忽略二者对应关系的缺陷，用于识别语义与邻域不一致的异常节点。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.30133v1",
+      "source": "arxiv",
+      "title": "Query-Aware Spreading Activation for Multi-Hop Retrieval over Knowledge Graphs",
+      "abstract": "Retrieval-augmented generation built on knowledge graphs (Graph RAG) outperforms flat passage retrieval on multi-hop question answering by leveraging graph structure. In most existing systems, however, the question only sets the seed nodes; the subsequent traversal becomes \"query-blind\", depending solely on the graph structure. The exception is QAFD-RAG, which implements query-aware traversal via a flow-diffusion solver with combined edge re-weighting. This architecture requires loading the full graph into Python memory and an iterative solver with a variable number of iterations complicating integration with the graph database. We propose a spreading-activation method that achieves the same query-aware traversal with a single per-step semantic gate: the step weight is the cosine similarity between the candidate entity's description and the question, and the number of iterations is fixed. The whole retrieval procedure - seed mapping, propagation, top-K selection and context assembly - is expressed as a single Cypher query executed in one round-trip to Neo4j; the graph never leaves the database. On MuSiQue our method matches QAFD-RAG by exact match (32.80 vs 33.50) and outperforms the strongest purely-structural baseline in our comparison, HippoRAG, by 5.3 EM and 3.4 F1; on 2WikiMultiHopQA HippoRAG and QAFD-RAG retain an advantage due to their phrase-node architectures. An ablation with the gate disabled confirms that the gate is the source of a simultaneous F1 gain of 3.6 to 7.4 points and a retrieval-latency reduction by a factor of 1.5 to 4.9.",
+      "authors": [
+        "Illia Makarov",
+        "Mykola Glybovets"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.IR"
+      ],
+      "published": "2026-06-29T11:10:19+00:00",
+      "link": "https://arxiv.org/pdf/2606.30133v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "proposes query-aware traversal for Graph RAG, using LLMs with knowledge graphs for multi-hop reasoning",
+      "llm_evidence_cn": "提出查询感知遍历用于图RAG，利用大语言模型与知识图谱进行多跳推理",
+      "llm_evidence": "提出查询感知遍历用于图RAG，利用大语言模型与知识图谱进行多跳推理",
+      "canonical_evidence": "提出查询感知遍历用于图RAG，利用大语言模型与知识图谱进行多跳推理",
+      "llm_tldr_en": "The paper introduces a query-aware spreading activation method for multi-hop retrieval over knowledge graphs, enabling single-step semantic scoring to improve Graph RAG's efficiency and integration with graph databases, outperforming query-blind approaches.",
+      "llm_tldr_cn": "现有知识图谱增强生成（Graph RAG）在遍历时多依赖图结构而忽略查询，导致效率低下。该研究提出查询感知扩散激活方法，通过单步语义打分实现查询敏感的多跳检索，无需载入全图即可与图数据库集成。实验表明，该方法在性能与效率上优于查询盲方法，为图增强大语言模型的多跳推理提供了实用且高效的新方案。",
+      "llm_tldr": "现有知识图谱增强生成（Graph RAG）在遍历时多依赖图结构而忽略查询，导致效率低下。该研究提出查询感知扩散激活方法，通过单步语义打分实现查询敏感的多跳检索，无需载入全图即可与图数据库集成。实验表明，该方法在性能与效率上优于查询盲方法，为图增强大语言模型的多跳推理提供了实用且高效的新方案。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "using large language models for graph-structured data",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    }
+  ]
+}

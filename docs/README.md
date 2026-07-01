@@ -6,55 +6,79 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-29
-- 运行时间：2026-06-29 22:18:03 UTC
+- 最新运行日期：2026-06-22 ~ 2026-07-01
+- 运行时间：2026-07-01 03:37:52 UTC
 - 运行状态：成功
-- 本次总论文数：11
-- 精读区：9
-- 速读区：2
+- 本次总论文数：19
+- 精读区：11
+- 速读区：8
 
 ### 今日简报（AI）
-今天聚焦高价值论文，从组合优化视角重新理解科学发现，并探讨因果概率时序图的估计-预测权衡。
-最值得关注：科学发现可建模为元优化问题，能直接指导自动化科研；同时，因果图上估计与预测性能需平衡，不可兼得。
-建议读者优先消化“元优化”思路，它可能改变你对 AI 辅助科研的认知。
-- 详情：[/202606/29/README](/202606/29/README)
+今日精读11篇、速读8篇前沿论文，聚焦多表问答、图与大模型协同及多智能体规划。  
+最值得关注的方向是：用潜在桥接模型突破跨表格推理，以及将图结构与LLM联合预训练解决图级任务。  
+普通读者可从这两篇满分论文入手，再结合QueenBee Planner和SemFlowRAG理解高效推理与智能体设计的最新思路。
+- 详情：[/20260622-20260701/README](/20260622-20260701/README)
 
 ### 精读区论文标签
-1. [Scientific discovery as meta-optimization: a combinatorial optimization case study](/202606/29/2606.26728v1-scientific-discovery-as-meta-optimization-a-combinatorial-optimization-case-study)  
-   标签：评分：10.0/10、query:ml
-   evidence：将科学发现形式化为元优化，利用LLM生成并聚合目标函数，实现自动演化的评估标准。
-2. [Estimation--Prediction Tradeoff in Causal Probabilistic Temporal Graphs](/202606/29/2606.28225v1-estimation--prediction-tradeoff-in-causal-probabilistic-temporal-graphs)  
-   标签：评分：10.0/10、query:dynamic-g
-   evidence：提出了一个概率因果框架来生成时间图，并研究时间链接预测，解决动态图学习中的估计-预测权衡。
-3. [TeRoR: Decoupled Temporal Rotation with Relational Circular Region for Temporal Knowledge Graph Embedding](/202606/29/2606.27651v1-teror-decoupled-temporal-rotation-with-relational-circular-region-for-temporal-knowledge-graph-embedding)  
-   标签：评分：9.0/10、query:dynamic-g
-   evidence：提出一种用于动态图的时序知识图谱嵌入方法
-4. [The Simulacrum: Decision-Theoretic Pretraining for Near-Optimal Time-Series Forecasting and Inference](/202606/29/2606.27711v1-the-simulacrum-decision-theoretic-pretraining-for-near-optimal-time-series-forecasting-and-inference)  
-   标签：评分：9.0/10、query:efmr
-   evidence：决策论预训练使神经估计器能在时间序列上实现零样本模型选择
-5. [Enhancing Numerical Prediction in LLMs via Smooth MMD Alignment](/202606/29/2606.27731v1-enhancing-numerical-prediction-in-llms-via-smooth-mmd-alignment)  
-   标签：评分：9.0/10、query:graph-llm
-   evidence：利用数值token核图上的图平滑性来对齐LLM数值预测
-6. [Spectral clustering of time-evolving networks using spatio-temporal random walks](/202606/29/2606.27850v1-spectral-clustering-of-time-evolving-networks-using-spatio-temporal-random-walks)  
-   标签：评分：9.0/10、query:dynamic-g
-   evidence：针对时间演化网络的谱聚类方法，直接处理动态图分析
-7. [Towards Automating Scientific Review with Google's Paper Assistant Tool](/202606/29/2606.28277v1-towards-automating-scientific-review-with-googles-paper-assistant-tool)  
+1. [Latent Bridges for Multi-Table Question Answering](/20260622-20260701/2606.28916v1-latent-bridges-for-multi-table-question-answering)  
+   标签：评分：10.0/10、query:graph-llm
+   evidence：通过潜在桥接标记集成图神经网络与大型语言模型
+2. [GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks](/20260622-20260701/2606.29773v1-glip-graph-and-llm-joint-pretraining-for-graph-level-tasks)  
+   标签：评分：10.0/10、query:graph-llm
+   evidence：通过图级别任务的联合预训练将GNN和LLM结合
+3. [PromptGNN-sim: Deep Fusion and Alignment of GNN and LLMs for Text-Attributed Graph Learning](/20260622-20260701/2606.30291v1-promptgnn-sim-deep-fusion-and-alignment-of-gnn-and-llms-for-text-attributed-graph-learning)  
+   标签：评分：10.0/10、query:graph-llm
+   evidence：双向结构-语义融合框架，实现GNN与LLM的协同学习
+4. [Agentic evolution of physically constrained foundation models](/20260622-20260701/2606.25532v1-agentic-evolution-of-physically-constrained-foundation-models)  
    标签：评分：9.0/10、query:ml
-   evidence：提出用于自动化科学评审的AI智能体框架，直接贡献于自动化科学发现系统。
-8. [Halt Fast! Early Stopping for Certified Robustness](/202606/29/2606.27694v1-halt-fast-early-stopping-for-certified-robustness)  
-   标签：评分：8.0/10、query:ml
-   evidence：用于随时有效认证鲁棒性的元学习框架
-9. [Extracting behavioural properties from face-to-face interactions temporal networks: a measure of egonet persistency](/202606/29/2606.27860v1-extracting-behavioural-properties-from-face-to-face-interactions-temporal-networks-a-measure-of-egonet-persistency)  
-   标签：评分：8.0/10、query:dynamic-g
-   evidence：量化时序网络中自我网持续性的框架
+   evidence：物理约束的多智能体发现引擎，用于自动化科学创新
+5. [Toward Exascale AI for Science: A Scalable AI Skill for Autonomous Microkinetics Discovery](/20260622-20260701/2606.29100v1-toward-exascale-ai-for-science-a-scalable-ai-skill-for-autonomous-microkinetics-discovery)  
+   标签：评分：9.0/10、query:ml
+   evidence：提出用于微动力学自主科学发现的可扩展AI框架，结合智能体自动化、高性能计算和代理模型。
+6. [Bilevel Optimization for Neural Architecture Search](/20260622-20260701/2606.29582v1-bilevel-optimization-for-neural-architecture-search)  
+   标签：评分：9.0/10、query:ml
+   evidence：以双层优化视角系统综述神经架构搜索方法
+7. [Clinical Reasoning Graphs: Structured Evaluation of LLM Diagnostic Reasoning Reveals Competence Without Consistency](/20260622-20260701/2606.29876v1-clinical-reasoning-graphs-structured-evaluation-of-llm-diagnostic-reasoning-reveals-competence-without-consistency)  
+   标签：评分：9.0/10、query:graph-llm
+   evidence：LLM诊断推理的结构化图表示
+8. [Hephaestus: Toward a Cybersecurity AI Scientist](/20260622-20260701/2606.29981v1-hephaestus-toward-a-cybersecurity-ai-scientist)  
+   标签：评分：9.0/10、query:ml
+   evidence：提出模块化多代理AI科学家系统，用于自动化网络安全研究
+9. [CORTEX: High-Quality Cross-Domain Organization of Web-Scale Corpora through Ontological Corpus Graph](/20260622-20260701/2606.30175v1-cortex-high-quality-cross-domain-organization-of-web-scale-corpora-through-ontological-corpus-graph)  
+   标签：评分：9.0/10、query:graph-llm
+   evidence：使用本体语料图结构化大规模语料库以增强大语言模型训练数据质量。
+10. [Grounding LLM Reasoning under Incomplete Graph Evidence](/20260622-20260701/2606.30247v1-grounding-llm-reasoning-under-incomplete-graph-evidence)  
+   标签：评分：9.0/10、query:graph-llm
+   evidence：知识图谱指导大语言模型推理，处理不完整图证据下的推理能力。
+11. [BayesEvolve: Explicit Belief States for Autonomous Scientific Discovery](/20260622-20260701/2606.30335v1-bayesevolve-explicit-belief-states-for-autonomous-scientific-discovery)  
+   标签：评分：9.0/10、query:ml
+   evidence：利用大语言模型的信念引导自主科学发现
 
 ### 速读区论文标签
-1. [Exploring Academic Influence of Algorithms by Co-occurrence Network Based on Full-text of Academic Papers](/202606/29/2606.24099v1-exploring-academic-influence-of-algorithms-by-co-occurrence-network-based-on-full-text-of-academic-papers)  
+1. [QueenBee Planner: Skill-Evolving Communication Topologies for Token-Efficient LLM Multi-Agent Systems](/20260622-20260701/2606.27492v1-queenbee-planner-skill-evolving-communication-topologies-for-token-efficient-llm-multi-agent-systems)  
+   标签：评分：8.0/10、query:graph-llm
+   evidence：LLM规划器生成时序通信DAG（图结构拓扑）
+2. [Understanding Rollout Error in Graph World Models](/20260622-20260701/2606.27780v1-understanding-rollout-error-in-graph-world-models)  
+   标签：评分：8.0/10、query:dynamic-g
+   evidence：分析动态边图世界模型中的推演误差，属于动态图学习方法。
+3. [SemFlowRAG: Directed Semantic Flow from Abstraction to Evidence for Complex Reasoning](/20260622-20260701/2606.28447v1-semflowrag-directed-semantic-flow-from-abstraction-to-evidence-for-complex-reasoning)  
+   标签：评分：8.0/10、query:graph-llm
+   evidence：利用知识图谱引导LLM复杂推理中的语义流
+4. [FinInvest-GTCN: Explainable Graph-Temporal-Causal Modeling for Risk-Aware Investment Decision Optimization](/20260622-20260701/2606.28933v1-fininvest-gtcn-explainable-graph-temporal-causal-modeling-for-risk-aware-investment-decision-optimization)  
+   标签：评分：8.0/10、query:dynamic-g
+   evidence：面向时序图数据的图-时序-因果网络
+5. [Node-to-Neighborhood Semantic Consistency: Text-Topology Alignment for TAGs Anomaly Detection](/20260622-20260701/2606.30009v1-node-to-neighborhood-semantic-consistency-text-topology-alignment-for-tags-anomaly-detection)  
+   标签：评分：8.0/10、query:graph-llm
+   evidence：将大语言模型与图结合用于文本属性图的异常检测
+6. [Query-Aware Spreading Activation for Multi-Hop Retrieval over Knowledge Graphs](/20260622-20260701/2606.30133v1-query-aware-spreading-activation-for-multi-hop-retrieval-over-knowledge-graphs)  
+   标签：评分：8.0/10、query:graph-llm
+   evidence：提出查询感知遍历用于图RAG，利用大语言模型与知识图谱进行多跳推理
+7. [GNBAN: Graph Neural Basis Attention Networks for Long-Horizon Forecasting over Large Entity Sets](/20260622-20260701/2606.27863v1-gnban-graph-neural-basis-attention-networks-for-long-horizon-forecasting-over-large-entity-sets)  
    标签：评分：7.0/10、query:dynamic-g
-   evidence：构建年度算法共现网络分析结构演变
-2. [Fast Approximate MM-Estimation for Outlier Robust Model Selection](/202606/29/2606.27638v1-fast-approximate-mm-estimation-for-outlier-robust-model-selection)  
-   标签：评分：7.0/10、query:ml
-   evidence：快速近似MM估计器用于异常稳健的模型选择
+   evidence：面向动态实体集长期预测的图神经基注意力网络
+8. [Efficient Retrieval-Augmented Generation via Token Co-occurrence Graphs](/20260622-20260701/2606.30093v1-efficient-retrieval-augmented-generation-via-token-co-occurrence-graphs)  
+   标签：评分：7.0/10、query:graph-llm
+   evidence：基于词共现图增强大语言模型的多跳推理检索，桥接图结构与语言模型。
 
 
 <div class="dpr-home-promo-card">

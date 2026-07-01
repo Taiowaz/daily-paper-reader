@@ -1,0 +1,912 @@
+Title: GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks
+
+URL Source: https://arxiv.org/pdf/2606.29773v1
+
+Published Time: Tue, 30 Jun 2026 02:48:25 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks 
+
+# Haoxin Sun 
+
+Fudan University Shanghai, China 23110240089@m.fudan.edu.cn 
+
+# Yiqing Lin 
+
+ByteDance Shanghai, China linyiqing@bytedance.com 
+
+# Yajun Huang 
+
+ByteDance Shanghai, China huangyajun.gooday@bytedance.com 
+
+# Chenhui Dong 
+
+ByteDance Shanghai, China dongchenhui.0711@bytedance.com 
+
+# Mingjun Li 
+
+ByteDance Shanghai, China limingjun.tsinghua@bytedance.com 
+
+# Zhongzhi Zhang 
+
+Fudan University Shanghai, China zhangzz@fudan.edu.cn 
+
+## Abstract 
+
+Graphs are widely used to model relational systems, with applica-tions in domains such as social networks, finance, and biomedicine. Graph neural networks (GNNs) have become a mainstream ap-proach for learning graph representations. With the rise of large language models (LLMs), recent studies have attempted to com-bine GNNs with LLMs. However, most existing works concentrate on node-level and edge-level tasks, while graph-level tasks, which require capturing more complex structural and feature informa-tion, remain relatively underexplored. Moreover, graph pretraining is a widely adopted strategy to alleviate the challenge of label scarcity. Most existing approaches are designed solely for GNNs such as GraphCL, leaving LLMs uninvolved in the process. To address these limitations, we propose GLIP, a Graph–LLM JoInt Pretraining framework for graph-level tasks. GLIP first performs graph augmentation to construct positive and negative pairs and introduces a multi-token selection strategy to identify patches in-formative in both structure and features. It further leverages a diffusion-based projector to enrich them with contextual informa-tion, enabling GLIP to capture signals from both global and local perspectives. Finally, GLIP employs a joint objective that integrates the LLM’s semantic judgments with a contrastive alignment loss, ensuring consistent supervision at both the semantic and structural levels.After pretraining, GLIP is fine-tuned with limited labeled data for downstream tasks, and extensive experiments show that it outperforms state-of-the-art methods on graph-level classifica-tion and reasoning tasks. Our source code is publicly available on https://anonymous.4open.science/r/GLIP. 
+
+## Keywords 
+
+Graph Pretrain, Large Language Model, Graph Neural Network, Graph-Level Tasks 
+
+## 1 Introduction 
+
+Graphs are a fundamental data structure for modeling relational systems, with broad applications in diverse domains such as so-cial networks [ 11 , 27 ], financial systems [ 7, 23 ], and biomedical sciences [ 10 , 29 ]. Graph neural networks (GNNs) [ 14 , 19 , 33 ], which leverage message passing and neighborhood aggregation mecha-nisms, have emerged as powerful frameworks for graph represen-tation learning, achieving strong performance in downstream tasks such as node classification, graph classification, and link predic-tion [ 39 , 46 ]. While GNNs have achieved remarkable progress in graph-structured data representation, the rise of large language models (LLMs) has reshaped modern artificial intelligence, demon-strating impressive reasoning and generalization abilities across diverse domains [ 1, 2, 12 , 31 ]. In recent years, an increasing number of studies have attempted to integrate GNNs with LLMs, combin-ing the structural encoding strengths of GNNs with the inference capacity of LLMs, leading to complementary effects that surpass either model alone [3, 4, 30, 35, 43]. Although recent efforts have explored the integration of GNNs with LLMs, existing approaches still face several limitations. In particular, prior studies have mainly concentrated on node-level or link-level tasks, while graph-level tasks such as classification and explanation remain relatively underexplored. However, these tasks are critical in many domains, such as detecting fraudulent groups with explanations in financial networks [ 7, 28 ], as well as identify-ing toxic molecules and uncovering their underlying mechanisms in biomedical applications [ 10 , 29 ]. In addition, most existing methods that combine graph encoders with LLMs rely heavily on supervised fine-tuning with abundant labeled data, which is costly and often impractical. While several label-free pretraining methods have been proposed [ 15 , 34 , 42 ], they are designed for GNN alone and do not involve LLM in the pretraining process. These limitations naturally raise a key question. How can we design a joint pretraining strategy for graph encoders and LLMs that enables graph representations to be effectively utilized by LLMs for graph-level tasks under limited labeled data? 
+
+Two challenges arise in establishing a joint pretraining strategy: 
+
+(i) How can LLMs be involved in pretraining to provide semantic-level supervision for graph tokens? Existing pretraining meth-ods for graphs [ 15 , 34 , 42 ] are designed exclusively for graph en-coders. Although recent work [ 35 ] leverages the principal compo-nents of LLM token embeddings to align node representations, the LLM’s reasoning and response capabilities are not leveraged in the pretraining process. 
+
+(ii) How can we present graph information to LLMs at both global and local levels? Although prior works have explored aligning graphs with LLMs [ 4, 30 , 35 , 43 ], they primarily focus on node-level tasks. However, graph-level tasks require both global structural context and critical local substructures. Simple pooling or linear projection often loses such information, making it difficult for LLMs to reason effectively over graphs. In this paper, we propose GLIP (Graph– LLM Jo Int Pretraining), a novel pretraining framework that enables graph encoders and LLMs to collaboratively participate in the pretraining process through  
+
+> arXiv:2606.29773v1 [cs.LG] 29 Jun 2026 Conference’17, July 2017, Washington, DC, USA Haoxin Sun, Yiqing Lin, Yajun Huang, Chenhui Dong, Mingjun Li, and Zhongzhi Zhang Edge
+> Removing
+> Feature
+> Masking
+> Patch
+> Selection
+
+Large Language Models    
+
+> Diffusion
+> Operator
+> (𝐼 +𝛼𝐿 )−1
+> GNN
+> Global Global
+> Projector
+> Global
+> Local
+> Projector
+> Local
+
+(I) Graph Augmentation and Patch Selection 
+
+(II)  Global and Local Diffusion Projection 
+
+(III) LLM Decision Making        
+
+> Tuned
+> Frozen
+> Encoder
+> Local
+> System Prompt ：
+> Are these two graphs
+> from the same orginal
+> graph?
+> 𝑮 𝟏 𝑮 𝟏
+> 𝑮 𝟏
+> 𝑮 𝟏 𝑮 𝟏
+> 𝑮 𝟐 𝑮 𝟐
+> 𝑮 𝟐
+> 𝑮 𝟐 𝑮 𝟐
+> 𝑮
+> No.
+> Yes.
+> Embedding Space
+> Prompt Tokens
+> 𝑮 𝟏 Local Tokens
+> 𝑮 𝟏 Global Tokens
+> 𝑮 𝟐 Local Tokens
+> 𝑮 𝟐 Global Tokens
+
+Figure 1: The overall framework of Glip. 
+
+a shared training objective. GLIP introduces a multi-token selection strategy that captures both global structural context and critical local substructures. Furthermore, it incorporates a diffusion-based projector that builds contextual connections among different local tokens, thereby enabling graph tokens to better elicit reasoning behaviors from LLMs. Moreover, GLIP employs a label-free, self-supervised pretraining objective that explicitly involves LLMs in the pretraining process, allowing the pretraining process, guided by the LLM’s semantic judgments, to organize graph representations according to their similarities and differences across diverse graph structures. Our contributions are summarized as follows: 
+
+• We propose GLIP, the first joint pretraining framework that en-ables graph encoders and LLMs to collaboratively participate in the pretraining process through a shared training objective, and supports efficient fine-tuning with limited labeled data for downstream tasks. 
+
+• We design a multi-token selection strategy to capture both global context and local substructures, and propose a diffusion-based projector that enriches contextual dependencies among local information. 
+
+• We conduct comprehensive experiments on multiple datasets covering diverse domains and graph types, and demonstrate that GLIP consistently outperforms state-of-the-art baselines in graph-level classification and explanation tasks. 
+
+## 2 Related Work 
+
+Self-supervised Pretraining Method for GNNs. Graph Neural Networks (GNNs) have become a central paradigm in graph ma-chine learning, attracting significant attention in recent years [ 32 ,37 , 39 , 41 , 47 ]. The core idea behind GNNs is to learn expressive graph representations through message passing and neighborhood aggregation. Several representative architectures have been pro-posed, including Graph Attention Networks (GAT) [ 33 ], Graph Convolution Network (GCN) [44], and GraphSAGE [14]. To reduce the reliance on labeled data and improve the general-ization ability of GNNs, self-supervised learning has been widely explored for pretraining. Deep Graph Infomax (DGI) [ 34 ] max-imizes mutual information between local and global representa-tions. Contrastive learning methods such as GraphCL [ 42 ] construct positive and negative pairs through graph augmentations to en-hance discriminability. More recently, SimGRACE [ 40 ] achieves contrastive learning without explicit graph augmentations by lever-aging dropout-induced perturbations within the encoder, while generative approaches like GraphMAE [ 15 ] learn representations through reconstructing masked features or graph structures. 
+
+Large Language Models for Graphs. With the rapid advance-ment of Large Language Models (LLMs) and their strong generaliza-tion capabilities, leveraging LLMs to tackle transferability issues in graph machine learning has attracted growing interest [ 5 , 13 , 18 , 20 ,38 ]. Some studies convert graph structures into textual inputs for LLMs [ 5, 36 ], but such representations often yield suboptimal per-formance [ 16 ]. LLMs have also been adopted as enhancers [ 6, 22 ], typically generating synthetic data or node textual representations. More recently, growing efforts have focused on employing LLMs directly as predictors. For instance, LLaGA [ 4] presents an encoding method that translates graph data into LLM compatible sequences, while GraphGPT [ 30 ] integrates LLMs with graph structures via instruction tuning, enabling strong zero-shot generalization across graph tasks. GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks Conference’17, July 2017, Washington, DC, USA 
+
+However, most of these methods rely on labeled data for su-pervised learning, which limits their applicability when labels are scarce. Some recent works have explored pretraining approaches such as contrastive learning for combining graphs and LLMs. For example in [ 35 ], authors propose training a GNN to align its entity representations with the token embeddings of an LLM. Neverthe-less, the LLM itself is not involved during the pretraining process. These limitations motivate us to design a joint pretraining frame-work that explicitly involves both GNNs and LLMs to capture graph semantics in a label-free manner. 
+
+## 3 Methodology 3.1 Notation 
+
+Let G = {V , E, 𝑿 } denote a connected undirected graph, where 
+
+V = {𝑣 1, 𝑣 2, ..., 𝑣 𝑁 } is the set of 𝑁 nodes, E = {𝑒 𝑖 𝑗 } is the set of edges, and 𝑿 ∈ R𝑛 ×𝐹 is node features. In what follows, 𝑣 𝑖 and 𝑖 are used interchangeably to represent node 𝑣 𝑖 if incurring no confusion. Let 𝑨 be the adjacency matrix, and 𝑫 be the diagonal degree matrix with entries 𝑑 𝑖 = 𝑫 𝑖𝑖 = Í𝑗 𝑨 𝑖 𝑗 . The graph Laplacian is defined as 𝑳 = 𝑫 − 𝑨 . For any node 𝑖 , we denote its neighborhood as 
+
+𝑁 𝑖 = { 𝑗 : 𝑒 𝑖 𝑗 ∈ E} .
+
+## 3.2 Overall Architecture 
+
+The central goal of GLIP is to learn graph representations aligned with the embedding space of a pretrained LLM in a self-supervised manner, by jointly training a graph encoder and a language-model interface. Instead of updating the LLM itself, GLIP keeps the LLM frozen and uses it as a semantic decision interface, while optimiz-ing a GNN-based encoder and projection modules that transform graphs into token sequences compatible with the LLM input space. In this setting, the LLM provides structured supervision, and the graph side is trained to produce representations that are well sepa-rated in the LLM embedding space. GLIP follows a two-stage pipeline: (i) a self-supervised pretrain-ing stage that aligns graph tokens in the LLM token space via a view-consistency objective, and (ii) a task-specific fine-tuning stage that adapts the pretrained graph encoder and projectors with lim-ited labeled data for downstream tasks such as graph classification and reasoning. The pretraining stage reshapes the representation space by pulling semantically similar graphs closer and pushing dissimilar ones apart, which enables more sample-efficient learning of decision boundaries during fine-tuning. As illustrated in Figure 1, GLIP consists of three key components in the pretraining stage: (1) Graph augmentation and patch selection . Given a graph G, we apply augmentation operations such as edge removal or node feature masking to generate two correlated views, G1 and G2, which form a positive pair, while dif-ferent original graphs are treated as negative pairs. For each graph, we design a patch selection strategy to extract several informative subgraphs. The entire graph is regarded as the global view, while each patch is considered as a local view, enabling the model to capture both global and local structural information. (2) Global projection and local diffusion projection . For the global view, features are passed through a GNN-based encoder followed by a projector into the LLM embedding space. For the local views, we introduce a diffusion operator that enriches each subgraph with broader structural context before feeding them into the same GNN encoder and projector. (3) LLM-based semantic discrimination .The projected graph tokens, together with prompt tokens, are fed into a frozen open-source LLM, which is trained to predict whether two token sequences originate from the same graph. This binary decision objective provides a semantic-level supervision signal that encourages graph tokens from the same graph to be close, while pushing apart those from different graphs in the LLM token space. With this pretraining procedure, GLIP learns graph encoders and projectors that are well aligned with the LLM token space without requiring any task labels. In the subsequent fine-tuning stage, we initialize the model with the pretrained parameters and adapt the graph encoder and projectors using a small amount of labeled data, enabling the model to form effective decision bound-aries for downstream graph-level tasks such as semi-supervised classification, few-shot learning, and reasoning. 
+
+## 3.3 Patch Selection 
+
+As discussed in the previous section, GLIP represents each graph using a global token and multiple local tokens to capture informa-tive substructures. In this section, we introduce how to select local tokens under a limited token budget. 
+
+3.3.1 Patch Selection Candidates. Given a graph G with many nodes and edges, a straightforward approach is to treat the entire graph as a global view, obtaining a single graph token by pooling over all nodes. However, relying solely on the global view may over-look important local patterns that are crucial for understanding the graph. To address this, we introduce a patch selection frame-work. Specifically, we assume a collection of 𝑡 candidate patches (subgraphs) C = {𝑆 1, 𝑆 2, . . . , 𝑆 𝑡 }, such as one-hop neighborhoods around nodes. 
+
+3.3.2 Patch Selection Problem. Each candidate patch contains mean-ingful local information. However, we cannot select all candidates due to computational cost, memory constraints, and the token budget for LLMs. Suppose the budget is 𝑘 . Our goal is to select 
+
+𝑘 informative patches that effectively capture both the structural and feature-level characteristics of the graph. Formally, the patch selection problem is defined as follows. 
+
+Problem 1. [Patch Selection Problem] Given a collection of 
+
+𝑡 candidate patches C = {𝑆 1, 𝑆 2, . . . , 𝑆 𝑡 } from the graph G,the goal is to select 𝑘 patches by solving: 
+
+max   
+
+> 𝑈 ⊆ C
+
+𝜆𝑓 structure (𝑈 ) + ( 1 − 𝜆 )𝑓 feature (𝑈 )
+
+s.t. |𝑈 | = 𝑘. 
+
+We use 𝑓 structure (𝑈 ) and 𝑓 feature (𝑈 ) to capture structural and feature-level objectives respectively, weighted by parameter 𝜆 ∈[0, 1]. The function 𝑓 structure (𝑈 ) measures structural coverage, en-couraging the union of selected patches to maximize the number of distinct nodes. Let 𝐶 𝑈 = Ð𝑆 ∈𝑈 𝑆 denote the set of nodes cov-ered by the selected patches. We define the structural coverage as 
+
+𝑓 structure (𝑈 ) = |𝐶 𝑈 | 
+
+> 𝑁
+
+, where 𝑁 is the total number of nodes in the graph. Conference’17, July 2017, Washington, DC, USA Haoxin Sun, Yiqing Lin, Yajun Huang, Chenhui Dong, Mingjun Li, and Zhongzhi Zhang Strong Structure  
+
+> Strong Feature
+> Structure Score
+> Feature Score
+> (I) Candidate Patch (II) Structure and Feature Score Comparison
+> Strong Structure
+> Weak Feature
+> Weak Structure
+> Strong Feature
+
+Figure 2: The framework of patch selection. 
+
+Besides structural coverage, we also expect the union set 𝑈 to capture diverse feature information of nodes across the graph. To this end, we define 𝑓 feature (𝑈 ) to measure feature-level coverage. Each node 𝑣 is associated with a feature embedding vector 𝑥 𝑣 . For each node 𝑣 in the graph, we compute its maximum cosine similarity to any node 𝑢 within the selected union 𝑈 . The overall feature coverage is then given by the average of these maximum similarities across all nodes 𝑓 feature (𝑈 ) = 1
+
+> 𝑁
+
+Í𝑁 𝑣 =1 max 𝑢 ∈𝐶 𝑈 cos (x𝑣 , x𝑢 ),, where 
+
+𝑥 𝑣 and 𝑥 𝑢 denote the normalized feature embeddings of nodes 𝑣 
+
+and 𝑢 , respectively. Define 𝐹 (𝑈 ) as 𝐹 (𝑈 ) = 𝜆𝑓 structure (𝑈 ) + ( 1 − 𝜆 )𝑓 feature (𝑈 ). Then, Problem 1 aims to find a set 𝑈 that maximizes 𝐹 (𝑈 ).
+
+3.3.3 Hardness and Properties of Problem 1. Since we need to select 
+
+𝑘 patches out of 𝑡 candidates, Problem 1 is inherently combinatorial. In fact, we now show that this problem is NP-hard. 
+
+Theorem 3.1. The Patch Selection Problem (Problem 1) is NP-hard. 
+
+The proof of Theorem 3.1 is provided in the Appendix. Since the Patch Selection Problem is NP-hard, obtaining an exact solution is computationally infeasible for large graphs. Nevertheless, the objective function 𝐹 (𝑈 ) is monotone and submodular with respect to the selected set 𝑈 , as shown in the following theorem. These properties enable the use of a greedy algorithm with provable approximation guarantees. 
+
+Theorem 3.2. Let C = {𝑆 1, 𝑆 2, . . . , 𝑆 𝑡 } be the candidate patch family. Define the objective function 𝐹 (𝑈 ) = 𝜆𝑓 structure (𝑈 ) + ( 1 −
+
+𝜆 )𝑓 feature (𝑈 ) for any 𝑈 ⊆ C . Then the objective function is monotone and submodular, i.e., 𝐹 (𝐴 ∪ { 𝑆 𝑖 }) − 𝐹 (𝐴 ) ≥ 0 for all 𝐴 ⊆ C and 
+
+𝑆 𝑖 ∈ C \ 𝐴 , and 𝐹 (𝐴 ∪ { 𝑆 𝑖 }) − 𝐹 (𝐴 ) ≥ 𝐹 (𝐵 ∪ { 𝑆 𝑖 }) − 𝐹 (𝐵 ) for all 
+
+𝐴 ⊆ 𝐵 ⊆ C and 𝑆 𝑖 ∈ C \ 𝐵 .
+
+The detailed proof of Theorem 3.2 is provided in the Appendix. 
+
+3.3.4 Greedy Algorithm. By Theorem 3.1, the Patch Selection Prob-lem is NP-hard. Nevertheless, Theorem 3.2 shows that the objective function 𝐹 (𝑈 ) is monotone and submodular. According to the clas-sical result of Nemhauser et al. [ 25 ], a greedy strategy achieves a 
+
+(1 − 1/𝑒 )-approximation to the optimal solution. The pseudocode is shown in Algorithm 1 in the appendix. The algorithm proceeds for 𝑘 iterations, and in each round greedily selects the patch from the remaining candidates that provides the largest marginal gain of 𝐹 (𝑈 ), which balances structural and feature coverage. Suppose there are 𝑡 candidate patches, each of size at most 𝑝 , the graph has 𝑁 nodes with feature dimension 𝐹 , and we aim to select 
+
+𝑘 patches. Precomputing patch–node similarities costs 𝑂 (𝑡𝑁 𝑝𝐹 ).Each of the 𝑘 iterations then scans all remaining candidates with 
+
+𝑂 (𝑁 ) cost, yielding an additional 𝑂 (𝑘𝑡𝑁 ). With precomputation and incremental updates, the overall time complexity of the greedy algorithm is 𝑂 (𝑡𝑁 𝐹𝑝 + 𝑘𝑡𝑁 ), which scales efficiently in practice while still providing provable approximation guarantees. 
+
+## 3.4 Global Projection and Local Diffusion Projection 
+
+In this subsection, we describe how graph information is mapped into the LLM representation space. To preserve both global and local structures, we design two complementary modules: a global projection path, which encodes the entire graph via a GNN and a projector, and a local diffusion projection path, which enriches selected patches with contextual information before projection. 
+
+3.4.1 Diffusion Operator. For the local view, encoding each patch separately may lose important context, because nodes inside a patch have limited awareness of the overall graph structure. To address this, we introduce an information diffusion process over the graph. Each node 𝑖 is initialized with its feature vector z𝑖 (0) = x𝑖 ∈ R𝐹 ×1.At each diffusion step 𝑞 = 1, 2, . . . , the feature of node 𝑖 is updated by aggregating its own feature and those of its neighbors: 
+
+z𝑖 (𝑞 + 1) = x𝑖 + 𝛼 Í𝑗 ∈𝑁 𝑖 z𝑗 (𝑞 )
+
+1 + 𝛼𝑑 𝑖 
+
+, (1) where 𝑑 𝑖 is the degree of node 𝑖 and 𝛼 is a diffusion coefficient. Sup-pose that X = [x1, . . . , x𝑁 ]⊤ denotes the matrix of input features, and Z (𝑞 ) = [z1 (𝑞 ), . . . , z𝑁 (𝑞 )] ⊤ stacks the node embeddings after 
+
+𝑞 diffusion steps. The following theorem shows that as 𝑞 → ∞ ,
+
+Z (𝑞 ) converges to (I + 𝛼 L)−1X.
+
+Theorem 3.3. For any 𝛼 > 0 and any initialization Z (0), the iteration (1) converges to a unique fixed point Z★ that satisfies Z★ =
+
+(I + 𝛼 L)−1X.
+
+The proof of Theorem 3.3 is included in the Appendix. Specifi-cally, Theorem 3.3 shows that (I + 𝛼 L)−1 serves as the fundamental matrix in this diffusion process. This matrix can be interpreted both as a kernel function and as a low-pass filter, allowing local features to be blended with long-range structural information. Compared GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks Conference’17, July 2017, Washington, DC, USA 
+
+with conventional GNN message passing, this diffusion operator provides a more direct way to incorporate long-range dependen-cies. As a result, it enriches local patch representations with global context, thereby improving the quality of graph representations presented to the LLM. 
+
+3.4.2 GNN Encoder and Projector. After preparing both global and local graph views, we employ a GNN encoder together with two projection modules to transform node features into latent represen-tations. 
+
+Global Path. For the global view, the entire graph G is passed into a GNN encoder, producing node-level embeddings. We then ap-ply a pooling operation over all nodes to derive a compact global rep-resentation, which is projected into the LLM token space through a lightweight multi-layer perceptron (MLP), serving as the global projector. 
+
+Local Path. For the local view, each selected patch is first pro-cessed by the diffusion operator described in the previous subsec-tion, yielding diffused node embeddings. These embeddings are then encoded by a GNN encoder, followed by pooling within each patch to obtain patch-level representations. Each patch represen-tation is subsequently mapped into the LLM token space through another MLP, referred to as the local projector. This dual-path design allows the global projector to capture an overall view of the graph, while the local projector delivers enriched, fine-grained subgraph representations. Together, they generate a multi-token sequence that integrates both global context and local structural details, providing the LLM with graph tokens that carry richer contextual information for reasoning. 
+
+## 3.5 Loss Design 
+
+We adopt an open-source LLM (Mistral-7B and Qwen2.5-7B) as the backbone. In our framework, the LLM is used as a semantic decision interface, while the graph encoder and projection modules are optimized to produce graph tokens that are well aligned with the LLM token space. We design different training objectives for the pretraining and fine-tuning stages, which we describe below. 
+
+3.5.1 Pretraining Stage. In the pretraining stage, we aim to align graph representations in the LLM token space in a self-supervised manner. Suppose a batch contains 𝐵 graphs, and each graph 𝐺 is augmented into two correlated views, denoted as G1 and G2. Each pair (G 1, G2) constitutes a positive sample, while pairs formed from different original graphs are treated as negative samples. Based on this setup, our pretraining objective consists of two components: an LLM-based prediction loss and a contrastive alignment loss. 
+
+LLM Prediction Loss. To leverage the LLM as a semantic decision interface in graph representation learning, we adopt a prompt-based prediction task. Specifically, we prepend a natural language prompt such as “Are these two graphs from the same original graph?” to the input sequence composed of graph tokens. Supervision is applied using a cross-entropy objective. Pairs of two augmented views from the same graph are treated as positive samples, with the target label “Yes” . Negative samples are formed by pairing the first augmentation of one graph with the second augmentation of a different graph. To maintain balance, the number of negative pairs is kept equal to that of positive pairs. For these negative pairs, the target label is “No” . The resulting cross-entropy loss is denoted as LLLM .
+
+Contrastive Alignment Loss. To further enforce consistency be-tween different augmented views, we introduce a contrastive align-ment loss based on the InfoNCE objective. For each graph, two augmented views are generated, and each view is mapped into one global token and multiple local tokens. We compare both the global tokens and the averaged local tokens across views. Specifically, let u(1) 
+
+> 𝑖
+
+and u(2) 
+
+> 𝑗
+
+denote the embeddings of the 𝑖 -th and 𝑗 -th graphs from the two views (either global or averaged local). The InfoNCE loss is defined as 
+
+LNCE = − 1
+
+𝐵 
+
+> 𝐵
+
+∑︁ 
+
+> 𝑖 =1
+
+log exp  𝑠 (u(1) 
+
+> 𝑖
+
+, u(2) 
+
+> 𝑖
+
+)/ 𝜏 Í𝐵 𝑗 =1 exp  𝑠 (u(1) 
+
+> 𝑖
+
+, u(2) 
+
+> 𝑗
+
+)/ 𝜏  , (2) where 𝑠 (· , ·) denotes cosine similarity and 𝜏 is a temperature hyper-parameter. We combine the global- and local-level objectives using a convex weight 𝛽 ∈ [ 0, 1]: Lcontrast = 𝛽 LNCE_Global + ( 1 − 𝛽 ) L NCE_Local .
+
+Final Pretraining Loss. The overall pretraining loss combines the LLM prediction objective with the contrastive alignment loss: 
+
+Lpre = 𝛾 · L LLM + ( 1 − 𝛾 ) · L contrast , where 𝛾 ∈ [ 0, 1] balances the two components. This pretraining objective uses the LLM as a semantic decision interface to guide the graph encoder and projectors to organize graph tokens according to their similarities and differences in the LLM token space, without requiring any task-specific labels. 
+
+3.5.2 Fine-tuning Stage. In the fine-tuning stage, we adapt the pre-trained model to downstream tasks using labeled data. Depending on the task, the supervision signal can be either a discrete class label (for graph classification) or a natural language output (for graph reasoning). We formulate fine-tuning as a conditional prediction problem and optimize a standard cross-entropy loss over the target outputs. Concretely, the graph encoder and projection modules are initialized with the parameters learned in the self-supervised pretraining stage and are further updated to fit task-specific ob-jectives. This design transfers the semantic alignment established during pretraining to task-specific decision boundaries, enabling more sample-efficient learning under limited labeled data. 
+
+## 4 Experiments 
+
+In this section, we present experiments to systematically evaluate the effectiveness of GLIP. We aim to answer the following research questions: RQ1: How well does GLIP perform on semi-supervised graph classification? RQ2: How well does GLIP perform on few-shot graph classification? RQ3: How effective is GLIP for graph reasoning tasks? RQ4: What is the impact of each component in the modular design of GLIP? 
+
+## 4.1 Experimental Setup 
+
+Datasets. We evaluate GLIP on seven datasets that cover both feature-based and text-attributed graphs (TAG), as summarized in Table 1. The feature-based datasets include MUTAG, PROTEINS, REDDIT-BINARY (abbreviated as REDDIT), and IMDB-BINARY Conference’17, July 2017, Washington, DC, USA Haoxin Sun, Yiqing Lin, Yajun Huang, Chenhui Dong, Mingjun Li, and Zhongzhi Zhang 
+
+Table 1: Statistics of the datasets used in experiments.                                                 
+
+> Dataset #Graphs #Nodes #Edges #Feats Neg:Pos TAG MUTAG 188 17.93 39.59 763:125 No PROTEINS 1113 39.06 145.63 4663:450 No REDDIT 2000 429.63 995.51 01000:1000 No IMDB 1000 19.77 193.06 0500:500 No BBBP 2039 24.06 51.91 9479:1560 Yes BACE 1513 34.09 73.72 9822:691 Yes E-Com 2000 18.61 425.84 526 1000:1000 Yes
+
+(IMDB), all from the TUDataset collection [ 24 ]. MUTAG and PRO-TEINS are molecular and protein datasets with 7- and 4-dimensional node features, respectively. REDDIT and IMDB lack intrinsic node features, so we follow standard practice by using node degrees as feature inputs. The text-attributed datasets include BBBP, BACE, and E-Commerce (E-Com). BBBP and BACE are molecular property prediction benchmarks from [ 9 ], where each node is accompanied by textual annotations of its chemical properties. E-Com is an indus-trial e-commerce dataset, where each graph represents a community of TikTok Shop sellers, and the task is to predict whether the group is risky. Table 1 reports dataset statistics, where #Graphs denotes the number of graphs, #Nodes and #Edges represent the average number of nodes and edges per graph, #Feats is the node feature di-mension, Neg:Pos indicates the negative/positive sample ratio, and TAG shows whether the dataset contains text-attributed graphs. 
+
+Baselines. We compare GLIP with a wide range of representative baselines, including both graph pretraining methods and graph–LLM methods. The graph pretraining baselines cover four classical self-supervised graph learning algorithms GraphMAE [ 15 ], GraphCL [ 42 ], DGI [ 34 ], and SimGRACE [ 40 ]. These algorithms enhance graph structures and features through contrastive learning or masked reconstruction objectives to learn expressive representations with-out supervision. We also consider graph–LLM methods include recent frameworks that integrate large language models with graph encoders, namely GraphGPT [ 30 ], LLaGA [ 4], and TEA-GLM [ 35 ]. Given that the three methods are tailored to node-level settings and, to our knowledge, no specialized graph-level graph-LLM method is available, we derive graph-level embeddings by applying average pooling to the node representations for all three methods. 
+
+Implementations. We evaluate two metrics: Accuracy and Macro F1-score. Each result is averaged over five runs, and both the mean and standard deviation are reported. We adopt GCN [ 19 ] as the graph encoder backbone. Each graph–LLM model is evaluated un-der two instruction-tuned backbones, Mistral-7B-Instruct-v0.2 [ 17 ](Mistral) and Qwen2.5-7B-Instruct [ 1] (Qwen), to ensure fairness across architectures. In semi-supervised classification, we use a data split of 5% for training, 15% for validation, and 80% for test-ing. All experiments are conducted on a single NVIDIA H100 GPU with 80 GB of memory. Our source code is publicly available on https://anonymous.4open.science/r/GLIP. More implementation de-tails are provided in the Appendix. 
+
+## 4.2 Semi-Supervised Graph Classification (RQ1) 
+
+Results and Analysis. Under the semi-supervised setting, we adopt a 5%/15%/80% split for training, validation, and testing, re-spectively. With limited supervision, pretraining-based methods demonstrate clear advantages. As shown in Table 2 (Accuracy) and Table 6 in the Appendix (F1 score), classical graph pretraining ap-proaches already surpass early Graph–LLM pipelines (e.g., LLaGA, GraphGPT), highlighting the importance of robust structural repre-sentation learning under label scarcity. Our proposed GLIP pushes this further and achieves the best overall performance in both Ac-curacy and Macro-F1. For example, on feature graphs, GLIP-Mistral attains an average accuracy of 72.94% (Table 2); on TAG datasets, it reaches an average accuracy of 76.67%. On the four feature-only datasets (MUTAG, PROTEINS, RED-DIT, IMDB), GraphGPT is inapplicable due to the lack of textual inputs. GLIP yields consistent gains across all datasets. For instance, 
+
+GLIP-Qwen achieves 73.84% on MUTAG and 68.37% on PROTEINS, outperforming LLaGA and TEA-GLM by roughly 2–10 percent-age points in accuracy. On the three text-attributed graphs (BBBP, BACE, E-Com), GLIP maintains its lead over both graph pretraining and graph–LLM counterparts under the same LLM backbone. With Mistral, GLIP attains 80.99% (BBBP), 62.63% (BACE), and 86.38% (E-Com) in accuracy, consistently surpassing TEA-GLM, LLaGA, and GraphGPT. A similar pattern holds with Qwen, where GLIP matches or exceeds the strongest baselines on all datasets in both accuracy and F1. These results indicate that integrating global and local representations, together with diffusion-enhanced patches and LLM-guided supervision, enables GLIP to capture richer struc-tural and semantic contexts across both feature graphs and text-attributed graphs, leading to strong and consistent performance even under limited supervision. 
+
+## 4.3 Few Shot Graph Classification (RQ2) 
+
+The few-shot setting presents an even more challenging scenario than the semi-supervised one. Here, we report the results of 5-shot classification, where only five labeled samples per class are avail-able for training, while the results of the 3-shot setting are provided in the Appendix. This extreme data scarcity severely constrains the effectiveness of conventional graph pretraining and graph–LLM methods. Nevertheless, GLIP exhibits remarkable robustness under this condition, achieving consistent and substantial improvements on both feature graphs and text-attributed graphs in terms of accu-racy and F1 score, as shown in Table 7 and Table 8 (Appendix). On the feature graph datasets (MUTAG, PROTEINS, REDDIT, IMDB), GLIP significantly outperforms the compared baselines. Specifically, GLIP-Mistral attains an average accuracy of 66.73% and F1 of 65.17%, while GLIP-Qwen further reaches 67.33% accuracy and 65.48% F1. These results consistently surpass TEA-GLM, LLaGA, and classical graph pretraining methods such as GraphCL and DGI. On the text-attributed datasets (BBBP, BACE, E-Com), GLIP-Qwen achieves either the best or second-best results across all meth-ods. For example, GLIP-Qwen records 74.85% accuracy on BBBP and 77.04% on E-Com, outperforming other graph–LLM frame-works like TEA-GLM and GraphGPT. These results demonstrate that, even under the extreme few-shot regime, the proposed patch GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks Conference’17, July 2017, Washington, DC, USA 
+
+Table 2: Performance comparison under semi-supervised settings with Accuracy (%) reported. The best and second-best results are highlighted. Results are averaged over five runs. 
+
+Feature Graphs Text-Attributed Graphs Accuracy Semi-Supervised MUTAG PROTEINS REDDIT IMDB Average BBBP BACE E-Com Average 
+
+GraphMAE 66 .89 ±1.32 60 .23 ±1.87 80 .40 ±4.30 53 .08 ±5.78 65 .15 76 .52 ±0.02 54 .11 ±0.46 83 .38 ±1.24 71 .34 
+
+GraphCL 70 .84 ±5.04 67 .48 ±1.96 86 .19 ±2.02 60 .85 ±2.47 71 .34 77 .22 ±1.28 56 .48 ±2.70 83 .14 ±2.03 72 .28 
+
+DGI 68 .75 ±3.09 61 .66 ±2.53 84 .92 ±2.20 55 .75 ±2.72 67 .77 76 .53 ±11 .20 56 .32 ±2.79 82 .11 ±2.04 71 .65 
+
+Graph Pretrain Method SimGRACE 67 .95 ±2.35 60 .87 ±2.20 83 .35 ±2.34 60 .15 ±3.08 68 .08 76 .41 ±0.24 54 .07 ±4.03 83 .18 ±1.28 71 .22 
+
+GraphGPT-Mistral - - - - - 78 .42 ±2.32 54 .76 ±1.34 80 .91 ±1.01 71 .36 
+
+GraphGPT-Qwen - - - - - 77 .22 ±1.34 55 .76 ±1.27 81 .33 ±2.13 71 .44 
+
+LLaGA-Mistral 68 .35 ±4.38 59 .46 ±0.30 75 .84 ±3.55 52 .20 ±2.67 63 .96 76 .53 ±0.00 54 .55 ±1.13 81 .97 ±3.97 71 .02 
+
+LLaGA-Qwen 68 .08 ±3.42 64 .04 ±1.91 77 .72 ±2.41 55 .18 ±1.95 66 .26 76 .60 ±0.24 53 .32 ±1.77 83 .82 ±1.59 71 .25 
+
+TEA-GLM-Mistral 71 .10 ±2.22 65 .12 ±12 .03 86 .60 ±2.34 61 .85 ±3.75 71 .17 79 .73 ±1.96 60 .96 ±2.77 81 .23 ±1.91 73 .97 
+
+Graph-LLM Method 
+
+TEA-GLM-Qwen 66 .36 ±6.92 67 .88 ±3.22 85 .02 ±4.39 60 .95 ±2.05 70 .05 78 .40 ±3.98 58 .99 ±5.58 84 .05 ±1.52 73 .81 
+
+GLIP-Mistral 72 .45 ±1.45 68 .37 ±2.22 87 .21 ±1.17 63 .72 ±2.68 72 .94 80 .99 ±1.41 62 .63 ±1.80 86 .38 ±1.78 76 .67 
+
+Ours GLIP-Qwen 73 .84 ±3.11 68 .37 ±2.41 86 .31 ±1.74 61 .95 ±5.40 72 .62 80 .04 ±1.20 59 .50 ±2.43 84 .17 ±1.04 74 .57 
+
+Table 3: Graph reasoning performance compared with GPT-4o outputs with best and second-best results highlighted. 
+
+BERT Score BLEU ROUGE Model Precision Recall F1 BLEU-1 BLEU-2 BLEU-3 BLEU-4 ROUGE-1 ROUGE-2 ROUGE-L GraphGPT 78.41 73.52 75.87 45.42 30.51 22.04 16.89 48.52 21.91 46.45 LLaGA 80.23 75.44 77.76 47.35 34.82 25.63 19.97 50.80 24.01 49.62 TEA-GLM 79.66 75.12 77.32 47.98 35.35 26.72 20.64 49.87 25.42 50.90 GLIP 82.71 81.52 82.11 54.71 41.21 30.79 24.68 61.82 34.21 59.78 
+
+selection mechanism and diffusion-based contextual encoding sub-stantially enhance representation quality, enabling GLIP to extract more discriminative features from very limited supervision. 
+
+## 4.4 Graph Reasoning Task (RQ3) 
+
+To further assess the reasoning capability of GLIP, we conduct a graph-level reasoning task on the E-Com dataset using Mistral-7B. Following prior Graph-LLM baselines such as GraphGPT, TEA-GLM, and LLaGA, we report results with the LLM backbone (Mistral-7B) kept frozen. Additional experiments with an unfrozen LLM are provided in the appendix. In this task, each input corresponds to a source seller connected to multiple neighboring shops through various relational attributes such as shared IPs, product images, or registration devices. The model is required to infer whether the source shop exhibits potential group risk and whether it should be deactivated, strictly following the pre-defined structured output format: "whether source shop has group risk": "yes/no/hard_to_say", "reason": "Risk Factor Analysis 1–4; Conclusion Risk Summary." Two examples are provided to guide the model’s reasoning and response formatting. To construct reliable supervision for this reasoning task, we first query GPT-4o with the same prompt and input descriptions for each seller case, and treat GPT-4o’s structured responses including both the final decision and the detailed reasoning as reference answers. These GPT-4o outputs serve as pseudo ground-truth annotations, reflecting high-quality and consistent reasoning patterns over the seller graphs. We then compare three configurations: (i) GPT-4o with text in-put, (ii)Mistral-7B with text input, and (iii) Mistral-7B with graph tokens generated by GLIP. As shown in Figure 3, GPT-4o produces correct and well-structured outputs that strictly follow the prede-fined reasoning format. In contrast, the frozen Mistral-7B model fails to adhere to the required structure and often outputs ambigu-ous judgments such as “maybe,” reflecting its limited ability to interpret relational dependencies. It also struggles to recognize key graph-based risk patterns, such as repetitive naming conventions among connected shops, which are indicative of potential collusive groups. After incorporating GLIP’s graph tokens, the reasoning quality of Mistral-7B improves substantially. The graph tokens provide explicit structural cues that help (1) reduce hallucination and en-force response consistency, (2) enhance structural reasoning and judgment accuracy, and (3) enable smaller models to approach GPT-level analytical reliability in graph reasoning tasks, even when the LLM backbone remains frozen. Table 5 reports the quantita-tive results of the graph reasoning task, where GPT-4o’s outputs are used as the reference standard. We evaluate the models using BERTScore [ 45 ], BLEU [ 26 ], and ROUGE [ 21 ] to measure semantic fidelity, linguistic coherence, and structural consistency. As shown, GLIP-Mistral achieves substantial improvements over all baselines, Conference’17, July 2017, Washington, DC, USA Haoxin Sun, Yiqing Lin, Yajun Huang, Chenhui Dong, Mingjun Li, and Zhongzhi Zhang You are an E-commerce seller group risk control specialist . You  
+
+> assess seller networks using existing risk enforcement signals,
+> connection strengths and business metrics. Your answer format should
+> be
+
+"whether_source_shop_has_group_risk": "yes" or "no" or 
+
+"hard_to_say ", "reason": "Risk Factor Analysis 1. Group Connections  
+
+> and Penalties 2. Group Patterns 3. Business Performance of the
+> Group Sellers 4. Business Performance of the Source Seller;
+> Conclusion Risk Summary".
+> Source shop id: xxx; shop name: xxx; other features: ...; connected
+> shop id: xxx;
+
+connect relation: ["ip", "phone"] ; shop name: xxx; 
+
+shop status: Deactive ; other features: ...; connected shop id: xxx; 
+
+connect relation: ["product", "ip"] ; shop name: xxx; shop type:  
+
+> Local;
+
+shop status: Rejected ; other features: ...; … (repeat for 
+
+> additional connected shops).
+
+GPT-4o 
+
+Mistral-7B 
+
+"whether_source_shop_has_group_risk": "yes" , "reason": "Risk  
+
+> Factor Analysis 1. Group Connections and Penalties: The source shop is
+> connected to multiple other shops via strong multi-signal links;
+
+most 
+
+connected shops are with group risk labels 2. Group Patterns: Most  
+
+> connected shops
+
+share a similar template consistent with local naming-  
+
+> pattern risk criteria. 3. Business Performance of the Group Sellers: The
+> connected shops show uniformly low activity with no reliable positive
+> performance metrics. 4. Business Performance of the Source Seller: The
+> source shop has low GMV. Conclusion:
+
+Risk Summary Penalized 
+
+connections, repeated naming, and weak performance together 
+
+indicate clear group risk. "
+
+"whether_source_shop_has_group_risk": "maybe", "reason": "Risk 
+
+> Factor Analysis: 1. Group Connections and Penalties Some connected
+> shops have group risk labels with similar names and email domains, but
+
+links are weak and not decisive . 2. Group Patterns: The source shop 
+
+name seems irregular, but no clear overlap is confirmed . 3. 
+
+> Business Performance of the Group Sellers: Limited data; peers mostly
+> low activity. 4. Business Performance of the Source Seller: Low GMV, no
+> reviews, no penalties, common email domain. Conclusion Risk Summary
+
+Evidence is limited and inconclusive, the group risk is not clearly 
+
+justifi ed. "
+
+"whether_source_shop_has_group_risk": "yes" , "reason": "Risk  
+
+> Factor Analysis: 1. Group Connections and Penalties: The source shop links
+> closely to several local shops,
+
+most of which have group risk labels , 
+
+> showing clear group enforcement. 2. Group Patterns:
+
+A consistent 
+
+naming pattern is shared across connected shops , confirming group 
+
+> similarity; email domains are common and not risky. 3. Business
+> Performance of the Group Sellers: Connected shops mostly have low GMV
+> and no strong positive indicators, suggesting weak overall integrity. 4.
+> Business Performance of the Source Seller: The source shop also has low
+> GMV, and no signs of good performance. Conclusion Risk Summary:
+
+Multiple penalized links, naming overlap, and uniformly poor 
+
+performance indicate strong group risk. "
+
+Graph Tokens 
+
+Text-Only Input - Mistral-7B Response 
+
+System Prompt and Human Instruction 
+
+Text Input with Graph Tokens – Mistral-7B Response 
+
+Text-Only Input - GPT-4o Response 
+
+Graph Tokens from GLIP 
+
+Figure 3: Case Study: Comparative Responses of GPT-4o and Mistral-7B with and without Graph Tokens from GLIP. PROTEINS REDDIT E-Com 
+
+> 50
+> 60
+> 70
+> 80
+> 90
+> Accuracy (%)
+> GLIP
+> w/o Pretrain
+> w/o PatchSelect
+> w/o Diffusion
+> Random PatchSelect
+> Degree PatchSelect
+
+Figure 4: Ablation Results on Key Components of GLIP. 
+
+particularly outperforming the text-only Mistral variant by a large margin across all metrics. GLIP achieves a BERTScore-F1 of 0.821 and a ROUGE-L of 0.598, demonstrating that GLIP effectively en-ables frozen small-scale LLMs to generate structured, semantically faithful, and logically consistent reasoning outputs comparable to much larger models. 
+
+## 4.5 Ablation Study (RQ4) 
+
+Figure 4 presents the ablation results of our GLIP framework on three representative datasets (PROTEINS, REDDIT, and E-Com) under the semi-supervised setting. We systematically remove or replace key components to assess their contributions. As shown, removing the pretraining stage (w/o Pretrain) leads to a signifi-cant accuracy drop across all datasets, indicating that our joint pretraining strategy plays a crucial role in improving downstream performance. Likewise, removing the patch selection module (w/o PatchSelect) or the diffusion process (w/o Diffusion) consistently degrades performance, demonstrating that both local structural awareness and global information propagation are essential. We further compare different patch selection strategies. The Random PatchSelect baseline performs markedly worse than our adaptive strategy, confirming the benefit of informed patch con-struction. Degree PatchSelect, which prioritizes high-degree nodes and their one-hop neighbors, achieves slightly better results than random sampling but still underperforms our method. This indi-cates that purely structural heuristics are insufficient, while GLIP’s joint structural–feature selection better balances local diversity and global coherence, leading to superior graph understanding. 
+
+## 5 Conclusion 
+
+In this paper, we proposed GLIP, a Graph-LLM joint pretraining framework for graph-level tasks. GLIP adopts a label-free, self-supervised pretraining scheme that involves large language models as a semantic decision interface, guiding the learning of graph representations to be organized according to their similarities and differences in the LLM token space. The framework introduces a multi-token patch selection strategy to integrate both global and local structural and feature information, and incorporates a diffusion-based projection operator to enhance contextual depen-dencies among selected patches, enabling more effective semantic understanding of graphs. Building upon this pretrained represen-tation space, GLIP further adapts the model to downstream tasks through task-specific fine-tuning with limited labeled data. Extensive experiments on both feature-based and text-attributed graphs demonstrate that GLIP consistently outperforms classical graph pretraining methods and recent graph–LLM frameworks under semi-supervised, few-shot, and graph reasoning settings. In future work, we plan to extend GLIP to more complex graph domains, such as heterogeneous graphs, symbolic graphs, and dy-namic relational systems. GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks Conference’17, July 2017, Washington, DC, USA 
+
+## References 
+
+[1] Jinze Bai, Shuai Bai, Yunfei Chu, Zeyu Cui, Kai Dang, Xiaodong Deng, Yang Fan, Wenbin Ge, Yu Han, Fei Huang, et al . 2023. Qwen technical report. arXiv preprint arXiv:2309.16609 (2023). [2] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al . 2020. Language models are few-shot learners. Advances in neural information processing systems 33 (2020), 1877–1901. [3] Ziwei Chai, Tianjie Zhang, Liang Wu, Kaiqiao Han, Xiaohai Hu, Xuanwen Huang, and Yang Yang. 2023. Graphllm: Boosting graph reasoning ability of large lan-guage model. arXiv preprint arXiv:2310.05845 (2023). [4] Runjin Chen, Tong Zhao, Ajay Jaiswal, Neil Shah, and Zhangyang Wang. 2024. Llaga: Large language and graph assistant. arXiv preprint arXiv:2402.08170 (2024). [5] Zhikai Chen, Haitao Mao, Hang Li, Wei Jin, Hongzhi Wen, Xiaochi Wei, Shuaiqiang Wang, Dawei Yin, Wenqi Fan, Hui Liu, et al . 2024. Exploring the potential of large language models (llms) in learning on graphs. ACM SIGKDD Explorations Newsletter 25, 2 (2024), 42–61. [6] Zhikai Chen, Haitao Mao, Hongzhi Wen, Haoyu Han, Wei Jin, Haiyang Zhang, Hui Liu, and Jiliang Tang. 2023. Label-free node classification on graphs with large language models (llms). arXiv preprint arXiv:2310.04668 (2023). [7] Yingtong Dou, Zhiwei Liu, Li Sun, Yutong Deng, Hao Peng, and Philip S Yu. 2020. Enhancing graph neural network-based fraud detectors against camouflaged fraudsters. In Proceedings of the 29th ACM international conference on information & knowledge management . 315–324. [8] Uriel Feige. 1998. A threshold of ln n for approximating set cover. Journal of the ACM (JACM) 45, 4 (1998), 634–652. [9] Jiarui Feng, Hao Liu, Lecheng Kong, Mingfang Zhu, Yixin Chen, and Muhan Zhang. 2024. TAGLAS: An atlas of text-attributed graph datasets in the era of large graph and language models. arXiv preprint arXiv:2406.14683 (2024). [10] Justin Gilmer, Samuel S Schoenholz, Patrick F Riley, Oriol Vinyals, and George E Dahl. 2017. Neural message passing for quantum chemistry. In International conference on machine learning . Pmlr, 1263–1272. [11] Aditya Grover and Jure Leskovec. 2016. node2vec: Scalable feature learning for networks. In Proceedings of the 22nd ACM SIGKDD international conference on Knowledge discovery and data mining . 855–864. [12] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al . 2025. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 (2025). [13] Jiayan Guo, Lun Du, Hengyu Liu, Mengyu Zhou, Xinyi He, and Shi Han. 2023. Gpt4graph: Can large language models understand graph structured data? an empirical evaluation and benchmarking. arXiv preprint arXiv:2305.15066 (2023). [14] William L Hamilton, Rex Ying, and Jure Leskovec. 2017. Inductive representation learning on large graphs. In NeurIPS . 1025–1035. [15] Zhenyu Hou, Xiao Liu, Yukuo Cen, Yuxiao Dong, Hongxia Yang, Chunjie Wang, and Jie Tang. 2022. Graphmae: Self-supervised masked graph autoencoders. In 
+
+Proceedings of the 28th ACM SIGKDD conference on knowledge discovery and data mining . 594–604. [16] Jin Huang, Xingjian Zhang, Qiaozhu Mei, and Jiaqi Ma. 2023. Can llms effectively leverage graph structural information through prompts, and why? arXiv preprint arXiv:2309.16595 (2023). [17] Albert Q. Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, De-vendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, Lélio Renard Lavaud, Marie-Anne Lachaux, Pierre Stock, Teven Le Scao, Thibaut Lavril, Thomas Wang, Timothée Lacroix, and William El Sayed. 2023. Mistral 7B. arXiv:2310.06825 [cs.CL] https: //arxiv.org/abs/2310.06825 [18] Bowen Jin, Gang Liu, Chi Han, Meng Jiang, Heng Ji, and Jiawei Han. 2024. Large language models on graphs: A comprehensive survey. IEEE Transactions on Knowledge and Data Engineering (2024). [19] Thomas N Kipf and Max Welling. 2017. Semi-supervised classification with graph convolutional networks. In Proceedings of the ICLR .[20] Yuhan Li, Zhixun Li, Peisong Wang, Jia Li, Xiangguo Sun, Hong Cheng, and Jeffrey Xu Yu. 2023. A survey of graph meets large language model: Progress and future directions. arXiv preprint arXiv:2311.12399 (2023). [21] Chin-Yew Lin. 2004. Rouge: A package for automatic evaluation of summaries. In Text summarization branches out . 74–81. [22] Hao Liu, Jiarui Feng, Lecheng Kong, Ningyue Liang, Dacheng Tao, Yixin Chen, and Muhan Zhang. 2023. One for all: Towards training one graph model for all classification tasks. arXiv preprint arXiv:2310.00149 (2023). [23] Xiaoxiao Ma, Jia Wu, Shan Xue, Jian Yang, Chuan Zhou, Quan Z Sheng, Hui Xiong, and Leman Akoglu. 2021. A comprehensive survey on graph anomaly detection with deep learning. IEEE Transactions on Knowledge and Data Engineering (2021). [24] Christopher Morris, Nils M Kriege, Franka Bause, Kristian Kersting, Petra Mutzel, and Marion Neumann. 2020. Tudataset: A collection of benchmark datasets for learning with graphs. arXiv preprint arXiv:2007.08663 (2020). [25] George L Nemhauser, Laurence A Wolsey, and Marshall L Fisher. 1978. An analysis of approximations for maximizing submodular set functions—I. Mathematical programming 14, 1 (1978), 265–294. [26] Kishore Papineni, Salim Roukos, Todd Ward, and Wei-Jing Zhu. 2002. Bleu: a method for automatic evaluation of machine translation. In Proceedings of the 40th annual meeting of the Association for Computational Linguistics . 311–318. [27] Bryan Perozzi, Rami Al-Rfou, and Steven Skiena. 2014. Deepwalk: Online learning of social representations. In Proceedings of the 20th ACM SIGKDD international conference on Knowledge discovery and data mining . 701–710. [28] Ryan A Rossi, Rong Zhou, and Nesreen K Ahmed. 2018. Deep inductive graph representation learning. IEEE transactions on knowledge and data engineering 32, 3 (2018), 438–452. [29] Jonathan M Stokes, Kevin Yang, Kyle Swanson, Wengong Jin, Andres Cubillos-Ruiz, Nina M Donghia, Craig R MacNair, Shawn French, Lindsey A Carfrae, Zohar Bloom-Ackermann, et al . 2020. A deep learning approach to antibiotic discovery. 
+
+Cell 180, 4 (2020), 688–702. [30] Jiabin Tang, Yuhao Yang, Wei Wei, Lei Shi, Lixin Su, Suqi Cheng, Dawei Yin, and Chao Huang. 2024. Graphgpt: Graph instruction tuning for large language models. In Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval . 491–500. [31] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, et al . 2023. Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971 (2023). [32] Petar Veličković. 2023. Everything is connected: Graph neural networks. Current Opinion in Structural Biology 79 (2023), 102538. [33] Petar Veličković, Guillem Cucurull, Arantxa Casanova, Adriana Romero, Pietro Lio, and Yoshua Bengio. 2017. Graph attention networks. arXiv:1710.10903 (2017). [34] Petar Veličković, William Fedus, William L Hamilton, Pietro Liò, Yoshua Bengio, and R Devon Hjelm. 2018. Deep graph infomax. arXiv preprint arXiv:1809.10341 
+
+(2018). [35] Duo Wang, Yuan Zuo, Fengzhi Li, and Junjie Wu. 2024. Llms as zero-shot graph learners: Alignment of gnn representations with llm token embeddings. Advances in Neural Information Processing Systems 37 (2024), 5950–5973. [36] Heng Wang, Shangbin Feng, Tianxing He, Zhaoxuan Tan, Xiaochuang Han, and Yulia Tsvetkov. 2023. Can language models solve graph problems in natural language? Advances in Neural Information Processing Systems 36 (2023), 30840– 30861. [37] Shiwen Wu, Fei Sun, Wentao Zhang, Xu Xie, and Bin Cui. 2022. Graph neural networks in recommender systems: a survey. Comput. Surveys 55, 5 (2022), 1–37. [38] Xixi Wu, Yifei Shen, Fangzhou Ge, Caihua Shan, Yizhu Jiao, Xiangguo Sun, and Hong Cheng. 2025. When Do LLMs Help With Node Classification? A Comprehensive Analysis. arXiv preprint arXiv:2502.00829 (2025). [39] Zonghan Wu, Shirui Pan, Fengwen Chen, Guodong Long, Chengqi Zhang, and Philip S Yu. 2020. A comprehensive survey on graph neural networks. IEEE transactions on neural networks and learning systems 32, 1 (2020), 4–24. [40] Jun Xia, Lirong Wu, Jintao Chen, Bozhen Hu, and Stan Z Li. 2022. Simgrace: A simple framework for graph contrastive learning without data augmentation. In 
+
+Proceedings of the ACM web conference 2022 . 1070–1079. [41] Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka. 2018. How powerful are graph neural networks? arXiv preprint arXiv:1810.00826 (2018). [42] Yuning You, Tianlong Chen, Yongduo Sui, Ting Chen, Zhangyang Wang, and Yang Shen. 2020. Graph contrastive learning with augmentations. Advances in neural information processing systems 33 (2020), 5812–5823. [43] Mengmei Zhang, Mingwei Sun, Peng Wang, Shen Fan, Yanhu Mo, Xiaoxiao Xu, Hong Liu, Cheng Yang, and Chuan Shi. 2024. Graphtranslator: Aligning graph model to large language model for open-ended tasks. In Proceedings of the ACM Web Conference 2024 . 1003–1014. [44] Shijie Zhang, Hongzhi Yin, Tong Chen, Quoc Viet Nguyen Hung, Zi Huang, and Lizhen Cui. 2020. GCN-based user representation learning for unifying robust recommendation and fraudster detection. In SIGIR . 689–698. [45] Tianyi Zhang, Varsha Kishore, Felix Wu, Kilian Q Weinberger, and Yoav Artzi. 2019. Bertscore: Evaluating text generation with bert. arXiv preprint arXiv:1904.09675 (2019). [46] Ziwei Zhang, Peng Cui, and Wenwu Zhu. 2020. Deep learning on graphs: A survey. 
+
+IEEE Transactions on Knowledge and Data Engineering 34, 1 (2020), 249–270. [47] Jie Zhou, Ganqu Cui, Shengding Hu, Zhengyan Zhang, Cheng Yang, Zhiyuan Liu, Lifeng Wang, Changcheng Li, and Maosong Sun. 2020. Graph neural networks: A review of methods and applications. AI open 1 (2020), 57–81. Conference’17, July 2017, Washington, DC, USA Haoxin Sun, Yiqing Lin, Yajun Huang, Chenhui Dong, Mingjun Li, and Zhongzhi Zhang 
+
+## A Algorithms and Proofs 
+
+In this section, we provide the pseudocode of Algorithm 1 as well as the detailed proofs of our three Theorems. 
+
+## A.1 Pseudocode of Algorithm 1 
+
+Algorithm 1: GreedyPatchSelect (G , C, 𝑘, 𝑋, 𝜆 )
+
+Input : Graph G = (V , E) with 𝑁 nodes; Candidate patches C = {𝑆 1, . . . , 𝑆 𝑡 }; Node features 
+
+X = [x1, . . . , x𝑁 ]⊤ ∈ R𝑁 ×𝐹 ; Budget 𝑘 ; Weight 𝜆 .
+
+Output : Selected set 𝑈 ⊆ C with |𝑈 | = 𝑘 . 
+
+> 1
+
+Initialize: 𝑈 ← ∅ ; 𝐶 𝑈 ← ∅ ; 𝑀 𝑈 (𝑣 ) ← 0, ∀𝑣 ∈ V ; 
+
+> 2
+
+Precompute: For each candidate patch 𝑆 𝑗 and node 𝑣 ∈ V ,
+
+𝑚 𝑆 𝑗 (𝑣 ) ← max 𝑢 ∈𝑆 𝑗 ⟨x𝑣 , x𝑢 ⟩; 
+
+> 3
+
+for 𝑟 = 1 to 𝑘 do  
+
+> 4
+
+for each 𝑆 𝑗 ∈ C \ 𝑈 do  
+
+> 5
+
+Δstructure (𝑆 𝑗 ) ← |𝐶 𝑈 ∪ 𝑆 𝑗 | − | 𝐶 𝑈 |
+
+𝑁 ; 
+
+> 6
+
+𝑀 ′ (𝑣 ) ← max {𝑀 𝑈 (𝑣 ), 𝑚 𝑆 𝑗 (𝑣 )} , ∀𝑣 ∈ V ; 
+
+> 7
+
+Δfeature (𝑆 𝑗 ) ← 1
+
+𝑁 
+
+Í𝑁 𝑣 =1 𝑀 ′ (𝑣 ) − 1
+
+𝑁 
+
+Í𝑁 𝑣 =1 𝑀 𝑈 (𝑣 ); 
+
+> 8
+
+Δ𝐹 (𝑆 𝑗 ) ← 𝜆 Δstructure (𝑆 𝑗 ) + ( 1 − 𝜆 ) Δfeature (𝑆 𝑗 ); 
+
+> 9
+
+𝑆 ★ ← arg max 𝑆 𝑗 ∈ C\ 𝑈 Δ𝐹 (𝑆 𝑗 ); 
+
+> 10
+
+𝑈 ← 𝑈 ∪ { 𝑆 ★}; 𝐶 𝑈 ← 𝐶 𝑈 ∪ 𝑆 ★; 
+
+> 11
+
+𝑀 𝑈 (𝑣 ) ← max {𝑀 𝑈 (𝑣 ), 𝑚 𝑆 ★ (𝑣 )} , ∀𝑣 ∈ V ; 
+
+> 12
+
+return 𝑈 
+
+## A.2 The proof of Theorem 3.1 
+
+Proof. We reduce from the classical Maximum Coverage problem, which is NP-hard [ 8]. Given a Maximum Coverage instance with universe 𝑉 = {𝑣 1, 𝑣 2, . . . , 𝑣 𝑁 }, a subset family S = {𝑆 1, . . . , 𝑆 𝑡 }, and a budget 𝑘 , we construct a Patch Selection instance as follows: (i) create a graph G with 𝑁 nodes, one for each element in 𝑉 ; (ii) let the candidate patches be C = {𝑆 1, . . . , 𝑆 𝑡 }; (iii) set 𝜆 = 1 and keep the same budget 𝑘 .In this case, the Patch Selection objective reduces to 
+
+max     
+
+> 𝑈 ⊆ C ,|𝑈 |=𝑘
+
+𝑓 structure (𝑈 ) = 1
+
+𝑁 
+
+Ø 
+
+> 𝑆 ∈𝑈
+
+𝑆 ,
+
+which is exactly the Maximum Coverage objective up to a con-stant factor 1/𝑁 . Thus, solving Patch Selection solves Maximum Coverage, proving NP-hardness. □
+
+## A.3 The proof of Theorem 3.2 
+
+Proof. Monotonicity. Both 𝑓 structure and 𝑓 feature are monotone non-decreasing. For 𝑓 structure , adding a new patch can only increase (or leave unchanged) the number of covered nodes. For 𝑓 feature , enlarg-ing the selected set cannot reduce any node’s maximum similarity to the set. Since 𝐹 (𝑈 ) is a nonnegative linear combination of these two terms, it is also monotone. 
+
+Submodularity. Let 𝐴, 𝐵 ⊆ C with 𝐴 ⊆ 𝐵 , and let 𝑆 𝑖 ∈ C \ 𝐵 . We need to show 
+
+𝐹 (𝐴 ∪ { 𝑆 𝑖 }) − 𝐹 (𝐴 ) ≥ 𝐹 (𝐵 ∪ { 𝑆 𝑖 }) − 𝐹 (𝐵 ).
+
+(1) Structural term. By definition, let 𝐶 𝑈 = Ð𝑆 ∈𝑈 𝑆 and 
+
+𝑓 structure (𝑈 ) = |𝐶 𝑈 |
+
+𝑁 .
+
+Hence 
+
+𝑓 structure (𝐴 ∪ { 𝑆 𝑖 }) − 𝑓 structure (𝐴 ) = |𝑆 𝑖 \ 𝐶 𝐴 |
+
+𝑁 ,
+
+and 
+
+𝑓 structure (𝐵 ∪ { 𝑆 𝑖 }) − 𝑓 structure (𝐵 ) = |𝑆 𝑖 \ 𝐶 𝐵 |
+
+𝑁 .
+
+Since 𝐴 ⊆ 𝐵 , it follows that 𝐶 𝐴 ⊆ 𝐶 𝐵 , giving 
+
+𝑓 structure (𝐴 ∪{ 𝑆 𝑖 }) − 𝑓 structure (𝐴 ) ≥ 𝑓 structure (𝐵 ∪{ 𝑆 𝑖 }) − 𝑓 structure (𝐵 ).
+
+(2) Feature term. By definition, 
+
+𝑓 feature (𝑈 ) = 1
+
+𝑁 
+
+> 𝑁
+
+∑︁ 
+
+> 𝑣 =1
+
+max  
+
+> 𝑢 ∈𝐶 𝑈
+
+cos (x𝑣 , x𝑢 ).
+
+Let 
+
+𝑀 𝑈 (𝑣 ) := max  
+
+> 𝑢 ∈𝐶 𝑈
+
+cos (x𝑣 , x𝑢 ), 𝑚 𝑆 𝑖 (𝑣 ) := max  
+
+> 𝑢 ∈𝑆 𝑖
+
+cos (x𝑣 , x𝑢 ).
+
+Then 
+
+𝑓 feature (𝐴 ∪ { 𝑆 𝑖 }) − 𝑓 feature (𝐴 ) = 1
+
+𝑁 
+
+> 𝑁
+
+∑︁ 
+
+> 𝑣 =1
+
+max {𝑚 𝑆 𝑖 (𝑣 ) − 𝑀 𝐴 (𝑣 ), 0},
+
+and 
+
+𝑓 feature (𝐵 ∪ { 𝑆 𝑖 }) − 𝑓 feature (𝐵 ) = 1
+
+𝑁 
+
+> 𝑁
+
+∑︁ 
+
+> 𝑣 =1
+
+max {𝑚 𝑆 𝑖 (𝑣 ) − 𝑀 𝐵 (𝑣 ), 0}.
+
+Since 𝐴 ⊆ 𝐵 , we have 𝐶 𝐴 ⊆ 𝐶 𝐵 and hence 𝑀 𝐴 (𝑣 ) ≤ 𝑀 𝐵 (𝑣 ) for all 𝑣 ,which implies 
+
+max {𝑚 𝑆 𝑖 (𝑣 ) − 𝑀 𝐴 (𝑣 ), 0} ≥ max {𝑚 𝑆 𝑖 (𝑣 ) − 𝑀 𝐵 (𝑣 ), 0}.
+
+Summing over all 𝑣 yields 
+
+𝑓 feature (𝐴 ∪ { 𝑆 𝑖 }) − 𝑓 feature (𝐴 ) ≥ 𝑓 feature (𝐵 ∪ { 𝑆 𝑖 }) − 𝑓 feature (𝐵 ).
+
+(3) Conclusion. Both 𝑓 structure and 𝑓 feature are submodular. Since 
+
+𝐹 (𝑈 ) is a nonnegative linear combination of these terms, 𝐹 (𝑈 ) is also submodular. □
+
+## A.4 The proof of Theorem 3.3 
+
+Proof. Stacking (1) over all nodes gives the matrix recurrence 
+
+Z (𝑞 + 1) = (I + 𝛼 D)−1  X + 𝛼 A Z (𝑞 ) = J Z (𝑞 ) + B, (A.1) where J = (I + 𝛼 D)−1 (𝛼 A) and B = (I + 𝛼 D)−1X.For each row 𝑖 , the ℓ∞-row sum of J is ∑︁ 
+
+> 𝑗
+
+|J𝑖 𝑗 | = 𝛼𝑑 𝑖 
+
+1 + 𝛼𝑑 𝑖 
+
+< 1,
+
+hence ∥J ∥∞ < 1 and therefore 𝜌 (J) < 1. This implies the affine iteration converges linearly to a unique fixed point for any initial-ization. At convergence, Z★ = JZ ★ + B, i.e., 
+
+(I − J)Z★ = B.
+
+Multiplying both sides by (I + 𝛼 D) yields 
+
+(I + 𝛼 D) − 𝛼 AZ★ = X,
+
+which simplifies to (I + 𝛼 L)Z★ = X. Thus 
+
+Z★ = (I + 𝛼 L)−1X,GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks Conference’17, July 2017, Washington, DC, USA 
+
+Table 4: Training time comparison (seconds per epoch) in the format of 𝑇 pre + 𝑇 fine , where 𝑇 pre denotes pretraining time and 𝑇 fine 
+
+denotes fine-tuning time. Methods without pretraining are reported as 0 + 𝑇 fine .
+
+Method MUTAG PROTEINS REDDIT-BINARY IMDB-BINARY BBBP BACE E-Commerce GraphGPT - - - - 32.1+7.3 20.2+6.0 15.2+3.5 LLaGA 0+1.1 0+4.6 0+6.3 0+3.5 0+7.1 0+6.3 0+2.3 TEA-GLM 1.2+1.2 2.3+4.4 2.1+6.3 1.9+3.4 1.2+6.9 1.5+6.2 1.2+2.1 GLIP 2.6+1.1 25.2+4.2 38.1+6.1 20.2+3.2 46.1+7.2 30.4+6.2 18.6+2.4 which finishes the proof. □
+
+## B Implementation Details 
+
+We now present the implementation details and parameter settings used in our experiments. For GLIP, the parameter 𝜆 in Theorem 3.2 is set to 0.5. We use Algorithm 1 and construct the candidate patch set 
+
+C from the one-hop neighbors of the top 20 nodes ranked by degree, and we choose 𝑘 = 5. The diffusion operator is computed using the conjugate gradient method to efficiently solve the associated linear systems. During the pretraining stage, we adopt the default augmentation settings: aug_ratio = 0.2, aug1 = "permE" , and aug2 = "maskN" .The model is trained with a batch size of 16, learning rate of 0,001, for 100 epochs, with the random seed set to 42. The graph encoder is a two-layer GCN with hidden dimension 64 and output dimension 64. In the semi-supervised fine-tuning stage, we set the batch size to 32 and the learning rate to 0.001. Each experiment is repeated with five different random seeds {0, 1, 2, 3, 4}, and the average perfor-mance across these runs is reported. For graph classification tasks using LLMs such as Mistral and Qwen, we employ the model’s ‘generate‘ method for text generation, with ‘max_new_tokens‘ set to 3 to constrain output length. Since ‘do_sample‘ is disabled (set to False), deterministic output is ensured, eliminating the need for a temperature parameter to control uncertainty. For other baselines, we use the default hyperparameter settings when available; otherwise, we perform a grid search to determine the optimal values. 
+
+## C Limitations 
+
+Our study focuses primarily on graph-level tasks, and we have not experimented with node-level or edge-level settings. The proposed patch selection and diffusion modules are specifically tailored for capturing holistic graph semantics rather than fine-grained local predictions. However, the joint pretraining strategy itself is general and can be extended to node or edge representation learning with suitable adaptations. 
+
+## D Additional Experiment Results 
+
+In this section, we present additional experimental results. 
+
+## D.1 Training Time Analysis 
+
+Table 4 reports the per-epoch training time of different Graph-LLM methods, decomposed into the pretraining stage and the fine-tuning stage. As expected, methods without a pretraining phase (e.g., LLaGA) incur zero pretraining cost and only spend time on task-specific fine-tuning, while pretraining-based methods intro-duce additional overhead in the first stage. TEA-GLM requires less pretraining time since its pretraining stage does not involve the LLM backbone. In contrast, GLIP requires a longer pretraining time compared to GraphGPT, due to its joint optimization of the graph encoder and projection modules, as well as the additional patch selection and diffusion operations. However, the fine-tuning time of GLIP is comparable to or only slightly higher than that of other baselines across all datasets, indi-cating that the extra computational cost is mainly concentrated in the one-time pretraining stage. In practical usage, the pretrained GLIP model can be directly reused for different downstream tasks (e.g., classification and reasoning on the E-Commerce dataset) with-out repeating the pretraining process, therefore the overall pretrain-ing cost is acceptable in practice. 
+
+## D.2 Frozen vs. Fine-tuned LLMs for Graph Reasoning 
+
+Table 5 compares different training strategies of GLIP on the graph reasoning task, including training without pretraining, keeping the LLM backbone frozen, applying parameter-efficient fine-tuning with LoRA, and full-parameter fine-tuning. These variants allow us to analyze the trade-offs between performance and computational cost. As shown in the table, removing the pretraining stage leads to a significant performance drop, confirming the necessity of joint pretraining. Keeping the LLM frozen already achieves strong re-sults, demonstrating that GLIP can effectively leverage a fixed LLM through graph token alignment. Applying LoRA further improves performance with only a modest increase in training cost. Full-parameter fine-tuning achieves the best overall performance, but at a substantially higher computational expense. In our experiments, full fine-tuning requires four 80G H100 GPUs and incurs significantly larger time and memory consumption, making it much less practical in real-world scenarios. In contrast, the frozen and LoRA-based variants provide a much better balance between performance and efficiency, highlighting the practical advantage of GLIP under realistic computational budgets. 
+
+## E Additional Classification Results 
+
+This section reports additional classification results, including the F1 scores for semi-supervised learning and 5-shot settings, as well as the accuracy and F1 scores under the 3-shot scenario. Conference’17, July 2017, Washington, DC, USA Haoxin Sun, Yiqing Lin, Yajun Huang, Chenhui Dong, Mingjun Li, and Zhongzhi Zhang 
+
+Table 5: Graph reasoning performance of different GLIP training variants compared with GPT-4o outputs. 
+
+BERT Score BLEU ROUGE Model Precision Recall F1 BLEU-1 BLEU-2 BLEU-3 BLEU-4 ROUGE-1 ROUGE-2 ROUGE-L GLIP (w/o Pretrain) 80.12 75.03 77.54 47.31 33.64 26.11 19.32 50.27 24.84 49.91 GLIP (LLM Frozen) 82.71 81.52 82.11 54.71 41.21 30.79 24.68 61.82 34.21 59.78 GLIP (LoRA) 83.45 82.36 82.90 55.38 42.07 31.54 25.41 62.73 35.02 60.81 GLIP (Full Finetune) 85.12 84.03 84.57 57.46 44.18 33.12 27.05 64.89 37.26 62.34 
+
+Table 6: Performance comparison under semi-supervised settings with F1 Score (%) reported. The best and second-best results are highlighted. Results are averaged over five runs. 
+
+Feature Graphs Text-Attributed Graphs F1 Score Semi-Supervised MUTAG PROTEINS REDDIT IMDB Average BBBP BACE E-Commerce Average 
+
+GraphMAE 44 .50 ±9.31 44 .77 ±7.54 80 .10 ±4.68 42 .84 ±9.58 53 .05 43 .35 ±0.01 36 .07 ±1.71 83 .37 ±1.23 54 .26 
+
+GraphCL 61 .45 ±9.83 61 .69 ±4.08 86 .19 ±2.02 60 .47 ±2.65 67 .45 48 .01 ±8.00 53 .12 ±8.37 83 .12 ±2.03 61 .42 
+
+DGI 51 .70 ±9.53 46 .87 ±9.77 84 .91 ±2.20 51 .03 ±7.17 58 .63 43 .35 ±0.00 47 .65 ±9.70 82 .09 ±2.04 57 .70 
+
+Graph Pretrain Method SimGRACE 47 .77 ±9.74 46 .77 ±7.36 83 .31 ±2.37 60 .81 ±3.34 59 .67 43 .31 ±0.08 42 .75 ±9.56 83 .16 ±1.28 56 .41 
+
+GraphGPT-Mistral - - - - - 52 .46 ±9.77 45 .13 ±9.24 80 .21 ±2.33 59 .27 
+
+GraphGPT-Qwen - - - - - 51 .32 ±9.23 46 .71 ±9.24 81 .62 ±2.13 59 .88 
+
+LLaGA-Mistral 50 .87 ±9.17 39 .57 ±4.99 75 .74 ±3.58 43 .20 ±9.49 52 .35 43 .35 ±0.00 42 .85 ±9.56 81 .74 ±4.43 55 .98 
+
+LLaGA-Qwen 51 .64 ±9.43 54 .65 ±6.95 77 .69 ±2.44 54 .16 ±2.24 59 .54 44 .85 ±3.24 38 .98 ±6.54 83 .80 ±1.60 55 .88 
+
+TEA-GLM-Mistral 63 .68 ±2.80 60 .42 ±9.77 86 .54 ±2.40 61 .34 ±3.74 68 .00 65 .12 ±1.30 59 .66 ±4.57 84 .01 ±2.12 69 .60 
+
+Graph-LLM Method 
+
+TEA-GLM-Qwen 51 .82 ±9.96 63 .12 ±3.83 84 .87 ±4.71 60 .76 ±2.18 65 .14 60 .15 ±9.68 58 .07 ±5.63 84 .02 ±1.54 67 .41 
+
+GLIP-Mistral 64 .35 ±3.57 65 .99 ±2.42 86 .70 ±1.24 62 .23 ±1.02 69 .82 68 .04 ±1.30 62 .42 ±1.80 86 .36 ±1.80 72 .27 
+
+Ours GLIP-Qwen 67 .43 ±6.78 64 .09 ±4.38 85 .58 ±1.77 61 .60 ±5.45 69 .68 67 .55 ±1.53 58 .84 ±2.88 84 .16 ±1.04 70 .18 
+
+Table 7: Performance comparison under 5-shot settings with Accuracy (%) reported. The best and second-best results are highlighted. Results are averaged over five runs. 
+
+Feature Graphs Text-Attributed Graphs Accuracy 5-Shot MUTAG PROTEINS REDDIT IMDB Average BBBP BACE E-Com Average 
+
+GraphMAE 69 .34 ±3.26 59 .79 ±0.17 64 .17 ±8.92 50 .45 ±3.15 60 .94 72 .50 ±0.28 54 .36 ±0.03 72 .35 ±2.85 66 .40 
+
+GraphCL 73 .29 ±6.07 62 .05 ±4.45 73 .95 ±5.96 53 .07 ±6.53 65 .59 63 .83 ±8.26 53 .60 ±3.25 73 .06 ±9.05 63 .50 
+
+DGI 70 .53 ±3.93 61 .07 ±2.57 68 .55 ±5.60 52 .38 ±2.70 63 .13 72 .54 ±0.62 54 .76 ±0.91 73 .71 ±4.79 67 .00 
+
+Graph Pretrain Method SimGRACE 72 .37 ±2.39 62 .39 ±2.71 72 .91 ±6.76 50 .64 ±4.39 64 .58 72 .14 ±2.04 54 .38 ±0.00 72 .47 ±5.47 66 .33 
+
+GraphGPT-Mistral - - - - - 70 .16 ±6.37 55 .23 ±0.98 70 .26 ±3.27 65 .22 
+
+GraphGPT-Qwen - - - - - 69 .32 ±1.20 54 .18 ±1.08 71 .09 ±2.41 64 .86 
+
+LLaGA-Mistral 74 .83 ±5.36 60 .22 ±0.69 65 .39 ±5.32 50 .55 ±2.40 62 .75 72 .49 ±0.35 54 .95 ±0.80 72 .21 ±6.54 66 .55 
+
+LLaGA-Qwen 69 .74 ±3.86 58 .46 ±9.57 68 .14 ±3.95 50 .19 ±1.83 61 .63 71 .57 ±0.16 54 .07 ±1.24 70 .55 ±8.12 65 .40 
+
+TEA-GLM-Mistral 67 .63 ±15 .43 63 .05 ±5.99 74 .24 ±6.79 52 .10 ±5.31 64 .26 66 .63 ±7.39 55 .18 ±1.92 71 .21 ±2.13 64 .34 
+
+Graph-LLM Method 
+
+TEA-GLM-Qwen 68 .81 ±7.17 56 .99 ±11 .62 74 .39 ±6.84 53 .28 ±6.27 63 .37 70 .49 ±5.52 51 .65 ±4.97 73 .88 ±5.94 65 .34 
+
+GLIP-Mistral 76 .05 ±2.44 62 .66 ±8.85 75 .12 ±3.20 53 .09 ±7.53 66 .73 72 .16 ±1.66 56 .17 ±2.21 76 .60 ±1.82 68 .31 
+
+Ours GLIP-Qwen 75 .66 ±3.98 64 .07 ±5.57 75 .08 ±3.52 54 .51 ±6.08 67 .33 74 .85 ±1.14 55 .14 ±1.66 77 .04 ±5.93 69 .01 GLIP: Graph and LLM Joint Pretraining for Graph-Level Tasks Conference’17, July 2017, Washington, DC, USA 
+
+Table 8: Performance comparison under 5-shot settings with F1 score (%) reported. The best and second-best results are highlighted. Results are averaged over five runs. 
+
+Feature Graphs Text-Attributed Graphs F1 Score 5-Shot MUTAG PROTEINS REDDIT IMDB Average BBBP BACE E-Com Average 
+
+GraphMAE 59 .75 ±9.10 37 .70 ±0.65 59 .40 ±9.67 42 .84 ±4.22 49 .92 43 .92 ±1.06 35 .22 ±0.02 75 .28 ±2.95 51 .47 
+
+GraphCL 70 .00 ±5.60 58 .58 ±5.61 73 .72 ±6.00 50 .96 ±7.46 63 .32 54 .86 ±5.84 49 .23 ±7.48 72 .73 ±9.35 58 .94 
+
+DGI 65 .43 ±7.61 49 .28 ±9.81 67 .53 ±6.68 43 .57 ±7.65 56 .45 49 .08 ±6.31 43 .12 ±9.70 74 .23 ±5.45 55 .48 
+
+Graph Pretrain Method SimGRACE 69 .29 ±4.67 49 .31 ±8.85 71 .66 ±8.47 45 .04 ±3.28 58 .83 52 .39 ±7.40 35 .23 ±0.00 73 .30 ±5.55 53 .64 
+
+GraphGPT-Mistral - - - - - 56 .67 ±7.06 42 .86 ±9.43 72 .92 ±3.62 57 .48 
+
+GraphGPT-Qwen - - - - - 54 .67 ±7.06 45 .86 ±9.43 72 .73 ±1.52 57 .75 
+
+LLaGA-Mistral 65 .85 ±9.20 43 .52 ±6.32 63 .45 ±7.68 41 .82 ±9.79 53 .66 43 .34 ±0.11 39 .95 ±6.47 72 .64 ±7.45 51 .98 
+
+LLaGA-Qwen 57 .68 ±9.53 47 .52 ±9.93 67 .65 ±4.50 38 .67 ±6.23 52 .88 43 .37 ±0.05 40 .46 ±7.94 68 .62 ±8.08 50 .82 
+
+TEA-GLM-Mistral 65 .21 ±9.29 56 .03 ±8.18 72 .03 ±6.92 46 .70 ±5.10 59 .99 57 .32 ±3.68 48 .78 ±8.28 69 .62 ±9.90 58 .91 
+
+Graph-LLM Method 
+
+TEA-GLM-Qwen 61 .07 ±9.97 54 .89 ±8.75 72 .29 ±6.78 52 .09 ±7.34 60 .09 55 .21 ±7.14 49 .55 ±6.01 73 .15 ±6.88 59 .30 
+
+GLIP-Mistral 73 .37 ±2.32 60 .57 ±8.21 75 .18 ±3.57 51 .56 ±8.09 65 .17 59 .81 ±4.05 51 .00 ±7.76 77 .82 ±6.32 62 .88 
+
+Ours GLIP-Qwen 72 .67 ±5.34 60 .60 ±6.28 74 .75 ±3.66 53 .90 ±5.25 65 .48 58 .32 ±5.53 47 .58 ±5.27 77 .67 ±5.76 61 .19 
+
+Table 9: Performance comparison under 3-shot settings with Accuracy (%) reported. The best and second-best results are highlighted. Results are averaged over five runs. 
+
+Feature Graphs Text-Attributed Graphs Accuracy 3-Shot MUTAG PROTEINS REDDIT IMDB Average BBBP BACE E-Commerce Average 
+
+GraphMAE 69 .42 ±2.10 59 .98 ±0.72 62 .41 ±7.47 51 .72 ±3.02 60 .88 70 .92 ±1.08 54 .31 ±0.03 73 .86 ±3.15 66 .36 
+
+GraphCL 71 .25 ±2.66 61 .21 ±2.01 70 .53 ±3.22 51 .43 ±3.96 63 .61 64 .92 ±8.83 54 .02 ±2.69 69 .70 ±7.99 62 .88 
+
+DGI 72 .90 ±5.94 62 .55 ±3.16 68 .48 ±6.18 50 .91 ±2.14 63 .71 70 .13 ±0.39 54 .08 ±0.85 72 .53 ±5.55 65 .58 
+
+Graph Pretrain Method SimGRACE 74 .32 ±4.99 62 .08 ±1.94 71 .23 ±5.42 51 .43 ±1.24 64 .77 70 .29 ±2.73 54 .33 ±1.98 71 .16 ±8.98 65 .26 
+
+GraphGPT-Mistral - - - - - 69 .23 ±1.49 51 .35 ±2.14 69 .70 ±7.99 63 .43 
+
+GraphGPT-Qwen - - - - - 68 .98 ±2.52 52 .35 ±1.23 70 .25 ±3.16 63 .86 
+
+LLaGA-Mistral 61 .10 ±9.95 59 .75 ±0.42 65 .30 ±4.98 51 .15 ±3.29 59 .33 70 .61 ±3.03 54 .38 ±2.94 70 .26 ±7.38 65 .08 
+
+LLaGA-Qwen 68 .52 ±4.19 62 .06 ±2.59 66 .36 ±6.33 50 .77 ±2.46 61 .93 70 .39 ±2.67 53 .16 ±2.62 68 .95 ±7.75 64 .17 
+
+TEA-GLM-Mistral 71 .68 ±2.11 62 .36 ±3.98 70 .31 ±4.83 52 .71 ±1.92 64 .27 64 .92 ±6.11 53 .79 ±6.27 69 .71 ±5.29 62 .81 
+
+Graph-LLM Method 
+
+TEA-GLM-Qwen 68 .26 ±2.68 61 .32 ±5.33 68 .67 ±7.38 51 .56 ±5.66 62 .45 68 .83 ±8.24 50 .79 ±5.69 68 .43 ±7.20 62 .68 
+
+GLIP-Mistral 73 .29 ±5.33 62 .98 ±2.04 72 .45 ±4.91 53 .17 ±3.20 65 .47 72 .33 ±2.54 54 .61 ±4.28 74 .98 ±6.49 67 .31 
+
+Ours GLIP-Qwen 74 .71 ±3.52 64 .99 ±1.29 71 .54 ±5.61 53 .49 ±2.15 66 .18 71 .53 ±4.87 54 .68 ±1.91 73 .49 ±6.81 66 .57 Conference’17, July 2017, Washington, DC, USA Haoxin Sun, Yiqing Lin, Yajun Huang, Chenhui Dong, Mingjun Li, and Zhongzhi Zhang 
+
+Table 10: Performance comparison under 3-shot settings with F1 score (%) reported. The best and second-best results are highlighted. Results are averaged over five runs. 
+
+Feature Graphs Text-Attributed Graphs F1 Score 3-Shot MUTAG PROTEINS REDDIT IMDB Average BBBP BACE E-Commerce Average 
+
+GraphMAE 60 .60 ±9.93 39 .23 ±3.76 58 .96 ±8.04 44 .31 ±7.60 50 .78 44 .65 ±2.40 35 .29 ±0.17 73 .80 ±3.19 51 .25 
+
+GraphCL 71 .77 ±2.78 58 .73 ±3.80 70 .99 ±3.40 46 .65 ±6.93 62 .04 54 .18 ±6.68 53 .53 ±3.24 68 .53 ±9.31 58 .75 
+
+DGI 66 .43 ±9.84 52 .19 ±8.60 67 .19 ±7.55 42 .14 ±4.05 56 .99 44 .43 ±2.24 40 .44 ±7.58 71 .96 ±6.05 52 .28 
+
+Graph Pretrain Method SimGRACE 69 .04 ±8.35 52 .39 ±9.04 70 .82 ±5.68 39 .28 ±6.25 57 .88 51 .20 ±7.21 35 .20 ±2.17 72 .89 ±9.15 53 .10 
+
+GraphGPT-Mistral - - - - - 50 .30 ±6.01 43 .68 ±9.31 68 .53 ±9.31 54 .17 
+
+GraphGPT-Qwen - - - - - 51 .31 ±2.40 42 .52 ±8.12 69 .31 ±6.28 54 .38 
+
+LLaGA-Mistral 41 .71 ±9.81 39 .16 ±2.45 63 .49 ±5.62 38 .55 ±10 .26 45 .73 46 .40 ±5.35 35 .22 ±3.63 72 .90 ±9.14 51 .51 
+
+LLaGA-Qwen 52 .87 ±9.49 55 .97 ±2.96 65 .92 ±6.90 43 .04 ±8.73 54 .45 46 .76 ±7.58 35 .78 ±1.29 64 .04 ±20 .45 48 .86 
+
+TEA-GLM-Mistral 69 .35 ±1.53 57 .83 ±8.26 70 .19 ±4.81 53 .04 ±3.45 62 .60 52 .66 ±7.21 48 .82 ±9.68 69 .23 ±8.20 56 .90 
+
+Graph-LLM Method 
+
+TEA-GLM-Qwen 58 .44 ±9.27 58 .25 ±6.45 67 .53 ±8.72 51 .25 ±7.93 58 .87 49 .31 ±7.22 49 .17 ±6.66 66 .75 ±8.43 55 .08 
+
+GLIP-Mistral 71 .33 ±6.35 59 .22 ±6.06 72 .18 ±2.27 53 .09 ±4.51 63 .96 55 .26 ±7.86 54 .18 ±4.43 74 .68 ±6.62 61 .37 
+
+Ours GLIP-Qwen 72 .75 ±3.49 60 .90 ±3.15 71 .03 ±5.81 52 .79 ±4.83 64 .37 54 .02 ±4.79 50 .43 ±5.01 73 .28 ±6.93 59 .24

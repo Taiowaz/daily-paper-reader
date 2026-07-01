@@ -1,0 +1,2303 @@
+Title: Understanding Rollout Error in Graph World Models
+
+URL Source: https://arxiv.org/pdf/2606.27780v1
+
+Published Time: Mon, 29 Jun 2026 00:33:33 GMT
+
+Number of Pages: 31
+
+Markdown Content:
+## Understanding Rollout Error in Graph World Models 
+
+Xinyuan Song 1 Zekun Cai 2,31Emory University, Atlanta, GA, USA 2The University of Tokyo, Tokyo, Japan 
+
+> 3
+
+LocationMind, Tokyo, Japan 
+
+xinyuan.song@emory.edu, caizekun@csis.u-tokyo.ac.jp 
+
+Abstract 
+
+World models are often used for planning by rolling learned dynamics forward. Many planning environments, however, are not vectors or images; they are graphs of agents, tools, skills, routes, and dependencies. In these settings, a local prediction error may stay local or spread through the graph, and the failure mode changes again when edges are predicted rather than fixed. This paper studies long-horizon rollout error in Graph World Models (GWMs). We formulate a unified fixed-edge and dynamic-edge GWM framework with action nodes for node-, edge-, and graph-level decisions. We develop graph-valued rollout bounds that separate topology-induced amplification from model-induced amplification, and we introduce a joint node-edge operator for dynamic-edge rollouts. Guided by the analysis, we propose 
+
+Error-Aware GWM , which combines spectral regularization, rollout consistency, and critical-node weighting. Across synthetic topologies and heterogeneous agent-graph testbeds, rollout error and planning regret grow with horizon, dynamic-edge training is needed when structure evolves, and Error-Aware GWM prevents long-horizon divergence while preserving prediction accuracy. Real-world graph benchmarks clarify the scope of GWMs: they are most useful for dynamic graph rollout and agent planning, while specialized graph models remain strong on static or sparse prediction tasks. An anonymized implementation and benchmark suite will be released with the submission. Code is available at https://github.com/Hik289/graph_ world_model_accumulative_error.git .
+
+1 Introduction 
+
+A world model (Ha and Schmidhuber, 2018) rep-resents environment observations as states and pre-dicts future states conditioned on actions. Modern world models trained on large-scale data (Hafner et al., 2018, 2020, 2023; Chua et al., 2018; Wu et al., 2024; Bruce et al., 2024) have shown strong plan-ning, prediction, and generation capabilities. Most of them, however, are built for vector- or image-like states. They do not directly capture environments whose state is a graph. Such environments are com-mon in agent planning: multi-agent calling trees co-ordinate distributed task execution (Anokhin et al., 2024), skill graphs encode tool dependencies, and communication networks route actions among in-teracting entities. Planning in these settings re-quires reasoning about node states and about how effects travel through relations. The same autore-gressive rollout that enables long-horizon planning also creates a risk: prediction errors can compound and degrade downstream decisions (Asadi et al., 2018; Janner et al., 2019). Graph World Models (GWMs) address this set-ting by autoregressively predicting graph states 
+
+Gt = ( V, E t, X t, A t) (Feng et al., 2025). Given a learned transition model Fθ( ˆGk, a k), a GWM rolls out ˆG1, . . . , ˆGH and scores candidate action sequences. Existing work has mostly studied graph foundation models for static graph tasks (Liu et al., 2024; Chen et al., 2024) or domain-specific graph planning (Zhang et al., 2021; Ammanabrolu and Riedl, 2021). Feng et al. (Feng et al., 2025) intro-duced a unified GWM with action nodes, but their setting focuses on fixed-edge (FE) environments. It remains unclear how GWMs behave under long-horizon rollout error and in dynamic-edge (DE) regimes .Graph structure makes compounding error harder to analyze than in vector-state world models. In vector settings, rollout error is often summarized by a scalar Lipschitz constant. In graph settings, the same local error can behave very differently depending on topology. An error on a chain may stay localized; an error on a hub, dense graph, or high-spectral-radius topology can spread widely, consistent with spectral analyses of graph propa-
+
+> arXiv:2606.27780v1 [cs.AI] 26 Jun 2026
+
+gation, graph-network dynamics, and GNN stabil-ity (Battaglia et al., 2016, 2018; Sanchez-Gonzalez et al., 2018; Oono and Suzuki, 2020; Chamber-lain et al., 2021). The problem is harder when edges are predicted. A node-state error can cor-rupt future edge prediction, and an edge error can change later message passing. GWM rollout er-ror is therefore not just scalar prediction error; it is a topology-dependent, and sometimes coupled, node-edge dynamical process. Existing rollout-error theory is not designed for graph-structured planning. Standard model-based RL analyses bound compounding error with a scalar Lipschitz constant over a fixed-dimensional state vector (Asadi et al., 2018; Janner et al., 2019). This misses three aspects of graph rollouts. First, topology is explicit: for a message-passing GWM, node-error growth separates into a topology term 
+
+ρ(A) and a model term Q 
+
+> ℓ
+
+∥Wℓ∥2, where A is the adjacency matrix, ρ(A) is its spectral radius, and 
+
+Wℓ are layer weights. Second, dynamic graphs require coupled error dynamics: node-feature er-ror eXk = ∥ ˆXk − Xk∥F and edge error eAk =
+
+∥ ˆAk − Ak∥F evolve together rather than through a scalar recursion. Third, rollout error must be tied to planning regret over horizon H. These gaps mo-tivate our graph-valued analysis, which replaces the scalar constant with \GEAF = ρ(A) Q 
+
+> ℓ
+
+∥Wℓ∥2
+
+and uses a joint node-edge operator B for the re-cursion of (eXk , e Ak ) in dynamic-edge GWMs. We analyze accumulative rollout error in GWMs both theoretically and empirically. The graph er-ror amplification factor \GEAF = ρ(A) Q 
+
+> ℓ
+
+∥Wℓ∥2
+
+separates topology-dependent amplification from the model-dependent spectral norm product. For dynamic-edge GWMs, we introduce a joint node-edge error operator B that captures node-to-node, edge-to-node, node-to-edge, and edge-to-edge propagation. This operator cleanly separates two regimes: fixed-edge (FE) models have no edge-prediction head, so MX = 0 and the dynamics re-duce to node-only prediction; dynamic-edge (DE) models have an edge-prediction head, so MX > 0
+
+and node-edge cross-coupling becomes active. We evaluate the framework on a seven-topology synthetic benchmark with existing GWM base-lines, including GCN (Kipf and Welling, 2017), MPNN (Gilmer et al., 2017), GPS (Rampášek et al., 2022), and ActionNode GWM (Feng et al., 2025). The benchmark includes FE and DE simulators, plus heterogeneous agent-graph testbeds. The re-sults support a regime-dependent view of GWM rollout error. Long rollouts turn small prediction errors into larger planning errors. When graph structure evolves, dynamic-edge training sharply outperforms fixed-edge training, and the learned dynamics exhibit the node-edge coupling predicted by the joint operator. The central empirical point is that GWM stability is not an architecture property alone; it depends on topology, horizon, and rollout regime. We further propose Error-Aware GWM to improve rollout stability on high-spectral-radius graphs. It combines spectral regularization, rollout consistency, and critical-node weighting to con-trol topology-induced amplification while preserv-ing prediction accuracy. Empirically, Error-Aware GWM removes the divergence observed in vanilla GCN rollouts and keeps long-horizon prediction er-ror low. Simpler stabilizers can reduce divergence, but often lose predictive fidelity. This distinction matters: a useful graph world model must be stable enough to roll out and accurate enough for those rollouts to support planning. Our contributions are summarized as follows: • Unified GWM framework with FE/DE in-stantiations (Section 3). We formulate graph-structured agent planning as state-action-transition modeling and support both fixed-edge and dynamic-edge rollouts. • Topology-aware rollout error theory (Sec-tion 4). We develop graph-valued error bounds that account for topology-dependent amplifica-tion and node-edge coupling during autoregres-sive rollout. • Error-Aware GWM for stable planning (Sec-tion 6). We introduce a training objective that combines spectral control, rollout consistency, and critical-node weighting to improve long-horizon stability. • Evaluation across synthetic and agent-graph settings (Section 7). We test the framework across diverse graph topologies, rollout regimes, and agent-graph environments to study when GWMs are stable or unstable. • Scope analysis on real-world benchmarks (Section 7.7.1). We evaluate GWMs beyond con-trolled synthetic dynamics and clarify their practi-cal boundary relative to standard graph methods. 2 Related Work 
+
+World models for planning. World models have been widely studied in model-based reinforcement learning, where a learned dynamics model is used to simulate future trajectories for planning or pol-icy learning. A central challenge is compounding error: small one-step model errors can accumu-late over long rollouts and degrade decision quality. Asadi et al. (Asadi et al., 2018) analyze this effect through Lipschitz continuity of learned transition models. PETS uses probabilistic ensembles and tra-jectory sampling to propagate uncertainty during model-based planning (Chua et al., 2018). Janner et al. (Janner et al., 2019) study model-based policy optimization with short branched rollouts to reduce error accumulation. Kakade and Langford (Kakade and Langford, 2002) provide simulation-lemma-style tools that connect model error to policy per-formance. Recent systems reduce rollout drift through retrieval-augmented context (Chen et al., 2025), hierarchical latent planning (Zhang et al., 2026), uncertainty-based rollout truncation (Ni et al., 2025), modular dynamics experts (Li et al., 2025a), skill-level abstraction (Gürtler and Martius, 2025), scheduled-sampling-style training (Rivard et al., 2025), and controlled long-horizon evalua-tion benchmarks (Li et al., 2025b). These works motivate rollout-error analysis, but they do not model graph topology, message passing, or cou-pled node-edge prediction. 
+
+Graph neural networks and graph-structured prediction. Graph neural networks provide a standard framework for learning over graph-structured data by propagating information along edges. Interaction Networks and Graph Net-works introduced object- and relation-centric neu-ral dynamics for physical reasoning (Battaglia et al., 2016, 2018), and graph-network physics en-gines showed that such models can support infer-ence and control in dynamical systems (Sanchez-Gonzalez et al., 2018). Graph convolutional net-works aggregate normalized neighborhood infor-mation (Kipf and Welling, 2017). Message-passing neural networks generalize local edge-based ag-gregation (Gilmer et al., 2017). Graph transform-ers such as GPS combine message passing with global attention (Rampášek et al., 2022). Prior theory shows that graph propagation is strongly affected by spectral properties of the adjacency or normalized adjacency matrix (Oono and Suzuki, 2020), while diffusion-based GNNs connect graph learning to stability of discretized diffusion dynam-ics (Chamberlain et al., 2021). Related work on graph rewiring studies how modifying topology can improve information flow and reduce harmful propagation effects (Tori et al., 2024). Physics-informed rewiring further studies topology modifi-cation for long-range interactions in graph neural networks (Yu et al., 2025). These results suggest that topology can shape prediction behavior, but they mainly study representation learning or one-step dynamics rather than autoregressive graph roll-outs where prediction errors become future inputs. 
+
+Graph world models. Graph world models ex-tend world modeling to graph-structured states. Feng et al. (Feng et al., 2025) introduce a GWM framework that represents multimodal observa-tions, graph states, action nodes, and target nodes within a unified graph interface. WorldGraph uses latent landmarks as a graph-structured abstraction for planning (Zhang et al., 2021). Value Mem-ory Graph constructs graph-structured memory for offline reinforcement learning (Zhu et al., 2022). Knowledge-graph world models represent textual environments through structured relational mem-ory (Ammanabrolu and Riedl, 2021). Contrastive structured world models learn object-centric rela-tional dynamics (Kipf et al., 2020). Dyn-O builds structured world models with object-centric repre-sentations (Wang et al., 2025). These works mainly focus on representation, architecture, and task per-formance. Our work instead studies long-horizon error behavior: how topology affects rollout error, how fixed-edge and dynamic-edge regimes differ, and how node and edge prediction errors interact through a joint operator. 
+
+Agent graphs and skill-graph systems. Multi-agent and tool-using systems increasingly organize computation as graphs, including agent calling-trees, knowledge-graph memories, tool graphs, and skill graphs. AriGraph uses graph memory for LLM agents (Anokhin et al., 2024). Audited Skill-Graph Self-Improvement studies verifier-backed skill-graph maintenance (Huang and Huang, 2025). CASCADE studies cumulative agentic skill cre-ation through autonomous development and evolu-tion (Huang et al., 2026). Reinforcement learning for self-improving agents with skill libraries stud-ies policy learning over reusable skills (Wang et al., 2026). GraSP compiles retrieved skills into a typed skill graph so failed subgraphs can be repaired lo-cally rather than replanning the full trajectory (Xia et al., 2026). These works show the practical value of graph-structured agent execution. Our work is complementary: we analyze how prediction errors accumulate when such graph states are rolled out over time, and we propose Error-Aware GWM to improve long-horizon stability in graph-based plan-ning. 
+
+3 Graph World Model Framework 
+
+3.1 Preliminaries: Agent Graph World 
+
+A Graph World Model (GWM) represents an agent environment as an evolving graph and pre-dicts future graph states for planning. At time t,the graph state is 
+
+Gt = ( V, E t, X t, A t). (3.1) Here, V is the fixed set of agent, tool, skill, or task nodes; Et is the edge set; Xt ∈ RN ×d is the node-feature matrix; and At ∈ { 0, 1}N ×N is the adjacency matrix. In an agent system, node fea-tures can encode agent status, tool outputs, skill availability, task progress, or failure signals. Edges represent calling, dependency, routing, or commu-nication relations. An action at is represented as an action node in-jected into the graph. The learned transition model 
+
+Fθ : ( Gt, a t) 7 → ˆGt+1 (3.2) predicts the next graph state. During planning, an agent evaluates candidate action sequences 
+
+a1, . . . , a H by rolling out 
+
+ˆGk+1 = Fθ( ˆGk, a k), k = 0 , . . . , H − 1,
+
+(3.3) and scoring the predicted outcomes. Thus, GWM planning reduces long-horizon decision-making to simulation over predicted graph trajectories. 
+
+3.2 Action Node Mechanism 
+
+Following Feng et al. (Feng et al., 2025), actions are encoded as action nodes connected to the cur-rent graph. This gives a unified representation for three kinds of planning actions: node-level actions ,which modify a specific agent, skill, tool, or task node; edge-level actions , which add, remove, or update dependency or communication edges; and 
+
+graph-level actions , which change global routing, coordination, or allocation patterns. We use two action-node connection types. Ex-plicit action nodes connect to target nodes through task-defined structure, such as a planner call-ing a tool or assigning a subtask to an executor. 
+
+Retrieval-based action nodes connect through embedding similarity or retrieval, such as a query routed to related skill nodes or auxiliary tools. The same transition model can therefore represent ex-plicit decisions and soft retrieval-based dependen-cies in one agent graph. 
+
+3.3 Two GWM Instantiations Fixed-Edge GWM (FE-GWM). In the fixed-edge setting, topology is fixed during rollout and only node states are predicted. A representative GCN-style transition is 
+
+ˆXk+1 = tanh( ˜A ˆXkW1 + U a k)W2 + ξk, (3.4) where 
+
+˜A = D−1/2AD −1/2. (3.5) Here, U a k injects the action signal and ξk de-notes rollout noise. This setting covers ActionN-ode GWM (Feng et al., 2025) and standard GNN-based world models with fixed agent-graph struc-ture. Since edges are not predicted, FE-GWM prop-agates node-state error through a fixed graph, with dynamics governed by ρ(A) and the model weight norms. 
+
+Dynamic-Edge GWM (DE-GWM). In the dynamic-edge setting, both node features and graph structure are predicted autoregressively. In addi-tion to the node transition, DE-GWM uses an edge-prediction head such as 
+
+ˆAij = σ(h⊤ 
+
+> i
+
+Qh j ), (3.6) where hi, h j are node embeddings and Q parame-terizes pairwise edge scores. The model is trained with 
+
+L = Lnode + λeBCE( ˆA, A ) + 12 ∥W ∥2∥Q∥2.
+
+(3.7) This setting models changing agent interactions, such as task routing, tool calls, validation links, or recovery paths. DE-GWM activates node-edge cross-coupling: node errors can affect future edge prediction, and edge errors can change future mes-sage passing. In the joint-operator view, FE-GWM is the special case with no edge-prediction head and MX = 0 ; DE-GWM has MX > 0 and enables node-edge feedback. Figure 1: Topology-controlled rollout error. The same initial node error can evolve differently across graph topologies: low-GEAF graphs keep errors localized, while high-GEAF hub-like graphs amplify them through       
+
+> \GEAF = ρ(A)Q
+> ℓ∥Wℓ∥2.
+> Figure 2: GWM accumulative-error framework. AGWM rolls out graph states autoregressively; one-step errors accumulate through the joint node-edge operator
+> Band affect long-horizon planning.
+
+4 Error Amplification Theory 
+
+Framework overview. Figures 1–3 summarize the graph rollout-error framework. Figure 1 shows topology-dependent amplification: with the same model and initial error, low-GEAF graphs keep er-rors more local, while high-GEAF hub-like graphs spread them faster. Figure 2 presents the autore-gressive rollout pipeline and the joint node-edge error operator B. Figure 3 contrasts FE and DE regimes, where edge prediction determines whether 
+
+B reduces to node-only dynamics or activates node-edge coupling. 
+
+4.1 Assumptions 
+
+We state the assumptions used in the analysis. They specify the graph-state domain, the one-step ap-proximation error, the message-passing form of node prediction, the Lipschitz structure of dynamic edge prediction, and the reward conditions needed to convert rollout error into planning regret. These assumptions match our synthetic and heteroge-neous agent-graph simulators: node identities are    
+
+> Figure 3: FE versus DE rollout regimes. FE models keep edges fixed and reduce error propagation to node-only dynamics, while DE models predict edges and activate the full joint operator B.
+
+fixed during rollout, node features and adjacency matrices are bounded, and FE models are recovered when the edge-update map is absent. 
+
+Assumption 1 (Compact graph state space) .
+
+At each time t, the graph state is Gt =(Vt, E t, X t, A t) with fixed |Vt| = N , node fea-tures Xt ∈ RN ×D, and continuous adjacency matrix At ∈ [0 , 1] N ×N . There exist constants 
+
+RX , R A < ∞ such that 
+
+∥Xt∥F ≤ RX , ∥At∥F ≤ RA (4.1) 
+
+for all rollout steps t ∈ [0 , T ].
+
+Assumption 1 holds by construction in our simulators. The main synthetic graphs, agent calling-tree testbed, and skill-graph testbed all keep node identities fixed. Bounded node features fol-low from bounded nonlinearities or feature clip-ping, and bounded adjacency follows from At ∈
+
+[0 , 1] N ×N . For growing graphs, the same analysis can be extended by replacing B with a time-varying operator Bt and assuming sup t ρ(Bt) < ∞.
+
+Assumption 2 (Uniform one-step model error) . Let 
+
+F ⋆ = ( F X⋆ , F A⋆ ) be the true graph transition and 
+
+Fθ = ( F Xθ , F Aθ ) be the learned GWM transition. On the compact domain in Assumption 1, there exist constants ϵX , ϵ A ≥ 0 such that 
+
+∥F Xθ (X, A, a ) − F X⋆ (X, A, a )∥F ≤ ϵX ,
+
+∥F Aθ (X, A, a ) − F A⋆ (X, A, a )∥F ≤ ϵA. (4.2) Assumption 2 is the graph analogue of the stan-dard one-step model-error assumption in model-based reinforcement learning. The constants ϵX
+
+and ϵA are worst-case one-step node and edge pre-diction errors. If only expected one-step error is available, the same recursion gives an expected rollout-error bound with the same operator form. Assumption 3 (Message-passing node transition) .
+
+The learned node update has the message-passing form 
+
+F Xθ (X, A, a ) = σ( ˆAXW 1 + U a 1⊤)W2, (4.3) 
+
+where σ is coordinate-wise Lipschitz with constant 
+
+Lσ ≤ 1, ˆA is the propagation matrix induced by 
+
+A, W1, W 2 are learnable weight matrices, and U
+
+maps the action embedding into the node-update space. 
+
+Assumption 3 covers standard GNN-style node predictors, including GCN, MPNN-style mes-sage passing, graph transformers, and ActionNode GWM variants after choosing the propagation ma-trix ˆA. Multi-layer models are handled by compos-ing layer-wise Lipschitz constants, which gives the weight product Q 
+
+> ℓ
+
+∥Wℓ∥2. Non-graph MLP world models are the degenerate case with no topology-dependent propagation. 
+
+Assumption 4 (Lipschitz dynamic edge update) .
+
+For DE models, the learned edge update is Lip-schitz in both node features and the current adjacency. In particular, there exist constants 
+
+MX , M A, L A < ∞ such that node and edge er-rors satisfy the coupled bounds 
+
+eXk+1 ≤ LX eXk + LAeAk + ϵX ,eAk+1 ≤ MX eXk + MAeAk + ϵA. (4.4) Assumption 4 captures differentiable or relaxed differentiable edge predictors, such as a bilinear edge head followed by a bounded projection. In FE models, there is no edge-prediction head, so MX =0 and MA = 0 . The joint node-edge operator then reduces to fixed-edge node-error recursion, which is the main regime distinction in our theory. 
+
+Assumption 5 (Lipschitz reward and bounded reward approximation error) . The true reward 
+
+R⋆(G, a ) is Lipschitz under a graph distance dG:for all graph states G, G ′ and actions a,
+
+|R⋆(G, a ) − R⋆(G′, a )| ≤ LRdG(G, G ′). (4.5) 
+
+The learned reward model Rθ has uniformly bounded error 
+
+|Rθ(G, a ) − R⋆(G, a )| ≤ ϵR. (4.6) Assumption 5 is used only to connect rollout error to planning regret. For sparse or discontin-uous task rewards, the bound can be applied to a smoothed or shaped reward, with the smoothing error included in the final regret bound. 
+
+Assumption 6 (Discounted finite-horizon return) .
+
+Planning uses the finite-horizon discounted return 
+
+J⋆ =
+
+> H−1
+
+X
+
+> k=0
+
+γkrt+k, γ ∈ [0 , 1] . (4.7) Assumption 6 follows the standard finite-horizon planning setup. The case γ = 1 is allowed for finite 
+
+H. For infinite-horizon analysis, one needs γ < 1
+
+and a stable enough error operator; otherwise, the regret bound correctly diverges when rollout errors are amplified over time. 
+
+Assumption 7 (Linearized graph distance) . The graph distance used in the regret analysis is bounded by a linear combination of node and edge errors: 
+
+dG(Gk, ˆGk) ≤ α∥Xk − ˆXk∥F + β∥Ak − ˆAk∥F ,
+
+(4.8) 
+
+where α, β ≥ 0.
+
+Assumption 7 translates the vector error recur-sion into a reward-error bound. It is natural when node identities are fixed across rollout steps, as in our simulators. Spectral adjacency distances and edge-set distances can be upper-bounded by Frobenius-norm edge error, so their effects can be absorbed into β.Together, Assumptions 1–7 define the scope of the theory. Lemma 1 uses compact state, one-step error, and message passing. Lemma 2 adds the dynamic-edge Lipschitz condition. Lemma 3 uses the same nonnegative operator structure with spec-tral norm bounds. Lemma 4 uses the reward and graph-distance assumptions to convert rollout error into planning regret. 
+
+4.2 Problem Formulation 
+
+We study how prediction errors accumulate when a GWM is rolled out for planning. The graph state Gt and transition model Fθ are defined in Equations (3.1) –(3.2) . Starting from an initial pre-dicted graph ˆG0, the model generates an H-step predicted trajectory according to Equation (3.3) .Because each predicted state becomes the input to the next step, one-step errors can accumulate and affect downstream decisions. Let (Xk, A k) denote the true node features and adjacency at rollout step k, and let ( ˆXk, ˆAk) denote their GWM predictions. We measure node and edge rollout errors by 
+
+eXk = ∥ ˆXk − Xk∥F , eAk = ∥ ˆAk − Ak∥F .
+
+(4.9) We collect them into the joint error vector 
+
+uk = ( eXk , e Ak )⊤. (4.10) The central question is how uk evolves with hori-zon, topology, and rollout regime. In fixed-edge (FE) GWMs, the adjacency is fixed and only node states are predicted. In dynamic-edge (DE) GWMs, both node states and edges are predicted, so node and edge errors can influence each other. Our analysis uses the assumptions stated in Sec-tion 4.1: compact graph states, bounded one-step node and edge prediction errors, a message-passing node transition, a Lipschitz dynamic edge update for DE models, and a Lipschitz reward used to translate rollout error into planning regret. 
+
+4.3 Fixed-Edge Rollout Error 
+
+We first analyze the fixed-edge (FE) regime, where topology is held fixed and only node features are predicted. Rollout error then propagates through a fixed message-passing operator. The bound sepa-rates the topology-dependent part of amplification from the model-dependent part. 
+
+Lemma 1 (Fixed-edge node error bound) . Assume fixed adjacency At ≡ A and a message-passing node transition with activation Lipschitz constant 
+
+Lσ. Suppose the one-step node prediction error is bounded by ϵX . Then, for any rollout step k ≥ 0,
+
+eXk ≤ LkX eX 
+
+> 0
+
++ ϵX
+
+LkX − 1
+
+LX − 1 ,LX = Lσ ρ(A)
+
+| {z } 
+
+> topology
+
+Y
+
+> ℓ
+
+∥Wℓ∥2
+
+| {z }
+
+> model
+
+. (4.11) Lemma 1 shows that FE-GWM rollout error is controlled by two factors. The topology factor ρ(A)
+
+determines how strongly errors can spread through the graph. The model factor Q 
+
+> ℓ
+
+∥Wℓ∥2 captures layer-wise amplification induced by the learned transition model. This motivates the Graph Error Amplification Factor 
+
+\GEAF( G) = ρ(A) Y
+
+> ℓ
+
+∥Wℓ∥2. (4.12) Thus, with the same model weights, different graph topologies can induce different long-horizon error growth rates. The proof of Lemma 1 is provided in Appendix A.1. 
+
+4.4 Dynamic-Edge Rollout Error 
+
+We next analyze the dynamic-edge (DE) regime, where the GWM predicts both node states and graph structure. Here, rollout errors are coupled: node-feature errors can affect future edge predic-tion, and edge errors can change future message passing. We capture this interaction with a joint node-edge error operator. 
+
+Lemma 2 (Joint node-edge error bound) . Assume a DE GWM with bounded one-step errors ϵX and 
+
+ϵA. Suppose that the node and edge errors satisfy the coupled Lipschitz bounds 
+
+eXk+1 ≤ LX eXk + LAeAk + ϵX ,eAk+1 ≤ MX eXk + MAeAk + ϵA. (4.13) 
+
+Let uk = ( eXk , e Ak )⊤. Then 
+
+uk+1 ⪯ Bu k + ϵ, B =
+
+ LX LA
+
+MX MA
+
+
+
+,ϵ = ( ϵX , ϵ A)⊤.
+
+(4.14) 
+
+The spectral radius of B is 
+
+ρ(B) = 12
+
+h
+
+(LX + MA)+ p(LX − MA)2 + 4 LAMX
+
+i
+
+.
+
+(4.15) 
+
+If LAMX > 0, then 
+
+ρ(B) > max( LX , M A). (4.16) Lemma 2 shows that DE-GWM rollout error is governed by a coupled operator rather than a scalar node-error recursion. The off-diagonal terms LA
+
+and MX encode edge-to-node and node-to-edge error propagation. In FE models, there is no edge-prediction head, so MX = 0 and the recursion reduces to node-only prediction. In DE models, 
+
+MX > 0 activates node-edge feedback, and Equa-tion (4.16) shows that the coupled spectral radius can exceed both uncoupled components. The proof is provided in Appendix A.2. 
+
+4.5 GEAF as a Proxy for the Joint Operator 
+
+The joint operator B captures coupled node-edge error propagation, but estimating all of its entries can be difficult. We therefore use \GEAF as a topology-aware proxy for the dominant rollout am-plification scale. Lemma 3 (GEAF proxy bound) . Assume the signal-dominant regime ∥A∥2 ≥ RX , where RX
+
+bounds the non-topological contribution to the first-row error term. Then 
+
+ρ(B) ≤ \GEAF( G)
+
+
+
+1 + RX
+
+∥A∥2
+
+
+
+≤ 2 \GEAF( G).
+
+(4.17) 
+
+Moreover, when model weights are fixed across topologies, the rank order of \GEAF( G) follows the rank order of ρ(A).
+
+Lemma 3 shows that \GEAF upper-bounds the joint operator up to a constant factor in the signal-dominant regime. In FE models, MX = 0 , so 
+
+ρ(B) = LX = \GEAF by construction; this is an identity rather than empirical validation. In DE models, MX > 0 breaks this identity, so comparing 
+
+ρ(B) and \GEAF becomes meaningful. The proof is provided in Appendix A.3. 
+
+4.6 Planning Regret Under Graph Rollout Error 
+
+Rollout error affects planning because actions are selected from predicted graph trajectories. We con-nect the joint node-edge error recursion to planning regret through a graph-state simulation bound. 
+
+Lemma 4 (Planning regret bound) . Assume the reward is Lipschitz with constant LR under a graph distance 
+
+dG( ˆGk, G k) = c⊤uk. (4.18) 
+
+Let ˆπθ be the policy selected by planning under the learned GWM, and let π∗ be the policy selected under the true dynamics. Then 
+
+J∗(π∗) − J∗(ˆ πθ) ≤ 2LR∥c∥2κ(B)˜ ϵ
+
+× ΦH (γ, ρ (B)) + 2 ϵR
+
+1 − γH
+
+1 − γ ,
+
+(4.19) 
+
+where 
+
+ΦH (γ, ρ ) = 1
+
+ρ − 1
+
+ 1 − (γρ )H
+
+1 − γρ − 1 − γH
+
+1 − γ
+
+
+
+.
+
+(4.20) 
+
+If γρ (B) > 1, the rollout-error contribution grows super-linearly with horizon H.
+
+Lemma 4 shows that small one-step prediction errors can still cause large planning error when the graph rollout operator is expansive. The fac-tor ρ(B) controls how node and edge errors ac-cumulate, while γ controls how future errors are weighted in planning. The proof is provided in Appendix A.4. 
+
+Corollary 5 (Error level versus error growth slope) .
+
+Under the FE recursion in Lemma 1, when the rollout is not dominated by the one-step error floor, the asymptotic log-error growth rate satisfies 
+
+∂ log eXk
+
+∂k → log LX . (4.21) 
+
+Thus, the slope of the log-error curve can be a more stable indicator of topology-dependent amplifica-tion than the final error level. 
+
+Corollary 5 explains why level-based metrics can be weak even when topology affects rollout dynam-ics. In practice, trained models may reach an error floor of order ϵX /(1 − LX ), which can mask the re-lation between \GEAF and final NodeMSE. There-fore, we report GrowthSlope as an exploratory diag-nostic rather than as a pre-registered confirmatory claim. The proof is provided in Appendix A.5. 
+
+5 Dataset and Evaluation Protocol 
+
+5.1 Graph Topology Generation 
+
+We generate seven canonical graph families with distinct spectral and structural properties at N =50 nodes, using three outer seeds for each topology. The topology statistics are summarized in Table 1. The seven topology families span a broad spec-tral range, from ρ(A) = 2 .0 for chain graphs to 
+
+ρ(A) = 49 for complete graphs. They cover three structural regimes: low-connectivity or tree-like graphs (chain, tree), lattice or clustered graphs (grid, small-world), and hub-dominated graphs (scale-free, star, complete). Scale-free graphs are generated by preferential attachment with m = 2 
+
+edges per new node (Barabási and Albert, 1999). Small-world graphs use the Watts–Strogatz model with k = 4 and rewiring probability p = 0 .3 (Watts and Strogatz, 1998). All other topologies are de-terministic for fixed N . Each instance stores A,initial node features X0 ∈ RN ×8, and the rollout trajectory {Xt, A t}Tt=1 .
+
+5.2 Simulators Fixed-Edge (FE) simulator. In the FE simulator, the adjacency matrix A is fixed throughout roll-out, matching Section 4.3. Node features evolve according to 
+
+Xt = ftrue (Xt−1, A ) + εt, εt ∼ N (0 , σ 2I).
+
+(5.1) Table 1: Topology statistics for the seven synthetic graph families at N = 50 . The table shows the spectral range used to stress-test GWM rollouts: ρ(A) is the adjacency spectral radius, \GEAF is the mean graph error amplification factor across successful baseline runs, NodeMSE@32 is the median 32-step prediction error, GrowthSlope is the median log-error slope from horizon 4 to horizon 32, and Diverged counts rollout explosions.                                                                   
+
+> Topology Nρ(A)\GEAF NodeMSE@32 GrowthSlope Diverged Chain 50 2.00 8.75.0×10 −4−0.0075 0/3 Tree 50 2.53 11 .84.0×10 −4−0.0042 0/3 Grid 50 3.65 16 .02.7×10 −4−0.0071 1/3 Small-World 50 4.16 ±0.05 19 .24.5×10 −4+0 .0008 1/3 Scale-Free 50 5.94 ±0.15 24 .32.9×10 −4+0 .0005 3/3 Star 50 7.00 29 .41.9×10 −4−0.0039 0/3 Complete 50 49 .00 224 .91.7×10 −40.0000 0/3
+
+Here σ = 0 .01 . Node features X ∈ RN ×8 en-code state variables such as congestion or utiliza-tion. Rollout follows Equation (3.3) . The rollout horizon is T = 50 , and models are evaluated at 
+
+H ∈ { 1, 2, 4, 8, 16 , 32 }.
+
+Dynamic-Edge (DE) simulator. In the DE sim-ulator, both node features and edges evolve dur-ing rollout, matching Section 4.4. The edge head follows the dynamic-edge prediction form in Sec-tion 3.3: ˆAt = σ(HtQH ⊤ 
+
+> t
+
+). (5.2) We use ∥Q∥2 = 1 .0 by default. The joint node-edge error follows the operator recursion in Equa-tion (4.14) , with the spectral radius given by Equa-tion (4.15) . Empirically, this coupling is activated in the DE regime: ρ(B) = 132 –368 , compared with FE values in the range 2–50 . The rollout hori-zon is T = 32 .
+
+Agent calling-tree testbed. The agent calling-tree testbed evaluates GWM rollouts on a hetero-geneous task-execution graph. Each instance is a directed acyclic graph with N ≈ 22 –30 nodes, 9 node types, and 6 edge types. Node types include 
+
+planner , validator , executor , checker , aggregator ,
+
+reporter , logger , error_handler , and final_answer .Edge types include calls , validates , reports , errors ,
+
+triggers , and logs . Each node has an 8-dimensional execution-status vector. The primary metric is sink-node success rate, sr sink , which measures whether the final-answer node reaches a successful termi-nal state. As calibration, a random policy gives 
+
+sr sink = 0 .262 , while an oracle policy exceeds 
+
+0.40 .
+
+Platform skill-graph testbed. The platform skill-graph testbed evaluates GWM rollouts on a heterogeneous skill-management graph. Each in-stance contains N = 40 nodes across 8 node types: 
+
+skill , validator , adapter , artifact , failure_case ,
+
+patch , task , and tool . The graph models depen-dencies among skills, validators, adapters, artifacts, and failure-recovery components. The primary met-ric is skill success rate, sr skill . Under a no-op policy, 
+
+sr skill decays from 1.0 to about 0.317 at T = 10 ,showing that skill quality degrades without main-tenance actions. R-GCN calibration against the ground-truth simulator gives Pearson r = 0 .231 
+
+and MAE = 0 .029 .
+
+6 Error-Aware GWM 
+
+Graph world model setup. We study GWMs that predict graph-structured states using the tran-sition model in Equation (3.2) and the rollout pro-cedure in Equation (3.3) . In the fixed-edge setting, the node-state update follows the GCN-style transi-tion: 
+
+ˆXk+1 = tanh( ˜A ˆXkW1 + U a k)W2 + ξk,
+
+˜A = D−1/2AD −1/2, (6.1) where ˜A is the normalized adjacency matrix and 
+
+ξk is i.i.d. rollout noise. This update follows the ActionNode-style GWM formulation of Feng et al. (Feng et al., 2025), where actions are injected into the graph state during prediction. 
+
+Error-aware training objective. Our Error-Aware GWM augments the standard prediction ob-jective with three stability terms: 
+
+LEA = Lpred +λspec Rspec +λroll Rroll +λcrit Rcrit .
+
+(6.2) The first term, Lpred , is the supervised one-step prediction loss for node states and, in the dynamic-edge setting, edge states. The remaining terms reduce long-horizon rollout instability. Spectral regularization. The spectral regular-izer controls the model-dependent part of graph error amplification. Motivated by the FE bound in Lemma 1, we penalize large transition-layer spec-tral norms: 
+
+Rspec = X
+
+> ℓ
+
+∥Wℓ∥22. (6.3) This term discourages large values of Q 
+
+> ℓ
+
+∥Wℓ∥2,reducing the model factor in \GEAF( G) =
+
+ρ(A) Q 
+
+> ℓ
+
+∥Wℓ∥2. It is especially important on high-
+
+ρ(A) graphs, where topology already amplifies roll-out errors. 
+
+Rollout consistency regularization. The rollout consistency term directly penalizes multi-step pre-diction drift. Given a rollout horizon set H, we define 
+
+Rroll = X
+
+> h∈H
+
+∥ ˆX(h) 
+
+> t+h
+
+− Xt+h∥2 
+
+> F
+
+, (6.4) where ˆX(h) 
+
+> t+h
+
+is the h-step autoregressive prediction produced by repeatedly applying the learned tran-sition model. Unlike one-step training, this term exposes the model to its own rollout distribution and reduces compounding error over long horizons. 
+
+Critical-node weighting. The critical-node term gives larger weight to errors on structurally impor-tant nodes. Let wv be a normalized centrality-based weight for node v, such as degree, PageRank, or betweenness centrality. We define 
+
+Rcrit = X
+
+> v∈V
+
+wv∥ ˆXt+1 ,v − Xt+1 ,v ∥22. (6.5) This term reflects that errors on hubs or high-centrality nodes can propagate to many down-stream nodes during message passing. By empha-sizing critical nodes, Error-Aware GWM reduces the risk that local errors trigger global rollout insta-bility. 
+
+Dynamic-edge extension. For dynamic-edge models, we add the bilinear edge-prediction head from Equation (5.2) . The edge loss is binary cross-entropy with weight λe = 1 .0, and the graph regu-larization term is 
+
+Lg = 12 ∥W ∥2∥Q∥2. (6.6) This term controls the interaction between node-transition weights W and edge-prediction weights 
+
+Q, which is important because DE rollouts activate the coupled node-edge operator in Equation (4.14) .
+
+7 Experiments 
+
+7.1 Experimental Setup Baselines. We compare six world-model base-lines. B1 is an MLP world model (MLP-WM) that does not use graph structure. B2 is a vanilla GCN world model based on graph convolution (Kipf and Welling, 2017). B3 is an MPNN world model based on neural message passing (Gilmer et al., 2017). B4 is a GPS-style graph transformer (Rampášek et al., 2022). B5 is an ActionNode GWM based on the fixed-edge architecture of Feng et al. (Feng et al., 2025). B6 is our Error-Aware GWM. 
+
+Topologies. We evaluate all baselines on seven synthetic graph families: chain, tree, grid, small-world, scale-free, star, and complete graphs. Each graph has N = 50 nodes. Scale-free graphs follow the preferential-attachment model (Barabási and Albert, 1999), and small-world graphs follow the Watts–Strogatz model (Watts and Strogatz, 1998). These topologies span a broad spectral range, from 
+
+ρ(A) = 2 .0 for chain graphs to ρ(A) = 49 .0 for complete graphs, as summarized in Table 1. 
+
+Fixed-edge training. In the fixed-edge setting, the graph topology is fixed during rollout and each model predicts node states only. We train all six baselines on the FE simulator described in Section 5.2. Evaluation uses rollout horizons 
+
+H ∈ { 1, 2, 4, 8, 16 , 32 }, allowing us to measure both short-horizon prediction quality and long-horizon error accumulation, following the standard concern of compounding error in model-based roll-out (Asadi et al., 2018; Janner et al., 2019). 
+
+Dynamic-edge training. In the dynamic-edge setting, each baseline is extended with the bilin-ear edge-prediction head in Equation (5.2) . The model predicts both node features and edges, and is trained with the node loss, edge BCE loss, and the graph regularizer in Equation (6.6) . This setting is related to dynamic graph representation learn-ing (You et al., 2022) but differs in that the graph is used as an autoregressive world-model state for rollout prediction. All six baselines are retrained in Stream A across six topologies and three seeds, yielding 6 × 6 × 3 = 108 runs. 
+
+Heterogeneous agent testbeds. For the agent calling-tree and platform skill-graph testbeds, we evaluate six R-GCN variants: small, medium, deep, wide, action-node, and critical-node variants. These models handle typed nodes and typed edges −0.5 0.0 0.5 1.0 1.5 2.0 2.5 3.0 
+
+log 10 ̂ GEAF    
+
+> −0.06
+> −0.04
+> −0.02
+> 0.00
+> 0.02
+> GrowthSlope 4 → 32  (log NodeMSE slope)  Exploratory —GrowthSlope vs log
+
+̂ GEAF 
+
+> Topology
+> Chain
+> Tree
+> Grid
+> Small-World
+> Scale-Free
+> Star
+> Complete
+> Baseline
+> MLP
+> GCN
+> MPNN
+> GPS
+> ActionNode
+
+Figure 4: GEAF correlates with rollout-error growth. 
+
+Each point is a graph-model run; the vertical axis is GrowthSlope 4→32 , the slope of the log-NodeMSE curve from horizon 4 to horizon 32 . The positive trend sup-ports the interpretation that GEAF is a growth-rate diag-nostic rather than a terminal-error predictor. 
+
+in heterogeneous graphs, following the general message-passing view of graph networks (Battaglia et al., 2018). Each model is trained for 50 epochs with T-batched forward passes. 
+
+7.2 RQ1: Does Topology Predict Rollout-Error Growth? 
+
+We first ask whether topology explains the rate at which rollout error grows. The theory predicts that 
+
+ρ(A) and \GEAF should appear most clearly in temporal growth, not necessarily in the final error level after optimization and error floors intervene. We therefore test whether higher-GEAF graphs have faster GrowthSlope, and whether this behavior differs from standard GNN over-smoothing. 
+
+7.2.1 GEAF tracks error-growth slope 
+
+Figure 4 relates log \GEAF to GrowthSlope 4→32 ,the slope of the log-NodeMSE curve from hori-zon 4 to horizon 32 . The trend is positive: runs with larger log \GEAF tend to accumulate error faster. This matches Corollary 5, which predicts that topology-dependent amplification should be more visible in the log-error slope than in a sin-gle terminal NodeMSE value. The takeaway is not that GEAF alone determines absolute error, but that it tracks the temporal failure mode: high-GEAF graphs are more prone to long-horizon error growth. 1 2 3 4 5 6 7 8    
+
+> GNN depth ℓ(number of message-passing layers)
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> ρ(̃ Anorm )ℓ [over-smoothing domain]
+> P2 depth
+> (ℓ=2)
+> Baseline [Topology]
+> ρ(̃ Anorm )ℓ≈ 1 (over-smoothing)
+> B2 GCN [Chain, ρ(A)≈2]
+> B2 GCN [Complete, ρ(A)≈49]
+> B5 ActionNode [Chain, ρ(A)≈2]
+> B5 ActionNode [Complete, ρ(A)≈49]
+> B6 Error-Aware [Chain, ρ(A)≈2]
+> B6 Error-Aware [Complete, ρ(A)≈49]
+> 10 1
+> 10 3
+> 10 5
+> 10 7
+> 10 9
+> 10 11
+> 10 13 ̂
+> GEAF( ℓ) =  ρ(A) ⋅  c ℓ [GWM error domain]
+> GEAF=1
+> (stability)
+> Over-smoothing vs GWM Error — Distinct Operators
+
+Figure 5: Over-smoothing and GWM error amplifica-tion use different operators. The over-smoothing op-erator remains near the normalized propagation domain, while \GEAF( ℓ) grows with message-passing depth and graph spectral radius. This separates representation col-lapse from autoregressive rollout amplification. 
+
+7.2.2 Rollout amplification is distinct from over-smoothing 
+
+We next compare GWM rollout amplification with classical GNN over-smoothing. The two effects use different operators. Over-smoothing is gov-erned by repeated normalized propagation, which pushes node representations toward a low-variation domain. GWM rollout error is governed by the autoregressive amplification factor \GEAF( ℓ) = 
+
+ρ(A)ℓcℓ, where depth and topology jointly affect error growth. Figure 5 shows this distinction. The over-smoothing operator remains near the normal-ized propagation domain, while \GEAF( ℓ) grows rapidly with message-passing depth and graph spec-tral radius. Thus, GWM error amplification is not a restatement of standard over-smoothing; it de-scribes a separate rollout-error mechanism. 
+
+7.2.3 Global spectral amplification differs from local hub failure 
+
+We further separate global spectral amplification from local hub-mediated failure. Figure 6 shows that complete graphs have the largest \GEAF , con-sistent with a ρ(A)-dominated global error ceiling. However, star graphs show the largest affected-node fraction under hub injection, despite having lower GEAF than complete graphs. This indicates that global rollout amplification and local failure spread are related but distinct mechanisms: ρ(A)
+
+controls the global ceiling, while hub concentration controls localized propagation. Chain Tree Grid Small-World Scale-Free Star Complete      
+
+> 0
+> 100
+> 200
+> 300
+> 400
+> GEAF
+> (a) GEAF: spectral error ceiling by topology
+> Chain Tree Grid Small-World Scale-Free Star Complete
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> AffectedNodes@H=20 (GCN, pooled positions)
+> (b) AffectedNodes: Star highest, Complete lowest
+> Spectral-Propagation Dissociation — GEAF vs AffectedNodes@20
+
+Figure 6: Global GEAF and local hub failure are distinct. Left: complete graphs have the largest 
+
+\GEAF , confirming a ρ(A)-dominated global error ceil-ing. Right: star graphs show the largest affected-node fraction under hub injection. 1 2 4 8 16 32 48 64  
+
+> Rollout horizon H
+> 10 −12
+> 10 −7
+> 10 −2
+> 10 3
+> 10 8
+> 10 13
+> 10 18
+> 10 23
+> NodeMSE@ H (log)
+> Rollout Length Scaling
+> Chain
+> Tree
+> Grid
+> SW
+> SF
+> Star
+
+Figure 7: Rollout length scaling. NodeMSE@ H is plotted as a function of rollout horizon across graph topologies. Shaded regions indicate variation across baselines and seeds. 
+
+7.2.4 Topology effects strengthen with rollout horizon and edge density 
+
+We study how rollout error changes with horizon. The experiment evaluates H ∈{1, 2, 4, 8, 16 , 32 , 48 } across six baselines, seven topologies, and three seeds. Figure 7 reports NodeMSE@ H as a function of rollout horizon. Low-risk topologies such as chain and tree re-main stable over long horizons. High-risk topolo-gies such as scale-free, star, and grid show sharp error growth at larger horizons. This comple-ments the regret analysis: long-horizon behavior is strongly topology-dependent, and short-horizon performance does not fully characterize rollout sta-bility. We next vary edge density using Erd˝ os– Rényi graphs with edge probability p ∈{0.02 , 0.05 , 0.10 , 0.20 }. The experiment com-pares the vanilla GCN world model, ActionNode GWM, and Error-Aware GWM over three seeds. Figure 8 reports the resulting spectral radius and NodeMSE@32. As edge density increases, ρ(A) increases. The 0.025 0.050 0.075 0.100 0.125 0.150 0.175 0.200          
+
+> ER edge probability p
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+> 9
+> 10
+> ρ(A) spectral radius
+> (a) ρ(A) vs edge density
+> B2 GCN
+> B5 ActionNode
+> B6 ErrorAware
+> 0.025 0.050 0.075 0.100 0.125 0.150 0.175 0.200
+> ER edge probability p
+> 10 −1
+> 10 4
+> 10 9
+> 10 14
+> 10 19
+> 10 24
+> 10 29
+> NodeMSE@32 (log)
+> (b) NodeMSE@32 vs edge density
+> Edge Density (ER p) vs ρ(A) and NodeMSE
+
+Figure 8: Edge density sweep. Left: adjacency spectral radius ρ(A) as a function of Erd˝ os–Rényi edge proba-bility p. Right: NodeMSE@32 as a function of edge probability p. Results are averaged over three seeds. 
+
+vanilla GCN world model shows rapidly increas-ing NodeMSE at high densities, while ActionNode GWM and Error-Aware GWM remain near the low-error floor. This supports the interpretation that edge density affects rollout difficulty through the topology-dependent amplification factor. 
+
+7.3 RQ2: Does Rollout Error Affect Planning Regret? 
+
+We next test whether prediction error affects down-stream planning. GWMs select actions through imagined graph rollouts, so small rollout errors be-come harmful when they change predicted returns. We measure whether planning regret grows with horizon and whether high-GEAF settings lead to faster regret accumulation. Figure 9 connects rollout error to downstream planning. Runs with larger \GEAF tend to have larger regret GrowthSlope from horizon 4 to hori-zon 32 , consistent with Lemma 4: when the effec-tive graph error operator is larger, imagined tra-jectories lose reliability faster. The horizon-ratio analysis tells the same story from another angle. Planning regret at horizon 32 is substantially larger than one-step regret across every topology, showing that the planning failure is a long-horizon rollout effect rather than a one-step artifact. 
+
+7.4 RQ3: Does Error-Aware GWM Improve Long-Horizon Stability? 
+
+We evaluate whether Error-Aware GWM stabilizes long-horizon rollout without sacrificing accuracy. This RQ compares the full objective with vanilla GCN rollouts and simpler stabilizers such as gra-dient clipping, weight decay, and spectral-norm projection. We also test robustness under graph rewiring, noisy observations, and graph-size scal-ing. 0.0 0.5 1.0 1.5 2.0 2.5 3.0  
+
+> log 10 ̂GEAF
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> 0.12
+> Regret Growth Slope  (ln  R32 −ln  R1)/31
+> Threshold = log(4)/31 = 0.045
+> Regret Growth Slope vs log GEAF
+> Topology
+> Chain
+> Tree
+> Grid
+> Small-World
+> Scale-Free
+> Star
+> Complete
+> Baseline
+> MLP
+> GCN
+> MPNN
+> GPS
+> ActionNode
+> Error-Aware
+
+Figure 9: Planning-regret growth increases with GEAF. Regret GrowthSlope from horizon 4 to hori-zon 32 is plotted against log 10 \GEAF . Higher-GEAF runs tend to accumulate planning regret faster, linking the rollout-error operator to downstream decision qual-ity. 1 2 4 8 16 32        
+
+> Rollout horizon H
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> NodeMSE@H
+> Scale-Free
+> GCN
+> Error-Aware
+> 124816 32
+> Rollout horizon H
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> NodeMSE@H
+> Star
+> GCN
+> Error-Aware
+> Long-horizon NodeMSE — GCN vs Error-Aware
+
+Figure 10: Error-Aware GWM prevents long-horizon divergence. NodeMSE@ H is shown for the vanilla GCN world model and Error-Aware GWM on scale-free and star topologies. Error-Aware GWM stays near the low-error floor, while the vanilla model exhibits horizon-dependent error explosion. 
+
+7.4.1 Error-Aware GWM prevents divergence while preserving accuracy 
+
+Figure 10 gives the central FE comparison. On high-risk scale-free and star topologies, the vanilla GCN world model enters an exploding-error regime as the horizon grows, while Error-Aware GWM stays near the low-error floor. Across all paired topology-seed cells, the full objective elimi-nates the divergences observed in the vanilla GCN setting. The result supports the design principle be-hind Error-Aware GWM: spectral control is most useful when paired with rollout consistency and critical-node weighting, so the model remains both stable and predictive. 
+
+7.4.2 Ablation: Stability alone is not enough 
+
+Table 2 shows that simple stabilizers reduce diver-gence, but they neither eliminate it nor preserve pre-diction accuracy. Weight decay and spectral-norm projection lower divergence to 4/21 cells, yet their median NodeMSE@32 remains orders of mag-nitude larger than Error-Aware GWM. Spectral-norm projection is 1690 × worse than Error-Aware GWM, while weight decay collapses toward a near-constant predictor. The advantage of Error-Aware GWM is therefore not only divergence reduction; it is the combination of stability and predictive ac-curacy. 
+
+7.4.3 Robustness to topology perturbation, noise, and graph size. Graph Rewiring Robustness. We evaluate how topology rewiring affects long-horizon rollout er-ror on the scale-free topology. We compare six rewiring operations: identity, PageRank-based edge removal, random edge addition, random edge flipping, sparsification, and densification. The evaluation covers the vanilla GCN world model, ActionNode GWM, and Error-Aware GWM over three seeds. Figure 11 shows that the vanilla GCN world model remains in a high-error regime across all rewiring methods. ActionNode GWM is stable under most rewiring operations but shows higher error under densification and random edge addi-tion. Error-Aware GWM remains stable across all rewiring types, with NodeMSE@ H = 20 in the range of approximately 2.0–5.0 × 10 −4. This supports the role of spectral regularization in con-trolling topology-induced rollout error under graph perturbations. 
+
+Robustness to Noisy Graph Observations. We test whether observation noise is the main source of rollout instability. Gaussian noise with σ ∈{0, 10 −3, 10 −2, 0.05 , 0.1, 0.2} is added to graph observations before rollout evaluation. Figure 12 reports NodeMSE@ H = 20 across baselines. Most baselines remain nearly unchanged as ob-servation noise increases, while the vanilla GCN world model is already in a high-error regime at 
+
+σ = 0 . Thus, the observed rollout instability is mainly driven by model-topology dynamics rather than small Gaussian observation noise. 
+
+Graph Size Scaling. We evaluate graph-size scal-ing over N ∈ { 20 , 50 , 100 , 200 , 500 } across five Table 2: Regularization ablation over 21 FE cells. Simple stabilizers reduce divergence but leave large long-horizon prediction error; Error-Aware GWM is the only variant that combines zero divergence with a low NodeMSE@32 floor. 
+
+Variant Regularizer Diverged Median NodeMSE@32 Ratio vs. Error-Aware GWM Vanilla GCN world model none 10/21 0.995 6934 ×
+
+GCN + gradient clipping gradient clipping 8/21 0.987 5790 ×
+
+GCN + weight decay weight decay 4/21 1.091 4172 ×
+
+GCN + spectral-norm projection spectral norm projection 4/21 0.364 1690 ×
+
+Error-Aware GWM Rspec + Rroll + Rcrit 0/21 2.67 × 10 −4 1×add random 
+
+> densify
+> drop pagerank
+> flip random
+> identity
+> sparsify
+> Rewiring method
+> 10 −3
+> 10 −1
+> 10 1
+> 10 3
+> 10 5
+> 10 7
+> 10 9
+> NodeMSE@H (log)
+> Graph Rewiring Methods — NodeMSE Comparison
+> B2 GCN
+> B5 ActionNode
+> B6 ErrorAware
+
+Figure 11: Graph rewiring comparison. 
+
+NodeMSE@ H = 20 is reported for six rewiring methods on the scale-free topology across three world-model variants and three seeds. Identity denotes the original graph without rewiring. Error-Aware GWM remains stable across rewiring operations, supporting the role of spectral regularization under topology perturbation. 
+
+topologies, six baselines, and three seeds. Fig-ure 13 reports \GEAF and NodeMSE@32 as func-tions of graph size. Across graph sizes, ActionNode GWM, GPS, and Error-Aware GWM remain near the low-error regime, while the vanilla GCN world model ex-hibits large rollout errors on high-risk cells. MPNN runs encounter out-of-memory failures at larger graph sizes due to dense message tensors. These results show that the stability patterns observed at 
+
+N = 50 persist across a broader graph-size range. 
+
+7.5 RQ4: When Does Dynamic-Edge Coupling Matter? 
+
+We study when node-edge coupling matters. In FE models, edges are fixed and the coupling term is dormant. In DE models, edge prediction al-lows node and edge errors to affect each other. We test whether DE training improves DE roll-out accuracy and whether the spectral witness 
+
+ρ(B) > max( LX , M A) appears in trained mod-els. 0.000 0.025 0.050 0.075 0.100 0.125 0.150 0.175 0.200  
+
+> Observation noise σ
+> 10 −14
+> 10 −11
+> 10 −8
+> 10 −5
+> 10 −2
+> 10 1
+> 10 4
+> 10 7
+> 10 10
+> NodeMSE@H (log)
+> Robustness to Noisy Graph Observations
+> MLP
+> GCN
+> MPNN
+> GPS
+> ActionNode
+> Error-Aware
+
+Figure 12: Robustness to noisy graph observations. 
+
+NodeMSE@ H = 20 is plotted as a function of Gaus-sian observation noise level σ across baselines. The weak dependence on σ shows that the main instability is model-topology amplification rather than additive ob-servation noise. 
+
+7.5.1 DE training improves DE rollout accuracy 
+
+We evaluate whether training on dynamic-edge tra-jectories improves rollout accuracy in DE environ-ments. The paired comparison uses n = 36 paired cells: ActionNode GWM and Error-Aware GWM across six topologies and three seeds. Each pair compares a model trained only on fixed-edge trajec-tories but evaluated on DE rollouts against the same architecture trained directly on DE trajectories. Dynamic-edge training substantially improves DE rollout accuracy. The improvement holds for both ActionNode GWM and Error-Aware GWM, and every paired comparison favors DE training. This supports Lemma 2: in DE environments, the model must learn node dynamics and the edge-prediction pathway through which node and edge errors interact. FE-trained models lack this path-way and are systematically mismatched to evolving graph structure. 20 50 100 200 500 
+
+Graph size N
+
+10 1
+
+> GEAF
+
+(a) GEAF vs N (mean ± 1σ) 
+
+20 50 100 200 500 
+
+Graph size N
+
+10 −3 
+
+4 × 10 −4 
+
+6 × 10 −4 
+
+> NodeMSE@32
+
+(b) NodeMSE@32 vs N (mean)   
+
+> GCN excluded (numerical divergence). MLP excluded (N=20 only, OOM beyond). MPNN excluded above N=100 (OOM).
+
+Graph Size Scaling (N ∈ {20, 50, 100, 200, 500} , 3 seeds × 5 topologies) 
+
+MPNN GPS ActionNode-GWM Error-Aware GWM Figure 13: Graph size scaling. Left: \GEAF as a function of graph size N . Right: NodeMSE@32 as a function of graph size N . Curves report means across seeds; shaded regions indicate variation across seeds or runs. The low-error regime of ActionNode GWM, GPS, and Error-Aware GWM persists as graph size grows, while the vanilla GCN baseline remains vulnerable on high-risk cells. 
+
+7.5.2 DE models activate node-edge coupling 
+
+We test whether the joint node-edge operator in Lemma 2 becomes active when the model is trained with an edge-prediction head. In the DE regime, the edge predictor creates a node-to-edge pathway with MX > 0, while message passing provides an edge-to-node pathway with LA > 0. Therefore, the lemma predicts the spectral witness 
+
+ρ(B) > max( LX , M A) (7.1) whenever the coupling is non-degenerate. Across all 108 DE-trained cells, the witness holds in 108/108 cases, with sign-test p < 10 −30 
+
+and mean excess approximately 155 (Table 3). Since the inequality follows mathematically once 
+
+LAMX > 0, the empirical content is the magni-tude rather than only the direction. The large excess shows that learned DE models do not collapse to a nearly fixed-edge solution; they learn substantive node-edge coupling. 
+
+7.5.3 FE models show dormant coupling and perturbation contraction 
+
+In the FE regime, the edge-prediction head is ab-sent, so MX = 0 and the joint operator reduces to node-only dynamics. The super-additive witness in 1 2 4 8 16 32 64 128            
+
+> Rollout horizon H
+> 10 −19
+> 10 −17
+> 10 −15
+> 10 −13
+> 10 −11
+> 10 −9
+> 10 −7
+> 10 −5
+> NodeMSE@ H (pert vs clean)
+> (a) Contractive decay ∝ε2absorbed by H= 16
+> Perturbation ε
+> ε=0.001
+> ε=0.01
+> ε=0.1
+> Chain Tree Grid Small-world Scale-free Star
+> Graph Topology
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> GEAF
+> (b) GEAF: Spectral regularization reduces error ceiling
+> Baseline
+> ActionNode-GWM
+> Error-Aware GWM
+> Perturbation Decay and GEAF Comparison Across Topologies
+
+Figure 14: FE-regime contraction and GEAF re-duction. Left: injected perturbations decay rapidly to the numerical floor in the FE regime, indicating dor-mant node-edge coupling. Right: Error-Aware GWM achieves substantially lower GEAF than ActionNode GWM across topologies, showing how spectral regular-ization reduces the amplification ceiling. 
+
+Equation (7.1) therefore cannot activate. Figure 14 supports this distinction. The left panel shows in-jected perturbations decaying rapidly to the numer-ical floor, indicating contractive FE dynamics. The right panel shows that Error-Aware GWM substan-tially lowers GEAF compared with ActionNode GWM, consistent with spectral regularization re-ducing the rollout amplification ceiling. Figure 15 decomposes FE-regime GrowthSlope under node-only, edge-only, and joint perturbation injection. Node-only perturbations have consis-Table 3: Dynamic-edge training improves DE rollout accuracy. The ratio reports FE-trained NodeMSE@32 divided by DE-trained NodeMSE@32, so larger values indicate stronger gains from DE training. The paired comparison covers ActionNode GWM and Error-Aware GWM across six topologies and three seeds; the bottom row reports the spectral witness for non-degenerate node-edge coupling. 
+
+Test / Architecture n FE-trained / DE-trained NodeMSE Wilcoxon p
+
+DE-trained vs. FE-trained on DE rollouts 
+
+ActionNode GWM 18 9.85 × 3.8 × 10 −6
+
+Error-Aware GWM 18 12 .29 × 3.8 × 10 −6
+
+Combined 36 11 .0× [9.4, 12.8] 1.5 × 10 −11 
+
+Spectral witness in DE regime 
+
+All DE-trained models 108 ρ(B)/ max( LX , M A) > 1 in 108/108; mean excess ≈ 155 < 10 −30 Chain Tree Grid SW SF Star 
+
+> Graph Topology
+> −0.4
+> −0.3
+> −0.2
+> −0.1
+> 0.0
+> 0.1
+> 0.2
+> GrowthSlope 4 → 32  (log 10  )
+> Node vs Edge vs Joint Injection — Error Growth Slope
+> Perturbation condition
+> Node-only
+> Edge-only
+> Joint (node+edge)
+
+Figure 15: Perturbation decomposition in the FE regime. Node-only perturbations are absorbed by con-tractive dynamics, edge-only perturbations remain near zero growth, and joint perturbations closely follow edge-only behavior. This supports the interpretation that node-edge cross-coupling is dormant in the FE regime where 
+
+MX = 0 .
+
+tently negative slopes, indicating self-correction under contractive FE dynamics. Edge-only slopes are close to zero, and joint slopes closely follow edge-only slopes. This is consistent with the FE structure MX = 0 , where the joint node-edge op-erator does not activate cross-coupling. 
+
+7.5.4 OOD perturbation confirms the FE contraction boundary 
+
+We perform an OOD amplitude retest by train-ing on chain graphs and evaluating on scale-free graphs. Perturbation amplitudes are swept over δ ∈{0.1, 0.5, 1.0, 2.0}, and injections are applied to six positions. Figure 16 reports NodeMSE@ H =20 for the vanilla GCN world model, which is the only baseline with a measurable nonzero signal in this setting. NodeMSE increases with perturbation amplitude across all injection positions. However, the pre-registered high-risk position tests do not reject after Holm correction. For the other baselines, perturba-tions remain absorbed with NodeMSE below the 0.1 0.5 1.0 2.0              
+
+> Perturbation amplitude δ
+> Hub
+> Bridge
+> Action
+> Target
+> Injection position
+> 0.00 0.00 0.00 0.01
+> 0.00 0.00 0.00 0.01
+> 0.00 0.00 0.00 0.01
+> 0.00 0.00 0.00 0.01
+> Amplitude × Position Heatmap
+> −4.5
+> −4.0
+> −3.5
+> −3.0
+> −2.5
+> −2.0
+> log 10  NodeMSE@H=20
+
+Figure 16: OOD amplitude and injection-position sweep. The heatmap reports log 10 NodeMSE@ H = 20 
+
+for the vanilla GCN world model under different pertur-bation amplitudes and injection positions. Rows corre-spond to injection positions and columns correspond to perturbation amplitudes. 
+
+measurement floor. These results support the scope interpretation that FE dynamics are strongly con-tractive for most architectures, while measurable OOD sensitivity appears mainly in the vanilla GCN world model. 
+
+7.5.5 Regime interpretation Candidate mechanisms. The regime-conditional behavior of the joint operator can be explained by four mechanisms. First, in the FE regime, the edge-prediction head is absent, so 
+
+MX = 0 by construction and the coupling product 
+
+LAMX is structurally zero. Second, Error-Aware GWM reduces the effective node-transition gain by spectral regularization, making FE perturbations more likely to contract. Third, if the coupling product is positive but small, longer horizons may be required for the asymptotic rate to appear; this explanation does not apply when MX = 0 . Fourth, small perturbations may remain in a local linear regime whose Jacobian is much smaller than the global Lipschitz bound. The multi-axis sweep over perturbation size and horizon separates these cases and supports the FE contraction interpretation. 
+
+Regime interpretation. These results support a regime-conditional view of graph rollout error. Fixed-edge GWM corresponds to the MX = 0 cor-ner of the joint-operator framework, where node-edge cross-coupling is dormant. Dynamic-edge training activates the off-diagonal coupling terms and changes the effective rollout-error operator. The framework therefore does not replace fixed-edge GWM; it explains when fixed-edge dynamics are sufficient and when dynamic-edge training is required. 
+
+7.6 RQ5: How Do GWMs Behave on Heterogeneous Agent Graphs? 
+
+We evaluate GWMs on heterogeneous agent and skill graphs, where nodes have roles such as plan-ner, executor, validator, tool, and failure handler. This RQ tests whether rollout failures depend on role structure, whether R-GCN rollouts are cali-brated against simulators, and whether correction policies can reduce agent-level errors. 
+
+7.6.1 Calibration against heterogeneous simulators 
+
+We calibrate the R-GCN rollout models against the ground-truth heterogeneous simulators on the agent calling-tree and platform skill-graph testbeds. Figure 17 compares R-GCN predictions with simu-lator outputs after the sigmoid-head fix. On the agent calling-tree testbed, the R-GCN mean is 
+
+0.442 versus ground-truth mean 0.437 , with Pear-son r = 0 .311 and MAE = 0 .051 . On the skill-graph testbed, the R-GCN mean is 0.387 versus ground-truth mean 0.406 , with Pearson r = 0 .231 
+
+and MAE = 0 .029 .These results show that the R-GCN models are reasonably calibrated in mean and absolute error, but their instance-level correlations are weak to moderate. We therefore use the heterogeneous R-GCN results as agent-graph stress tests and calibra-tion evidence, not as a high-precision replacement for the ground-truth simulator. 
+
+7.6.2 Role-dependent failure sensitivity 
+
+We evaluate whether different functional subgraphs contribute differently to agent-task success. We mask role-specific subgraphs in the agent calling-tree testbed and measure both success-rate drop and 0.30 0.35 0.40 0.45 0.50 0.55 0.60        
+
+> Ground-truth simulator
+> 0.30
+> 0.35
+> 0.40
+> 0.45
+> 0.50
+> 0.55
+> 0.60
+> R-GCN prediction (sigmoid-fixed)
+> r=0.311
+> MAE=0.051
+> Exp 14: agent_calling_tree
+> y=x
+> 0.32 0.34 0.36 0.38 0.40 0.42 0.44 0.46
+> Ground-truth simulator
+> 0.32
+> 0.34
+> 0.36
+> 0.38
+> 0.40
+> 0.42
+> 0.44
+> 0.46
+> R-GCN prediction (sigmoid-fixed)
+> r=0.231
+> MAE=0.029
+> Exp 25: skill_graph
+> y=x
+> R-GCN Calibration (sigmoid-fixed) vs Ground-Truth Simulator
+
+Figure 17: R-GCN calibration against heterogeneous simulators. Left: agent calling-tree testbed. Right: platform skill-graph testbed. The predictions are cal-ibrated in mean and absolute error, but instance-level correlations remain modest, so these results are used as stress-test evidence rather than high-precision simulator replacement. Planner Validator Hub Leaf All     
+
+> Subgraph masked
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> SR drop (baseline − masked)
+> (a) SR drop by subgraph
+> Planner Validator Hub Leaf All
+> Subgraph masked
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> 0.12
+> NodeMSE@T trajectory mean
+> (b) NodeMSE by subgraph
+> Critical Subgraph Masking — Impact on SR and NodeMSE
+
+Figure 18: Critical subgraph masking on the agent calling-tree testbed. Left: success-rate drop after mask-ing different subgraphs. Right: NodeMSE@ T under the same masking conditions. Full masking gives the largest degradation, while leaf masking has minimal effect. 
+
+trajectory-level NodeMSE. Figure 18 shows that full-graph masking gives the largest degradation, as expected. Among partial masks, hub and validator-related components produce larger changes than leaf masking, while leaf masking has almost no effect. These results support role-dependent error ampli-fication. Not all nodes contribute equally to rollout quality: masking structurally or functionally cen-tral components has a larger effect than masking peripheral leaves. We evaluate how injected errors propagate across different functional roles in the agent calling-tree testbed. We inject perturbations into planner, val-idator, hub, bridge, and random nodes across 20 instances. Figure 19 reports failure propagation depth (FPD) and the number of error nodes at the final timestep. Planner and validator injections produce median FPD around 3, while bridge and hub injections have smaller median FPD. Random injection has the largest median FPD at 4. The final error-node Planner Validator Hub Bridge Random     
+
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> FPD (failure propagation depth)
+> (a) FPD distribution by injection kind
+> Planner Validator Hub Bridge Random
+> 2
+> 4
+> 6
+> 8
+> 10
+> 12
+> 14
+> 16
+> n\_err\_at\_T (error nodes at T)
+> (b) Error nodes at T by injection kind
+> Agent-Role Injection — FPD and Error Count
+
+Figure 19: Agent-role injection analysis. Left: failure propagation depth distributions by injection kind. Right: number of error nodes at the final timestep by injection kind. 
+
+counts are broadly similar across injection types, but the distributions vary by role. These results show that failure propagation depends on func-tional role, not only graph position. 
+
+7.6.3 Correction policies 
+
+We also test whether a local GEAF proxy can guide node-level correction policies in heteroge-neous agent graphs. In the current FE formulation, 
+
+\GEAF local (v) = degree( v) Y
+
+ℓ
+
+∥Wℓ∥2. (7.2) Since Q
+
+ℓ ∥Wℓ∥2 is global for a fixed model, 
+
+\GEAF local (v) induces the same node ranking as degree centrality. Figure 20 confirms this equiv-alence: the GEAF-proxy policy and the degree policy achieve the same mean error reduction of 12.9%, outperforming random correction but re-maining below the oracle policy at 22.4%. Thus, local GEAF is useful as a non-random structural heuristic, but in this FE setting it does not provide a distinct correction signal beyond degree centrality. We next compare node correction policies un-der a 10% correction budget. Figure 21 re-ports NodeMSE reduction across six baselines, six topologies, and three seeds. Oracle correc-tion gives the strongest upper-bound performance. Among practical policies, uncertainty-based cor-rection gives the largest average gain over random correction. GEAF-proxy correction improves over random but is indistinguishable from degree-based correction. This result is consistent with the FE local-GEAF identity. When model weights are fixed, the lo-cal GEAF score reduces to a degree-proportional ranking: 
+
+\GEAF local (v) = degree( v) Y
+
+ℓ
+
+∥Wℓ∥2. (7.3) Oracle GEAF proxy Degree Random  
+
+> Correction policy (budget = 10%)
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> Error reduction (%, mean ± std)
+> 22.4%
+> 12.9% 12.9%
+> 8.1%
+> R-GCN Correction Policy — Centrality Proxy vs Oracle
+
+Figure 20: Local GEAF correction reduces to de-gree centrality in the FE setting. Correction policies are compared on the heterogeneous agent calling-tree testbed under a 10% node-correction budget. GEAF-proxy and degree policies coincide because the FE local-GEAF score is degree times a model-global norm prod-uct. Random Degree Uncertainty Oracle 
+
+> Correction policy
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> NodeMSE reduction (%)
+> Correction Policy Comparison — 5 Policies × 6 Baselines
+> B1 MLP
+> B2 GCN
+> B3 MPNN
+> B4 GPS
+> B5 ActionNode
+> B6 ErrorAware
+
+Figure 21: Node correction policy comparison. 
+
+NodeMSE reduction is reported under a 10% correction budget. Oracle correction provides the upper bound, uncertainty gives the strongest practical improvement, and GEAF-proxy correction matches degree-based cor-rection. 
+
+Thus, GEAF is useful as a non-random structural heuristic, but in this FE correction setting it does not provide a distinct node-ranking signal beyond degree centrality. We also compare correction policies on the agent calling-tree testbed under a 10% node-correction budget. The policies include random, degree, GEAF-proxy, and oracle correction. Figure 22 re-ports the reduction in error-flag mean. The oracle policy gives the largest reduction, while GEAF-proxy and degree correction are tied because they induce the same node ranking in this FE local formulation. This supports the scope state-ment that local GEAF is a useful structural heuris-tic but does not provide a distinct correction signal beyond degree centrality in the FE agent-graph set-ting. Oracle GEAF proxy Degree Random   
+
+> Correction policy (budget = 10%)
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 35
+> error_flag reduction (%, mean ± std)
+> 27.5%
+> 8.7% 8.7% 8.5%
+> Agent Correction Policy — error_flag Reduction vs Policy
+
+Figure 22: Agent-level correction policy compari-son. Error-flag reduction is reported for random, degree, GEAF-proxy, and oracle correction under a 10% node-correction budget. Table 4: Agent task completion across rollout horizons. All methods decline from approximately 0.49 at H =1 to approximately 0.42 for H ≥ 5, indicating that heterogeneous agent-graph planning remains difficult at longer horizons even when the world model uses graph structure.                                                     
+
+> Baseline SR@1 SR@5 SR@10 SR@20 MLP world model 0.477 ±0.039 0.420 ±0.029 0.422 ±0.033 0.423 ±0.033 GCN world model 0.487 ±0.069 0.415 ±0.025 0.415 ±0.025 0.416 ±0.025 MPNN world model 0.492 ±0.084 0.411 ±0.028 0.411 ±0.026 0.413 ±0.023 Error-Aware GWM (ours) 0.491 ±0.080 0.420 ±0.030 0.417 ±0.028 0.417 ±0.025
+
+7.6.4 Long-horizon agent task completion 
+
+We evaluate agent task completion on the agent calling-tree and platform skill-graph testbeds. We pool 160 instances per testbed and report task suc-cess rate (SR) at horizons H ∈ { 1, 5, 10 , 20 }. Re-sults are averaged over 6 testbed-seed cells for each baseline and horizon. Table 4 and Figure 23 show that architecture choice has limited impact on heterogeneous agent-task completion. At H = 1 , all methods cluster around SR ≈ 0.49 . For H ≥ 5, all methods decline toward SR ≈ 0.42 . Thus, the long-horizon planning challenge persists even with graph-structured world models. These real-world evaluations clarify the bound-ary of GWMs. Specialized graph classifiers remain stronger on static node classification, GWM vari-ants are competitive but not dominant on temporal link prediction, and all methods struggle on long-horizon heterogeneous agent planning. GWMs are therefore best viewed as a framework for dy-namic graph rollouts and agent planning, not as a replacement for task-specific graph learning meth-ods. Error-Aware regularization provides modest 1 5 10 20 
+
+> Planning horizon H (log scale)
+> 0.35
+> 0.40
+> 0.45
+> 0.50
+> 0.55
+> 0.60
+> 0.65
+> 0.70
+> Task Success Rate (SR)
+> Agent Task Completion SR vs Horizon
+> (Calling-tree + Skill-graph testbeds)
+> Baseline
+> MLP
+> GCN
+> MPNN
+> Error-Aware GWM
+
+Figure 23: Agent task completion across planning horizons. Error-Aware GWM has a small short-horizon advantage at H = 1 , but all baselines converge to SR ≈
+
+0.42 for H ≥ 5.
+
+real-world gains, with its strongest benefit in con-trolled rollout regimes where long-horizon error accumulation is the main failure mode. 
+
+7.7 RQ6: What Is the Real-World Scope of GWMs? 
+
+Finally, we test GWMs on standard real-world graph benchmarks to clarify their practical bound-ary. These experiments compare GWM variants with specialized graph baselines on static node clas-sification and temporal link prediction. The goal is not to claim state-of-the-art performance, but to identify where GWMs remain competitive and where task-specific graph models are preferable. 
+
+7.7.1 Static Node Classification on Cora and Citeseer 
+
+We first evaluate static node classification on Cora and Citeseer (Yang et al., 2016). Cora contains 2,708 nodes, 5,278 edges, and 7 classes; Citeseer contains 3,327 nodes, 4,732 edges, and 6 classes. We follow the standard public train/validation/test split. The baselines are GCN (Kipf and Welling, 2017), GAT (Veliˇ ckovi´ c et al., 2018), and Graph-SAGE (Hamilton et al., 2017). All models are trained for 200 epochs with Adam, learning rate 
+
+10 −3, weight decay 5 × 10 −4, dropout 0.5, and 3 random seeds. Table 5 and Figure 24 show that specialized static graph classifiers remain stronger on Cora. GCN achieves the best Cora accuracy at 80.6%, while FE-GWM and Error-Aware GWM achieve 73.5% and 75.0%, respectively. On Citeseer, the gap is smaller: all methods fall within an approx-Table 5: Static node classification test accuracy on Cora and Citeseer. Results are mean ± standard deviation over three seeds; specialized graph classifiers remain strongest on Cora, while Error-Aware GWM narrows the gap to FE-GWM on both datasets. 
+
+Baseline Cora Citeseer GCN (Kipf and Welling, 2017) 80.6 ± 1.0 65.6 ± 2.4 GAT (Veliˇ ckovi´ c et al., 2018) 79.3 ± 0.4 68.1 ± 0.8 
+
+GraphSAGE (Hamilton et al., 2017) 78.8 ± 0.6 66.5 ± 1.1 FE-GWM (ours) 73.5 ± 1.6 66.2 ± 2.7 Error-Aware GWM (ours) 75.0 ± 1.6 66.9 ± 1.8 Cora Citeseer  
+
+> 65
+> 70
+> 75
+> 80
+> 85
+> Test Accuracy (%)
+> Node Classification: Standard Baselines vs FE-GWM / Error-Aware GWM
+> Baseline (hatched = ours)
+> GCN
+> GAT
+> GraphSAGE
+> FE-GWM
+> Error-Aware GWM
+
+Figure 24: Static node classification on Cora and Citeseer. GCN, GAT, and GraphSAGE are standard static graph baselines, while FE-GWM and Error-Aware GWM are GWM variants. Standard graph classifiers dominate Cora by 4–7 pp; on Citeseer, all methods are within an approximately 3 pp range. 
+
+imately 3 pp range, with GAT best at 68.1% and Error-Aware GWM reaching 66.9%. Error-Aware GWM consistently improves over FE-GWM by 1–1.5 pp, suggesting that spectral regularization is mildly beneficial even in a static regime. 
+
+7.7.2 Temporal Link Prediction on Bitcoin-Alpha 
+
+We evaluate temporal link prediction on Bitcoin-Alpha (Kumar et al., 2019), a sparse temporal trust network with 3,783 nodes and 24,186 temporal edges. We construct 60-day windows and compare GWM variants with a JODIE-style temporal inter-action model (Kumar et al., 2019) and a static GCN baseline. We report AP, AUC, and MRR over 3 seeds. Table 6 and Figure 25 show that GWM variants are competitive but do not dominate specialized baselines. FE-GWM achieves the best AP, while Static GCN has the best AUC and JODIE-style has the best MRR. DE-GWM and Error-Aware DE-GWM do not consistently improve over FE-GWM, suggesting that dynamic-edge modeling is most useful when edge dynamics provide stable 
+
+Table 6: Temporal link prediction on Bitcoin-Alpha. Results are mean ± standard deviation over three seeds. No single method dominates all metrics: FE-GWM has the best AP, Static GCN has the best AUC, and JODIE-style has the best MRR.                                                    
+
+> Baseline AP AUC MRR JODIE-style (Kumar et al., 2019) 0.772 ±0.009 0.646 ±0.009 0.261 ±0.104
+> Static GCN 0.815 ±0.014 0.774 ±0.030 0.109 ±0.034 FE-GWM (ours) 0.820 ±0.016 0.740 ±0.030 0.166 ±0.056 DE-GWM (ours) 0.805 ±0.004 0.717 ±0.009 0.122 ±0.037 Error-Aware DE-GWM (ours) 0.805 ±0.006 0.713 ±0.009 0.134 ±0.041 AP AUC MRR
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Metric value
+> *
+> *
+> *gap
+> Temporal Link Prediction: Bitcoin-Alpha (AP / AUC / MRR)
+> Baseline (hatched = ours)
+> JODIE
+> Static-GCN
+> FE-GWM
+> DE-GWM
+> Error-Aware DE-GWM
+
+Figure 25: Temporal link prediction on Bitcoin-Alpha. FE-GWM obtains the best AP, Static GCN obtains the best AUC, and JODIE-style obtains the best MRR. DE-GWM does not improve over FE-GWM on this sparse real-world temporal graph, indicating that dynamic-edge modeling is not automatically beneficial outside controlled DE simulators. 
+
+predictive signal over the rollout horizon. 
+
+8 Additional Experiments 
+
+This section provides concise result summaries for all other experiments. 
+
+8.1 Seed Stability of Error Metrics 
+
+We first check whether the observed error patterns are artifacts of random seed choice. Figure 26 re-ports seed-level distributions of NodeMSE@32 and GrowthSlope across the seven topology families. The distributions are stable across seeds, and de-terministic topologies show limited variation. This supports the use of three outer seeds in the main experiments and suggests that the observed GEAF-related trends are not driven by a small number of random graph instances. 
+
+8.2 Multi-Hop Error Propagation Is Limited Under Contractive FE Dynamics 
+
+We test whether local perturbations propagate across multiple graph hops. We inject perturba-tions at depths {1, 2, 4, 6, 8, 10 } on chain and scale-free graphs across six baselines and three seeds. Chain       
+
+> Tree
+> Grid
+> Small-World
+> Scale-Free
+> Star
+> Complete
+> 0.0002
+> 0.0004
+> 0.0006
+> 0.0008
+> 0.0010
+> 0.0012
+> NodeMSE@32
+> (a) Seed variance — NodeMSE@32
+> Chain
+> Tree
+> Grid
+> Small-World
+> Scale-Free
+> Star
+> Complete
+> −0.05
+> −0.04
+> −0.03
+> −0.02
+> −0.01
+> 0.00
+> 0.01
+> GrowthSlope (4→32)
+> (b) Seed variance — GrowthSlope
+> Seed Variance — NodeMSE@32 and GrowthSlope across 7 Topologies
+> Topology
+> Chain Tree Grid Small-World Scale-Free Star Complete
+
+Figure 26: Seed stability across topologies. Left: seed-level distributions of NodeMSE@32. Right: seed-level distributions of GrowthSlope. 2 4 6 8 10 
+
+> Hop distance from injection node
+> 10 −12
+> 10 −9
+> 10 −6
+> 10 −3
+> 10 0
+> 10 3
+> 10 6
+> 10 9
+> 10 12
+> NodeMSE@H output node (log)
+> Multi-hop Error Decay — Hop Distance vs NodeMSE
+> Topology
+> Chain
+> Scale-Free
+
+Figure 27: Multi-hop error propagation under per-turbation injection. NodeMSE@ H = 20 is plotted as a function of hop distance from the injection node. Chain graphs remain contractive with near-zero error at all hop distances. 
+
+Figure 27 shows that multi-hop error propagation is limited for all non-diverged models. On chain graphs, NodeMSE@ H = 20 remains below 10 −12 
+
+across all injection depths, with failure propagation depth close to 1. On scale-free graphs, all non-diverged models remain below 10 −13 , while the di-verged GCN baseline reaches NodeMSE@ H = 20 
+
+around 10 10 .This result supports a regime-specific interpreta-tion: FE dynamics are often contractive and absorb local perturbations, while severe multi-hop ampli-fication appears mainly when the underlying base-line has already entered a divergent rollout regime. 
+
+8.3 Zero-Shot Topology Shift 
+
+We test zero-shot generalization under topol-ogy shift by training on one topology and evaluating on another. The evaluated train– test pairs are chain →grid, grid →small-world, small-world →scale-free, scale-free →star, and tree →scale-free. The experiment covers six base-lines and three seeds. Figure 28 shows that cross-topology transfer causes a large increase in NodeMSE@ H = 20 .Grid 
+
+> Small-World
+> Scale-Free
+> Star
+> Test topology
+> Chain
+> Tree
+> Grid
+> Small-World
+> Scale-Free
+> Train topology
+> 0.25
+> 0.27
+> 2284.81
+> 0.33
+> 865661718.12
+> OOD NodeMSE@20 Heatmap
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+> NodeMSE@H=20 (OOD mean)
+> 1e8
+
+Figure 28: Zero-shot topology shift. The heatmap reports NodeMSE@ H = 20 for train–test topology pairs. Rows indicate training topologies and columns indicate test topologies. 
+
+Excluding diverged vanilla GCN cells, the median NodeMSE@ H = 20 across baselines is 0.196 ,compared with an in-distribution level of approx-imately 3 × 10 −4. Error-Aware GWM obtains a median of 0.183 , which is slightly better than the overall median but still far above the in-distribution floor. These results indicate that zero-shot topology shift is a structural difficulty for graph rollouts, not merely an architecture-specific failure. 
+
+8.4 Sparse and Dense Message-Passing Layers 
+
+We compare sparse and dense message-passing be-havior on the scale-free topology. The experiment evaluates the vanilla GCN world model, MPNN world model, and GPS-style graph transformer across rollout horizons H ∈ { 1, 4, 8, 16 , 32 } and three seeds. Figure 29 shows that the vanilla GCN world model diverges as the horizon increases, with me-dian NodeMSE@ H = 32 reaching 6.5 × 10 9. In contrast, MPNN and GPS remain near the low-error floor, with median NodeMSE@ H = 32 equal to 
+
+2.2 × 10 −4 and 4.0 × 10 −4, respectively. This sug-gests that the observed divergence is not explained by message-passing density alone. Instead, it is tied to the interaction between the GCN transition operator and the high-risk scale-free topology. 
+
+8.5 Directed and Undirected Graph Variants 
+
+We evaluate whether graph directionality affects rollout growth. The experiment uses chain, tree, and scale-free graphs with directed and undirected 0 5 10 15 20 25 30 
+
+> MP horizon / depth variant
+> 10 −3
+> 10 −1
+> 10 1
+> 10 3
+> 10 5
+> 10 7
+> 10 9
+> NodeMSE@H (log)
+> Sparse vs Dense MP Layers — NodeMSE
+> B2 GCN
+> B3 MPNN
+> B4 GPS
+
+Figure 29: Sparse and dense message-passing com-parison. NodeMSE@ H is reported across rollout hori-zons for the vanilla GCN world model, MPNN world model, and GPS-style graph transformer on the scale-free topology. Shaded regions indicate variation across seeds. Chain Scale Free Tree 
+
+> Topology
+> −0.2
+> −0.1
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> GrowthSlope 8 → 32  (log 10  )
+> Directionality — Directed vs Undirected GrowthSlope
+> Directed
+> Undirected
+
+Figure 30: Directed and undirected graph variants. 
+
+GrowthSlope 8→32 is reported for directed and undi-rected variants of chain, scale-free, and tree graphs. Bars show means and error bars show variation across runs. 
+
+variants, covering three baselines and three seeds. Figure 30 reports GrowthSlope 8→32 .Directionality changes the error-growth distri-bution, especially on scale-free graphs, where the variance is larger. Chain and tree graphs show smaller directionality effects. These results indi-cate that directed edges can change the effective rollout operator, but the effect depends strongly on topology. 
+
+8.6 Temporal Memory Variants 
+
+We compare temporal-memory variants for long-horizon rollout prediction. The main ablation eval-uates Markov, last-2, and last-4 history variants on scale-free and small-world graphs. The extended experiment compares recurrent, transformer, and retrieval-augmented memory architectures. Fig-ure 31 reports NodeMSE@ H across rollout hori-zons. Last-k history reduces NodeMSE relative to the 0 5 10 15 20 25 30  
+
+> Rollout horizon H
+> 10 −3
+> 10 −2
+> NodeMSE@H
+> Memory Architecture Ablation
+> (Recurrent / Transformer / Retrieval)
+> Recurrent
+> Retrieval
+> Transformer
+
+Figure 31: Temporal memory variants. 
+
+NodeMSE@ H is reported across rollout hori-zons for recurrent, transformer, and retrieval-augmented memory variants. Shaded regions indicate variation across topologies and seeds. 
+
+Markov variant, with most of the gain appearing from the last-2 context. In the extended compari-son, retrieval-augmented memory achieves lower long-horizon NodeMSE than recurrent and trans-former variants. These results suggest that adding temporal context can improve long-horizon rollout accuracy, especially when the memory mechanism provides stable retrieval rather than only recurrent propagation. 
+
+9 Conclusion 
+
+We present a unified framework for analyzing and improving Graph World Models in graph-structured planning environments. The frame-work covers fixed-edge and dynamic-edge regimes, introduces topology-aware rollout-error analysis through GEAF and the joint node-edge operator B,and connects rollout error to planning regret. Em-pirically, long-horizon graph planning is sensitive to topology and regime: regret increases with roll-out horizon, dynamic-edge training is needed when graph structure evolves, and Error-Aware GWM improves stability while preserving prediction ac-curacy. Real-world experiments show that GWMs are best viewed as tools for dynamic graph rollouts and agent planning, not as replacements for special-ized graph learning methods. Future work includes applying this framework to LLM-based multi-agent systems, heterogeneous knowledge graphs, and real-time network planning. 
+
+10 Discussion 
+
+Our results show that GWM rollout error is regime-dependent. In fixed-edge settings, instability mainly comes from the interaction between topol-ogy and the learned node-transition operator. This explains why the vanilla GCN world model fails on high-ρ(A) graphs, while Error-Aware GWM avoids divergence by combining spectral control, rollout consistency, and critical-node weighting. In dynamic-edge settings, edge prediction activates node-edge cross-coupling through the joint oper-ator B, and DE training substantially improves DE rollout accuracy. GEAF is therefore best in-terpreted as a topology-aware indicator of rollout-error growth, not as a universal predictor of final error level. Locally, the FE version of GEAF re-duces to degree centrality, so future correction poli-cies should use activation-dependent, uncertainty-aware, or DE-regime coupling terms to provide a distinct node-priority signal. 
+
+11 Limitations and Future Work 
+
+The strongest evidence in this work comes from controlled synthetic graph simulators. Real-world benchmarks show more limited transfer: GWMs are not replacements for specialized static graph classifiers, and DE-GWM does not consistently dominate on sparse temporal link prediction. The joint-operator theory is also only partially tested: FE models collapse to the MX = 0 case, while larger DE datasets are needed to evaluate the GEAF proxy for ρ(B). Future work should study larger and denser temporal graphs, real agent-system traces, activation-aware local GEAF, uncertainty-guided correction, and memory-augmented GWMs for long-horizon planning. 
+
+References 
+
+Prithviraj Ammanabrolu and Mark O. Riedl. 2021. Learning knowledge graph-based world models of textual environments. In Advances in Neural Infor-mation Processing Systems (NeurIPS) .Petr Anokhin, Nikita Semenov, Artyom Sorokin, Dmitry Evseev, Mikhail Burtsev, and Aleksandr Panov. 2024. Arigraph: Learning knowledge graph world mod-els with episodic memory for llm agents. In Inter-national Joint Conference on Artificial Intelligence (IJCAI) .Kavosh Asadi, Dipendra Kumar Misra, and Michael L. Littman. 2018. Lipschitz continuity in model-based reinforcement learning. In International Conference on Machine Learning (ICML) .Albert-László Barabási and Réka Albert. 1999. Emer-gence of scaling in random networks. Science ,286(5439):509–512. Peter W. Battaglia, Jessica B. Hamrick, Victor Bapst, Al-varo Sanchez-Gonzalez, Vinicius Zambaldi, Mateusz Malinowski, Andrea Tacchetti, David Raposo, Adam Santoro, Ryan Faulkner, Caglar Gulcehre, Francis Song, Andrew Ballard, Justin Gilmer, George Dahl, Ashish Vaswani, Kelsey Allen, Charles Nash, Victo-ria Langston, and 8 others. 2018. Relational induc-tive biases, deep learning, and graph networks. Peter W. Battaglia, Razvan Pascanu, Matthew Lai, Danilo Jimenez Rezende, and Koray Kavukcuoglu. 2016. Interaction networks for learning about ob-jects, relations and physics. In Advances in Neural Information Processing Systems , volume 29. Jake Bruce, Michael D. Dennis, Ashley Edwards, Jack Parker-Holder, Yuge Shi, Edward Hughes, Matthew Lai, Aditi Mavalankar, Richie Steigerwald, Chris Apps, Yusuf Aytar, Sarah Bechtle, Feryal Behbahani, Stephanie Chan, Nicolas Heess, Lucy Gonzalez, Si-mon Osindero, Sherjil Ozair, Scott Reed, and 6 others. 2024. Genie: Generative interactive environments. In Proceedings of the 41st International Conference on Machine Learning . PMLR. Ben Chamberlain, James Rowbottom, Maria I. Gori-nova, Michael Bronstein, Stefan Webb, and Emanuele Rossi. 2021. GRAND: Graph neural dif-fusion. In Proceedings of the 38th International Conference on Machine Learning , volume 139 of 
+
+Proceedings of Machine Learning Research , pages 1407–1418. PMLR. Runjin Chen, Tong Zhao, Ajay Jaiswal, Neil Shah, and Zhangyang Wang. 2024. LLaGA: Large language and graph assistant. In Proceedings of the 41st Inter-national Conference on Machine Learning . PMLR. Taiye Chen, Xun Hu, Zihan Ding, and Chi Jin. 2025. Learning world models for interactive video genera-tion. arXiv preprint arXiv:2505.21996 .Kurtland Chua, Roberto Calandra, Rowan McAllister, and Sergey Levine. 2018. Deep reinforcement learn-ing in a handful of trials using probabilistic dynamics models. In Advances in Neural Information Process-ing Systems , volume 31. Tao Feng, Yexin Wu, Guanyu Lin, and Jiaxuan You. 2025. Graph world model. In International Confer-ence on Machine Learning (ICML) .Justin Gilmer, Samuel S. Schoenholz, Patrick F. Riley, Oriol Vinyals, and George E. Dahl. 2017. Neural message passing for quantum chemistry. In Pro-ceedings of the 34th International Conference on Machine Learning , volume 70 of Proceedings of Ma-chine Learning Research , pages 1263–1272. PMLR. Nico Gürtler and Georg Martius. 2025. Long-horizon planning with predictable skills. Reinforcement Learning Journal , 6:1247–1272. David Ha and Jürgen Schmidhuber. 2018. World mod-els. arXiv preprint arXiv:1803.10122 .Danijar Hafner, Timothy Lillicrap, Jimmy Ba, and Mo-hammad Norouzi. 2020. Dream to control: Learning behaviors by latent imagination. In International Conference on Learning Representations .Danijar Hafner, Timothy Lillicrap, Ian Fischer, Ruben Villegas, David Ha, Honglak Lee, and James David-son. 2018. Learning latent dynamics for planning from pixels. arXiv preprint arXiv:1811.04551 .Danijar Hafner, Timothy Lillicrap, Mohammad Norouzi, and Jimmy Ba. 2023. Mastering diverse do-mains through world models. arXiv preprint arXiv:2301.04104 .William L. Hamilton, Rex Ying, and Jure Leskovec. 2017. Inductive representation learning on large graphs. In Advances in Neural Information Process-ing Systems (NeurIPS) .Ken Huang and Jerry Huang. 2025. Audited skill-graph self-improvement for agentic llms via verifiable re-wards, experience synthesis, and continual memory. 
+
+arXiv preprint arXiv:2512.23760 .Xu Huang, Junwu Chen, Yuxing Fei, Zhuohan Li, Philippe Schwaller, and Gerbrand Ceder. 2026. Cas-cade: Cumulative agentic skill creation through au-tonomous development and evolution. Preprint ,arXiv:2512.23880. Michael Janner, Justin Fu, Marvin Zhang, and Sergey Levine. 2019. When to trust your model: Model-based policy optimization. In Advances in Neural Information Processing Systems (NeurIPS) .Sham Kakade and John Langford. 2002. Approxi-mately optimal approximate reinforcement learning. In International Conference on Machine Learning (ICML) .Thomas Kipf, Elise van der Pol, and Max Welling. 2020. Contrastive learning of structured world models. In 
+
+International Conference on Learning Representa-tions (ICLR) .Thomas N. Kipf and Max Welling. 2017. Semi-supervised classification with graph convolutional networks. In International Conference on Learning Representations .Srijan Kumar, Xikun Zhang, and Jure Leskovec. 2019. Predicting dynamic embedding trajectory in tempo-ral interaction networks. In Proceedings of the 25th ACM SIGKDD International Conference on Knowl-edge Discovery & Data Mining , pages 1269–1278. Mingwei Li, Xiaoyuan Zhang, Chengwei Yang, Zi-long Zheng, and Yaodong Yang. 2025a. Prismatic world model: Learning compositional dynamics for planning in hybrid systems. arXiv preprint arXiv:2512.08411 .Xinyi Li, Zaishuo Xia, Weyl Lu, Chenjie Hao, and Yubei Chen. 2025b. Smallworlds: Assessing dy-namics understanding of world models in isolated environments. arXiv preprint arXiv:2511.23465 .Hao Liu, Jiarui Feng, Lecheng Kong, Ninghao Liang, Dacheng Tao, Yixin Chen, and Muhan Zhang. 2024. One for all: Towards training one graph model for all classification tasks. In The Twelfth International Conference on Learning Representations .Tianwei Ni, Esther Derman, Vineet Jain, Vincent Taboga, Siamak Ravanbakhsh, and Pierre-Luc Bacon. 2025. Long-horizon model-based offline reinforce-ment learning without conservatism. arXiv preprint arXiv:2512.04341 .Kenta Oono and Taiji Suzuki. 2020. Graph neural net-works exponentially lose expressive power for node classification. International Conference on Learning Representations (ICLR) .Ladislav Rampášek, Mikhail Galkin, Vijay Prakash Dwivedi, Anh Tuan Luu, Guy Wolf, and Dominique Beaini. 2022. Recipe for a general, powerful, scal-able graph transformer. In Advances in Neural Infor-mation Processing Systems , volume 35, pages 14501– 14515. Luke Rivard, Sun Sun, Hongyu Guo, Wenhu Chen, and Yuntian Deng. 2025. Neuralos: Towards simulat-ing operating systems via neural generative models. 
+
+arXiv preprint arXiv:2507.08800 .Alvaro Sanchez-Gonzalez, Nicolas Heess, Jost Tobias Springenberg, Josh Merel, Martin Riedmiller, Raia Hadsell, and Peter Battaglia. 2018. Graph networks as learnable physics engines for inference and control. In Proceedings of the 35th International Conference on Machine Learning , volume 80 of Proceedings of Machine Learning Research , pages 4470–4479. PMLR. Floriano Tori, Vincent Holst, and Vincent Ginis. 2024. The effectiveness of curvature-based rewiring and the role of hyperparameters in gnns revisited. Preprint ,arXiv:2407.09381. Petar Veliˇ ckovi´ c, Guillem Cucurull, Arantxa Casanova, Adriana Romero, Pietro Liò, and Yoshua Bengio. 2018. Graph attention networks. In International Conference on Learning Representations .Jiongxiao Wang, Qiaojing Yan, Yawei Wang, Yijun Tian, Soumya Smruti Mishra, Zhichao Xu, Megha Gandhi, Panpan Xu, and Lin Lee Cheong. 2026. Re-inforcement learning for self-improving agent with skill library. Preprint , arXiv:2512.17102. Zizhao Wang, Kaixin Wang, Li Zhao, Peter Stone, and Jiang Bian. 2025. Dyn-o: Building structured world models with object-centric representations. Preprint ,arXiv:2507.03298. Duncan J. Watts and Steven H. Strogatz. 1998. Col-lective dynamics of ‘small-world’ networks. Nature ,393(6684):440–442. Jialong Wu, Shaofeng Hu, Ningya Guo, Lanqing Guo, Jian Du, Junwei Yan, Jianye Hao, and Min-lie Huang. 2024. iVideoGPT: Interactive VideoG-PTs are scalable world models. arXiv preprint arXiv:2405.15223 .Tianle Xia, Lingxiang Hu, Yiding Sun, Ming Xu, Lan Xu, Siying Wang, Wei Xu, and Jie Jiang. 2026. Grasp: Graph-structured skill compositions for llm agents. Preprint , arXiv:2604.17870. Zhilin Yang, William W Cohen, and Ruslan Salakhut-dinov. 2016. Revisiting semi-supervised learning with graph embeddings. In Proceedings of the 33rd International Conference on Machine Learning .Jiaxuan You, Tianyu Du, and Jure Leskovec. 2022. Roland: Graph learning framework for dynamic graphs. In ACM SIGKDD Conference on Knowledge Discovery and Data Mining .Youn-Yeol Yu, Jeongwhan Choi, Jaehyeon Park, Kookjin Lee, and Noseong Park. 2025. Piorf: Physics-informed ollivier-ricci flow for long-range interactions in mesh graph neural networks. Preprint ,arXiv:2504.04052. Lunjun Zhang, Ge Yang, and Bradly C. Stadie. 2021. World model as a graph: Learning latent landmarks for planning. In International Conference on Ma-chine Learning (ICML) .Wancong Zhang, Basile Terver, Artem Zholus, So-ham Chitnis, Harsh Sutaria, Mido Assran, Ran-dall Balestriero, Amir Bar, Adrien Bardes, Yann LeCun, and Nicolas Ballas. 2026. Hierarchical planning with latent world models. arXiv preprint arXiv:2604.03208 .Deyao Zhu, Erran L. Li, and Mohamed Elhoseiny. 2022. Value memory graph: A graph-structured world model for offline reinforcement learning. In In-ternational Conference on Learning Representations (ICLR) .A Proofs and mathematical background 
+
+A.1 Proof of Lemma 1 
+
+Proof. Since the graph is fixed in the FE regime, we have At ≡ A for all rollout steps. Let 
+
+F Xθ (·, A, a ) denote the learned node-transition map and F X⋆ (·, A, a ) denote the true node-transition map. By Assumption 2, for any input 
+
+(X, A, a ) in the compact state space, 
+
+∥F Xθ (X, A, a ) − F X⋆ (X, A, a )∥F ≤ ϵX . (A.1) Let ˆXk and Xk be the predicted and true node features at rollout step k. Then 
+
+eXk+1 = ∥ ˆXk+1 − Xk+1 ∥F
+
+= ∥F Xθ ( ˆXk, A, a k) − F X⋆ (Xk, A, a k)∥F .
+
+(A.2) Adding and subtracting F Xθ (Xk, A, a k) and apply-ing the triangle inequality gives 
+
+eXk+1 ≤ ∥ F Xθ ( ˆXk, A, a k) − F Xθ (Xk, A, a k)∥F
+
++ ∥F Xθ (Xk, A, a k) − F X⋆ (Xk, A, a k)∥F .
+
+(A.3) The second term is bounded by ϵX from Equa-tion (A.1) . For the first term, Assumption 3 gives a message-passing node transition with coordinate-wise Lipschitz activation σ:
+
+F Xθ (X, A, a ) = σ( ˆAXW 1 + U a 1⊤)W2. (A.4) For a multi-layer message-passing model, repeated use of the Lipschitz property of σ and submulti-plicativity of operator norms gives 
+
+∥F Xθ ( ˆXk, A, a k) − F Xθ (Xk, A, a k)∥F
+
+≤ Lσ∥A∥2
+
+Y
+
+> ℓ
+
+∥Wℓ∥2 · ∥ ˆXk − Xk∥F . (A.5) For symmetric adjacency matrices, ∥A∥2 = ρ(A).Hence, 
+
+∥F Xθ ( ˆXk, A, a k) − F Xθ (Xk, A, a k)∥F ≤ LX eXk ,LX = Lσρ(A) Y
+
+> ℓ
+
+∥Wℓ∥2.
+
+(A.6) Combining Equations (A.3) and (A.6) , we obtain the affine recursion 
+
+eXk+1 ≤ LX eXk + ϵX . (A.7) Unrolling Equation (A.7) for k steps yields 
+
+eXk ≤ LkX eX 
+
+> 0
+
++ ϵXk−1X
+
+> i=0
+
+LiX . (A.8) If LX̸ = 1 , the finite geometric sum gives 
+
+> k−1
+
+X
+
+> i=0
+
+LiX = LkX − 1
+
+LX − 1 . (A.9) Therefore, 
+
+eXk ≤ LkX eX 
+
+> 0
+
++ ϵX
+
+LkX − 1
+
+LX − 1 . (A.10) This proves Lemma 1. When LX = 1 , the same recursion gives the limiting form eXk ≤ eX 
+
+> 0
+
++ kϵ X .
+
+A.2 Proof of Lemma 2 
+
+Proof. By assumption, the node and edge rollout errors satisfy 
+
+eXk+1 ≤ LX eXk + LAeAk + ϵX ,eAk+1 ≤ MX eXk + MAeAk + ϵA. (A.11) Define 
+
+uk = ( eXk , e Ak )⊤,B =
+
+ LX LA
+
+MX MA
+
+
+
+,ϵ = ( ϵX , ϵ A)⊤.
+
+(A.12) Since all constants are nonnegative, Equa-tion (A.11) is equivalent to the componentwise vector inequality 
+
+uk+1 ⪯ Bu k + ϵ. (A.13) This proves Equation (4.14). It remains to compute ρ(B). The characteristic polynomial of B is 
+
+det( λI − B) = λ2 − (LX + MA)λ
+
++ ( LX MA − LAMX ). (A.14) Thus, the two eigenvalues are 
+
+λ± = 12
+
+h
+
+(LX + MA)
+
+± p(LX − MA)2 + 4 LAMX
+
+i
+
+.
+
+(A.15) Because B is nonnegative, Perron–Frobenius im-plies that its spectral radius is the larger eigenvalue. Hence, 
+
+ρ(B) = λ+
+
+= 12
+
+h
+
+(LX + MA)+ p(LX − MA)2 + 4 LAMX
+
+i
+
+.
+
+(A.16) This proves Equation (4.15). Finally, suppose LAMX > 0. Then 
+
+(LX − MA)2 + 4 LAMX > (LX − MA)2,
+
+p(LX − MA)2 + 4 LAMX > |LX − MA|.
+
+(A.17) Substituting this inequality into Equation (A.16) gives 
+
+ρ(B) > 12 [( LX + MA) + |LX − MA|]= max( LX , M A).
+
+(A.18) This proves Lemma 2. 
+
+A.3 Proof of Lemma 3 
+
+Proof. Since B is a nonnegative matrix, the Gersh-gorin circle theorem gives 
+
+ρ(B) ≤ max( LX + LA, M X + MA). (A.19) In the signal-dominant regime, the first-row er-ror term is controlled by the topology-dependent message-passing contribution plus a bounded non-topological residual. Thus, 
+
+LX + LA ≤ \GEAF( G) + \GEAF( G) RX
+
+∥A∥2
+
+= \GEAF( G)
+
+
+
+1 + RX
+
+∥A∥2
+
+
+
+.
+
+(A.20) Under the same signal-dominant condition, the sec-ond row is no larger than this bound, so combining Equations (A.19) and (A.20) yields 
+
+ρ(B) ≤ \GEAF( G)
+
+
+
+1 + RX
+
+∥A∥2
+
+
+
+. (A.21) Since ∥A∥2 ≥ RX , we have 
+
+1 + RX
+
+∥A∥2
+
+≤ 2. (A.22) Therefore, 
+
+ρ(B) ≤ \GEAF( G)
+
+
+
+1 + RX
+
+∥A∥2
+
+
+
+≤ 2 \GEAF( G).
+
+(A.23) This proves the bound in Equation (4.17). Finally, if model weights are fixed across topolo-gies, then 
+
+\GEAF( G) = ρ(A) Y
+
+> ℓ
+
+∥Wℓ∥2. (A.24) The factor Q 
+
+> ℓ
+
+∥Wℓ∥2 is constant across topologies. Hence, \GEAF( G) is monotone in ρ(A), and the rank order of \GEAF( G) matches the rank order of 
+
+ρ(A). This proves Lemma 3. 
+
+A.4 Proof of Lemma 4 
+
+Proof. Let π∗ be the policy selected by planning with the true dynamics, and let ˆπθ be the policy selected by planning with the learned GWM. A standard simulation-lemma argument bounds the regret by the accumulated reward error along the planning horizon: 
+
+J∗(π∗) − J∗(ˆ πθ) ≤ 2
+
+> H−1
+
+X
+
+> k=0
+
+γk
+
+× R⋆(Gk, a k)
+
+− Rθ( ˆGk, a k) .
+
+(A.25) Adding and subtracting R⋆( ˆGk, a k) gives 
+
+R⋆(Gk, a k) − Rθ( ˆGk, a k)
+
+≤ R⋆(Gk, a k) − R⋆( ˆGk, a k)
+
++ R⋆( ˆGk, a k) − Rθ( ˆGk, a k) .
+
+(A.26) By Assumption 5, the first term is bounded by the Lipschitz reward condition, and the second term is bounded by ϵR:
+
+R⋆(Gk, a k) − Rθ( ˆGk, a k)
+
+≤ LRdG(Gk, ˆGk) + ϵR.
+
+(A.27) Using Equation (4.18), 
+
+dG(Gk, ˆGk) = c⊤uk ≤ ∥ c∥2∥uk∥2. (A.28) From Lemma 2, the joint error recursion satisfies 
+
+uk+1 ⪯ Bu k + ϵ. (A.29) Let ˜ϵ denote a uniform scale for the one-step error vector. Standard matrix-recursion bounds give 
+
+∥uk∥2 ≤ κ(B)˜ ϵ
+
+> k−1
+
+X
+
+> i=0
+
+ρ(B)i. (A.30) Substituting Equations (A.27) –(A.30) into Equa-tion (A.25) yields 
+
+J∗(π∗) − J∗(ˆ πθ) ≤ 2LR∥c∥2κ(B)˜ ϵ
+
+×
+
+> H−1
+
+X
+
+> k=0
+
+γkk−1X
+
+> i=0
+
+ρ(B)i
+
++ 2 ϵRH−1X
+
+> k=0
+
+γk.
+
+(A.31) The reward-model error term is 
+
+> H−1
+
+X
+
+> k=0
+
+γk = 1 − γH
+
+1 − γ . (A.32) For the rollout-error term, 
+
+> H−1
+
+X
+
+> k=0
+
+γkk−1X
+
+> i=0
+
+ρi =
+
+> H−1
+
+X
+
+> k=0
+
+γk ρk − 1
+
+ρ − 1= 1
+
+ρ − 1
+
+"H−1X
+
+> k=0
+
+(γρ )k −
+
+> H−1
+
+X
+
+> k=0
+
+γk
+
+#
+
+= 1
+
+ρ − 1
+
+ 1 − (γρ )H
+
+1 − γρ − 1 − γH
+
+1 − γ
+
+
+
+.
+
+(A.33) Thus, 
+
+ΦH (γ, ρ ) = 1
+
+ρ − 1
+
+ 1 − (γρ )H
+
+1 − γρ − 1 − γH
+
+1 − γ
+
+
+
+.
+
+(A.34) Setting ρ = ρ(B) in Equation (A.31) gives 
+
+J∗(π∗) − J∗(ˆ πθ) ≤ 2LR∥c∥2κ(B)˜ ϵ
+
+× ΦH (γ, ρ (B)) + 2 ϵR
+
+1 − γH
+
+1 − γ .
+
+(A.35) If γρ (B) > 1, the term (γρ (B)) H appears in 
+
+ΦH (γ, ρ (B)) , so the rollout-error contribution grows faster than linearly in H. This proves Lemma 4. 
+
+A.5 Proof of Corollary 5 
+
+Proof. From Lemma 1, the FE rollout error satis-fies 
+
+eXk ≤ LkX eX 
+
+> 0
+
++ ϵX
+
+LkX − 1
+
+LX − 1 . (A.36) When the rollout is not dominated by the constant error floor, the leading dependence on k is pro-portional to LkX . Thus, for some constant C > 0
+
+independent of k,
+
+eXk ≈ CL kX . (A.37) Taking logarithms gives 
+
+log eXk ≈ log C + k log LX . (A.38) Therefore, 
+
+∂ log eXk
+
+∂k → log LX . (A.39) This proves Corollary 5. 
+
+B Auxiliary latent world-model bounds 
+
+B.1 Latent world-model setup 
+
+This appendix records the scalar latent-world-model bounds that underlie the graph-valued re-sults in the main text. They are not a replacement for Lemmas 1–4; rather, they show how the famil-iar compounding-error argument for latent dynam-ics (Hafner et al., 2018; Chua et al., 2018; Janner et al., 2019) becomes the graph-specific operator analysis used in Section 4. We consider a sequen-tial decision-making setting in which an agent in-teracts with a partially observed environment over discrete time steps. At each time step t, the agent receives an observation ot ∈ O , selects an action 
+
+at ∈ A , and receives a scalar reward rt ∈ R. Since the true environment state is generally not directly observable, the agent must infer a compact latent state from its interaction history. Let 
+
+ht = ( o1, a 1, o 2, a 2, . . . , o t) (B.1) denote the observable history up to time t. A latent world model learns an internal state representation 
+
+zt = eθ(ht), (B.2) where zt ∈ Z is a latent state and eθ is an encoder parameterized by θ.The purpose of the latent world model is not only to encode the current observation, but also to predict how the latent state evolves under actions. We define a latent world model as 
+
+Wθ = ( eθ, p θ(zt+1 | zt, a t),pθ(ot | zt), p θ(rt | zt, a t)) , (B.3) where eθ maps observation histories to latent states, 
+
+pθ(zt+1 | zt, a t) is the latent transition model, 
+
+pθ(ot | zt) is the observation reconstruction or prediction model, and pθ(rt | zt, a t) is the reward prediction model. Given a trajectory 
+
+τ = ( o1, a 1, r 1, o 2, a 2, r 2, . . . , o T ), (B.4) the latent world model induces the following fac-torization: 
+
+pθ(o1: T , r 1: T , z 1: T | a1: T ) = pθ(z1 | o1)
+
+×
+
+> T
+
+Y
+
+> t=1
+
+pθ(ot | zt)pθ(rt | zt, a t)pθ(zt+1 | zt, a t).
+
+(B.5) This factorization shows that the model compresses the observable history into latent states while pre-serving the information needed to predict future observations and rewards. The learning objective is to fit the latent world model to trajectories collected from the environ-ment. A common training objective is the negative log-likelihood 
+
+LWM (θ) = −
+
+> T
+
+X
+
+> t=1
+
+h
+
+log pθ(ot | zt)+ log pθ(rt | zt, a t) + log pθ(zt+1 | zt, a t)
+
+i
+
+,
+
+(B.6) where zt = eθ(ht). In variational latent world models, the latent transition term can be replaced by an evidence lower bound that includes an infer-ence model qθ(zt | ht) and a prior transition model 
+
+pθ(zt | zt−1, a t−1).After training, the latent world model can be used for multi-step imagination or planning. Start-ing from an inferred latent state zt, the model recur-sively predicts future latent states under a candidate action sequence (at, a t+1 , . . . , a t+H−1):
+
+ˆzt+k+1 ∼ pθ(ˆ zt+k+1 | ˆzt+k, a t+k), (B.7) 
+
+k = 0 , 1, . . . , H − 1, with ˆzt = zt. The predicted return of this imagined trajectory is 
+
+ˆJθ(at:t+H−1 | zt) = EWθ
+
+"H−1X
+
+> k=0
+
+γk ˆrt+k
+
+#
+
+, (B.8) where 
+
+ˆrt+k ∼ pθ(ˆ rt+k | ˆzt+k, a t+k). (B.9) The planning problem can then be written as 
+
+a⋆t:t+H−1 = arg max 
+
+> at:t+H−1
+
+ˆJθ(at:t+H−1 | zt).
+
+(B.10) Thus, a latent world model is an action-conditioned predictive representation of the envi-ronment. It learns a latent state space in which the agent can simulate future trajectories, estimate their rewards, and select actions according to predicted long-term outcomes. 
+
+B.2 Error Propagation in Latent World Models 
+
+We first study how a one-step latent transition error propagates through multi-step imagination. We consider the deterministic mean dynamics induced by the latent world model. Let 
+
+ˆzt+1 = Fθ(ˆ zt, a t) (B.11) denote the learned latent transition, and let 
+
+zt+1 = F ⋆(zt, a t) (B.12) denote the latent dynamics induced by the true envi-ronment under the same latent representation. Here, 
+
+F ⋆ is not required to be a physical-state transition; it is the true transition map in the latent space. 
+
+Assumption 8 (Uniform one-step latent transition error) . There exists a constant ϵF ≥ 0 such that 
+
+sup 
+
+> z∈Z ,a ∈A
+
+∥Fθ(z, a ) − F ⋆(z, a )∥ ≤ ϵF . (B.13) 
+
+Assumption 9 (Lipschitz continuity of the learned latent transition) . There exists a constant LF ≥ 0
+
+such that, for any z, z ′ ∈ Z and a ∈ A ,
+
+Fθ(z, a ) − Fθ(z′, a ) ≤ LF z − z′ . (B.14) Given an action sequence at:t+H−1, define the true latent rollout and the imagined latent rollout as zt+k+1 = F ⋆(zt+k, a t+k),
+
+ˆzt+k+1 = Fθ(ˆ zt+k, a t+k), (B.15) for k = 0 , 1, . . . , H − 1. Define the k-step rollout error by 
+
+ek = ∥ˆzt+k − zt+k∥ . (B.16) 
+
+Theorem 6 (Multi-step latent transition error prop-agation) . Suppose Assumptions 8 and 9 hold. Then, for any fixed action sequence at:t+H−1 and any 
+
+k = 0 , 1, . . . , H ,
+
+ek ≤ LkF e0 + ϵFk−1X
+
+> i=0
+
+LiF . (B.17) 
+
+Equivalently, if LF̸ = 1 ,
+
+ek ≤ LkF e0 + ϵF
+
+LkF − 1
+
+LF − 1= O(LkF e0 + ϵF LkF ).
+
+(B.18) 
+
+If LF = 1 , then ek ≤ e0 + kϵ F = O(e0 + kϵ F ). In particular, if the initial latent state is exact, namely 
+
+e0 = 0 , then 
+
+ek ≤ ϵFk−1X
+
+> i=0
+
+LiF =
+
+
+
+O(ϵF ), 0 ≤ LF < 1,O(kϵ F ), LF = 1 ,O(ϵF LkF ), LF > 1.
+
+(B.19) Proof. For each k = 0 , 1, . . . , H − 1, we have 
+
+ek+1 = ∥Fθ(ˆ zt+k, a t+k) − F ⋆(zt+k, a t+k)∥ .
+
+(B.20) Adding and subtracting Fθ(zt+k, a t+k) gives 
+
+ek+1 ≤ ∥ Fθ(ˆ zt+k, a t+k) − Fθ(zt+k, a t+k)∥
+
+(B.21) 
+
++ ∥Fθ(zt+k, a t+k) − F ⋆(zt+k, a t+k)∥ . (B.22) By Assumption 9, the first term is bounded by 
+
+LF ∥ˆzt+k − zt+k∥ = LF ek. (B.23) By Assumption 8, the second term is bounded by 
+
+ϵF . Therefore, 
+
+ek+1 ≤ LF ek + ϵF . (B.24) Unrolling this recursion of Equation (B.24) yields 
+
+ek ≤ LkF e0 + ϵFk−1X
+
+> i=0
+
+LiF . (B.25) When LF̸ = 1 , the geometric sum satisfies 
+
+> k−1
+
+X
+
+> i=0
+
+LiF = LkF − 1
+
+LF − 1 . (B.26) When LF = 1 , the recursion becomes ek+1 ≤
+
+ek + ϵF , and hence ek ≤ e0 + kϵ F .Theorem 6 shows that even a uniformly bounded one-step transition error can increase across a multi-step imagined trajectory. When LF < 1, the tran-sition is contractive and the accumulated error re-mains controlled. When LF = 1 , the error grows at most linearly in the planning horizon. When 
+
+LF > 1, the error bound grows geometrically, which gives a formal explanation of compounding error in latent world models. 
+
+B.3 Reward Prediction and Return Error Bound 
+
+We next show that latent transition error induces reward prediction error and therefore biases the planning objective. Let the learned reward model be 
+
+ˆrt+k = Rθ(ˆ zt+k, a t+k), (B.27) and let the true latent reward function be 
+
+rt+k = R⋆(zt+k, a t+k). (B.28) For a fixed horizon H, define the learned imagined return and the true return under the same action sequence as 
+
+ˆJθ(at:t+H−1 | ˆzt) = 
+
+> H−1
+
+X
+
+> k=0
+
+γkRθ(ˆ zt+k, a t+k)
+
+(B.29) and 
+
+J⋆(at:t+H−1 | zt) = 
+
+> H−1
+
+X
+
+> k=0
+
+γkR⋆(zt+k, a t+k).
+
+(B.30) 
+
+Assumption 10 (Uniform one-step reward model error) . There exists a constant ϵR ≥ 0 such that 
+
+sup 
+
+> z∈Z ,a ∈A
+
+|Rθ(z, a ) − R⋆(z, a )| ≤ ϵR. (B.31) The previous theorem bounds the deviation of the imagined latent trajectory from the true latent trajectory. We now show that this latent rollout error directly induces reward prediction error, be-cause the reward model is evaluated on the imag-ined latent states rather than on the true latent states. 
+
+Assumption 11 (Lipschitz continuity of the learned reward model) . There exists a constant LR ≥ 0
+
+such that, for any z, z ′ ∈ Z and a ∈ A ,
+
+Rθ(z, a ) − Rθ(z′, a ) ≤ LR z − z′ . (B.32) 
+
+Proposition 7 (Reward prediction error bound) .
+
+Suppose Assumptions 8, 9, 10, and 11 hold. For any fixed action sequence at:t+H−1 and any k =0, 1, . . . , H − 1, define 
+
+∆Rk = |Rθ(ˆ zt+k, a t+k) − R⋆(zt+k, a t+k)| .
+
+(B.33) 
+
+Then 
+
+∆Rk ≤ LR LkF e0 + ϵFk−1X
+
+> i=0
+
+LiF
+
+!
+
++ ϵR. (B.34) 
+
+In particular, if e0 = 0 , then 
+
+∆Rk ≤ LRϵFk−1X
+
+> i=0
+
+LiF + ϵR. (B.35) Proposition 7 separates the reward prediction er-ror into two sources. The first term comes from latent state mismatch and scales with the transition error accumulated through the rollout. The second term, ϵR, is the intrinsic one-step approximation er-ror of the reward model. Therefore, even when the reward model is uniformly accurate at one step, the reward estimate can still degrade over a long imag-ined trajectory because the latent inputs themselves become increasingly biased. 
+
+Proof. For any k = 0 , 1, . . . , H − 1, adding and subtracting Rθ(zt+k, a t+k) gives 
+
+|Rθ(ˆ zt+k, a t+k) − R⋆(zt+k, a t+k)|≤ | Rθ(ˆ zt+k, a t+k) − Rθ(zt+k, a t+k)|
+
++ |Rθ(zt+k, a t+k) − R⋆(zt+k, a t+k)| . (B.36) By Assumption 11, the first term is bounded by 
+
+LR ∥ˆzt+k − zt+k∥ = LRek. (B.37) By Assumption 10, the second term is bounded by 
+
+ϵR. Thus, 
+
+|Rθ(ˆ zt+k, a t+k) − R⋆(zt+k, a t+k)| ≤ LRek + ϵR.
+
+(B.38) Applying Theorem 6 gives 
+
+ek ≤ LkF e0 + ϵFk−1X
+
+> i=0
+
+LiF . (B.39) Substituting this bound into the reward error in-equality proves the result. 
+
+Proposition 8 (Multi-step return error bound) . Sup-pose Assumptions 8, 9, 10, and 11 hold. Then, for any fixed action sequence at:t+H−1,
+
+ˆJθ(at:t+H−1 | ˆzt) − J⋆(at:t+H−1 | zt) (B.40) 
+
+≤
+
+> H−1
+
+X
+
+> k=0
+
+γk
+
+"
+
+LR LkF e0 + ϵFk−1X
+
+> i=0
+
+LiF
+
+!
+
++ ϵR
+
+#
+
+.
+
+(B.41) 
+
+If the initial latent state is exact, namely e0 = 0 ,then 
+
+ˆJθ(at:t+H−1 | zt) − J⋆(at:t+H−1 | zt)
+
+≤
+
+> H−1
+
+X
+
+> k=0
+
+γk LRϵFk−1X
+
+> i=0
+
+LiF + ϵR
+
+!
+
+.
+
+(B.42) 
+
+Furthermore, when e0 = 0 , LF = 1 , and γ = 1 ,the return error satisfies 
+
+ˆJθ(at:t+H−1 | zt) − J⋆(at:t+H−1 | zt) (B.43) 
+
+≤ LRϵF H(H − 1) 2 + ϵRH. (B.44) 
+
+Consequently, 
+
+ˆJθ − J⋆ = O(LRϵF H2 + ϵRH). (B.45) Proposition 8 shows that transition error affects planning through the cumulative return objective. When e0 = 0 , LF = 1 , and γ = 1 , the return error scales as O(LRϵF H2 + ϵRH). Thus, a one-step latent transition error of order ϵF can lead to a quadratic dependence on the planning horizon, while the reward approximation error accumulates linearly. This explains why a latent world model with small one-step prediction error may still pro-duce biased long-horizon planning estimates. 
+
+Proof. By definition, 
+
+ˆJθ(at:t+H−1 | ˆzt) − J⋆(at:t+H−1 | zt) (B.46) 
+
+=
+
+> H−1
+
+X
+
+> k=0
+
+γk [Rθ(ˆ zt+k, a t+k) − R⋆(zt+k, a t+k)] .
+
+(B.47) Using the triangle inequality, 
+
+ˆJθ(at:t+H−1 | ˆzt) − J⋆(at:t+H−1 | zt)
+
+≤
+
+> H−1
+
+X
+
+> k=0
+
+γk |Rθ(ˆ zt+k, a t+k) − R⋆(zt+k, a t+k)| .
+
+(B.48) Applying Proposition 7 to each summand yields 
+
+ˆJθ(at:t+H−1 | ˆzt) − J⋆(at:t+H−1 | zt) (B.49) 
+
+≤
+
+> H−1
+
+X
+
+> k=0
+
+γk
+
+"
+
+LR LkF e0 + ϵFk−1X
+
+> i=0
+
+LiF
+
+!
+
++ ϵR
+
+#
+
+.
+
+(B.50) If e0 = 0 , this reduces to 
+
+ˆJθ(at:t+H−1 | zt) − J⋆(at:t+H−1 | zt) (B.51) 
+
+≤
+
+> H−1
+
+X
+
+> k=0
+
+γk LRϵFk−1X
+
+> i=0
+
+LiF + ϵR
+
+!
+
+. (B.52) When LF = 1 , we have Pk−1 
+
+> i=0
+
+LiF = k. When also γ = 1 , the bound becomes 
+
+> H−1
+
+X
+
+> k=0
+
+(LRϵF k + ϵR) = LRϵFH−1X
+
+> k=0
+
+k + ϵRH. 
+
+(B.53) Since PH−1 
+
+> k=0
+
+k = H(H−1) 2 , we obtain 
+
+ˆJθ(at:t+H−1 | zt) − J⋆(at:t+H−1 | zt) (B.54) 
+
+≤ LRϵF H(H − 1) 2 + ϵRH. (B.55) This proves the stated asymptotic rate.
