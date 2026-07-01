@@ -1,0 +1,1076 @@
+Title: Analysis of a maximum-entropy based estimator for dynamic random graph models
+
+URL Source: https://arxiv.org/pdf/2606.32013v1
+
+Published Time: Wed, 01 Jul 2026 01:39:36 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+ANALYSIS OF A MAXIMUM-ENTROPY BASED ESTIMATOR FOR DYNAMIC RANDOM GRAPH MODELS 
+
+DIEGO GARLASCHELLI, MICHEL MANDJES, FRANK P. PIJPERS AND JIESEN WANG 
+
+Abstract. We study dynamic random graphs in which the set of nodes is fixed, but edges evolve over time according to an underlying stochastic mechanism. Using a maximum-entropy approach, we define a probability distribution on graph trajectories that is consistent with observed constraints, capturing the inherent uncertainty in partially observed networks. We introduce a moment-based estimator for the parameters of this distribution and establish its statistical properties, such as consistency and asymptotic normality, with explicit formulas for the covariance structure. Numerical experiments demonstrate the estimator’s accuracy and robustness across various dynamic network scenarios. Our framework bridges probabilistic modeling and statistical inference in time-varying networks, providing practical tools for understanding and predicting complex edge dynamics. 
+
+Keywords. Dynamic random graphs ◦ inference ◦ method of moments ◦ entropy 
+
+Affiliations. DG is with IMT School for Advanced Studies, Piazza San Francesco 19, 55100 Lucca, Italy, and Lorentz Institute for Theoretical Physics, Leiden University, Niels Bohrweg 2, 2333 CA Leiden, The Netherlands. MM is with Mathematical Institute, Leiden University, Einsteinweg 55, 2333 CC Leiden, The Netherlands; he is also affiliated with (a) Korteweg-de Vries Institute for Mathematics, University of Amsterdam, Amsterdam, The Netherlands, (b) E urandom , Eindhoven University of Technology, Eindhoven, The Netherlands, (c) Amsterdam Business School, Faculty of Economics and Business, University of Amsterdam, Amsterdam, The Netherlands. FPP is with Korteweg-de Vries Institute for Mathematics, University of Amsterdam, Science Park 105-107, 1098 XG Amsterdam, The Netherlands, and Statistics Netherlands (CBS), Henri Faasdreef 312, 2492 JP The Hague, The Netherlands JW is with Korteweg-de Vries Institute for Mathematics, University of Amsterdam, Science Park 105-107, 1098 XG Amsterdam, The Netherlands. Date: July 1, 2026 .
+
+Acknowledgments. DG’s research is supported by the European Union - NextGenerationEU -National Recovery and Resilience Plan (Piano Nazionale di Ripresa e Resilienza, PNRR), projects ‘SoBigData.it - Strengthening the Italian RI for Social Mining and Big Data Analytics’ - Grant IR0000013 (n. 3264, 28/12/2021) and “Reconstruction, Resilience and Recovery of Socio-Economic Networks” RECON-NET EP FAIR 005 - PE0000013 “FAIR” - PNRR M4C2 Investment 1.3. MM’s and JW’s research has been funded supported by the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie grant agreement no. 945045, and by the NWO Gravitation project NETWORKS under grant agreement no. 024.002.003. 
+
+Email. diego.garlaschelli@imtlucca.it , m.r.h.mandjes@math.leidenuniv.nl ,
+
+f.p.pijpers@uva.nl , j.wang2@uva.nl 
+
+1
+
+> arXiv:2606.32013v1 [math.ST] 30 Jun 2026 2
+
+1. Introduction 
+
+Where random graphs have traditionally been studied in a static context, there is an increasing realization that, in a wide range of application domains, the structure of the graph varies over time. In many real-world systems, both the set of nodes and the connections between them are inherently dynamic, driven by underlying stochastic mechanisms. Applications across social networks, communication systems, and biological networks highlight that interactions evolve on multiple time scales and may exhibit complex temporal dependencies. For example, the study of communication in highly dynamic networks, such as broadcasting and routing in delay-tolerant networks, requires models that capture temporal variability [21]; similarly, opportunistic use of transportation networks exploits the underlying temporal patterns in mobility [15]. In social and collaboration networks, dynamic interactions have been analyzed to reveal evolving community structures and coauthorship patterns [7, 13, 14]. This shift in perspective has led to a surge of research on probabilistic models of time-varying graphs, which aim to faithfully represent the temporal nature of interactions while introducing new challenges in analysis, inference, and control [2, 6, 10, 16]. A central challenge in the study of dynamic random graphs is the characterization of their stochastic evolution. Given a time series of observations that summarize specific aspects of the graph, the goal is to infer the parameters governing the underlying probabilistic model. For example, one may observe, at discrete time points, the number of neighbors of each node, the presence or absence of particular edges, or other network summary statistics. Estimating the model parameters from such partially observed data is complicated by dependencies across nodes and across time, as well as by the fact that only aggregated information may be available. The objective of this work is to develop an estimator for these parameters that not only is practically computable but also comes with rigorous statistical guarantees. A main objective of this paper is to demonstrate consistency : the estimator that we propose converges to the true parameter as the number of observations, throughout this paper denoted by 𝑇 , increases. Furthermore, we show that the estimator is asymptotically normal , meaning that for large 𝑇 the difference between the estimator and the true value behaves like a zero-mean normally distributed random variable, scaled by a factor of 1 /√𝑇 .This paper bridges two complementary streams of research in the study of dynamic networks: (a) the identification of model parameters using a maximum-entropy approach, which allows for the reconstruction of network structures from partial or aggregated observations in a principled, unbiased manner; and (b) the inference of these parameters using statistical techniques , including consistency analysis, asymptotic normality, and related probabilistic tools to quantify estimation uncertainty and construct confidence intervals. In the following, we provide a brief, non-exhaustive overview of the key ideas underlying both strands of research. The discussion is deliberately selective: we focus on concepts that are directly relevant to the methodology developed in this paper, while omitting related work that, though important, lies outside the immediate scope of our approach. (a) We begin by reviewing reconstruction methods for networks based on maximum entropy. The concept was first explored by Jaynes [11], who proposed inferring parameters using Shannon entropy by extending the statistical mechanics framework introduced by Gibbs. The central idea is to maximize the system’s Shannon entropy over the unknown parameters, incorporating all available empirical information through the introduction of a set of con-straints. Informally, this procedure ‘maximizes our ignorance about the system’, in that it only uses the information that we are given through the observations. Over the past decades 3
+
+this maximum-entropy approach has developed into a powerful tool for assessing complex networks; for more background, with emphasis on economic and financial networks, we refer to the monograph [18]. The approach followed can be summarized as follows. Given a set of 𝑁 vertices, we define by 𝑝 (𝑔 ) := P(𝐺 = 𝑔 ) the probability that the network is given by the graph 𝑔 ∈ Ω, where 
+
+Ω is the set of all possible graphs on 𝑁 vertices. Then the Shannon entropy is given by 
+
+−∑︁ 
+
+> 𝑔 ∈Ω
+
+𝑝 (𝑔 ) log 𝑝 (𝑔 ).
+
+Suppose now that we are given information about the graph. Let 𝑪 (𝑔 ) a vector (of dimension 
+
+𝑀 ∈ N) of ‘properties’ of the graph 𝑔 , for instance the 𝑁 -dimensional vector recording the number of neighbors of each of the vertices, and let 𝒄 its observed value. Then the maximum-entropy approaches solves, with the vector 𝜽 ∈ R𝑀 representing the Lagrange multipliers pertaining to each of the properties, max  
+
+> 𝜽 ,𝒑 (𝑔 )
+
+©«
+
+−∑︁ 
+
+> 𝑔 ∈Ω
+
+𝑝 (𝑔 ) log 𝑝 (𝑔 ) + 
+
+> 𝑀
+
+∑︁ 
+
+> 𝑚 =1
+
+𝜃 𝑚 ©«∑︁ 𝑔 ∈Ω
+
+𝑝 (𝑔 ) 𝐶 𝑚 (𝑔 ) − ¯𝑐 𝑚 ª®¬ª®¬
+
+.
+
+It is directly verified that the optimizing probability distribution is given by 
+
+𝑝 ★(𝑔 ) = ℋ(𝑔 | 𝜽 ) := 1
+
+𝑍 (𝜽 ) exp (− 𝐻 (𝑔 | 𝜽 )) ,
+
+with 𝐻 (𝑔 | 𝜽 ) := Í𝑚 𝜃 𝑚 𝑐 𝑚 denoting the Hamiltonian and 𝑍 (𝜽 ) a normalizing constant. This distribution aligns with the functional form of exponential random graphs. An example of a study in which this approach has been used, is [3]. There the constraints are (weighted versions of) the per-vertex numbers of neighbors. The input of the procedure, i.e., the observed vector 𝒄 , is a snapshot of these quantities. The output is the probabilistic object 𝑝 ★(𝑔 ) that is such that sampling from it leads to network structures that reproduce the essentials of a network structure that ‘maximally align’ with the observations. In the recent works [4, 5] the maximum-entropy approach has been extended to the setting of dynamic graphs. (b) The second approach frames parameter identification as a statistical inference problem. As previously mentioned, the observations usually consist of a time series that captures specific characteristics of the dynamic graph, i.e., the detailed edge dynamics are not observed. For example, the data may represent periodic observations of the total number of edges in the graph. This makes our inference problem an inverse problem , where the goal is to infer the dynamics of the edges from observations of more aggregate processes. Inverse problems have been extensively studied across various classes of stochastic models. For example, in the context of branching processes, we refer to the textbook [8]. Here, the challenge typically involves inferring characteristics of the offspring distribution from periodic observations of the population size. For inverse problems in queueing theory, we refer to the survey [1]. A specific study in this domain is [9], which focuses on estimating the service-time distribution from workload observations in the M/G/1 queue. This is complicated by the fact that the workload process exhibits a complex dependence structure. Similarly, [17] investigates a L´ evy-driven storage system, where the level of the system is observed at Poisson epochs, and the underlying L´ evy exponent is inferred. Recently, the topic of inference for dynamic graphs has garnered increasing interest. For example, the study [12] examines a dynamic version of the Erd˝ os-R´ enyi random graph, focusing on 4
+
+estimating the parameters related to the on- and off-time distributions of individual edges, based solely on subgraph counts. A distinctive feature of these studies is the objective of rigorously establishing that the proposed estimator exhibits desirable statistical properties as the number of observations 
+
+𝑇 increases. One fundamental property is consistency , which ensures that the estimator converges to the true parameter vector as more data becomes available. Informally, this implies that with a sufficiently large amount of information, the parameters can be estimated with arbitrarily high accuracy. Beyond consistency, many estimators also admit asymptotic normality : in this case, the estimator can be expressed as the true parameter value plus a zero-mean normally distributed perturbation whose magnitude scales inversely with √𝑇 .Intuitively, this means that for large 𝑇 , the estimator behaves like a random variable that is tightly concentrated around the true value, with fluctuations that decrease as more data is collected. Together, these properties provide both theoretical guarantees and practical guidance for inference in dynamic network models, giving confidence that the estimated parameters reliably reflect the underlying stochastic process. This paper seeks to bridge the two complementary research areas. In line with branch (a), we consider dynamic graphs represented by a probability distribution obtained by maximizing the associated Shannon entropy, subject to constraints that encode the observed information about the network. This allows us to construct a principled probabilistic model of the evolving network, con-sistent with available data while remaining maximally non-committal about unobserved structure. In line with branch (b), our goal is to rigorously analyze the statistical properties of the result-ing estimator, providing explicit performance guarantees. In particular, we establish asymptotic normality, showing that as the number of observations grows, the estimator converges to the true parameters and the estimation errors behave like a zero-mean Gaussian, appropriately scaled by the square root of the sample size 𝑇 .This paper is organized as follows. In Section 2, we introduce our framework, detailing the dynamic random graph process, the observation scheme, and the construction of a probability distribution over the space of graph trajectories. Section 3 then defines our estimator, which is essentially based on the method of moments, and rigorously establishes its statistical properties, including consistency and asymptotic normality; an explicit formula for the corresponding covariance matrix is also provided to facilitate practical implementation. Finally, in Section 4, we present numerical examples that illustrate the performance and robustness of the proposed estimator, highlighting its applicability to a variety of dynamic network scenarios. 2. Framework and preliminaries 
+
+In this section we subsequently introduce the notation that defines our dynamic graph process, discuss our observation process, define the probability distribution of the dynamic graph process, and present preliminaries on the edge dynamics. 2.1. Dynamic random graph. We consider a random graph, consisting of 𝑁 vertices. The graph is dynamic in the sense that the edges are evolving over time. Time is discrete and indexed by the integer 𝑡 = 1, . . . , 𝑇 , where 𝑇 denotes the total number of time steps over which the graph dynamics is observed. Let 𝐺 𝑡 denote the random graph at time 𝑡 and 𝑔 𝑡 its particular realization. The ‘random graph trajectory’ is given via 
+
+𝒢 𝑇 ≡ { 𝐺 1, . . . , 𝐺 𝑇 }5
+
+and the particular realized ‘graph trajectory’ is 
+
+ℊ𝑇 ≡ { 𝑔 1, . . . , 𝑔 𝑇 }.
+
+We denote the random graph at time 𝑡 by 
+
+𝐺 𝑡 ≡ { 𝐴 𝑖 𝑗 (𝑡 ), 𝑖, 𝑗 = 1, . . . , 𝑁 },
+
+where 𝐴 𝑖 𝑗 (𝑡 ) is a random variable with 𝐴 𝑖 𝑗 (𝑡 ) = 1 denoting that the edge between the vertices 
+
+𝑖 and 𝑗 exists, and 𝐴 𝑖 𝑗 (𝑡 ) = 0 else, with 𝑡 = 1, . . . , 𝑇 . The realized value of 𝐴 𝑖 𝑗 (𝑡 ) is denoted as 𝑎 𝑖 𝑗 (𝑡 ). We let Ω be the space of graphs with 𝑁 vertices, so that ℊ𝑇 ∈ Ω𝑇 . In the sequel we consider undirected graphs : in our setup the random graph’s adjacency matrix is symmetric, i.e., 
+
+𝐴 𝑖 𝑗 (𝑡 ) = 𝐴 𝑗𝑖 (𝑡 ) for all 𝑖, 𝑗 = 1, . . . , 𝑁 and 𝑡 = 1, . . . , 𝑇 ; it is noted, however, that the asymmetric case can be dealt with analogously. All edges are assumed to evolve independently. 2.2. Observation process. We throughout assume that we have access to the following informa-tion: for all vertices 𝑖 = 1, . . . , 𝑁 we observe the realized sequences  ∑︁ 
+
+> 𝑗 ≠𝑖
+
+𝑎 𝑖 𝑗 (𝑡 )
+
+!
+
+> 𝑡 =1,...,𝑇
+
+, ∑︁ 
+
+> 𝑗 ≠𝑖
+
+𝑎 𝑖 𝑗 (𝑡 ) 𝑎 𝑖 𝑗 (𝑡 + 1)
+
+!
+
+> 𝑡 =1,...,𝑇 −1
+
+,
+
+which are interpreted as the (a) the number of vertices that were neighbor of vertex 𝑖 at any given point of time, and (b) the number of vertices that were neighbor of vertex 𝑖 over two consecutive time steps (‘one-lagged persisting edges’), respectively. 2.3. Probability distribution. The next step is to define a probability distribution on the space of graph trajectories, in the following way. We deploy a dynamic random graph process of which the underlying dynamics are Markovian. For any 𝑁 -dimensional vectors 𝜶 and 𝜷 , we first introduce the Hamiltonian : for any ℊ𝑇 ∈ Ω𝑇 ,
+
+𝐻 (ℊ𝑇 | 𝜶 , 𝜷 ) :=
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝛼 𝑖 ¯𝑘 𝑖 [ℊ𝑇 ] + 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝛽 𝑖 ¯ℎ𝑖 [ℊ𝑇 ],
+
+where ¯𝑘 𝑖 [ℊ𝑇 ] := 1
+
+𝑇 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+∑︁ 𝑗 ≠𝑖 
+
+𝑎 𝑖 𝑗 (𝑡 ),
+
+¯ℎ𝑖 [ℊ𝑇 ] := 1
+
+𝑇 − 1
+
+> 𝑇 −1
+
+∑︁ 
+
+> 𝑡 =1
+
+∑︁ 𝑗 ≠𝑖 
+
+𝑎 𝑖 𝑗 (𝑡 ) 𝑎 𝑖 𝑗 (𝑡 + 1).
+
+Then we define the probability distribution 
+
+P(𝒢 𝑇 = ℊ𝑇 ) = ℋ(ℊ𝑇 | 𝜶 , 𝜷 ) := 1
+
+𝑍 (𝜶 , 𝜷 ) exp (− 𝐻 (ℊ𝑇 | 𝜶 , 𝜷 )) ,
+
+where 𝑍 (𝜶 , 𝜷 ) is the normalizing constant, often referred to as the partition function ; as pointed out in the introduction, this distribution maximizes the Shannon entropy conditional on it being in line with the observations. It directly follows that 
+
+𝑍 (𝜶 , 𝜷 ) =∑︁  
+
+> ℊ𝑇 ∈Ω𝑇
+
+exp (− 𝐻 (ℊ𝑇 | 𝜶 , 𝜷 )) .
+
+Observe that we parametrized the 𝑁 (𝑁 −1)/ 2 edge processes by 2 𝑁 parameters (namely, the entries of 𝜶 and 𝜷 ). 6
+
+Due to the linear nature of 𝐻 (ℊ𝑇 | 𝜶 , 𝜷 ) (as a function of 𝜶 and 𝜷 , that is), it can be interpreted as a Laplace transform (up to a multiplicative constant). This observation directly entails that log 𝑍 (𝜶 , 𝜷 ) is strictly convex (in 𝜶 and 𝜷 ). Observe that we can rewrite 
+
+P(𝒢 𝑇 = ℊ𝑇 ) = 𝑒 −𝑊 (ℊ𝑇 | 𝜶 ,𝜷 ) , 𝑊 (ℊ𝑇 | 𝜶 , 𝜷 ) :=
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝛼 𝑖 ¯𝑘 𝑖 [ℊ𝑇 ] + 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝛽 𝑖 ¯ℎ𝑖 [ℊ𝑇 ] − log 𝑍 (𝜶 , 𝜷 ).
+
+Note that 𝑊 (ℊ𝑇 | 𝜶 , 𝜷 ) is, as a function of 𝜶 and 𝜷 , is strictly concave, being a difference between a linear function and a strictly convex function. It thus follows that 𝑊 (ℊ𝑇 | 𝜶 , 𝜷 ) has a unique maximizing (𝜶 , 𝜷 ), hence the 2 𝑁 first order conditions ¯𝑘 𝑖 [ℊ𝑇 ] = E ¯𝑘 𝑖 [𝒢 𝑇 ] = 𝜕𝑍 (𝜶 , 𝜷 )/ 𝜕𝛼 𝑖 
+
+𝑍 (𝜶 , 𝜷 ) , ¯ℎ𝑖 [ℊ𝑇 ] = E ¯ℎ𝑖 [𝒢 𝑇 ] = 𝜕𝑍 (𝜶 , 𝜷 )/ 𝜕 𝛽 𝑖 
+
+𝑍 (𝜶 , 𝜷 )
+
+have a unique solution; in both equations the first equality is to be interpreted as the moment equation to be solved, whereas the second indicates the way to compute the mean under consideration in terms of the partition function 𝑍 (𝜶 , 𝜷 ).2.4. Underlying Markovian dynamics. The next goal is to describe the Markov chain correspond-ing to the per-edge dynamics. We assume these edge processes are all in stationarity. Specializing to the edge between the vertices 𝑖 and 𝑗 , we use the notation 
+
+𝑝 𝑖 𝑗 := E𝐴 𝑖 𝑗 (𝑡 ) = P( 𝐴 𝑖 𝑗 (𝑡 ) = 1), 𝑞 𝑖 𝑗 := E[ 𝐴 𝑖 𝑗 (𝑡 ) 𝐴 𝑖 𝑗 (𝑡 − 1)] = P( 𝐴 𝑖 𝑗 (𝑡 ) = 𝐴 𝑖 𝑗 (𝑡 − 1) = 1).
+
+From these 𝑝 𝑖 𝑗 and 𝑞 𝑖 𝑗 we can compute the per-edge transition probabilities. For instance, it is readily verified that 
+
+P( 𝐴 𝑖 𝑗 (𝑡 ) = 0 | 𝐴 𝑖 𝑗 (𝑡 − 1) = 0) = 1 − 2𝑝 𝑖 𝑗 + 𝑞 𝑖 𝑗 
+
+1 − 𝑝 𝑖 𝑗 
+
+,
+
+where it has been used that P( 𝐴 𝑖 𝑗 (𝑡 ) = 0, 𝐴 𝑖 𝑗 (𝑡 − 1) = 0) can be rewritten as 1 − P( 𝐴 𝑖 𝑗 (𝑡 ) = 1) − P( 𝐴 𝑖 𝑗 (𝑡 − 1) = 1) + P( 𝐴 𝑖 𝑗 (𝑡 ) = 𝐴 𝑖 𝑗 (𝑡 − 1) = 1).
+
+Along the same lines, the full transition matrix, on the state space {0, 1}, can be computed: for the edge between the vertices 𝑖 and 𝑗 the transition matrix 𝑃 𝑖 𝑗 is given by 
+
+𝑃 𝑖 𝑗 = P( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 ), with P( 𝑝, 𝑞 ) :=
+
+©«
+
+1 − 2𝑝 + 𝑞 
+
+1 − 𝑝 𝑝 − 𝑞 
+
+1 − 𝑝 
+
+1 − 𝑞 𝑝 𝑞 𝑝 
+
+ª®®®¬
+
+=: 𝔭 00 ( 𝑝, 𝑞 ) 𝔭 01 ( 𝑝, 𝑞 )
+
+𝔭 10 ( 𝑝, 𝑞 ) 𝔭 11 ( 𝑝, 𝑞 )
+
+!
+
+As pointed out in [4, Appendix 1] and [5, Appendix B–E], the probabilities 𝑝 𝑖 𝑗 and 𝑞 𝑖 𝑗 can be expressed in terms of the parameter vectors 𝜶 and 𝜷 ; via an appropriate reparametrization the model defined through our Hamiltonian can be rephrased in terms of a combination of non-interacting one-dimensional Ising models. To this end we define 𝑥 𝑖 := exp (− 𝛼 𝑖 /𝑇 ), 𝑦 𝑖 := exp (− 𝛽 𝑖 /𝑇 ). Also, 
+
+𝑥 𝑖 𝑗 := 𝑥 𝑖 𝑥 𝑗 , 𝑦 𝑖 𝑗 := 𝑦 𝑖 𝑦 𝑗 ; observe that 𝑥 𝑖 𝑗 is a function of 𝛼 𝑖 and 𝛼 𝑗 , and that 𝑦 𝑖 𝑗 is a function of 𝛽 𝑖 
+
+and 𝛽 𝑗 . In addition, 
+
+𝜆 ± 
+
+> 𝑖 𝑗
+
+≡ 𝜆 ± 
+
+> 𝑖 𝑗
+
+(𝑥 𝑖 𝑗 , 𝑦 𝑖 𝑗 ) := 𝑒 𝐽 𝑖 𝑗 
+
+
+
+cosh 𝐵 𝑖 𝑗 ±√︃ sinh 2 𝐵 𝑖 𝑗 + 𝑒 −4𝐽 𝑖 𝑗 
+
+
+
+where 
+
+𝐽 𝑖 𝑗 := log 𝑦 𝑖 𝑗 
+
+4 , 𝐵 𝑖 𝑗 := log (𝑥 𝑖 𝑗 𝑦 𝑖 𝑗 )
+
+2 .7
+
+Having introduced this notation, we can present the closed-form expressions for 𝑝 𝑖 𝑗 ≡ 𝑝 𝑖 𝑗 (𝜶 , 𝜷 )
+
+and 𝑞 𝑖 𝑗 ≡ 𝑞 𝑖 𝑗 (𝜶 , 𝜷 ) found in [4]. Defining the map 
+
+Φ(𝑥, 𝑦, ℓ +, ℓ −) := 𝑥𝑦 − 12√︁ 4𝑥 + ( 𝑥𝑦 − 1)2
+
+ℓ𝑇  
+
+> +
+
+− ℓ𝑇 
+
+> −
+
+ℓ𝑇  
+
+> +
+
++ ℓ𝑇 
+
+> −
+
++ 12,
+
+it turns out that we have 
+
+𝑝 𝑖 𝑗 ≡ 𝑝 𝑖 𝑗 (𝜶 , 𝜷 ) = Φ (𝑥 𝑖 𝑗 , 𝑦 𝑖 𝑗 , 𝜆 + 
+
+> 𝑖 𝑗
+
+, 𝜆 − 
+
+> 𝑖 𝑗
+
+).
+
+Likewise, with 
+
+Ψ(ℓ+, ℓ −) := ℓ𝑇  
+
+> −
+
+ℓ𝑇 −1 
+
+> +
+
++ ℓ𝑇  
+
+> +
+
+ℓ𝑇 −1
+
+> −
+
+ℓ𝑇  
+
+> +
+
++ ℓ𝑇 
+
+> −
+
+,
+
+we have 
+
+𝑞 𝑖 𝑗 ≡ 𝑞 𝑖 𝑗 (𝜶 , 𝜷 ) = 𝑝 2 
+
+> 𝑖 𝑗
+
++ 𝑝 𝑖 𝑗 (1 − 𝑝 𝑖 𝑗 ) Ψ(𝜆 + 
+
+> 𝑖 𝑗
+
+, 𝜆 − 
+
+> 𝑖 𝑗
+
+).
+
+Importantly, also the normalizing constant (i.e., partition function) can be evaluated. From [5, Appendix C], we have the following expression in terms of 𝜆 ± 
+
+> 𝑖 𝑗
+
+: with an empty product being defined as 1, 
+
+𝑍 (𝜶 , 𝜷 ) =
+
+> 𝑁
+
+Ö
+
+> 𝑖 =1
+> 𝑖 −1
+
+Ö
+
+> 𝑗 =1
+
+ (𝜆 + 
+
+> 𝑖 𝑗
+
+)𝑇 + ( 𝜆 − 
+
+> 𝑖 𝑗
+
+)𝑇 ). (1) Expressions for 
+
+𝜕 ln 𝑍 (𝜶 , 𝜷 )
+
+𝜕𝛼 𝑖 
+
+= 𝜕𝑍 (𝜶 , 𝜷 )/ 𝜕𝛼 𝑖 
+
+𝑍 (𝜶 , 𝜷 ) = E ¯𝑘 𝑖 [𝒢 𝑇 ], 𝜕 ln 𝑍 (𝜶 , 𝜷 )
+
+𝜕 𝛽 𝑖 
+
+= 𝜕𝑍 (𝜶 , 𝜷 )/ 𝜕 𝛽 𝑖 
+
+𝑍 (𝜶 , 𝜷 ) = E ¯ℎ𝑖 [𝒢 𝑇 ]
+
+can be found from the closed-form expressions for 𝜆 ± 
+
+> 𝑖 𝑗
+
+in a routine manner using standard symbolic software; see also [5, Appendix D]. Alternatively, a highly accurate numerical proxy can be produced in the evident manner: 
+
+𝜕 ln 𝑍 (𝜶 , 𝜷 )
+
+𝜕𝛼 𝑖 
+
+≈ 1
+
+ℎ
+
+  ln 𝑍 (𝜶 + 𝒆 𝑖 ℎ, 𝜷 ) − ln 𝑍 (𝜶 , 𝜷 ),𝜕 ln 𝑍 (𝜶 , 𝜷 )
+
+𝜕 𝛽 𝑖 
+
+≈ 1
+
+ℎ
+
+  ln 𝑍 (𝜶 , 𝜷 + 𝒆 𝑖 ℎ) − ln 𝑍 (𝜶 , 𝜷 ).
+
+with 𝒆 𝑖 the 𝑖 -th 𝑁 -dimensional unit vector (i.e., its 𝑖 -th entry being one, and all other entries zero), and ℎ small. 3. Estimator, and its properties 
+
+In this section we propose our estimator, and prove that it provides performance guarantees: in the regime where 𝑇 grows large, the estimator of the 2 𝑁 -dimensional paramater vector (𝜶 , 𝜷 ) is asymptotically normal. We in addition identify the corresponding covariance matrix. 3.1. Estimator. The estimator (b𝜶 𝑇 , b𝜷 𝑇 ) is defined as the solution to the 2 𝑁 moment equations, in which we equate E ¯𝑘 𝑖 [𝒢 𝑇 ] and E ¯ℎ𝑖 [𝒢 𝑇 ] to their empirical counterparts. Concretely, b𝜶 𝑇 and b𝜷 𝑇 
+
+solve the following 2 𝑁 equations in equally many unknowns: for 𝑖 = 1, . . . , 𝑁 ,¯𝑘 𝑖 [𝒢 𝑇 ] = E ¯𝑘 𝑖 [𝒢 𝑇 | 𝜶 , 𝜷 ], ¯ℎ𝑖 [𝒢 𝑇 ] = E ¯ℎ𝑖 [𝒢 𝑇 | 𝜶 , 𝜷 ], (2) where 
+
+E ¯𝑘 𝑖 [𝒢 𝑇 | 𝜶 , 𝜷 ] =∑︁ 
+
+> 𝑗 ≠𝑖
+
+𝑝 𝑖 𝑗 (𝜶 , 𝜷 ) =: 𝑃 𝑖 (𝜶 , 𝜷 ), E ¯ℎ𝑖 [𝒢 𝑇 | 𝜶 , 𝜷 ] =∑︁ 
+
+> 𝑗 ≠𝑖
+
+𝑞 𝑖 𝑗 (𝜶 , 𝜷 ) =: 𝑄 𝑖 (𝜶 , 𝜷 ).
+
+By the considerations presented at the end of §2.3, which relied on the strict concavity of 𝑊 (𝜶 , 𝜷 ),these 2 𝑁 equations have a unique solution. 8
+
+The idea is now to first prove that the vector (𝒌 [𝒢 𝑇 | 𝜶 , 𝜷 ], 𝒉 [𝒢 𝑇 | 𝜶 , 𝜷 ]) is asymptotically normal as 𝑇 → ∞ (after centering by the vector of means and dividing by √𝑇 , that is). This is essentially a consequence of the standard central limit theorem for multivariate stationary processes, with the main property to be verified being that all normalized relevant variances and covariances are finite. In the second step, this asymptotic normality is then inherited by the estimator (b𝜶 𝑇 , b𝜷 𝑇 ), as can be established by applying the celebrated delta method [19, 20]. We proceed by giving a few considerations regarding the solution of the moment equations for large 𝑇 . Observe that implicitly 𝜆 ± 
+
+> 𝑖 𝑗
+
+, 𝑝 𝑖 𝑗 and 𝑞 𝑖 𝑗 are functions of the 𝛼 𝑖 /𝑇 and 𝛽 𝑖 /𝑇 (as 𝑥 𝑖 and 𝑦 𝑖 
+
+are). In addition, recall the known property that, for any 𝑣, 𝑤 ∈ R such that 𝑣 ≠ 𝑤 ,lim 
+
+> 𝑇 →∞
+
+𝑣 𝑇 + 𝑤 𝑇 
+
+(max {𝑣, 𝑤 }) 𝑇 = 1.
+
+Hence, by the definition of 𝑍 (𝜶 , 𝜷 ) as given in (1), for some function 𝜉 that does not depend on 𝑇 ,
+
+𝑍 (𝜶 , 𝜷 ) ≈  𝜉 (𝜶 /𝑇, 𝜷 /𝑇 )𝑇 ,
+
+where ‘ ≈’ means that the ratio of the left-hand side and right-hand side converges to 1. It thus follows that, in the regime that 𝑇 → ∞ ,
+
+E ¯𝑘 𝑖 [𝒢 𝑇 | 𝜶 , 𝜷 ] = 𝜕 ln 𝑍 (𝜶 , 𝜷 )
+
+𝜕𝛼 𝑖 
+
+= 𝑇 𝜕𝜉 (𝛼 /𝑇, 𝛽 /𝑇 )
+
+𝜕𝛼 𝑖 
+
+= 𝑇 · 1
+
+𝑇 · 𝜕𝜉 (𝑥, 𝑦 )
+
+𝜕𝑥 𝑖 𝒙 =𝜶 /𝑇, 𝒚 =𝜷 /𝑇 
+
+= 𝜕𝜉 (𝑥, 𝑦 )
+
+𝜕𝑥 𝑖 𝒙 =𝜶 /𝑇, 𝒚 =𝜷 /𝑇 
+
+,
+
+and likewise 
+
+E ¯ℎ𝑖 [𝒢 𝑇 | 𝜶 , 𝜷 ] = 𝜕 ln 𝑍 (𝜶 , 𝜷 )
+
+𝜕 𝛽 𝑖 
+
+= 𝜕𝜉 (𝑥, 𝑦 )
+
+𝜕𝑦 𝑖 𝒙 =𝜶 /𝑇, 𝒚 =𝜷 /𝑇 
+
+.
+
+Now note that the sample means ¯ 𝑘 𝑖 [𝒢 𝑇 ] and ¯ ℎ𝑖 [𝒢 𝑇 ], appearing in (2), converge to their ergodic limits as 𝑇 → ∞ . Conclude that the solution of the moment equations (i.e., (b𝜶 𝑇 , b𝜷 𝑇 )) is essentially linear: as 𝑇 → ∞ ,
+
+b𝜶 𝑇 
+
+𝑇 → ¯𝜶 , b𝜷 𝑇 
+
+𝑇 → ¯𝜷 
+
+for some ( ¯𝜶 , ¯𝜷 ). Also, observe that, as 𝑇 → ∞ ,
+
+Φ(𝑥, 𝑦, ℓ −, ℓ +) → 𝑥𝑦 − 12√︁ 4𝑥 + ( 𝑥𝑦 − 1)2 + 12, Ψ(ℓ+, ℓ −) → ℓ−
+
+ℓ+
+
+.
+
+In view of these facts, recalling that we will be working in the setting that 𝑇 is large, in the sequel we thus let 𝜆 ± 
+
+> 𝑖 𝑗
+
+, 𝑝 𝑖 𝑗 and 𝑞 𝑖 𝑗 be defined as above, but with 𝑥 𝑖 := exp (− ¯𝛼 𝑖 ) and 𝑦 𝑖 := exp (− ¯𝛽 𝑖 ), in which setting 𝑝 𝑖 𝑗 and 𝑞 𝑖 𝑗 do not depend on 𝑇 .3.2. Asymptotic normality of the moments. As mentioned, the asymptotic normality of the 2 𝑁 -dimensional vector (𝒌 [𝒢 𝑇 | 𝜶 , 𝜷 ], 𝒉 [𝒢 𝑇 | 𝜶 , 𝜷 ]) , in the regime that 𝑇 grows large, is a consequence of the central limit theorem for stationary processes. The only condition that needs to be checked is that the covariances pertaining to pairs of entries of (𝒌 [𝒢 𝑇 | 𝜶 , 𝜷 ], 𝒉 [𝒢 𝑇 | 𝜶 , 𝜷 ]) decay to zero inversely proportionally to 𝑇 ; the corresponding proportionality constants are then the entries of the covariance matrix appearing in the asymptotic normality statement. A useful (and easily verifiable) identity in this context shows that Cov ( 𝐴 𝑖 𝑗 (𝑠 ), 𝐴 𝑖 𝑗 (𝑡 )) decays geometrically: 
+
+Cov ( 𝐴 𝑖 𝑗 (𝑠 ), 𝐴 𝑖 𝑗 (𝑡 )) = 𝛾 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 , |𝑡 − 𝑠 |) ,9
+
+where 
+
+𝛾 ( 𝑝, 𝑞, 𝑡 ) := 𝜁 ( 𝑝, 𝑞 )(𝜂 ( 𝑝, 𝑞 )) 2
+
+ 1 − 𝜂 ( 𝑝, 𝑞 )𝑡 = 𝑝 (1 − 𝑝 )  1 − 𝜂 ( 𝑝, 𝑞 )𝑡 ,
+
+with 
+
+𝜂 ( 𝑝, 𝑞 ) := 𝔭 01 ( 𝑝, 𝑞 ) + 𝔭 10 ( 𝑝, 𝑞 ) = 𝑝 − 𝑞 𝑝 (1 − 𝑝 ) ,𝜁 ( 𝑝, 𝑞 ) := 𝔭 01 ( 𝑝, 𝑞 ) 𝔭 10 ( 𝑝, 𝑞 ) = ( 𝑝 − 𝑞 )2
+
+𝑝 (1 − 𝑝 ) .
+
+It is observed that this relation holds irrespective of 𝑠 being smaller or larger than 𝑡 , due to the reversibility of the Markov chain governed by the transition matrix P( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 ). Along the same lines, it can be found that, for 𝑡 > 𝑠 ,
+
+P( 𝐴 𝑖 𝑗 (𝑡 ) = 1 | 𝐴 𝑖 𝑗 (𝑠 ) = 1) = 𝑝 𝑖 𝑗 + ( 1 − 𝑝 𝑖 𝑗 )  1 − 𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )𝑡 −𝑠 . (3) (a) To deal with Var ¯ 𝑘 𝑖 [𝒢 𝑇 ], we note that, as 𝑇 → ∞ ,
+
+𝑇 Var ¯ 𝑘 𝑖 [𝒢 𝑇 ] = 1
+
+𝑇 ∑︁ 𝑗 ≠𝑖 
+
+Var 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =1
+
+𝐴 𝑖 𝑗 (𝑡 )
+
+!
+
+=∑︁ 
+
+> 𝑗 ≠𝑖
+
+Var 𝐴 𝑖 𝑗 (1) + 2
+
+𝑇 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑡 =2
+
+(𝑇 − 𝑡 + 1) Cov ( 𝐴 𝑖 𝑗 (1), 𝐴 𝑖 𝑗 (𝑡 )) 
+
+!
+
+→∑︁ 
+
+> 𝑗 ≠𝑖
+
+𝛾 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 , 0) + 2
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =2
+
+𝛾 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 , 𝑡 − 1)
+
+!
+
+=∑︁ 
+
+> 𝑗 ≠𝑖
+
+𝑝 𝑖 𝑗 (1 − 𝑝 𝑖 𝑗 )
+
+
+
+1 + 21 − 𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+
+
+=: 𝑣 𝑖 (𝑘 ),
+
+where in the first equality the independence of the edge processes has been used, and in the last step the geometric shape of 𝛾 ( 𝑝, 𝑞, 𝑡 ) (in 𝑡 ). (b) As it turns out, Var ¯ ℎ𝑖 [𝒢 𝑇 ] can be handled in a similar manner. Indeed, 
+
+(𝑇 − 1) Var ¯ ℎ𝑖 [𝒢 𝑇 ] = 1
+
+𝑇 − 1∑︁ 𝑗 ≠𝑖 
+
+Var 
+
+> 𝑇 −1
+
+∑︁ 
+
+> 𝑡 =1
+
+𝐴 𝑖 𝑗 (𝑡 ) 𝐴 𝑖 𝑗 (𝑡 + 1)
+
+!
+
+=∑︁ 
+
+> 𝑗 ≠𝑖
+
+Var ( 𝐴 𝑖 𝑗 (1) 𝐴 𝑖 𝑗 (2)) + 2
+
+𝑇 − 1
+
+> 𝑇 −1
+
+∑︁ 
+
+> 𝑡 =2
+
+(𝑇 − 𝑡 ) Cov ( 𝐴 𝑖 𝑗 (1) 𝐴 𝑖 𝑗 (2), 𝐴 𝑖 𝑗 (𝑡 ) 𝐴 𝑖 𝑗 (𝑡 + 1)) 
+
+!
+
+→∑︁ 
+
+> 𝑗 ≠𝑖
+
+Var ( 𝐴 𝑖 𝑗 (1) 𝐴 𝑖 𝑗 (2)) + 2
+
+> ∞
+
+∑︁ 
+
+> 𝑡 =2
+
+Cov ( 𝐴 𝑖 𝑗 (1) 𝐴 𝑖 𝑗 (2), 𝐴 𝑖 𝑗 (𝑡 ) 𝐴 𝑖 𝑗 (𝑡 + 1)) 
+
+!
+
+Then observe that Var ( 𝐴 𝑖 𝑗 (1) 𝐴 𝑖 𝑗 (2)) = 𝑞 𝑖 𝑗 (1 − 𝑞 𝑖 𝑗 ), and, for any 𝑡 = 2, 3, . . . ,
+
+Cov ( 𝐴 𝑖 𝑗 (1) 𝐴 𝑖 𝑗 (2), 𝐴 𝑖 𝑗 (𝑡 ) 𝐴 𝑖 𝑗 (𝑡 + 1)) = E[ 𝐴 𝑖 𝑗 (1) 𝐴 𝑖 𝑗 (2) 𝐴 𝑖 𝑗 (𝑡 ) 𝐴 𝑖 𝑗 (𝑡 + 1)] − 𝑞 2
+
+> 𝑖 𝑗
+
+= 𝑞 𝑖 𝑗 P( 𝐴 𝑖 𝑗 (𝑡 − 2) = 1 | 𝐴 𝑖 𝑗 (0) = 1) P( 𝐴 𝑖 𝑗 (1) = 1 | 𝐴 𝑖 𝑗 (0) = 1) − 𝑞 2 
+
+> 𝑖 𝑗
+
+,
+
+which, by applying (3), can be rewritten as 
+
+𝑞 𝑖 𝑗 
+
+ 𝑝 𝑖 𝑗 + ( 1 − 𝑝 𝑖 𝑗 )( 1 − 𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )) 𝑡 −2 𝑞 𝑖 𝑗 
+
+𝑝 𝑖 𝑗 
+
+− 𝑞 2 
+
+> 𝑖 𝑗
+
+= 𝑞 2
+
+> 𝑖 𝑗
+
+𝑝 𝑖 𝑗 
+
+(1 − 𝑝 𝑖 𝑗 )  1 − 𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )𝑡 −2.10 
+
+After elementary algebra and again using the geometric series, we find, as 𝑇 → ∞ ,
+
+𝑇 Var ¯ ℎ𝑖 [𝒢 𝑇 ] → ∑︁ 
+
+> 𝑗 ≠𝑖
+
+𝑞 𝑖 𝑗 (1 − 𝑞 𝑖 𝑗 ) + 2 (1 − 𝑝 𝑖 𝑗 )2𝑞 2
+
+> 𝑖 𝑗
+
+𝑝 𝑖 𝑗 − 𝑞 𝑖 𝑗 
+
+!
+
+=: 𝑣 𝑖 (ℎ).
+
+(c) Now consider 
+
+𝑇 Cov ( ¯𝑘 𝑖 [𝒢 𝑇 ], ¯ℎ𝑖 [𝒢 𝑇 ]) = 1
+
+𝑇 − 1∑︁ 𝑗 ≠𝑖 ∑︁ 𝑗 ′≠𝑖 
+
+Cov 
+
+> 𝑇
+
+∑︁ 
+
+> 𝑠 =1
+
+𝐴 𝑖 𝑗 (𝑠 ),
+
+> 𝑇 −1
+
+∑︁ 
+
+> 𝑡 =1
+
+𝐴 𝑖 𝑗 ′ (𝑡 ) 𝐴 𝑖 𝑗 ′ (𝑡 + 1)
+
+!
+
+.
+
+Observe that in the double sum over 𝑗 = 𝑗 ′ there is only a contribution due to terms with 𝑗 = 𝑗 ′,due to the independence of the edge processes. As a consequence, the expression in the previous display equals 1
+
+𝑇 − 1∑︁ 𝑗 ≠𝑖 𝑇 ∑︁ 
+
+> 𝑠 =1
+> 𝑇 −1
+
+∑︁ 
+
+> 𝑡 =1
+
+Cov  𝐴 𝑖 𝑗 (𝑠 ), 𝐴 𝑖 𝑗 (𝑡 ) 𝐴 𝑖 𝑗 (𝑡 + 1) .
+
+Now distinguish between on one hand the case that 𝑠 ∈ { 𝑡, 𝑡 + 1}, and on the other hand the case that it is not. The contribution due to the former case can be verified to equal 2 𝑞 𝑖 𝑗 (1 − 𝑝 𝑖 𝑗 ), whereas the contribution (for a given 𝑗 ≠ 𝑖 ) of the latter case is 2 𝑞 𝑖 𝑗 (1 − 𝑝 𝑖 𝑗 ) 1 − 𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 ) .
+
+Upon combining the above, we thus end up with, as 𝑇 → ∞ ,
+
+𝑇 Cov ( ¯𝑘 𝑖 [𝒢 𝑇 ], ¯ℎ𝑖 [𝒢 𝑇 ]) → ∑︁ 
+
+> 𝑗 ≠𝑖
+
+2 𝑞 𝑖 𝑗 (1 − 𝑝 𝑖 𝑗 )
+
+
+
+1 + 1 − 𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+
+
+=: 𝑣 𝑖 (𝑘, ℎ ).
+
+The three remaining cases, in which 𝑖 ≠ 𝑗 , are easier to deal with due to the independence of the edge processes. The underlying calculations essentially follow from the cases (a), (b), (c). (d) For 𝑖 ≠ 𝑗 , as 𝑇 → ∞ ,
+
+𝑇 Cov ( ¯𝑘 𝑖 [𝒢 𝑇 ], ¯𝑘 𝑗 [𝒢 𝑇 ]) → 𝑝 𝑖 𝑗 (1 − 𝑝 𝑖 𝑗 )
+
+
+
+1 + 21 − 𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+
+
+= 𝑝 𝑖 𝑗 (1 − 𝑝 𝑖 𝑗 )
+
+ 2 − 𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+
+
+=: 𝑐 (𝑘 𝑘 ) 
+
+> 𝑖 𝑗
+
+.
+
+(e) For 𝑖 ≠ 𝑗 , as 𝑇 → ∞ ,
+
+𝑇 Cov ( ¯ℎ𝑖 [𝒢 𝑇 ], ¯ℎ 𝑗 [𝒢 𝑇 ]) → 𝑞 𝑖 𝑗 (1 − 𝑞 𝑖 𝑗 ) + 2 (1 − 𝑝 𝑖 𝑗 )2𝑞 2
+
+> 𝑖 𝑗
+
+𝑝 𝑖 𝑗 − 𝑞 𝑖 𝑗 
+
+=: 𝑐 (ℎℎ ) 
+
+> 𝑖 𝑗
+
+.
+
+(f) For 𝑖 ≠ 𝑗 , as 𝑇 → ∞ ,
+
+𝑇 Cov ( ¯𝑘 𝑖 [𝒢 𝑇 ], ¯ℎ 𝑗 [𝒢 𝑇 ]) → 2 𝑞 𝑖 𝑗 (1 − 𝑝 𝑖 𝑗 )
+
+
+
+1 + 1 − 𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+
+
+= 2 𝑞 𝑖 𝑗 (1 − 𝑝 𝑖 𝑗 )
+
+ 1
+
+𝜂 ( 𝑝 𝑖 𝑗 , 𝑞 𝑖 𝑗 )
+
+
+
+=: 𝑐 (𝑘 ℎ ) 
+
+> 𝑖 𝑗
+
+.
+
+Define 𝐶 (𝑘 ) as the 𝑁 × 𝑁 matrix with entries 𝑐 (𝑘 𝑘 ) 
+
+> 𝑖 𝑗
+
+, where it is noticed that its diagonal consists of zeroes, since the 𝐴 𝑖𝑖 = 0 (no self-loops). Define 𝐶 (ℎ) and 𝐶 (𝑘, ℎ ) analogously. Now define, in self-evident block-matrix notation, the covariance matrix (of dimension 2 𝑁 × 2𝑁 )
+
+Σ :=
+
+ 𝐶 (𝑘 ) 𝐶 (𝑘, ℎ )
+
+𝐶 (𝑘, ℎ ) 𝐶 (ℎ)
+
+
+
++
+
+ diag {𝒗 (𝑘 )} diag {𝒗 (𝑘, ℎ )} 
+
+diag {𝒗 (𝑘, ℎ )} diag {𝒗 (ℎ)} 
+
+
+
+.11 
+
+We have thus found the following distributional convergence of the moment equations our estimator is based on: 
+
+√𝑇 
+
+ ¯𝒌 [𝒢 𝑇 ] − 𝑷 (𝜶 , 𝜷 )
+
+¯𝒉 [𝒢 𝑇 ] − 𝑸 (𝜶 , 𝜷 )
+
+ d
+
+→ N(0, Σ), (4) where 0 is the 2 𝑁 -dimensional all-zeroes vector, and N ( 𝝁 , Σ) denotes a Normally distributed random vector with mean 𝝁 and covariance matrix Σ.3.3. Asymptotic normality of the estimator. The asymptotic normality of the estimator vector 
+
+(b𝜶 𝑇 , b𝜷 𝑇 ) follows by the asymptotic normality of (𝒌 [𝒢 𝑇 | 𝜶 , 𝜷 ], 𝒉 [𝒢 𝑇 | 𝜶 , 𝜷 ]) in combination with elementary Taylor expansions. The underlying principle is formally backed by the so-called delta method ; see e.g. [19, Ch. XIX] and [20, §3.9]. The starting point is provided by the moment equations 
+
+𝑷 (b𝜶 𝑇 , b𝜷 𝑇 )
+
+𝑸 (b𝜶 𝑇 , b𝜷 𝑇 )
+
+!
+
+=
+
+ ¯𝒌 [𝒢 𝑇 ]
+
+¯𝒉 [𝒢 𝑇 ]
+
+
+
+. (5) First consider the left-hand side of (5). By a first-order Taylor expansion at (𝜶 , 𝜷 ), neglecting higher order terms, we obtain 
+
+ 𝑷 (𝜶 , 𝜷 )
+
+𝑸 (𝜶 , 𝜷 )
+
+
+
++ 𝑉 (𝜶 , 𝜷 )
+
+ b𝜶 𝑇 − 𝜶 
+
+b𝜷 𝑇 − 𝜷 
+
+
+
+, 𝑉 ≡ 𝑉 (𝜶 , 𝜷 ) :=
+
+©«
+
+𝜕 𝑷 
+
+𝜕 𝜶 
+
+𝜕 𝑷 
+
+𝜕 𝜷 
+
+𝜕 𝑸 
+
+𝜕 𝜶 
+
+𝜕 𝑸 
+
+𝜕 𝜷 
+
+ª®®®¬
+
+.
+
+Now consider the right-hand side of (5). By (4), we can rewrite it as, again neglecting higher order terms,  𝑷 (𝜶 , 𝜷 )
+
+𝑸 (𝜶 , 𝜷 )
+
+
+
++ 1
+
+√𝑇 N(0, Σ).
+
+Upon equating the two above expansions, we can identify the covariance matrix pertaining to the asymptotic normality of the estimator: we obtain the distributional identity, in the regime that 
+
+𝑇 → ∞ ,  b𝜶 𝑇 
+
+b𝜷 𝑇 
+
+
+
+=
+
+ 𝜶 𝜷 
+
+
+
++ 1
+
+√𝑇 𝑉 −1 N(0, Σ).
+
+We thus conclude that, as 𝑇 → ∞ ,
+
+√𝑇 
+
+ b𝜶 𝑇 − 𝜶 
+
+b𝜷 𝑇 − 𝜷 
+
+ d
+
+→ N
+
+
+
+0, 𝑉 −1Σ (𝑉 −1)⊤
+
+.
+
+It is further noted that (𝑷 (𝛼, 𝛽 ), 𝑸 (𝛼, 𝛽 )) is to be interpreted as the derivatives of the log-Laplace transform of ( ¯𝒌 [𝒢 𝑇 ], ¯𝒉 [𝒢 𝑇 ]) to all entries of (𝜶 , 𝜷 ). This means that 𝑉 (𝜶 , 𝜷 ) corresponds to the second derivative, or the Hessian matrix, which equals the covariance matrix Σ. As a consequence, 
+
+𝑉 −1Σ (𝑉 −1)⊤ = Σ −1Σ (Σ−1)⊤ = Σ −1,
+
+so that, as 𝑇 → ∞ ,
+
+√𝑇 
+
+ b𝜶 𝑇 − 𝜶 
+
+b𝜷 𝑇 − 𝜷 
+
+ d
+
+→ N
+
+
+
+0, Σ−1
+
+.12 
+
+4. Numerical illustrations 
+
+To illustrate the method of moments, we consider a parameter setting consisting of 50 pairs (𝛼 𝑖 , 𝛽 𝑖 ),for 𝑖 = 1, . . . , 50. The parameter values are generated as follows. We first draw them from a bivariate normal distribution. Specifically, for each realization, we consider a random vector 
+
+(𝛼 𝑖 , 𝛽 𝑖 )⊤ ∼ N ( 𝜇, Σ),
+
+where the mean vector is given by 
+
+𝝁 = (0.5, 0.5),
+
+and the covariance matrix is 
+
+Σ = 
+
+ 0.1 0.05 0.05 0.1
+
+
+
+.
+
+We then generate 50 independent realizations {( 𝛼 𝑖 , 𝛽 𝑖 )} 50  
+
+> 𝑖 =1
+
+from this distribution and treat them as fixed throughout the simulation study. We denote ¯𝜶 = (𝛼 1, . . . , 𝛼 50 )⊤, ¯𝜷 = (𝛽 1, . . . , 𝛽 50 )⊤.
+
+The non-zero off-diagonal entries of Σ induce positive correlation between the two components. Based on these fixed parameter values, we conduct numerical experiments with 100 independent replications. In each replication, the estimator is constructed using observations over a time horizon of length 
+
+𝑇 = 10 5. For each parameter component 𝑖 = 1, . . . , 50 of ¯ 𝜶 and ¯ 𝜷 , and each replication 𝑟 =
+
+1, . . . , 100, we obtain estimates b𝛼 (𝑟 ) 
+
+> 𝑖
+
+and b𝛽 (𝑟 ) 
+
+> 𝑖
+
+. To allow meaningful comparisons across different parameter components, we standardize the estimation errors using the standard deviation: 
+
+𝑍 (𝑟 ) 
+
+> 𝑖
+
+= b𝜃 (𝑟 ) 
+
+> 𝑖
+
+− 𝜃 𝑖 
+
+b𝜎 𝑖 
+
+,
+
+where 𝜃 𝑖 denotes either ¯ 𝜶 𝑖 or ¯ 𝜷 𝑖 , and b𝜎 𝑖 is the sample standard deviation of the 100 estimates for the 𝑖 -th parameter. We then pool all standardized errors 
+
+n
+
+𝑍 (𝑟 ) 
+
+> 𝑖
+
+: 𝑖 = 1, . . . , 100 , 𝑟 = 1, . . . , 100 
+
+o
+
+and analyze their empirical distribution. In particular, we present an empirical histogram against the standard normal distribution, as well as a Q-Q plot of the pooled standardized errors, to assess the validity of the asymptotic normal approximation. Figure 1 confirms the asymptotic normality. Furthermore, we summarize the overall estimation performance by reporting the mean and maxi-mum root mean squared error (RMSE) across all 100 parameters; see Table 1. 
+
+Table 1. Summary statistics of pooled standardized estimation errors and estima-tion accuracy. Statistic Value Mean of 𝑍 −0.001 199 Mean RMSE 0.006 235 Maximum RMSE 0.095 221 13 
+
+(a) Histogram of pooled standardized errors (b) Q-Q plot against standard normal 
+
+Figure 1. The histogram shows the empirical distribution of the pooled standard-ized estimation errors with the standard normal density superimposed. The Q-Q plot compares the pooled standardized errors with the standard normal distribution. 
+
+References 
+
+[1] A. Asanjarani, Y. Nazarathy, and P. Taylor (2021). A survey of parameter and state estimation in queues. 
+
+Queueing Systems , 97 , pp. 39–80. [2] A.-L. Barab ´ asi (2016). Network Science . Cambridge University Press, Cambridge, UK. [3] G. Cimini, T. Squartini, D. Garlaschelli, and A. Gabrielli (2015). Systemic risk analysis on reconstructed economic and financial networks. Scientific Reports , 5, paper no. 15758. [4] G. Clemente and D. Garlaschelli (2024). Linking through time: memory-enhanced community discovery in temporal networks. Physical Review Research , 6, paper no. 043204. [5] G. Clemente, C. Tessone, and D. Garlaschelli (2024). Temporal networks with node-specific memory: Unbiased inference of transition probabilities, relaxation times, and structural breaks. Physical Review Research ,
+
+6, paper no. 043257. [6] R. Durrett (2010). Random Graph Dynamics . Cambridge University Press, Cambridge, UK. [7] G. Ghoshal, V. Zlati´ c, G. Caldarelli, and M. E. J. Newman (2009). Random hypergraphs and their applica-tions. Physical Review E , 79 , 066118. [8] P. Guttorp (1991). Statistical Inference for Branching Processes . Wiley, Chichester, UK. [9] M. Hansen and S.M. Pitts (2006). Nonparametric inference from the M/G/1 workload. Bernoulli , 12 , pp. 737–759. [10] P. Holme and J. Saram ¨ aki (2012). Temporal networks. Physics Reports , 519 (3), pp. 97–125. [11] E. T. Jaynes (1957). Information theory and statistical mechanics. Physical Review , 106 , pp. 620–630. [12] M. Mandjes and J. Wang (2026). Estimation of on- and off-time distributions in a dynamic Erd˝ os–R´ enyi random graph. To appear in Advances in Applied Probability . https://arxiv.org/abs/2401.14531 
+
+[13] M. Newman (2001). The structure of scientific collaboration networks. Proceedings of the National Academy of Sciences of the United States of America , 98 , pp. 404–409. [14] M. Newman (2004). Coauthorship networks and patterns of scientific collaboration. Proceedings of the National Academy of Sciences of the United States of America , 101 Suppl , pp. 5200–5205. [15] A. Pentland, R. Fletcher, and A. Hasson (2004). Daknet: Rethinking connectivity in developing nations. 
+
+Computer , 37 , pp. 78–83. [16] M.A. Porter and J.P. Gleeson (2016). Dynamical Systems on Networks . Springer, Cham, Switzerland. [17] L. Ravner, O. Boxma, and M. Mandjes (2019). Estimating the input of a L´ evy-driven queue by Poisson sampling of the workload process. Bernoulli , 25 , pp. 3734–3769. [18] T. Squartini, G. Caldarelli, G. Cimini, A. Gabrielli, and D. Garlaschelli (2018). Reconstruction methods for networks: The case of economic and financial systems. Physics Reports , 757 , pp. 1–47. [19] A. van der Vaart (2000). Asymptotic Statistics . Cambridge University Press, Cambridge, UK. 14 
+
+[20] A. van der Vaart and J. Wellner (1996). Weak Convergence and Empirical Processes . Springer, New York, USA. [21] A. V. Vasilakos, Y. Zhang, and T. Spyropoulos (2016). Delay tolerant networks: Protocols and applications. 
+
+CRC Press .

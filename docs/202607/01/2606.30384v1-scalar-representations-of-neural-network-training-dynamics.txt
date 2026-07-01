@@ -1,0 +1,502 @@
+Title: Scalar Representations of Neural Network Training Dynamics
+
+URL Source: https://arxiv.org/pdf/2606.30384v1
+
+Published Time: Tue, 30 Jun 2026 02:44:35 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# Scalar Representations of Neural Network Training Dynamics 
+
+Pedro Jim´ enez-Gonz´ alez, 1 Miguel C. Soriano, 1 and Lucas Lacasa 1
+
+> 1
+
+Institute for Cross-Disciplinary Physics and Complex Systems (IFISC, CSIC-UIB), Campus UIB, 07122 Palma de Mallorca, Spain 
+
+Training in artificial neural networks can be viewed as a trajectory evolving through a high-dimensional loss landscape. However, the large number of trainable parameters makes the direct analysis of these dynamics challenging. In this work, we treat such training trajectories as temporal networks and apply recently proposed strategies for the scalar embedding of temporal networks. We investigate whether such a scalar embedding provides a meaningful low-dimensional represen-tation of neural network training dynamics. Using a multilayer perceptron trained on the MNIST classification task, we show that the embedding preserves the main dynamical features observed in the original parameter space, including the emergence of sensitivity to initial conditions for specific learning rate regimes and an accurate reconstruction of the network’s maximum Lyapunov expo-nent. We then use the embedded scalar trajectory to define a characteristic time, analogous to a Lyapunov time, after which the exponential separation between initially close embedded trajectories saturates. This characteristic time captures the typical decorrelation time between initially close network trajectories in the original high-dimensional system. Finally, we investigate the statistical organization of asymptotic training states through a spacing observable defined in the embedded space. We find that the distributions of rescaled asymptotic spacings collapse onto a common form across initial conditions and are compatible with a skew lognormal distribution. Altogether, our results suggest that scalar low-dimensional embeddings provide a useful framework for studying and visualizing the dynamical properties of neural network optimization trajectories. 
+
+I. INTRODUCTION 
+
+Artificial neural networks (ANNs) are foundational ar-chitectures in machine learning and deep learning [1]. While possibly originating and being developed within computer science, very early on [2] and throughout the last decades ANNs have been studied through the lenses of physics [3] and dynamical systems [4], giving rise to three main lines of research. First, the loss functions used to train ANNs often admit a Hamiltonian interpre-tation, allowing ANN optimization to be framed as the search for a system’s ground state; this connection has driven extensive work linking neural networks to the sta-tistical physics of disordered systems [5]. Second, ANNs are inherently dynamical, exhibiting complex behavior both during training and at inference time, which mo-tivates analyses grounded in dynamical systems theory [4]. Third, the evolving structure of a network –from ini-tialization through training to its final optimized form– encodes information about its function; this “structure versus function” viewpoint has been fruitfully explored using tools from network science [6]. An archetypal example of an ANN is the multilayer per-ceptron (MLP) [1] or feed-forward network, consisting of stacked layers of artificial neurons densely linked between them that represent overparametrised nonlinear input-output functions. The training of an MLP (i.e. the iter-ative search for the best values of the parameters of the input-output function that fulfils a given task) can itself be graphically represented as a time series of different graph structures, where each graph snapshot at time t
+
+represents the updated structure of the MLP (including its weights and biases) at that particular time step of the optimization process. In other words, the optimization process of an MLP can be seen as a trajectory in graph space. Interestingly, in the last years the concept of net-work trajectories [7] has been coined in network science [8], as an interpretation of the more general concept of 
+
+temporal networks [9, 10] that emerges from a dynam-ical systems viewpoint when a temporal network is in-terpreted as sampling a latent graph dynamics. Recent works describing network trajectories include characteri-zation of network correlations [7, 11–13] or sensitivity to initial conditions [14, 15]. This perspective of network trajectories has been used to assess the training of neural networks, viewing train-ing as tracing trajectories in graph space [16], rather than the more traditional approach of focusing solely on the evolution of the loss function and the geom-etry of the loss surface. This approach has unveiled the onset of complex dynamics emerging in gradient-descent optimization, including seemingly universal (i.e. architecture-independent) transition to chaotic behavior at large learning rates of the gradient descent optimizer, along with evidence of training optimality close to the on-set of chaos [17], in line with broader observations that neural systems may benefit from operating near critical or edge-of-chaos regimes [18]. Other dynamical-systems approaches have characterised network’s spatial expres-sivity and decision boundaries in the input data [19], used Lyapunov-based indicators to quantify stability in recur-rent neural architectures [20], or studied how the geome-try of the loss landscape and the distribution of minima influence optimization dynamics and learning outcomes [21]. These studies reinforce the view that neural network training should be understood as a dynamical process un-folding in a high-dimensional landscape. Observe, however, that characterising network trajec-
+
+> arXiv:2606.30384v1 [cs.LG] 29 Jun 2026
+
+2tories of realistic MLPs is challenging due to their ex-tremely high dimensionality: even a toy MLP can already contain thousands of trainable parameters (links). As training progresses, these parameters collectively trace a trajectory through a highly non-convex loss landscape, where each point represents a particular configuration of the network. Although the optimization algorithms used are designed to minimize loss, the actual path taken through this landscape reflects a complex inter-play between gradient directions, learning rate, model architecture, and data structure. Capturing and visual-izing this high-dimensional trajectory is therefore both a technical and conceptual challenge, and a better un-derstanding of these high-dimensional network trajecto-ries can offer valuable insights into the explainability of ANNs. Early works aiming to understand optimization in deep networks focused on probing the geometry of such high-dimensional loss landscape through low-dimensional slices and interpolation experiments. For instance, the linear path experiment introduced in [22] analyzes the loss along a straight segment between initialization and a trained solution, and helped popularize the idea that large-scale barriers may be limited in certain settings. Subsequent work developed more systematic visualiza-tion techniques and reported links between landscape ge-ometry and generalization, including methods to obtain comparable 2D loss plots [23] and analyses connecting sharpness to generalization performance [24–26]. At the same time, recent studies have cautioned that conclusions drawn from 1D/2D slices can be fragile: the behavior of linear interpolation depends on the task, architecture, initialization, and training setup, and modern networks can exhibit qualitatively different interpolation profiles [27–29]. More recently, theoretical frameworks have pro-posed that deep-learning loss landscapes may exhibit a multifractal structure [30]. Another theme emerging from these lines of research is that training dynamics and solution sets can dis-play an effective low-dimensional structure, and thus dimensionality reduction of the blackbox training pro-cess is sensible. This perspective is supported by work on intrinsic dimension and subspace training [31], by observations that gradients align with structured low-dimensional subspaces during training [32, 33], and by evidence that trajectories of trained models concen-trate on low-dimensional manifolds in prediction space across architectures and training choices [34]. Altogether, these results motivate studying training –i.e. network trajectories– through compact representations that pre-serve relevant geometric and dynamical information. For instance, some authors have proposed to directly project and visualize network trajectories by applying dimension-ality reduction to snapshots of weights collected during training: [35] projects training trajectories using PCA, and [36] compares the resulting projections with those of high-dimensional random walks, highlighting charac-teristic low-dimensional patterns. More broadly, recent work treats neural weights as data objects and learns rep-resentations in weight space for analyzing and comparing models [37–39]. These approaches suggest that embed-ding network trajectories can offer a complementary lens on optimization and generalization. Interestingly, from the field of temporal networks some authors have indeed proposed recently a range of embedding techniques, to effectively project the trajectory of generic evolving net-works into trajectories in lower dimensional space [40– 42]. In this work we contribute to the task of building low-dimensional embeddding of (neural) network train-ing trajectories. To that aim, we consider the scalar em-bedding technique proposed in [41], and assess to what extent the complexity of high-dimensional network tra-jectories is preserved in the scalar projection. In partic-ular, we consider the transition-to-chaos phenomenology evidenced by high-dimensional deep neural network tra-jectories described in [17]. We show that the properties of the high-dimensional dynamics –including the transition to chaos, and the onset of positive network Maximum Lyapunov Exponent nMLE–, are preserved and well cap-tured already in the scalar projection of the network tra-jectories. After such validation, we explore the properties of these scalarized network trajectories, finding relevant insights of the original high-dimensional dynamics, in-cluding a simple characterization of the network decorre-lation times and a nontrivial spacing distribution of local minima of the loss landscape. The rest of the paper is as follows: in section II we make a brief summary of the scalar embedding methodology. Section III depicts the results of this work. After pro-viding details on the system under analysis, we present results pointing to the emergence of a transition-to-chaos phenomenology in the original high-dimensional neural network trajectory, and find that the scalar embedding of such trajectory fully preserves such phenomenology. Sub-sequently, we show that the decorrelation time –i.e. the characteristic time after which two initially close neural networks with chaotic evolution decorrelate under the ac-tion of the gradient descent dynamics– can be extracted from the scalar embedding. We finally explore the distri-bution of local minima in the scalar embedding, finding evidence of a universal spacing distribution. In section IV we conclude.  
+
+> II. SCALAR EMBEDDING OF NETWORK TRAJECTORIES
+
+In this work, we employ the scalar embedding method-ology in [41], which characterizes the dynamics of tem-poral networks through low-dimensional representations. For illustration, a sketch of the methodology is depicted in Fig. 1. A temporal network, or network trajectory, is defined as an ordered sequence of graphs G = ( G1, G 2, ..., G T ), where each Gt is the network snapshot at time t, rep-3 
+
+> Figure 1. Sketch of the methodology to extract a scalar embedding of a temporal network, based on the methodology in [41]. A temporal network trajectory is given by an ordered sequence of graph snapshots. Each graph snapshot is then mapped into feature space, where the features of a given graph snapshot are the relative distances between such snapshot and any other snapshot. The resulting feature matrix is finally dimensionally reduced to obtain a low-dimensional representation of the original trajectory.
+
+resented by its adjacency matrix A(t). The key idea is that, in order to preserve the key dynamical properties of a temporal network, rather than any other microscopic property of each network snapshot, one should aim to preserve the relative position between network snapshots in a low-dimensional representation Gϕ = ( z1, z 2, ..., z T ), where zt ∈ Rdim , with dim ≪ T . Accordingly, each network snapshot in the temporal network is initially mapped into a point in a feature space, where the fea-tures account for the relative distance between such snap-shot and every other snapshot in the temporal network, and discards other features with e.g. topological in-formation of the snapshots. The feature embedding is constructed by first defining pairwise distances between snapshots. Specifically, each snapshot Gt is represented by a feature vector composed of its squared distances to all other snapshots along the trajectory. For any two graph snapshots Gt, G t′ , its distance is computed as d(Gt, G t′ ) = || A − A′
+
+|| 2, where A and A′ are the adjacency matrices of Gt and Gt′ , respectively. Col-lecting these square distances yields a feature matrix 
+
+D(2) = {d2 
+
+> tt ′
+
+}Tt,t ′=1 . Observe that the number of fea-tures of each network snapshot only depends on the num-ber of time snapshots, rather than the size of each net-work snapshot (i.e. the number of nodes). Subsequently, one proceeds by dimensionally reducing the feature space by maximally preserving the relative distance between points. A variety of different possibilities can be con-ducted [41], here we make use of classical multidimen-sional scaling [43]. Finally, a low-rank representation of the temporal network is found. Of particular interest is the case dim = 1, which produces a scalar embedding that compresses the temporal evolution of the entire net-work into a real-valued univariate time series. In [41] this methodology was validated across a range of synthetic and empirical network trajectories with dif-ferent dynamics, demonstrating that the resulting scalar embeddings preserve key dynamical properties of the original trajectories across different types of dynamical complexity, and for a large range of network sizes. In the following, we adopt this framework to analyze the train-ing dynamics of artificial neural networks. Notice that it is not obvious a priori if such approach can preserve dynamics, as in deep learning even small neural networks are really large in terms of the number of edges (training parameters). 4 
+
+> III. RESULTS
+
+To explore the ability of the embedding methodology to capture relevant neural network dynamics, we initially focus on the main findings reported in [17]. In that work we showed that, for a range of learning rate values, the training trajectories of neural networks exhibit a transi-tion to chaos, as characterized by positive Maximum Lya-punov Exponents (MLEs). Although [41] demonstrated the validity of the approach on both synthetic and em-pirical networked systems, those systems are significantly smaller and structurally simpler than modern neural ar-chitectures. Therefore, as a first step, it is essential to assess whether applying a scalar embedding to a neural network trajectory can still preserve meaningful dynami-cal information, or whether such an extreme dimensional-ity reduction might lead to the loss of relevant structure, thereby limiting the interpretability of the embedding.  
+
+> A. Background: transition to chaos in multilayer perceptron training dynamics
+
+Our validation builds upon the theoretical framework introduced in [17], which analyzes neural network train-ing from a dynamical-systems perspective through the evolution of their weight trajectories. In that work, we quantified how small perturbations in the initial condi-tions lead to diverging network evolutions, establishing a connection between learning rate, training stability, and chaotic dynamics. Motivated by these findings, we inter-pret the evolution of the network parameters as a tem-poral dynamical system, which can be embedded into a low-dimensional representation. This approach provides the basis for assessing whether the scalar embedding cap-tures the same dynamical features —most notably, sen-sitivity to initial conditions— identified in the original high-dimensional system. We briefly summarize the neural network model used in [17], which serves as the experimental setup for the present study. We consider a multilayer perceptron (MLP), i.e., a fully connected feed-forward network with a single hidden layer, trained on the supervised classifica-tion task MNIST [44]. An MLP implements a nonlinear mapping y = F(x; Ω), where x ∈ Rm is the input, y is the output, and Ω = {ωk} denotes the set of trainable parameters (weights and biases). In our example of inter-est, the architecture of the MLP consists of an input layer with 784 neurons, a hidden layer with 64 neurons, and an output layer with 10 neurons, resulting in approximately 5·10 4 trainable parameters. Hidden layers perform affine transformations followed by a tanh nonlinear activation function, while the output layer produces the final pre-diction. Training is formulated as the minimization of a cross-entropy loss function L(x; Ω) through full-batch gradient descent (GD), according to 
+
+ωk(t + 1) = ωk(t) − η∂ ωk L(x; Ω) (1) where η denotes the learning rate. The sequence of pa-rameter configurations updates 
+
+T = {Ω(0) , Ω(1) , Ω(2) , . . . }, (2) with Ω( t) = {ω1(t), . . . , ω m(t)}, defines a trajectory in parameter space and denotes the set of trainable param-eters at training epoch t. This trajectory describes how the network evolves and explores the high-dimensional loss landscape during training, and constitutes the ob-ject of analysis in this work. The dynamical analysis performed in [17] revealed the existence of three distinct training regimes as a function of the learning rate, illustrated in Fig 2. Small values of η produce smooth and monotonic convergence of the loss function, intermediate values generate irregular but still convergent transient dynamics, and sufficiently large learning rates lead to strongly irregular behavior where learning fails. 0 200 400 600 800 1000 
+
+Epoch t    
+
+> 10 0
+> 10 1
+> 10 2
+> (t) = 0.01
+> = 10.0
+> = 20
+> Figure 2. Training loss trajectories for three representative learning rates η.Full batch training is performed at each epoch.
+
+To characterize the dynamical properties of the net-work trajectories along training and their sensitivity to initial conditions, we considered pairs of networks ini-tialized with infinitesimally close conditions. Specifi-cally, given a reference parameter set Ω = {wij }, a per-turbed configuration is constructed as Ω ′ = {wij + δij },where δij are independent and identically distributed (i.i.d.) random variables drawn from a uniform distri-bution ˆδ ∼ U (−ϵ, ϵ ), with perturbation radius ϵ = 10 −8.Given the corresponding trajectories {Ω( t)} and 
+
+{Ω′(t)}, their divergence is quantified by a distance 
+
+d(Ω( t), Ω′(t)) = P  
+
+> ωk∈Ω
+
+|ωk(t) − ω′
+
+> k
+
+(t)|, i.e., the L1
+
+norm of the parameter differences. For certain learning rate values, this distance exhibits an initial exponential growth phase, which enables the estimation of finite-time 5network Lyapunov exponents [14]. The network’s Max-imum Lyapunov Exponent (nMLE) λnMLE is then ob-tained by averaging these local exponents over 50 inde-pendent initializations, each with five perturbed replicas [14, 41]. The resulting dependence of the nMLE on the learning rate is shown in Fig. 3. Positive values of λnMLE 
+
+indicate sensitivity to initial conditions, thus identifying regimes in which the training dynamics exhibit chaotic behavior. In this figure we also plot, ρ, defined as the fraction of initial conditions displaying positive local net-work Lyapunov exponents. Incidentally (see Appendix A 0.0005  
+
+> 0.001
+> 0.005
+> 0.01
+> 0.05
+> 0.1
+> 0.5
+> 1.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> nMLE
+> Mean MLE
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Figure 3. The black curve shows the averaged network Maxi-mum Lyapunov Exponent ( λnMLE ) as a function of the learn-ing rate η, with error bars representing the standard deviation of all local finite-time Lyapunov exponents computed across different initializations. The blue curve displays ρ, the per-centage of positive local Lyapunov exponents across all real-izations. 
+
+for details), the value of η marking the sharp transition toward ρ ≃ 100% coincides with the one where the aver-age number of epochs required to reach 90% classification accuracy in the test set for the MNIST task is minimized, revealing the existence of a sweet-spot in the training effi-cient around η ≈ 7.5, where exploitation and exploration strategies are optimally balanced [17]. 
+
+B. Sensitivity to initial conditions and transition to chaos in the embedded scalar trajectories 
+
+We now investigate whether the scalar embedding strategy depicted in Section II is capable of capturing the dynamical properties previously identified in neural net-work training. In particular, we focus on the emergence of sensitivity to initial conditions in a MLP trained on the MNIST classification task, using the same architec-ture described in Section III A. We generate a reference trajectory 
+
+G = (Ω(0) , Ω(1) , . . . , Ω( T )) for the three representa-tive values of the learning rate depicted in Fig. 2. The corresponding embedded trajectories Gϕ over the first 200 epochs are shown in Fig. 4. Observe that the 5          
+
+> 0
+> 5
+> ×10 3
+> = 0.01
+> 0.0
+> 0.2
+> 0.4
+> 0.6 = 10.0
+> 025 50 75 100 125 150 175 200
+> 0.0
+> 0.5
+> 1.0
+> = 20
+> Epoch t
+> z(t)
+
+Figure 4. Scalar embeddings of the first 200 training epochs for three different learning rates. Each curve corresponds to the embedded trajectory z(t) associated with a reference net-work trajectory G.
+
+scalar embedding preserves the qualitative differences between the training regimes previously identified through the loss evolution in Fig. 2. For small learn-ing rates, the embedded trajectory evolves smoothly and monotonically, reflecting the stable optimization dynamics associated with small learning rates. For intermediate learning rates, corresponding to the regime where sensitivity to initial conditions begins to emerge in the original high-dimensional system, the trajectory remains convergent but evolves on a different scale from the small η case, indicating a qualitative change in the underlying training dynamics. Finally, for large learning rates, the embedded trajectory displays fluctuations and irregular behavior. Thus, although the scalar embedding does not provide a one-to-one representation of the loss evolution, nor this is its aim, it successfully captures the fundamental dynamical characteristics of the original training trajectories. This is noticeable given that the embedding projects trajectories evolving in a space of order 5 · 10 4 dimensions onto a single scalar observable, acting as a coarse-grained representation of the underlying parameter space dynamics. We next examine whether the embedding preserves the sensitivity to initial conditions observed in the full pa-rameter space dynamics. Following the procedure de-6scribed above, for an ensemble of different initial condi-tions, we generate five perturbations of each initial con-dition, and compute the L1 distance d(t) between the scalar embeddings of the perturbed and reference tra-jectories. Figure 5 shows the resulting evolution for a representative case with learning rate η = 10, a regime for which sensitivity to initial conditions emerged in the original high-dimensional system. A clear exponential growth phase is observed during the first ∼ 30 epochs, whose slope defines a local Lyapunov exponent in the em-bedded space. Then, we repeat the same procedure over an ensemble of 50 independent initial conditions. The re-sulting ensemble of trajectories is shown in Fig. 6, where each initial condition gives rise to a potentially different local Lyapunov exponent Λ(Ω(0)). The inset displays the distribution of these exponents. Averaging these local exponents yields to the maximum Lyapunov exponent (MLE) λMLE of the scalar embedded trajectories, which is the scalarized version of the net-work Maximum Lyapunov exponent λnMLE previously estimated in the original, high-dimensional system. At the same time, in the embedded dynamics we can also measure ρ, the fraction of initial conditions displaying positive local Lyapunov exponents. Accordingly, these allow for a direct comparison with the result obtained in the full parameter space (Fig. 3), now from the per-spective of the scalar embedding. Results are plotted in Fig. 7, finding a remarkable similarity with the transition to chaos phenomenology depicted in Fig. 3. 0 10 20 30 40 50 60 
+
+Epoch t      
+
+> 10 10
+> 10 8
+> 10 6
+> 10 4
+> 10 2
+> d(t)
+
+Figure 5. Semi-log plot of the distances d(t) between the scalar embeddings of a reference trajectory and five inde-pendently perturbed trajectories, shown as a function of the training epoch t for η = 10. Each color corresponds to a dif-ferent perturbation. 
+
+This agreement is particularly remarkable given the drastic dimensionality reduction involved: original tra-jectories evolving in a space of tens of thousands of pa-rameters are compressed into a single scalar observable while still retaining the instability patterns characteris-tic of the underlying training dynamics. These results validate the embedding methodology as a reliable tool for capturing non-trivial dynamical properties in artifi-cial neural networks. 0 10 20 30 40 50 60 70 80 
+
+Epoch t           
+
+> 10 13
+> 10 11
+> 10 9
+> 10 7
+> 10 5
+> 10 3
+> 10 1
+> d(t)
+> 0.6 0.8 1.0
+> 0
+> 5
+> 10
+> P( ) nMLE = 0.79
+
+Figure 6. Same as Fig. 5 for multiple ϵ-balls centered at dif-ferent initial conditions Ω(0). For each initial condition, a local Lyapunov exponent Λ(Ω(0)) is extracted from the ex-ponential regime. The inset displays the distribution of these local exponents, whose mean defines the network maximum Lyapunov exponent, λnMLE .0.0005  
+
+> 0.001
+> 0.005
+> 0.01
+> 0.05
+> 0.1
+> 0.5
+> 1.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> nMLE
+> Mean MLE
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+
+Figure 7. Maximum Lyapunov Exponent estimated from the scalar embedding. The black curve shows the averaged net-work Maximum Lyapunov Exponent ( λnMLE ) as a function of the learning rate η, with error bars representing the standard deviation of all local Lyapunov exponents computed across different initial conditions and perturbations. The blue curve displays ρ, the percentage of positive local Lyapunov expo-nents across all realizations. 
+
+C. Estimating decorrelation times in the original high-dimensional chaotic dynamics from the scalar embedding 
+
+Having shown that the embedding methodology pro-vides a meaningful representation of the training dynam-ics, we now leverage it to quantify several properties of the chaotic dynamics observed during training. To this end, we now fix the learning rate to η = 10, a represen-tative case within the optimal training efficiency regime, where the dynamics display both strong sensitivity to perturbations and near-optimal training times for the classification task. This choice allows us to character-ize the interplay between chaotic dynamics and training 7efficiency directly in the embedded representation. In particular we aim to estimate, directly from the em-bedded trajectories, a quantity that describes the decor-relation time of the original, high-dimensional chaotic dy-namics. As a matter of fact chaotic trajectories of ini-tially close conditions fully decorrelate after some time, that we label τdec . In principle, τdec should be com-puted directly from the evolution of the trajectories in the original parameter space. However, this would require estimating cross-correlation functions between high-dimensional network trajectories evolving in a space of order 5 ·10 4 dimensions, which makes such an approach difficult to implement in practice. Before introducing the protocol to retrieve τdec directly from the scalar embedding, we need a proxy that can be used to validate whether such quantity can indeed be retrieved from the scalar embedding in the first place. Given that it is computationally intensive to estimate cross-correlation functions of high-dimensional dynamics, a natural alternative for such proxy is to use the test ac-curacy trajectory (i.e. the evolution of the cross-entropy loss computed in the test set), which itself is a scalar magnitude. Note, however, that accuracy constitutes a highly compressed and often saturated projection of the underlying high-dimensional dynamics. Many distinct parameter configurations may yield nearly identical ac-curacies, and it is often the case that network trajectories which are dynamically varying can yield constant accu-racy time series, as happens in the phase before grokking [45, 46]. As a consequence, an apparent loss of similar-ity between two accuracy traces does not necessarily im-ply that the associated trajectories have evolved toward different regions of the parameter space; it may simply reflect transient differences in optimization speed or al-ternative pathways within the same basin of attraction. Conversely, trajectories converging to different minima may still exhibit almost indistinguishable accuracy curves if their final performance is comparable. 0 50 100 150 200          
+
+> Epoch t
+> 10 6
+> 10 5
+> 10 4
+> 10 3
+> 10 2
+> d(t)
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> Accuracy
+> d(t)
+> Accuracy original
+> Accuracy perturbed
+> Figure 8. Black markers show the embedding-based separa-tion d(t) between a reference trajectory and one perturbed replica (left axis). The blue solid and red dashed curves show the corresponding accuracy traces (right axis). Results corre-spond to η= 10.
+
+With these disclaimers in mind, Fig. 8 illustrates the evolution of test accuracy as a function of the number of training epochs, for two initially close network initializa-tions. The black markers also show the embedding-based separation d(t) between the scalarized trajectories, while the blue and red curves show the corresponding test accu-racies. At early epochs, when d(t) ≈ 10 −6, both accuracy trajectories evolve almost synchronously, as expected for trajectories that remain close in the underlying parame-ter space dynamics. As training progresses and the dis-tance in embedding space increases, the accuracy traces begin to desynchronize and exhibit intermittent devia-tions, plateaus, and crossings. Intuitively, one can then estimate from these signals an accuracy-based decorre-lation time τ acc dec as the earliest epoch where the cross-correlation function between the two accuracies detects a complete loss of correlations, according to some proto-col and hypothesis test. Such protocol is as follows: we define τ acc dec from a sliding-window correlation analysis of the reference and per-turbed accuracies. Given two (accuracies) time series, 
+
+aref (t) and apert (t), we consider windows of length W
+
+displaced by a step s, and compute in each window the Pearson correlation coefficient r(t) after linear detrending in order to remove slow drifts. To determine statistical significance, we construct a window-wise null model as follows: within each window, we generate nnull realiza-tions by applying random nonzero circular shifts to the perturbed trace. This procedure preserves the tempo-ral structure of the signal within the window while dis-rupting its alignment with the reference trace. From the resulting null correlations {r0} we extract a two-sided confidence interval [ rlow (t), r high (t)] at a certain confi-dence level. A window is classified as decorrelated if (i) the observed correlation lies within this null interval, 
+
+rlow (t) ≤ r(t) ≤ rhigh (t), (ii) the Pearson correlation is statistically non significant, namely p(t) > p th , and (iii) the absolute correlation is sufficiently small, |r(t)| < r th .As an illustrative example in Fig. 9, we estimate τ acc dec by applying this method to the accuracy traces of a reference run and one of its perturbed replicas, using a window length W = 20 epochs and a unit step s = 1. The window length is chosen to be long enough to smooth out epoch-to-epoch fluctuations and provide a stable estimate of the correlation, while still remaining sufficiently local in time to detect the onset of decorrelation. The unit step maximizes temporal resolution, allowing τ acc dec to be iden-tified at the earliest epoch compatible with the criterion. For each window we compute the Pearson correlation be-tween detrended segments, generate nnull = 250 corre-lations and extract a two-sided 95% confidence interval from the null distribution. We then define τ acc dec as the cen-tered epoch of the first window for which the observed correlation is both compatible with the null interval, sta-tistically nonsignificant with pth = 0 .05, and sufficiently small in absolute value, |r(t)| < r th , with rth = 0 .50. Fig-ure 9 shows a representative realization of this method, including the sliding-window correlation, the correspond-8ing null confidence band, and the associated p-values. In this case, we estimate τ acc dec = 20 as the decorrelation time that satisfies the criteria. 20 40 60 80 
+
+Epoch (window center)   
+
+> 0.75
+> 0.50
+> 0.25
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> Pearson r  Null band 95%
+> Pearson r
+> acc dec = 20
+> p-value
+> p= 0.05
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> p-value
+
+Figure 9. Sliding-window Pearson correlation r(t) between the detrended accuracies of a reference trajectory and one perturbed replica, shown as a function of the window-center epoch (window length W = 20, step s = 1). For each win-dow, a null distribution is generated from nnull = 250 nonzero circular shifts of the perturbed segment, yielding the shaded 95% confidence band. The corresponding Pearson-test p val-ues are shown in red on the right axis; the horizontal dotted line marks the significance threshold pth = 0 .05. The vertical dashed line indicates the resulting decorrelation time τ acc dec , de-fined as the center of the first window for which the observed correlation lies within the null confidence band, is statistically non-significant, p(t) > p th , and satisfies |r(t)| < r th . Results correspond to η = 10. 
+
+Moving on, we now consider again the scalar embed-ding trajectories, and attempt to define a characteris-tic time τ emb dec which quantifies the actual decorrelation time τdec . The idea here is to associate such quantity to the typical timescale needed for the exponential sep-aration of trajectories to saturate, i.e. something akin to a Lyapunov time. A representative example is shown in Fig. 10, where initially close trajectories (blue and red) exponentially separate (black curve) until a char-acteristic time where such distance starts to saturate. Such change of behavior is rather easy to identify. To automate the detection of τ emb dec , for each initialization we consider one reference trajectory and several per-turbed replicas, compute at each epoch t the separation 
+
+d(t) = |zpert (t) − zref (t)|, and define τ emb dec as the epoch at which the numerical time derivative of d(t) in a log-linear scale drops below a threshold set to 15% of its maximum value and is maintained low for a few epochs. Incidentally, we have also checked that the resulting char-acteristic is often a few epochs later than the one where 
+
+d(t) ≥ 10 −3 for the first time. In the example of Fig. 10, we find τ emb dec = 24. We have applied such procedure to all pairs of initially close trajectories, for all initial conditions. In order to compare the estimation of decorrelation time via the em-bedding with respect to the one found via the accuracy trajectories, Fig. 11 scatter plots τ acc dec vs τ emb dec . The two 0 50 100 150 200 
+
+Epoch t      
+
+> 10 6
+> 10 4
+> 10 2
+> d(t)
+> d(t)
+> emb dec = 24
+> zref (t)
+> zpert (t)0.4
+> 0.2
+> 0.0
+> 0.2
+> z(t)
+
+Figure 10. Example of the embedding-based decorrelation time τ emb dec for a reference trajectory and one of its perturbed replicas. The left axis shows the separation d(t) between the corresponding embedded trajectories, while the vertical dashed line marks τ emb dec . The right axis shows the scalar em-beddings of the reference (blue) and perturbed (red) trajec-tories. Results correspond to η = 10. 
+
+quantities are clearly linearly correlated in a statistically significant way (Pearson r = 0 .69, p-value= 2 .5 × 10 −8). 22 24 26 28 30 32 34 36     
+
+> emb dec
+> 20
+> 25
+> 30
+> 35
+> acc dec
+> Pearson r= 0.69
+> p= 2.46 e08
+
+Figure 11. Scatter plot of τ acc dec versus τ emb dec across initial con-ditions for η = 10. Each point corresponds to one initial condition, with both decorrelation times averaged over the five perturbations for each initial condition. 
+
+Furthermore, we argue that the correlation coefficient is not higher precisely because estimation of decorrela-tion times via accuracy trajectories has some problems –as identified earlier–. Overall, the embedding-based def-inition yields a more stable and easier-to-estimate proxy for the decorrelation time. 
+
+D. Distribution of stationary points in the parameter landscape 
+
+In the context of ANN training, the loss is highly non-convex and its landscape is populated by very many local minima, whose distribution is often difficult to character-ize due to the curse of dimensionality. Here we aim to 9understand how such distribution of minima is mapped into the scalar embedding. To that aim, for each scalar trajectory z(t) we define its asymptotic, quasi-stationary state as z∞ := ⟨z(t)⟩t∈T final where Tfinal denotes a win-dow consisting of the last 50 training steps. Empirical observation indeed shows that, in the scalar embedding, after a transient trajectories often stabilise within a sta-tionary state, see Fig. 12 for an illustration. We identify the onset of a plateau in the separation distance between initially close trajectories d(t) as the starting point of the stabilization of the scalar trajectories, and use the subsequent epochs to estimate the asymptotic value z∞.0 50 100 150 200 
+
+Epoch t        
+
+> 10 10
+> 10 8
+> 10 6
+> 10 4
+> 10 2
+> d(t)
+> 0.6
+> 0.4
+> 0.2
+> 0.0
+> z(t)
+> d(t)
+> z(t) (reference)
+> z(t) (perturbed)
+> z(reference)
+> z(perturbed)
+
+Figure 12. Example of asymptotic stabilization in the scalar embedding. The black marker represents the distance d(t)between the embedded reference and perturbed trajectories as a function of training epoch t (left axis). The blue and red curves show the corresponding scalar embeddings z(t) (right axis), and the dashed horizontal lines mark their asymptotic values ( z∞). Results correspond to η = 10 .0. 
+
+Note that, in order to be able to capture true local min-ima and to be able to sample a representative amount of them, we need to track trajectories that (i) by construc-tion can initially spread over the whole loss landscape, and (ii) after such initial exploration phase, can eventu-ally relax into local minima. Such interplay requires to fix a learning rate η of the optimizer that indeed guaran-tees trajectories balancing such exploration/exploitation tradeoff [17]. In Fig. 13 we plot, for different values of η,the set of values {z∞} found from the scalar embedding of the original (training) network trajectories. In partic-ular, for each value of η we consider one reference trajec-tory together with 25 perturbed replicas generated from the same initial condition, and compute the correspond-ing asymptotic values z∞. This yields, for each learning rate, a set of 26 asymptotic endpoints, {z∞ 
+
+> 0
+
+, z ∞ 
+
+> 1
+
+, . . . , z ∞ 
+
+> 25
+
+}
+
+which are shown as a function of η in Fig. 13. For η ≲ 7.5, these asymptotic values remain confined to a relatively narrow interval, indicating that nearby trajec-tories cannot really explore much of the loss landscape. As η increases, however, the spread of z∞ broadens sub-stantially, revealing a growing diversity of asymptotic outcomes and a stronger sensitivity on small perturba-tions of the initial condition. In particular, a marked increase in the variability of the asymptotic endpoints appears around η ≈ 7.5. This range coincides with the regime in which the network attains its best training-time performance in our previous experiments as shown in Fig 15. The results in Fig. 13 are consistent with the interpretation that, in this sweet spot, the optimization dynamics explore a broader set of regions in parameter space, ultimately giving rise to a more heterogeneous dis-tribution of asymptotic embedded states. 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 
+
+> 0.8
+> 0.6
+> 0.4
+> 0.2
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> z
+
+Figure 13. Asymptotic embedded states as a function of the learning rate. Each point represents an asymptotic embed-ding value z∞ obtained from an individual training trajec-tory, with 26 trajectories analyzed for each value of η (one reference trajectory and 25 perturbed realizations). For small learning rates, the asymptotic states are confined to a narrow region of the embedded space, indicating a relatively com-pact organization of final states. As η increases, the spread of z∞ broadens significantly, revealing a progressively more heterogeneous organization of the asymptotic states in the embedded landscape. 
+
+Once we have located the value of η = 10 that a priori guarantees that the stationary points {z∞} are (i) lo-cal minima, and that these are (ii) scattered throughout a considerable region of the loss landscape, we are ready to characterise its distribution along the one-dimensional axis of the scalar embedding. Instead of characterising its raw distribution, we focus on the distribution of nearest-neighbor spacing ∆. In practice, starting from one ref-erence trajectory and M perturbed replicas, denoted by 
+
+{z0(t), z 1(t), . . . , z M (t)}, we obtain the corresponding set of asymptotic values {z∞ 
+
+> 0
+
+, z ∞ 
+
+> 1
+
+, . . . , z ∞ 
+
+> M
+
+}. Without loss of generality, we can then order these values as 
+
+z∞ 
+
+> (0)
+
+> z ∞ 
+
+> (1)
+
+> · · · > z ∞  
+
+> (M)
+
+(3) We then define the set of nearest-neighbor spacings be-tween consecutive asymptotic states as ∆ = {∆1, ∆2, . . . , ∆M }, ∆i = z∞ 
+
+> (i−1)
+
+− z∞
+
+> (i)
+
+. (4) The spacing sequence ∆ provides a quantitative descrip-tion of how the asymptotic states are arranged along the scalar embedding axis. In particular, it captures the local density of stationary endpoints: small values of ∆ i10 indicate closely packed asymptotic states, whereas large values signal more isolated ones. In this way, ∆ offers a simple observable with which to characterize the fine organization of the minima explored by training in the embedded landscape. For η = 10, we generate an ensemble of training trajectories from N independent initial conditions, each supplemented with M small perturbations. For every realization, we compute the associated asymp-totic embedded values z∞, sort them, and extract the spacings ∆ i between consecutive endpoints. Pooling these spacings over all realizations yields the empirical distribution P (∆) corresponding to that learning rate. This distribution allows us to move beyond individual trajectories and probe whether the arrangement of nearby minima in the embedded landscape exhibits statistical regularities. A first question is whether these spacing statistics vary for different initial conditions. As a matter of fact, remind that different regions of the parameter landscape can have different finite Lyapunov exponents, and therefore the initial separation of nearby trajectories can be more rapidly amplified in some regions than in others, eventually resulting in spacing distributions whose scale could be different. We indeed find that the raw distributions P (∆) are not fully compatible across initial conditions, and that there is a clear scale effect. However, after rescaling the spacings in each realization by their mean value, ∆ ′ = ∆ 
+
+> ⟨∆⟩
+
+, the resulting distribution becomes independent of the region of the parameter space from which the trajectories start. In particular, we sampled 10 initial conditions, and built 250 perturbations around each of the 10 initial condi-tions. These result in 10 different spacing distributions. When adequately rescaled, these distributions were all compatible (10-sample Anderson-Darling test [47], p-value ≃ 0.93). The resulting collapse of the rescaled distributions is shown in Fig 14 (observe that we are plotting log 10 ∆′). Once we made sure that the statistic ∆ ′ is not condi-tioned on the initial condition, we can then merge all 10 sets of 250 points to build a joint sample of 2500 values. We then tested the empirical pdf of log 10 ∆′ against a set of candidate parametric distributions, including the normal, skew-normal, Student-t, Laplace, logistic, and generalized normal distributions, using Maximum Likeli-hood Estimation. In particular, the probability distribu-tion function of a skew-normal distribution is given by 
+
+f (x; ξ, ω, α ) = e− 12 ( x−ξω )2
+
+ω√2π
+
+
+
+1 + erf 
+
+ α (x − ξ)
+
+ω√2
+
+ 
+
+(5) where x = log 10 (∆ ′), ξ is a location parameter, ω > 0a scale parameter, α controls the skewness and erf de-notes the error function. Goodness of fit was evaluated using a one-sample Kolmogorov-Smirnov test. Among the candidate distributions considered, only the skew-normal distribution was not rejected at the 5% signifi-cance level. The resulting fit is shown in Fig. 14, where the ten rescaled distributions are displayed individually together with the fitted probability density function. We find that this statistical structure is characteristic of the transition-to-chaos region, where training trajectories balance exploration of the landscape with eventual con-vergence to local minima. As expected, for small learning rates the dynamics probe only a limited portion of the landscape, while for very large learning rates trajecto-ries explore broadly but fail to converge to well-defined minima, preventing a meaningful characterization of the corresponding minima distribution. 3 2 1 0 1              
+
+> log 10 (′)
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> P(log 10  ′)
+> CI 0
+> CI 1
+> CI 2
+> CI 3
+> CI 4
+> CI 5
+> CI 6
+> CI 7
+> CI 8
+> CI 9
+> Best fit
+> Figure 14. Rescaled spacing distributions for η= 10. Markers corresponding to 10 independent initial conditions (CI 0–9), shown in terms of the transformed variable log 10 (∆ ′), with ∆′= ∆ /⟨∆⟩.Each set of markers represents the empirical histogram of a single initial condition. The solid line shows the skew-normal fit to the pooled data, yielding fitted param-eters α=−2.78, ξ= 0 .36, and ω= 0 .91.
+
+The interpretation of these results is that the variability observed across the raw spacing distributions ∆ is pri-marily controlled by differences in the local instability properties associated with each initial condition, due to different local Lyapunov exponents that lead to nonuni-form expansion properties of the dynamics along differ-ent regions of phase space. We speculate that the mean spacing ⟨∆⟩ associated to a given initial condition may indeed be related to the local Lyapunov exponents in that region. Under this interpretation, the collapse of the rescaled distributions after normalizing by ⟨∆⟩ sug-gests that most of the variability across initial conditions can be attributed to this scale factor, which is indeed in-dependent of the underlying loss geometry. The remain-ing distributional shape, which becomes approximately universal after rescaling, would then fully reflect said ge-ometry. The precise shape of the rescaled distribution appears to be a skewed lognormal distribution. How this seemingly universal shape is connected to the specific loss landscape geometry in the original, high-dimensional space and how this might depend on different neural net-work architectures and regression/classification tasks is a fascinating open problem. 11  
+
+> IV. CONCLUSIONS
+
+In this work we find that our scalar embedding technique provides a low-dimensional representation of neural network training dynamics while preserving nontrivial dynamical information from the original high-dimensional parameter space. Our representative examples show that despite compressing trajectories evolving in a space of order 5 · 10 4 dimensions into a single scalar observable, the embedding successfully reproduces the qualitative dependence of the dynamics on the learning rate, including the emergence of sensi-tivity to initial conditions in the same training regimes identified in the full parameter space analysis. The embedding representation also enables a direct ge-ometric characterization of trajectory separation during training. In particular, we introduce an embedding-based decorrelation time, τ emb dec , which provides a robust and interpretable measure of the timescale over which nearby trajectories lose coherence. Compared with an accuracy-based estimator, the embedding-based approach avoids the limitations associated with com-pressed and saturated performance observables, allowing trajectory divergence to be identified more clearly and systematically. Beyond characterizing trajectory divergence, the scalar embedding also reveals statistical structure in the organization of asymptotic states in the embedded landscape. By studying the spacing observable ∆ be-tween asymptotic embedded states, we showed that the corresponding spacing distributions become statistically compatible across initial conditions after rescaling by their mean value. This collapse suggest the existence of an approximately universal underlying organization of minima in the embedded landscape, with the character-istic scale of the spacings controlled by local instability properties of the dynamics. More broadly, these results support the interpretation of ANN training as a high-dimensional dynamical process whose geometric and chaotic properties can nevertheless be captured through low-dimensional representations [41]. The methodology introduced here opens the pos-sibility of studying optimization dynamics, sensitivity to perturbations, and landscape organization in neural networks using tools and concepts from dynamical systems and statistical physics in a simplified setting. Possible future directions include extending the analysis to stochastic optimization methods such as stochastic gradient descent (SGD) and to alternative neural net-works architectures. Another interesting direction would be to investigate whether the observed spacing statistics exhibit universal behavior across different architectures, datasets and optimization methods. 
+
+Acknowledgments – PJ acknowledges fund-ing from Maria de Maeztu (MdM) Seal of Ex-cellence (CEX2021-001164-M) via the FPI pro-gramme (grant PRE2022-104148), funded by the MICIU/AEI/10.13039/501100011033. LL acknowledges partial support from project CSxAI (PID2024-157526NB-I00) funded by MI-CIU/AEI/10.13039/501100011033/FEDER, UE. MCS and LL acknowledge partial support from a Maria de Maeztu grant (CEX2021-001164-M) funded by the MICIU/AEI/10.13039/501100011033, and from the European Commission Chips Joint Undertaking project No. 101194363 (NEHIL). 
+
+Code availability – The code used to run the simulations will be available after publication at 
+
+https://github.com/pedrojg8 .
+
+> Appendix A: Training efficiency and sensitivity to initial conditions
+
+To assess the relation between sensitivity to perturba-tions and learning performance, in [17] we computed the average number of epochs, ⟨τ ⟩, required for the network to reach a validation accuracy of at least 90%, averaged over all initial conditions. Figure 15 shows ⟨τ ⟩ and ρ, the percentage of initial conditions for which the local MLE is positive, as functions of the learning rate η.0.0005            
+
+> 0.001
+> 0.005
+> 0.01
+> 0.05
+> 0.1
+> 0.5
+> 1.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 0
+> 1000
+> 2000
+> 3000
+> 4000
+> 5000
+> Figure 15. Percentage of positive local Lyapunov exponents,
+> ρ(left axis), and average number of epochs ⟨τ⟩required to reach 90% validation accuracy (right axis) as functions of the learning rate η.The minimum of ⟨τ⟩occurs in the same learning rate region where ρapproaches 100%
+
+The dependence of ⟨τ ⟩ on η is markedly non-monotonic. While small learning rates lead to slow con-vergence, excessively large learning rates result in unsta-ble training. Between these two extremes, ⟨τ ⟩ reaches a pronounced minimum around η ≈ 7.5. Remarkably, this minimum coincides with the regime where ρ approaches 100%, indicating that sensitivity to initial conditions be-comes widespread across the ensemble. This observation reveals a learning rate region in which strong dynam-ical instability coexists with near-optimal training effi-ciency, motivating the focus on this regime throughout the present work. 12 
+
+[1] Ian J. Goodfellow, Yoshua Bengio, and Aaron Courville. 
+
+Deep Learning . MIT Press, Cambridge, MA, USA, 2016. 
+
+http://www.deeplearningbook.org .[2] John J Hopfield. Neural networks and physical systems with emergent collective computational abilities. Pro-ceedings of the national academy of sciences , 79(8):2554– 2558, 1982. [3] Giuseppe Carleo, Ignacio Cirac, Kyle Cranmer, Lau-rent Daudet, Maria Schuld, Naftali Tishby, Leslie Vogt-Maranto, and Lenka Zdeborov´ a. Machine learning and the physical sciences. Reviews of Modern Physics ,91(4):045002, 2019. [4] Steven L Brunton and J Nathan Kutz. Data-driven sci-ence and engineering: Machine learning, dynamical sys-tems, and control . Cambridge University Press, 2022. [5] Zongrui Pei. Statistical physics for artificial neural net-works. Applied Physics Reviews , 13(1), 2026. [6] Sara Kaviani and Insoo Sohn. Application of complex systems topologies in artificial neural networks optimiza-tion: An overview. Expert Systems with Applications ,180:115073, 2021. [7] Lucas Lacasa, Jorge P Rodriguez, and Victor M Eguiluz. Correlations of network trajectories. Physical Review Re-search , 4(4):L042008, 2022. [8] Vito Latora, Vincenzo Nicosia, and Giovanni Russo. 
+
+Complex networks: principles, methods and applications .Cambridge University Press, 2017. [9] Naoki Masuda and Renaud Lambiotte. A guide to tem-poral networks . World Scientific, 2016. [10] Petter Holme and Jari Saram¨ aki. Temporal network the-ory , volume 2. Springer, 2019. [11] Annalisa Caligiuri, Tobias Galla, and Lucas Lacasa. Characterizing the dynamics of unlabeled temporal net-works. Chaos: An Interdisciplinary Journal of Nonlinear Science , 35(5), 2025. [12] Francisco Bauz´ a Mingueza, Mario Flor´ ıa, Jes´ us G´ omez-Garde˜ nes, Alex Arenas, and Alessio Cardillo. Character-ization of interactions’ persistence in time-varying net-works. Scientific Reports , 13(1):765, 2023. [13] Harrison Hartle and Naoki Masuda. Autocorrelation properties of temporal networks governed by dynamic node variables. Physical Review Research , 7(1):013083, 2025. [14] Annalisa Caligiuri, Victor M Egu´ ıluz, Leonardo Di Gae-tano, Tobias Galla, and Lucas Lacasa. Lyapunov ex-ponents for temporal networks. Physical Review E,107(4):044305, 2023. [15] Annalisa Caligiuri, David Papo, G¨ orsev Yener, Bahar G¨ untekin, Tobias Galla, Lucas Lacasa, and Massimiliano Zanin. Predictability of temporal network dynamics in normal ageing and brain pathology. Journal of Complex Networks , 14(1):cnaf058, 2026. [16] Kaloyan Danovski, Miguel C Soriano, and Lucas Lacasa. Dynamical stability and chaos in artificial neural net-work trajectories along training. Frontiers in Complex Systems , 2:1367957, 2024. [17] Pedro Jim´ enez-Gonz´ alez, Miguel C Soriano, and Lucas Lacasa. Leveraging chaotic transients in the training of artificial neural networks. Physical Review Research ,8(2):L022032, 2026. [18] Guillermo B Morales and Miguel A Mu˜ noz. Optimal in-put representation in neural systems at the edge of chaos. 
+
+Biology , 10(8):702, 2021. [19] L Storm, Hampus Linander, J Bec, Kristian Gustavs-son, and Bernhard Mehlig. Finite-time lyapunov expo-nents of deep neural networks. Physical Review Letters ,132(5):057301, 2024. [20] Claudio Gallicchio, Alessio Micheli, and Luca Silvestri. Local lyapunov exponents of deep echo state networks. 
+
+Neurocomputing , 298:34–45, 2018. [21] Anna Sergeevna Bosman, Andries Engelbrecht, and Mard´ e Helbig. Visualising basins of attraction for the cross-entropy and the squared error neural network loss functions. Neurocomputing , 400:113–136, 2020. [22] Ian Goodfellow, Oriol Vinyals, and Andrew Saxe. Quali-tatively characterizing neural network optimization prob-lems. In International Conference on Learning Represen-tations , 2015. [23] Hao Li, Zheng Xu, Gavin Taylor, Christoph Studer, and Tom Goldstein. Visualizing the loss landscape of neural nets. Advances in neural information processing systems ,31, 2018. [24] Lei Wu, Zhanxing Zhu, and Weinan E. Towards under-standing the generalization of deep learning: Perspective of loss landscapes. In ICML 2017 Workshop on Princi-pled Approaches to Deep Learning , 2017. [25] Behrooz Ghorbani, Shankar Krishnan, and Ying Xiao. An investigation into neural net optimization via hessian eigenvalue density. In International Conference on Ma-chine Learning , pages 2232–2241. PMLR, 2019. [26] Levent Sagun, Utku Evci, V Ugur Guney, Yann Dauphin, and Leon Bottou. Empirical analysis of the hessian of over-parametrized neural networks. arXiv preprint arXiv:1706.04454 , 2017. [27] Jonathan Frankle. Revisiting ”qualitatively character-izing neural network optimization problems”. arXiv preprint arXiv:2012.06898 , 2020. [28] Tiffany J Vlaar and Jonathan Frankle. What can linear interpolation of neural network loss landscapes tell us? In International Conference on Machine Learning , pages 22325–22341. PMLR, 2022. [29] James R Lucas, Juhan Bae, Michael R Zhang, Stanislav Fort, Richard Zemel, and Roger B Grosse. On mono-tonic linear interpolation of neural network parameters. In International Conference on Machine Learning , pages 7168–7179. PMLR, 2021. [30] Andrew Ly and Pulin Gong. Optimization on multifrac-tal loss landscapes explains a diverse range of geometrical and dynamical properties of deep learning. Nature Com-munications , 16(1):3252, 2025. [31] Chunyuan Li, Heerad Farkhoor, Rosanne Liu, and Jason Yosinski. Measuring the intrinsic dimension of objec-tive landscapes. In International Conference on Learning Representations (ICLR) , 2018. [32] Guy Gur-Ari, Daniel A Roberts, and Ethan Dyer. Gra-dient descent happens in a tiny subspace. arXiv preprint arXiv:1812.04754 , 2018. [33] Minhak Song, Kwangjun Ahn, and Chulhee Yun. Does sgd really happen in tiny subspaces? In International Conference on Learning Representations , volume 2025, pages 8086–8120, 2025. [34] Jialin Mao, Itay Griniasty, Han Kheng Teoh, Rahul 13 
+
+Ramesh, Rubing Yang, Mark K Transtrum, James P Sethna, and Pratik Chaudhari. The training process of many deep networks explores the same low-dimensional manifold. Proceedings of the National Academy of Sci-ences , 121(12):e2310002121, 2024. [35] Eliana Lorch. Visualizing deep network training trajec-tories with pca. In ICML Workshop on Visualization for Deep Learning , 2016. [36] Joseph Antognini and Jascha Sohl-Dickstein. Pca of high dimensional random walks with comparison to neural network training. Advances in Neural Information Pro-cessing Systems , 31, 2018. [37] Gabriel Eilertsen, Daniel J¨ onsson, Timo Ropinski, Jonas Unger, and Anders Ynnerman. Classifying the classifier: dissecting the weight space of neural networks. In Euro-pean Conference on Artificial Intelligence (ECAI 2020) ,volume 325, pages 1119–1126. IOS PRESS, 2020. [38] Konstantin Sch¨ urholt, Dimche Kostadinov, and Damian Borth. Self-supervised representation learning on neu-ral network weights for model characteristic prediction. 
+
+Advances in Neural Information Processing Systems ,34:16481–16493, 2021. [39] Xiaolong Han, Zehong Wang, Bo Zhao, Binchi Zhang, Jundong Li, Damian Borth, Rose Yu, Haggai Maron, Yanfang Ye, Lu Yin, et al. A survey of weight space learning: Understanding, representation, and generation. 
+
+arXiv preprint arXiv:2603.10090 , 2026. [40] Chanon Thongprayoon, Lorenzo Livi, and Naoki Ma-suda. Embedding and trajectories of temporal networks. 
+
+IEEE Access , 11:41426–41443, 2023. [41] Lucas Lacasa, F Javier Mar´ ın-Rodr´ ıguez, Naoki Masuda, and Llu´ ıs Arola-Fern´ andez. Scalar embedding of tem-poral network trajectories. Chaos, Solitons & Fractals ,199:116599, 2025. [42] Lucas Lacasa. Fluid dynamics reduction methods for temporal networks. Scientific Reports , 2026. [43] Andrew Mead. Review of the development of multidi-mensional scaling methods. Journal of the Royal Statis-tical Society: Series D (The Statistician) , 41(1):27–39, 1992. [44] Yann LeCun, L´ eon Bottou, Yoshua Bengio, and Patrick Haffner. Gradient-based learning applied to document recognition. Proceedings of the IEEE , 86(11):2278–2324, 1998. [45] Alethea Power, Yuri Burda, Harri Edwards, Igor Babuschkin, and Vedant Misra. Grokking: Generaliza-tion beyond overfitting on small algorithmic datasets. 
+
+arXiv preprint arXiv:2201.02177 , 2022. [46] Kenzo Clauw, Sebastiano Stramaglia, and Daniele Mari-nazzo. Information-theoretic progress measures reveal grokking is an emergent phase transition. arXiv preprint arXiv:2408.08944 , 2024. [47] Fritz W Scholz and Michael A Stephens. K-sample anderson–darling tests. Journal of the American Statis-tical Association , 82(399):918–924, 1987.

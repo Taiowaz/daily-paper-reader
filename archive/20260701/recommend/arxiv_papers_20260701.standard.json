@@ -1,0 +1,326 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-01T21:50:19.739531+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 4,
+    "deep_divecandidates": 6,
+    "deep_cap": 9,
+    "deep_selected": 6,
+    "quick_candidates": 1,
+    "quick_skim_target": 14,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2606.31166v1",
+      "source": "arxiv",
+      "title": "TAG-DLM: Diffusion Language Models for Text-Attributed Graph Learning",
+      "abstract": "Text-attributed graphs (TAGs), where each node carries a natural language description, require models to jointly reason over text and graph topology. Existing approaches often handle the two modalities separately: graph neural networks operate on shallow text features, while hybrids of LLMs and graphs use the language model mainly as a text encoder and delegate structure learning to a separate graph module. We propose method that unifies textual reasoning and graph message passing within a masked diffusion language model, a language model with bidirectional attention and generative decoding. For each graph instance, method linearises a sampled local neighbourhood into a token sequence and injects graph structure through a topology attention mask, which realises message passing over the graph. Because the diffusion language model can both interpret and generate text, the method adapts to different tasks simply by changing the prompt, supporting node classification, link prediction, and cross-dataset transfer with no target-specific fine-tuning.   Experiments show that method outperforms graph neural networks, graph transformers, and LLM-based baselines on all three TAG benchmarks across two tasks, improving over the strongest baseline by up to 3.9 points.",
+      "authors": [
+        "Lingjie Chen",
+        "Yuanchen Bei",
+        "Haobo Xu",
+        "Yanjun Zhao",
+        "Yuzhong Chen",
+        "Hanghang Tong"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-30T05:56:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.31166v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "unifies textual reasoning and graph message passing within a masked diffusion language model for text-attributed graphs",
+      "llm_evidence_cn": "在掩码扩散语言模型中统一文本推理和图消息传递，用于文本属性图",
+      "llm_evidence": "在掩码扩散语言模型中统一文本推理和图消息传递，用于文本属性图",
+      "canonical_evidence": "在掩码扩散语言模型中统一文本推理和图消息传递，用于文本属性图",
+      "llm_tldr_en": "Proposes TAG-DLM, a masked diffusion language model that jointly reasons over text and graph topology by linearizing a sampled neighborhood into a token sequence and applying topology attention masks.",
+      "llm_tldr_cn": "针对文本属性图中文本与图拓扑需联合推理的问题，提出TAG-DLM，一种掩码扩散语言模型。该方法将采样邻域线性化为令牌序列，并通过拓扑注意力掩码注入图结构，在一个模型中统一了语义推理与图消息传递。实验表明，该方法在多个文本属性图基准上取得了最优性能。",
+      "llm_tldr": "针对文本属性图中文本与图拓扑需联合推理的问题，提出TAG-DLM，一种掩码扩散语言模型。该方法将采样邻域线性化为令牌序列，并通过拓扑注意力掩码注入图结构，在一个模型中统一了语义推理与图消息传递。实验表明，该方法在多个文本属性图基准上取得了最优性能。",
+      "llm_tags": [
+        "query:graph-llm"
+      ],
+      "matched_query_tag": "query:graph-llm",
+      "matched_query_text": "integrating graph neural networks with large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.30384v1",
+      "source": "arxiv",
+      "title": "Scalar Representations of Neural Network Training Dynamics",
+      "abstract": "Training in artificial neural networks can be viewed as a trajectory evolving through a high-dimensional loss landscape. However, the large number of trainable parameters makes the direct analysis of these dynamics challenging. In this work, we treat such training trajectories as temporal networks and apply recently proposed strategies for the scalar embedding of temporal networks. We investigate whether such a scalar embedding provides a meaningful low-dimensional representation of neural network training dynamics. Using a multilayer perceptron trained on the MNIST classification task, we show that the embedding preserves the main dynamical features observed in the original parameter space, including the emergence of sensitivity to initial conditions for specific learning rate regimes and an accurate reconstruction of the network's maximum Lyapunov exponent. We then use the embedded scalar trajectory to define a characteristic time, analogous to a Lyapunov time, after which the exponential separation between initially close embedded trajectories saturates. This characteristic time captures the typical decorrelation time between initially close network trajectories in the original high-dimensional system. Finally, we investigate the statistical organization of asymptotic training states through a spacing observable defined in the embedded space. We find that the distributions of rescaled asymptotic spacings collapse onto a common form across initial conditions and are compatible with a skew lognormal distribution. Altogether, our results suggest that scalar low-dimensional embeddings provide a useful framework for studying and visualizing the dynamical properties of neural network optimization trajectories.",
+      "authors": [
+        "Pedro Jiménez-González",
+        "Miguel C. Soriano",
+        "Lucas Lacasa"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cond-mat.dis-nn",
+        "nlin.CD",
+        "physics.data-an"
+      ],
+      "published": "2026-06-29T14:40:03+00:00",
+      "link": "https://arxiv.org/pdf/2606.30384v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses scalar embedding of temporal networks to represent neural network training dynamics",
+      "llm_evidence_cn": "利用时间网络的标量嵌入来表示神经网络训练动态",
+      "llm_evidence": "利用时间网络的标量嵌入来表示神经网络训练动态",
+      "canonical_evidence": "利用时间网络的标量嵌入来表示神经网络训练动态",
+      "llm_tldr_en": "The paper embeds neural network training trajectories as temporal networks and applies scalar embedding methods to obtain low-dimensional representations, preserving key dynamical features such as sensitivity to initial conditions.",
+      "llm_tldr_cn": "本文将神经网络训练轨迹视为时间网络，采用近期提出的时间网络标量嵌入方法，提取训练过程的低维表示。在MNIST分类任务上的多层感知机实验中，该标量嵌入成功保留了原始参数空间中的主要动力学特征，包括初值敏感性等重要特性。这项工作为分析高维训练动力学提供了简洁有效的工具，有望促进对深度学习优化过程的理解。",
+      "llm_tldr": "本文将神经网络训练轨迹视为时间网络，采用近期提出的时间网络标量嵌入方法，提取训练过程的低维表示。在MNIST分类任务上的多层感知机实验中，该标量嵌入成功保留了原始参数空间中的主要动力学特征，包括初值敏感性等重要特性。这项工作为分析高维训练动力学提供了简洁有效的工具，有望促进对深度学习优化过程的理解。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "dynamic graph embedding techniques",
+      "matched_requirement_id": "req-17",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.30778v1",
+      "source": "arxiv",
+      "title": "ReactionAtlas: Ab origine exploration of chemical reaction networks with machine learning",
+      "abstract": "Mapping a chemical reaction network, the graph of minima and transition states (TS) and the elementary reactions connecting them, is the natural language of chemistry, from catalysis to combustion to the origin of life. Constructing such a reaction network for a given chemistry has been impractical: it requires finding and characterizing tens of thousands of TS, a task for which traditional methods such as density functional theory (DFT) are typically prohibitively slow and require reactant and product as input. We introduce ReactionAtlas, which builds a reaction network $\\textit{ab origine}$ from a handful of seed molecules and without hand-crafted rules. Specifically, our machine-learned generative model proposes reactions from kinetically sampled candidate compounds and a DFT-trained machine learned force field (MLFF) filters them to valid TS, the resulting products of which enter the search as new seeds. Starting from eight pre-biotic seeds (CH$_2$O, H$_2$O, OH$^-$, H$_3$O$^+$, CO$_2$, H$_2$CO$_3$, HCO$_3^-$, H), ReactionAtlas discovers $\\sim$47,000 reactions among $\\sim$12,000 compounds. The MLFF TSs match the PBE0 references within 0.5 Å RMSD in 85% of the cases and can be easily brought to the PBE0 level. Thus, ReactionAtlas maps small carbohydrate chemistry up to C$_4$H$_8$O$_4$ at unprecedented scale and accuracy, including charge and stereo information. It enables novel insights into many well-studied reaction paths, including the formose cycle, which we highlight for its centrality to the chemical origins of life. Notably, our framework also allows establishing alternative reaction pathways for formose chemistry.",
+      "authors": [
+        "Stefan Gugler",
+        "Max Eissler",
+        "Khaled Kahouli",
+        "Klaus-Robert Müller"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "physics.chem-ph"
+      ],
+      "published": "2026-06-29T18:07:38+00:00",
+      "link": "https://arxiv.org/pdf/2606.30778v1",
+      "tags": [
+        "keyword:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "automates chemical reaction network discovery with ML generative model",
+      "llm_evidence_cn": "用机器学习生成模型自动化发现化学反应网络",
+      "llm_evidence": "用机器学习生成模型自动化发现化学反应网络",
+      "canonical_evidence": "用机器学习生成模型自动化发现化学反应网络",
+      "llm_tldr_en": "Proposes a machine-learned generative model to automatically construct chemical reaction networks from seed molecules, bypassing expensive DFT calculations; demonstrates efficient exploration of reaction space for catalysis and origins of life studies.",
+      "llm_tldr_cn": "该论文针对传统方法构建化学反应网络速度慢、需要反应物和产物作为输入的问题，提出一种从少量种子分子出发的机器学习生成模型，自动提出反应并构建网络，无需手工规则。实验表明，该方法能高效探索反应空间，为催化、燃烧和生命起源等领域的化学发现提供了自动化手段。",
+      "llm_tldr": "该论文针对传统方法构建化学反应网络速度慢、需要反应物和产物作为输入的问题，提出一种从少量种子分子出发的机器学习生成模型，自动提出反应并构建网络，无需手工规则。实验表明，该方法能高效探索反应空间，为催化、燃烧和生命起源等领域的化学发现提供了自动化手段。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.31804v1",
+      "source": "arxiv",
+      "title": "Relational and Sequential Conformal Inference for Energy Time Series over Graphs via Foundation Models",
+      "abstract": "Accurate energy demand forecasting is essential for the reliable operation and planning of modern sustainable energy systems. Spatial-temporal graph neural networks (STGNNs) have recently achieved strong performance in point forecasting by jointly modeling temporal dynamics and relational dependencies across interconnected energy nodes. However, in real-world energy systems, accurate point forecasts alone are insufficient, as operators also require reliable uncertainty estimates to support risk-aware decision-making, grid stability, and operational planning under uncertainty. Conformal prediction provides a principled and model-agnostic framework for uncertainty quantification with statistical coverage guarantees, making it particularly attractive for safety-critical energy applications. However, existing conformal prediction approaches often fail to fully capture the complex spatial-temporal structure of energy systems. To address these limitations, we propose STOIC (Spatial-Temporal Graph Conformal Prediction with In-Context Learning), a novel framework that integrates graph-based forecasting with the zero-shot calibration capabilities of tabular foundation models. STOIC first generates point forecasts using an STGNN and subsequently reformulates spatial-temporal residuals into a tabular representation suitable for in-context learning. Leveraging a tabular foundation model, STOIC calibrates prediction intervals without task-specific retraining, effectively capturing both sequential and relational dependencies. We evaluate STOIC on five diverse benchmarks, including synthetic simulations as well as real-world electricity and district heating networks. Across all datasets, STOIC consistently outperforms existing conformal prediction baselines, delivering more reliable and robust uncertainty estimates for complex graph-structured energy time series.",
+      "authors": [
+        "Keivan Faghih Niresi",
+        "Alice Cicirello",
+        "Olga Fink"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "stat.ML"
+      ],
+      "published": "2026-06-30T15:22:11+00:00",
+      "link": "https://arxiv.org/pdf/2606.31804v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses spatial-temporal graph neural networks for dynamic graph learning",
+      "llm_evidence_cn": "使用时空图神经网络进行动态图学习",
+      "llm_evidence": "使用时空图神经网络进行动态图学习",
+      "canonical_evidence": "使用时空图神经网络进行动态图学习",
+      "llm_tldr_en": "Proposes conformal prediction for energy time series using spatial-temporal graph neural networks, providing uncertainty quantification with coverage guarantees.",
+      "llm_tldr_cn": "当前能源需求预测中，仅依赖精确点预测难以满足实际运营对不确定性估计的需求。本文提出将时空图神经网络与共形预测相结合，用于建模能源节点间的时序依赖与关系依赖，并提供具有统计覆盖保证的不确定性量化。实验表明，该方法在风险感知决策、电网稳定性与运行规划中具有重要价值。",
+      "llm_tldr": "当前能源需求预测中，仅依赖精确点预测难以满足实际运营对不确定性估计的需求。本文提出将时空图神经网络与共形预测相结合，用于建模能源节点间的时序依赖与关系依赖，并提供具有统计覆盖保证的不确定性量化。实验表明，该方法在风险感知决策、电网稳定性与运行规划中具有重要价值。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "methods for learning on dynamic graphs",
+      "matched_requirement_id": "req-15",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.31831v1",
+      "source": "arxiv",
+      "title": "An Agentic AI Framework to Accelerate Scientific Discovery in Plant Phenotyping",
+      "abstract": "High-throughput plant phenotyping now generates image derived datasets far faster than scientists can analyze them. At Oak Ridge National Laboratory's Advanced Plant Phenotyping Laboratory (APPL), automated stations image hundreds of plants daily across multiple remote sensing modalities; yet, trait extraction and interpretation remain manual, expert-bound, and strictly post-hoc, making analysis, not acquisition, the binding constraint on discovery. We present an end-to-end agentic AI framework that turns the facility from a data factory into an interactive autonomous, discovery platform, where scientists partner with AI agents to accelerate time to insight. A conversational Co-Scientist Agent translates a scientist's natural-language question into a structured analysis plan, and a headless Compute Agent dispatches Vision Transformer segmentation and trait extraction on the Frontier exascale supercomputer. The two agents run in separate security and resource domains and communicate over a secure, token-authenticated streaming channel, a design that accounts for the federation, data-movement, and provenance realities cloud-native agentic frameworks ignore, ensuring end-to-end provenance is captured for every interaction. The framework turns a days- to weeks-long analysis process into an interactive loop where agents reason over results, recommend next analyses, and respond to follow-up questions in seconds.",
+      "authors": [
+        "Renan Souza",
+        "Daniel Rosendo",
+        "Kelsey Carter",
+        "John Lagergren",
+        "Frédéric Suter",
+        "Shelaine L. Curd",
+        "Gerald A. Tuskan",
+        "Rafael Ferreira da Silva",
+        "David Weston"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-30T15:37:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.31831v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:ml",
+        "query:dynamic-g",
+        "query:ml"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "agentic AI framework that automates scientific discovery in plant phenotyping",
+      "llm_evidence_cn": "自动化植物表型科学发现的智能体AI框架",
+      "llm_evidence": "自动化植物表型科学发现的智能体AI框架",
+      "canonical_evidence": "自动化植物表型科学发现的智能体AI框架",
+      "llm_tldr_en": "Presents an end-to-end agentic AI framework that turns a plant phenotyping facility into an interactive autonomous discovery platform, accelerating scientific insight.",
+      "llm_tldr_cn": "针对高通量植物表型中数据生成速度远超人工分析能力的问题，提出一种端到端的智能体AI框架，将实验室转变为交互式自主发现平台。该框架包含对话式联合科学家智能体，可将自然语言问题转化为分析流程，并与AI代理协作加速从数据到洞察的过程。",
+      "llm_tldr": "针对高通量植物表型中数据生成速度远超人工分析能力的问题，提出一种端到端的智能体AI框架，将实验室转变为交互式自主发现平台。该框架包含对话式联合科学家智能体，可将自然语言问题转化为分析流程，并与AI代理协作加速从数据到洞察的过程。",
+      "llm_tags": [
+        "query:ml"
+      ],
+      "matched_query_tag": "query:ml",
+      "matched_query_text": "automating scientific discovery with machine learning",
+      "matched_requirement_id": "req-31",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.32013v1",
+      "source": "arxiv",
+      "title": "Analysis of a maximum-entropy based estimator for dynamic random graph models",
+      "abstract": "We study dynamic random graphs in which the set of nodes is fixed, but edges evolve over time according to an underlying stochastic mechanism. Using a maximum-entropy approach, we define a probability distribution on graph trajectories that is consistent with observed constraints, capturing the inherent uncertainty in partially observed networks. We introduce a moment-based estimator for the parameters of this distribution and establish its statistical properties, such as consistency and asymptotic normality, with explicit formulas for the covariance structure. Numerical experiments demonstrate the estimator's accuracy and robustness across various dynamic network scenarios. Our framework bridges probabilistic modeling and statistical inference in time-varying networks, providing practical tools for understanding and predicting complex edge dynamics.",
+      "authors": [
+        "Diego Garlaschelli",
+        "Michel Mandjes",
+        "Frank P. Pijpers",
+        "Jiesen Wang"
+      ],
+      "primary_category": "math.ST",
+      "categories": [
+        "math.ST",
+        "math.PR"
+      ],
+      "published": "2026-06-30T17:46:23+00:00",
+      "link": "https://arxiv.org/pdf/2606.32013v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "analyzes dynamic random graphs with edges evolving over time using maximum-entropy estimator",
+      "llm_evidence_cn": "使用最大熵估计量分析边随时间演化的动态随机图",
+      "llm_evidence": "使用最大熵估计量分析边随时间演化的动态随机图",
+      "canonical_evidence": "使用最大熵估计量分析边随时间演化的动态随机图",
+      "llm_tldr_en": "Proposes a maximum-entropy based estimator for dynamic random graph models, establishing its consistency and asymptotic normality, with applications to temporal network analysis.",
+      "llm_tldr_cn": "针对动态随机图模型，提出一种基于最大熵的参数估计方法，推导其一致性和渐近正态性，并通过数值实验验证估计量的精度和鲁棒性，为动态网络推断提供统计框架。",
+      "llm_tldr": "针对动态随机图模型，提出一种基于最大熵的参数估计方法，推导其一致性和渐近正态性，并通过数值实验验证估计量的精度和鲁棒性，为动态网络推断提供统计框架。",
+      "llm_tags": [
+        "query:dynamic-g"
+      ],
+      "matched_query_tag": "query:dynamic-g",
+      "matched_query_text": "study of dynamic graphs",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.30093v1",
+      "source": "arxiv",
+      "title": "Efficient Retrieval-Augmented Generation via Token Co-occurrence Graphs",
+      "abstract": "Retrieval-Augmented Generation (RAG) mitigates hallucinations in Large Language Models (LLMs) by grounding the generation process on external knowledge. However, standard RAG approaches struggle with multi-hop reasoning. While recent graph-based RAG methods improve the retrieval of interconnected chunks, they often rely on computationally expensive and error-prone LLM-based extraction pipelines. To address these issues, we propose TIGRAG (Token-Induced GraphRAG), an efficient graph-augmented RAG framework based on a token co-occurrence Knowledge Graph. TIGRAG directly models topological relationships between tokens using sliding-window co-occurrence statistics, thus enabling scalable graph construction. During inference, it combines graph-based semantic expansion and neural reranking to retrieve interconnected evidence for multi-hop reasoning. Specifically, it introduces an iterative entity-driven retrieval strategy that progressively expands the query using bridging entities extracted from previously retrieved contexts. We evaluated TIGRAG on three widely adopted multi-hop Question Answering (QA) benchmarks. Experimental results demonstrated that our framework consistently outperforms dense retrieval and graph-based RAG methods in both retrieval and downstream QA tasks, while substantially reducing indexing time, inference latency, and prompt footprint.",
+      "authors": [
+        "Gianluca Bonifazi",
+        "Christopher Buratti",
+        "Michele Marchetti",
+        "Federica Parlapiano",
+        "Giulia Quaglieri",
+        "Davide Traini",
+        "Domenico Ursino",
+        "Luca Virgili"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.IR"
+      ],
+      "published": "2026-06-29T10:29:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.30093v1",
+      "tags": [
+        "keyword:EFMR",
+        "keyword:dynamic-g",
+        "keyword:graph-llm",
+        "keyword:ml",
+        "query:EFMR",
+        "query:dynamic-g",
+        "query:graph-llm",
+        "query:ml"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "token co-occurrence graph for efficient RAG with LLMs",
+      "llm_evidence_cn": "利用词共现图增强大语言模型的检索生成",
+      "llm_evidence": "利用词共现图增强大语言模型的检索生成",
+      "canonical_evidence": "利用词共现图增强大语言模型的检索生成",
+      "llm_tldr_en": "Proposes TIGRAG, a token-induced graph RAG that improves LLM retrieval without expensive LLM-based extraction, using co-occurrence statistics.",
+      "llm_tldr_cn": "针对基于图的RAG方法依赖昂贵LLM提取流水线的问题，提出TIGRAG框架，直接通过滑动窗口词共现统计构建知识图谱，实现高效可扩展的图增强检索生成。TIGRAG结合图语义和向量检索，在推理时降低计算开销。实验表明，该方法在保持效果的同时显著提升效率，为图与LLM结合提供了轻量化方案。",
+      "llm_tldr": "针对基于图的RAG方法依赖昂贵LLM提取流水线的问题，提出TIGRAG框架，直接通过滑动窗口词共现统计构建知识图谱，实现高效可扩展的图增强检索生成。TIGRAG结合图语义和向量检索，在推理时降低计算开销。实验表明，该方法在保持效果的同时显著提升效率，为图与LLM结合提供了轻量化方案。",
+      "llm_tags": [
+        "query:graph-llm:composite"
+      ],
+      "matched_query_tag": "query:graph-llm:composite",
+      "matched_query_text": "Papers central to 图大型语言模型, especially work that connects or combines: integrating graph neural networks with large language models; using large language models for graph-structured data; graph reasoning capabilities of large language models; graph representation learning combined with large language models; graph machine learning techniques for large language models; graph-enhanced training of large language models; How to integrate graph neural networks with large language models?; Training graph enhanced large language models.",
+      "matched_requirement_id": "req-composite-graph-llm",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
