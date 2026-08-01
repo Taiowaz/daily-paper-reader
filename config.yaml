@@ -25,3 +25,55 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: dynamic-gnn
+      description: 动态图上的大语言模型与图神经网络结合相关研究
+      enabled: true
+      paper_sources:
+        - arxiv
+      keywords:
+        - keyword: dynamic graph
+          keyword_cn: 动态图
+          query: temporal graph evolving over time
+        - keyword: large language model
+          keyword_cn: 大语言模型
+          query: pretrained language model for graph tasks
+        - keyword: graph neural network
+          keyword_cn: 图神经网络
+          query: neural network architecture for graph structured data
+        - keyword: temporal graph
+          keyword_cn: 时序图
+          query: graph with time-varying edges and nodes
+        - keyword: graph representation learning
+          keyword_cn: 图表示学习
+          query: methods to encode graph structure into vector space
+        - keyword: language model for graphs
+          keyword_cn: 用于图的语言模型
+          query: using language models to reason about graph data
+      intent_queries:
+        - query: apply large language models to dynamic graph learning
+          query_cn: 将大语言模型应用于动态图学习
+          enabled: true
+          source: manual
+          note: ''
+        - query: combine LLM and GNN for dynamic graph reasoning
+          query_cn: 结合大语言模型和图神经网络进行动态图推理
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-08-01T12:02:45.209Z'
+source_backends:
+  arxiv:
+    papers_table: arxiv_papers
+    use_vector_rpc: true
+    vector_rpc: match_arxiv_papers
+    vector_rpc_exact: match_arxiv_papers_exact
+    use_bm25_rpc: true
+    bm25_rpc: match_arxiv_papers_bm25
+    sync_table: arxiv_sync_status
+    sync_success_value: success
+    schema: public
+    kind: supabase
+    enabled: true
+    url: https://lyucdwgefyfbmaiopjbk.supabase.co
+    anon_key: sb_publishable_lX-oi64Uxyd7SIVv3_w2Uw_MTOojeKq
